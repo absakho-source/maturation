@@ -189,6 +189,90 @@ def init_demo_data():
                 'auteur_nom': 'Ministère Agriculture',
                 'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
                 'organisme_tutelle': 'Ministère de l\'Agriculture'
+            },
+            {
+                'titre': 'Réhabilitation des routes départementales à Louga',
+                'description': 'Réfection de 80 km de routes départementales pour améliorer la mobilité.',
+                'secteur': 'Infrastructure',
+                'poles': 'Pôle de Louga',
+                'cout_estimatif': 3200000000.0,
+                'budget': 3200000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère des Infrastructures'
+            },
+            {
+                'titre': 'Construction de forages dans la région de Saint-Louis',
+                'description': 'Installation de 20 forages pour l\'accès à l\'eau potable en zone rurale.',
+                'secteur': 'Hydraulique',
+                'poles': 'Pôle du Fleuve',
+                'cout_estimatif': 850000000.0,
+                'budget': 850000000.0,
+                'statut': 'en_evaluation',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Hydraulique'
+            },
+            {
+                'titre': 'Centre de formation professionnelle à Kaolack',
+                'description': 'Construction d\'un centre de formation aux métiers du bâtiment.',
+                'secteur': 'Formation',
+                'poles': 'Pôle du Centre',
+                'cout_estimatif': 1400000000.0,
+                'budget': 1400000000.0,
+                'statut': 'en_evaluation',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de la Formation Professionnelle'
+            },
+            {
+                'titre': 'Modernisation du marché central de Ziguinchor',
+                'description': 'Rénovation complète et équipement du marché central.',
+                'secteur': 'Commerce',
+                'poles': 'Pôle de la Casamance',
+                'cout_estimatif': 560000000.0,
+                'budget': 560000000.0,
+                'statut': 'valide_sct',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère du Commerce'
+            },
+            {
+                'titre': 'Parc solaire photovoltaïque à Kédougou',
+                'description': 'Installation d\'un parc solaire de 10 MW pour l\'électrification.',
+                'secteur': 'Énergie',
+                'poles': 'Pôle de Tambacounda',
+                'cout_estimatif': 5600000000.0,
+                'budget': 5600000000.0,
+                'statut': 'valide_sct',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Énergie'
+            },
+            {
+                'titre': 'Construction de lycée technique à Diourbel',
+                'description': 'Nouveau lycée technique avec 18 salles de classe et équipements.',
+                'secteur': 'Éducation',
+                'poles': 'Pôle de Louga',
+                'cout_estimatif': 1900000000.0,
+                'budget': 1900000000.0,
+                'statut': 'valide_comite',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Éducation Nationale'
+            },
+            {
+                'titre': 'Aménagement de périmètres maraîchers à Fatick',
+                'description': 'Développement de 200 hectares pour la production maraîchère.',
+                'secteur': 'Agriculture',
+                'poles': 'Pôle du Centre',
+                'cout_estimatif': 720000000.0,
+                'budget': 720000000.0,
+                'statut': 'valide_comite',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Agriculture'
             }
         ]
 
