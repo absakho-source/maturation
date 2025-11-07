@@ -7,7 +7,7 @@ import os
 import json
 from datetime import datetime
 from models import db, Project, FicheEvaluation
-from pdf_generator_simple import generer_fiche_evaluation_pdf
+# from pdf_generator_simple import generer_fiche_evaluation_pdf  # Temporairement désactivé
 
 evaluation_bp = Blueprint('evaluation', __name__)
 

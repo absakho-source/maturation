@@ -2222,13 +2222,7 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import evaluation routes: {e}")
 
-# Import and register project routes
-try:
-    from routes.project_routes import project_bp
-    app.register_blueprint(project_bp, url_prefix='')
-    print("Project routes registered successfully")
-except ImportError as e:
-    print(f"Warning: Could not import project routes: {e}")
+# Note: project_routes n'utilise pas de blueprint, les routes sont définies directement dans app.py
 
 # Import and register user routes
 try:
@@ -2240,7 +2234,6 @@ except ImportError as e:
 
 if __name__ == '__main__':
     import os
-    print("oui")
-    port = int(os.environ.get('FLASK_PORT', 5002))
+    port = int(os.environ.get('PORT', 5002))
     print(f"Starting Flask app on port {port}...")
-    app.run(debug=True, host="127.0.0.1", port=port, use_reloader=False)
+    app.run(debug=True, host="0.0.0.0", port=port, use_reloader=False)
