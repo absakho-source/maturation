@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import axios from 'axios'
 
 // ✅ Import global du thème DGPPE sobre
 import './assets/styles-dgppe-sobre.css'
@@ -8,6 +9,12 @@ import './assets/styles-dgppe-sobre.css'
 // Configuration de l'API - Intercepte les appels fetch pour ajouter l'URL backend en production
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 console.log('[API Config] API_BASE_URL:', API_BASE_URL)
+
+// Configuration axios pour utiliser l'URL du backend en production
+if (API_BASE_URL) {
+  axios.defaults.baseURL = API_BASE_URL
+  console.log('[Axios Config] baseURL défini:', API_BASE_URL)
+}
 
 // Sauvegarde de la fonction fetch originale
 const originalFetch = window.fetch
