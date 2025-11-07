@@ -1,0 +1,184 @@
+"""
+Script d'initialisation des données de démonstration
+Crée des utilisateurs et projets par défaut pour tester l'application
+"""
+from datetime import datetime
+from db import db
+from models import User, Project
+from app import app
+
+def init_demo_data():
+    """Initialise les données de démonstration"""
+
+    with app.app_context():
+        # Vérifier si des utilisateurs existent déjà
+        existing_users = User.query.count()
+        if existing_users > 0:
+            print(f"[DEMO] {existing_users} utilisateurs déjà présents, skip initialisation")
+            return
+
+        print("[DEMO] Création des utilisateurs de démonstration...")
+
+        # Créer les utilisateurs par défaut
+        users_data = [
+            {
+                'username': 'soumissionnaire',
+                'password': 'demo123',
+                'role': 'soumissionnaire',
+                'display_name': 'Ministère Agriculture',
+                'nom_complet': 'Direction Planning Agricole',
+                'telephone': '+221 77 123 45 67',
+                'type_structure': 'ministere',
+                'nom_structure': 'Ministère de l\'Agriculture',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'evaluateur1',
+                'password': 'demo123',
+                'role': 'evaluateur',
+                'display_name': 'Agent DPSE 1',
+                'nom_complet': 'Mamadou Diop',
+                'telephone': '+221 77 234 56 78',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'evaluateur2',
+                'password': 'demo123',
+                'role': 'evaluateur',
+                'display_name': 'Agent DPSE 2',
+                'nom_complet': 'Fatou Sall',
+                'telephone': '+221 77 345 67 89',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'secretariatsct',
+                'password': 'demo123',
+                'role': 'secretariatsct',
+                'display_name': 'Chef Division DP',
+                'nom_complet': 'Amadou Ba',
+                'telephone': '+221 77 456 78 90',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'presidencesct',
+                'password': 'demo123',
+                'role': 'presidencesct',
+                'display_name': 'Directeur Planification',
+                'nom_complet': 'Ousmane Ndiaye',
+                'telephone': '+221 77 567 89 01',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'presidencecomite',
+                'password': 'demo123',
+                'role': 'presidencecomite',
+                'display_name': 'DG DGPPE',
+                'nom_complet': 'Awa Thiam',
+                'telephone': '+221 77 678 90 12',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'admin',
+                'password': 'demo123',
+                'role': 'admin',
+                'display_name': 'CT DGPPE',
+                'nom_complet': 'Abdou Kane',
+                'telephone': '+221 77 789 01 23',
+                'statut_compte': 'verifie'
+            }
+        ]
+
+        created_users = []
+        for user_data in users_data:
+            user = User(**user_data)
+            db.session.add(user)
+            created_users.append(user)
+
+        db.session.commit()
+        print(f"[DEMO] ✅ {len(created_users)} utilisateurs créés")
+
+        # Créer quelques projets de démonstration
+        print("[DEMO] Création de projets de démonstration...")
+
+        soumissionnaire = User.query.filter_by(username='soumissionnaire').first()
+
+        projects_data = [
+            {
+                'titre': 'Construction d\'infrastructures scolaires à Dakar',
+                'description': 'Projet de construction de 5 écoles élémentaires dans la région de Dakar pour améliorer l\'accès à l\'éducation.',
+                'secteur': 'Éducation',
+                'poles': 'Pôle de Dakar',
+                'cout_estimatif': 2500000000.0,  # 2.5 milliards FCFA
+                'budget': 2500000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Éducation Nationale'
+            },
+            {
+                'titre': 'Programme d\'électrification rurale dans le Ferlo',
+                'description': 'Extension du réseau électrique dans les zones rurales de la région de Matam.',
+                'secteur': 'Énergie',
+                'poles': 'Pôle du Fleuve',
+                'cout_estimatif': 1800000000.0,
+                'budget': 1800000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Énergie'
+            },
+            {
+                'titre': 'Développement de l\'agriculture maraîchère à Thiès',
+                'description': 'Programme de soutien aux producteurs maraîchers avec installation de systèmes d\'irrigation moderne.',
+                'secteur': 'Agriculture',
+                'poles': 'Pôle du Centre',
+                'cout_estimatif': 950000000.0,
+                'budget': 950000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Agriculture'
+            },
+            {
+                'titre': 'Centre de santé communautaire à Kolda',
+                'description': 'Construction d\'un centre de santé avec maternité et équipements médicaux.',
+                'secteur': 'Santé',
+                'poles': 'Pôle de la Casamance',
+                'cout_estimatif': 680000000.0,
+                'budget': 680000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de la Santé'
+            },
+            {
+                'titre': 'Aménagement hydro-agricole à Tambacounda',
+                'description': 'Aménagement de 500 hectares de terres pour la culture irriguée.',
+                'secteur': 'Agriculture',
+                'poles': 'Pôle de Tambacounda',
+                'cout_estimatif': 1200000000.0,
+                'budget': 1200000000.0,
+                'statut': 'soumis',
+                'auteur_nom': 'Ministère Agriculture',
+                'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
+                'organisme_tutelle': 'Ministère de l\'Agriculture'
+            }
+        ]
+
+        for project_data in projects_data:
+            project = Project(**project_data)
+            db.session.add(project)
+
+        db.session.commit()
+        print(f"[DEMO] ✅ {len(projects_data)} projets créés")
+        print("[DEMO] 🎉 Initialisation des données de démonstration terminée!")
+        print("\n[DEMO] Comptes disponibles:")
+        print("  - soumissionnaire / demo123")
+        print("  - evaluateur1 / demo123")
+        print("  - secretariatsct / demo123")
+        print("  - presidencesct / demo123")
+        print("  - presidencecomite / demo123")
+        print("  - admin / demo123")
+
+if __name__ == '__main__':
+    init_demo_data()

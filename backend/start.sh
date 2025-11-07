@@ -10,5 +10,9 @@ with app.app_context():
     db.create_all();
     print('Base de données initialisée')"
 
+# Initialiser les données de démonstration
+echo "[INIT] Initialisation des données de démonstration..."
+python init_demo_data.py
+
 # Lancer l'application
 python app.py
