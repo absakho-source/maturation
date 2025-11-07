@@ -322,7 +322,7 @@ export default {
   methods: {
     async loadGeojsonData() {
       try {
-        const response = await fetch('/src/assets/poles_geojson.json')
+        const response = await fetch('/poles_geojson.json')
         this.polesData = await response.json()
         console.log('✅ Données GeoJSON chargées:', this.polesData)
       } catch (error) {
