@@ -125,6 +125,7 @@ def _save_files(files):
 
 # Routes
 @app.route("/api/projects", methods=["GET", "POST"])
+@app.route("/api/projets", methods=["GET", "POST"])  # Alias français
 def projects():
     if request.method == "GET":
         try:
