@@ -242,10 +242,7 @@ export default {
         "aménagement-développement territorial-décentralisation",
         "affaires étrangères-intégration"
       ],
-      polesTerritori
-
-
-: [
+      polesTerritori: [
         "Dakar",
         "Thiès",
         "Centre (Kaolack, Fatick, Kaffrine)",
@@ -253,7 +250,7 @@ export default {
         "Sud (Ziguinchor, Sédhiou, Kolda)",
         "Sud-Est (Tambacounda, Kédougou)",
         "Nord (Saint-Louis)",
-        "Nord-Est à Matam"
+        "Nord-Est (Matam)"
       ]
     };
   },
