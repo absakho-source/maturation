@@ -1163,6 +1163,15 @@ if __name__ == "__main__":
             db.session.commit()
             print(f"[INIT] Créé {len(user_data)} utilisateurs par défaut")
 
+        # Appeler init_demo_data() pour créer les données complètes
+        try:
+            from init_demo_data import init_demo_data
+            init_demo_data()
+        except Exception as e:
+            print(f"[INIT] Erreur lors de l'initialisation des données de démo: {e}")
+            import traceback
+            traceback.print_exc()
+
 # ===================== ROUTES STATISTIQUES =====================
 
 @app.route('/api/stats/overview', methods=['GET'])
