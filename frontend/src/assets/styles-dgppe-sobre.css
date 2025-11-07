@@ -1,0 +1,327 @@
+/* ==================== CHARTE GRAPHIQUE DGPPE SOBRE ==================== */
+/* Palette de couleurs basée sur le logo officiel DGPPE */
+:root {
+  /* Couleurs principales extraites du logo DGPPE */
+  --dgppe-primary: #2E6B6B;           /* Vert-bleu principal du logo */
+  --dgppe-primary-light: #48B5B5;     /* Turquoise du logo */
+  --dgppe-primary-dark: #1E4B4B;      /* Version foncée */
+  
+  --dgppe-secondary: #5CB3B3;         /* Turquoise clair */
+  --dgppe-accent: #D4A574;            /* Doré du logo */
+  --dgppe-accent-light: #E6B886;      /* Doré clair */
+  
+  /* Couleurs neutres sobres */
+  --dgppe-white: #ffffff;
+  --dgppe-gray-50: #f9fafb;
+  --dgppe-gray-100: #f3f4f6;
+  --dgppe-gray-200: #e5e7eb;
+  --dgppe-gray-300: #d1d5db;
+  --dgppe-gray-400: #9ca3af;
+  --dgppe-gray-500: #6b7280;
+  --dgppe-gray-600: #4b5563;
+  --dgppe-gray-700: #374151;
+  --dgppe-gray-800: #1f2937;
+  --dgppe-gray-900: #111827;
+  
+  --dgppe-text: #1f2937;              /* Texte principal */
+  --dgppe-text-light: #6b7280;        /* Texte secondaire */
+  --dgppe-text-muted: #9ca3af;        /* Texte discret */
+  
+  /* Couleurs de statut */
+  --dgppe-success: #10b981;
+  --dgppe-warning: #f59e0b;
+  --dgppe-danger: #ef4444;
+  --dgppe-info: #3b82f6;
+  
+  /* Ombres sobres */
+  --dgppe-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --dgppe-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --dgppe-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --dgppe-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  
+  /* Rayons de bordure */
+  --dgppe-radius-sm: 0.25rem;
+  --dgppe-radius: 0.5rem;
+  --dgppe-radius-md: 0.75rem;
+  --dgppe-radius-lg: 1rem;
+  
+  /* Espacement */
+  --dgppe-spacing-1: 0.25rem;
+  --dgppe-spacing-2: 0.5rem;
+  --dgppe-spacing-3: 0.75rem;
+  --dgppe-spacing-4: 1rem;
+  --dgppe-spacing-5: 1.25rem;
+  --dgppe-spacing-6: 1.5rem;
+  --dgppe-spacing-8: 2rem;
+  --dgppe-spacing-10: 2.5rem;
+  
+  /* Police */
+  --dgppe-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ==================== RESET ET BASE ==================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--dgppe-font-family);
+  color: var(--dgppe-text);
+  background-color: var(--dgppe-gray-50);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== TYPOGRAPHIE SOBRE ==================== */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 var(--dgppe-spacing-4) 0;
+  color: var(--dgppe-text);
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+p {
+  margin: 0 0 var(--dgppe-spacing-4) 0;
+  color: var(--dgppe-text);
+}
+
+/* ==================== BOUTONS SOBRES ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dgppe-spacing-2);
+  padding: var(--dgppe-spacing-2) var(--dgppe-spacing-4);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--dgppe-radius);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background: transparent;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--dgppe-primary);
+  color: white;
+  border-color: var(--dgppe-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--dgppe-primary-dark);
+  border-color: var(--dgppe-primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--dgppe-gray-100);
+  color: var(--dgppe-text);
+  border-color: var(--dgppe-gray-300);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--dgppe-gray-200);
+  border-color: var(--dgppe-gray-400);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--dgppe-primary);
+  border-color: var(--dgppe-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--dgppe-primary);
+  color: white;
+}
+
+.btn-sm {
+  padding: var(--dgppe-spacing-1) var(--dgppe-spacing-3);
+  font-size: 0.75rem;
+}
+
+.btn-lg {
+  padding: var(--dgppe-spacing-3) var(--dgppe-spacing-6);
+  font-size: 1rem;
+}
+
+/* ==================== CARTES SOBRES ==================== */
+.card {
+  background: var(--dgppe-white);
+  border-radius: var(--dgppe-radius-lg);
+  box-shadow: var(--dgppe-shadow);
+  border: 1px solid var(--dgppe-gray-200);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: var(--dgppe-spacing-4) var(--dgppe-spacing-6);
+  background: var(--dgppe-gray-50);
+  border-bottom: 1px solid var(--dgppe-gray-200);
+}
+
+.card-body {
+  padding: var(--dgppe-spacing-6);
+}
+
+.card-footer {
+  padding: var(--dgppe-spacing-4) var(--dgppe-spacing-6);
+  background: var(--dgppe-gray-50);
+  border-top: 1px solid var(--dgppe-gray-200);
+}
+
+/* ==================== FORMULAIRES SOBRES ==================== */
+.form-group {
+  margin-bottom: var(--dgppe-spacing-4);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--dgppe-spacing-2);
+  font-weight: 500;
+  color: var(--dgppe-text);
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--dgppe-spacing-2) var(--dgppe-spacing-3);
+  font-size: 0.875rem;
+  border: 1px solid var(--dgppe-gray-300);
+  border-radius: var(--dgppe-radius);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  background: var(--dgppe-white);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--dgppe-primary);
+  box-shadow: 0 0 0 3px rgba(46, 107, 107, 0.1);
+}
+
+/* ==================== BADGES SOBRES ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--dgppe-spacing-1) var(--dgppe-spacing-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--dgppe-radius);
+}
+
+.badge-primary {
+  background-color: rgba(46, 107, 107, 0.1);
+  color: var(--dgppe-primary-dark);
+}
+
+.badge-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+}
+
+.badge-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+/* ==================== TABLEAUX SOBRES ==================== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--dgppe-white);
+  border-radius: var(--dgppe-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--dgppe-shadow);
+}
+
+.table th,
+.table td {
+  padding: var(--dgppe-spacing-3) var(--dgppe-spacing-4);
+  text-align: left;
+  border-bottom: 1px solid var(--dgppe-gray-200);
+}
+
+.table th {
+  background: var(--dgppe-gray-50);
+  color: var(--dgppe-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.table tbody tr:hover {
+  background: var(--dgppe-gray-50);
+}
+
+/* ==================== UTILITIES ==================== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--dgppe-primary) !important; }
+.text-muted { color: var(--dgppe-text-muted) !important; }
+.text-success { color: var(--dgppe-success) !important; }
+.text-warning { color: var(--dgppe-warning) !important; }
+.text-danger { color: var(--dgppe-danger) !important; }
+
+.bg-white { background-color: var(--dgppe-white) !important; }
+.bg-gray-50 { background-color: var(--dgppe-gray-50) !important; }
+
+.shadow-sm { box-shadow: var(--dgppe-shadow-sm) !important; }
+.shadow { box-shadow: var(--dgppe-shadow) !important; }
+.shadow-md { box-shadow: var(--dgppe-shadow-md) !important; }
+
+.rounded { border-radius: var(--dgppe-radius) !important; }
+.rounded-lg { border-radius: var(--dgppe-radius-lg) !important; }
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-2 { margin-bottom: var(--dgppe-spacing-2) !important; }
+.mb-4 { margin-bottom: var(--dgppe-spacing-4) !important; }
+.mb-6 { margin-bottom: var(--dgppe-spacing-6) !important; }
+
+.p-4 { padding: var(--dgppe-spacing-4) !important; }
+.p-6 { padding: var(--dgppe-spacing-6) !important; }
+.px-4 { padding-left: var(--dgppe-spacing-4) !important; padding-right: var(--dgppe-spacing-4) !important; }
+.py-2 { padding-top: var(--dgppe-spacing-2) !important; padding-bottom: var(--dgppe-spacing-2) !important; }
+
+/* ==================== ANIMATIONS SUBTILES ==================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-down {
+  animation: slideDown 0.2s ease-out;
+}

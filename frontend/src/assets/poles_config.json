@@ -1,0 +1,20 @@
+{
+  "use_shapefile_data": false,
+  "fallback_reason": "GDAL dependency not available",
+  "available_poles": [
+    "Centre",
+    "Dakar",
+    "Diourbel-Louga",
+    "Nord",
+    "Nord-Est",
+    "Sud",
+    "Sud-Est"
+  ],
+  "data_source": "simplified_geometry",
+  "enhancement_available": true,
+  "enhancement_instructions": [
+    "Install GDAL and GeoPandas for precise geographical boundaries",
+    "Run: pip install geopandas matplotlib shapely fiona",
+    "Execute: python analyze_shapefiles.py --full-processing"
+  ]
+}

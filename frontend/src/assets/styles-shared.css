@@ -1,0 +1,175 @@
+/* === Thème général institutionnel (bleu DGPPE) === */
+body {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* === Conteneur principal des vues === */
+.container {
+  max-width: 1300px;
+  margin: 40px auto;
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 51, 102, 0.15);
+}
+
+/* === Titres === */
+h2 {
+  font-size: 1.6em;
+  color: #003366;
+  margin-bottom: 25px;
+  border-left: 5px solid #003366;
+  padding-left: 12px;
+}
+
+/* === Tableaux === */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  background-color: #fff;
+}
+
+th {
+  background-color: #003366;
+  color: #ffffff;
+  text-align: left;
+  padding: 12px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+tr:hover {
+  background-color: #f1f6fb;
+}
+
+/* === Boutons === */
+button {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #004c99;
+}
+
+button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+/* === Sélecteurs et champs texte === */
+select,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+textarea {
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-right: 8px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: #0066cc;
+  outline: none;
+}
+
+/* === Messages et alertes === */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #e6f4ea;
+  color: #256029;
+  border: 1px solid #b7dfb9;
+}
+
+.alert-error {
+  background-color: #fdecea;
+  color: #611a15;
+  border: 1px solid #f5c6cb;
+}
+
+/* === Formulaires de soumission === */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+label {
+  font-weight: 600;
+  color: #003366;
+  margin-bottom: 3px;
+}
+
+input[type="file"] {
+  background-color: #f8f9fa;
+  padding: 6px;
+  border: 1px dashed #ccc;
+  cursor: pointer;
+}
+
+/* === Actions dans les tableaux === */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.decision-select {
+  min-width: 160px;
+}
+
+/* === Ajustements mobiles === */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  th,
+  td {
+    font-size: 0.85em;
+  }
+
+  button {
+    font-size: 0.8em;
+    padding: 6px 10px;
+  }
+
+  h2 {
+    font-size: 1.3em;
+  }
+}

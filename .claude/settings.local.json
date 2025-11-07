@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(chmod:*)",
+      "Bash(./lancer_serveurs.sh:*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(python add_auteur_nom_column.py:*)",
+      "Bash(pkill:*)",
+      "Bash(python add_missing_columns.py:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(sqlite3:*)",
+      "Read(//Users/abou/Documents/DGPPE/2025/**)",
+      "Read(//private/tmp/**)",
+      "Bash(lsof:*)",
+      "Bash(awk:*)",
+      "Bash(kill:*)",
+      "Bash(cat:*)",
+      "Read(//tmp/**)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run build:*)",
+      "Bash(cd:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

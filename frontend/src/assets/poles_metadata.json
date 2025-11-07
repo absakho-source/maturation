@@ -1,0 +1,124 @@
+{
+  "source": "Regions_Poles_shape",
+  "detected_poles": [
+    "DAKAR",
+    "DIOURBEL",
+    "DIOURBEL-LOUGA",
+    "FATICK",
+    "CENTRE",
+    "KAOLACK",
+    "KEDOUGOU",
+    "SUD-EST",
+    "KOLDA",
+    "SUD",
+    "LOUGA",
+    "MATAM",
+    "NORD-EST",
+    "SAINT-LOUIS",
+    "NORD",
+    "SEDHIOU"
+  ],
+  "mapped_poles": [
+    "Centre",
+    "Dakar",
+    "Diourbel-Louga",
+    "Nord",
+    "Nord-Est",
+    "Sud",
+    "Sud-Est"
+  ],
+  "records": [
+    {
+      "SUPERFICE_": "547",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "DAKAR",
+      "POLE": "DAKAR"
+    },
+    {
+      "SUPERFICE_": "4824",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "DIOURBEL",
+      "POLE": "DIOURBEL-LOUGA"
+    },
+    {
+      "SUPERFICE_": "6849",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "FATICK",
+      "POLE": "CENTRE"
+    },
+    {
+      "SUPERFICE_": "5357",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "KAOLACK",
+      "POLE": "CENTRE"
+    },
+    {
+      "SUPERFICE_": "16911",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "KEDOUGOU",
+      "POLE": "SUD-EST"
+    },
+    {
+      "SUPERFICE_": "13771",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "KOLDA",
+      "POLE": "SUD"
+    },
+    {
+      "SUPERFICE_": "24889",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "LOUGA",
+      "POLE": "DIOURBEL-LOUGA"
+    },
+    {
+      "SUPERFICE_": "29445",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "MATAM",
+      "POLE": "NORD-EST"
+    },
+    {
+      "SUPERFICE_": "19241",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "SAINT-LOUIS",
+      "POLE": "NORD"
+    },
+    {
+      "SUPERFICE_": "7341",
+      "Admi1": "0",
+      "Admi2": "0",
+      "Admi3": "0",
+      "Admi4": "0",
+      "NOMREG": "SEDHIOU",
+      "POLE": "SUD"
+    }
+  ],
+  "integration_status": "metadata_only",
+  "notes": "Données géographiques précises disponibles mais nécessitent GeoPandas pour extraction complète"
+}

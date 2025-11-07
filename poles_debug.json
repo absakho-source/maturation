@@ -1,0 +1,84 @@
+{
+  "poles_list": [
+    "Dakar",
+    "Diourbel-Louga",
+    "Centre",
+    "Sud-Est",
+    "Sud",
+    "Nord-Est",
+    "Nord",
+    "Thiès"
+  ],
+  "bounds": {
+    "minLon": -17.53014710953,
+    "maxLon": -11.342469723399697,
+    "minLat": 12.307859593576557,
+    "maxLat": 16.693711865099633
+  },
+  "centers": {
+    "Dakar": [
+      -17.354115135449987,
+      14.720834459673704
+    ],
+    "Diourbel-Louga": [
+      -15.655502014186228,
+      15.131830267046967
+    ],
+    "Centre": [
+      -15.947069544852988,
+      14.122661446302335
+    ],
+    "Sud-Est": [
+      -12.680107625849715,
+      13.242393506332064
+    ],
+    "Sud": [
+      -15.02375990211837,
+      12.987779849770368
+    ],
+    "Nord-Est": [
+      -13.83758084962912,
+      15.431904991193514
+    ],
+    "Nord": [
+      -15.188435045195508,
+      16.332012674353805
+    ],
+    "Thiès": [
+      -16.751999903568425,
+      14.74836316221514
+    ]
+  },
+  "regions_per_pole": {
+    "Dakar": [
+      "DAKAR"
+    ],
+    "Diourbel-Louga": [
+      "DIOURBEL",
+      "LOUGA"
+    ],
+    "Centre": [
+      "FATICK",
+      "KAOLACK",
+      "KAFFRINE"
+    ],
+    "Sud-Est": [
+      "KEDOUGOU",
+      "TAMBACOUNDA"
+    ],
+    "Sud": [
+      "KOLDA",
+      "SEDHIOU",
+      "ZIGUINCHOR"
+    ],
+    "Nord-Est": [
+      "MATAM"
+    ],
+    "Nord": [
+      "SAINT-LOUIS"
+    ],
+    "Thiès": [
+      "THIES"
+    ]
+  }
+}
