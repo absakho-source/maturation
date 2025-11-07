@@ -3,6 +3,7 @@ Script d'initialisation des données de démonstration
 Crée des utilisateurs et projets par défaut pour tester l'application
 """
 from datetime import datetime
+import os
 from db import db
 from models import User, Project
 from app import app
@@ -15,12 +16,22 @@ def init_demo_data():
         existing_users = User.query.count()
         existing_projects = Project.query.count()
 
-        if existing_users > 0:
+        # Forcer la réinitialisation si FORCE_INIT=true dans les variables d'environnement
+        force_init = os.environ.get('FORCE_INIT', 'false').lower() == 'true'
+
+        if existing_users > 0 and not force_init:
             print(f"[DEMO] ✅ Base de données déjà initialisée:")
             print(f"  - {existing_users} utilisateurs existants")
             print(f"  - {existing_projects} projets existants")
             print("[DEMO] Conservation des données existantes")
             return
+
+        if force_init and existing_users > 0:
+            print(f"[DEMO] ⚠️ FORCE_INIT activé - Suppression des données existantes...")
+            Project.query.delete()
+            User.query.delete()
+            db.session.commit()
+            print("[DEMO] Données supprimées")
 
         print("[DEMO] Création des utilisateurs de démonstration...")
 
@@ -89,6 +100,17 @@ def init_demo_data():
                 'display_name': 'CT DGPPE',
                 'nom_complet': 'Abdou Kane',
                 'telephone': '+221 77 789 01 23',
+                'statut_compte': 'verifie'
+            },
+            {
+                'username': 'abou.sakho@economie.gouv.sn',
+                'password': 'demo123',
+                'role': 'soumissionnaire',
+                'display_name': 'Abou Sakho',
+                'nom_complet': 'Abou Sakho',
+                'telephone': '+221 77 000 00 00',
+                'type_structure': 'ministere',
+                'nom_structure': 'DGPPE',
                 'statut_compte': 'verifie'
             }
         ]
