@@ -1,12 +1,20 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
 from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image as RLImage
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me-in-production"
@@ -1934,6 +1942,277 @@ def get_performance_metrics():
             "validationRate": 0,
             "averageEvaluationTime": "0 jours"
         }), 500
+
+@app.route('/api/stats/rapport-pdf', methods=['GET'])
+def generer_rapport_statistiques():
+    """Génère un rapport PDF complet des statistiques de la plateforme"""
+    try:
+        # Récupérer toutes les statistiques
+        total_projets = Project.query.count()
+        projets_soumis = Project.query.filter_by(statut='soumis').count()
+        projets_en_evaluation = Project.query.filter(
+            Project.statut.in_(['assigné', 'en évaluation', 'validé'])
+        ).count()
+        projets_approuves = Project.query.filter_by(statut='approuvé').count()
+        projets_rejetes = Project.query.filter_by(statut='rejeté').count()
+
+        # Statistiques par secteur
+        from sqlalchemy import func
+        stats_secteurs = db.session.query(
+            Project.secteur,
+            func.count(Project.id).label('count'),
+            func.sum(Project.cout_estimatif).label('total_cout')
+        ).group_by(Project.secteur).all()
+
+        # Statistiques par pôle
+        stats_poles = db.session.query(
+            Project.poles,
+            func.count(Project.id).label('count'),
+            func.sum(Project.cout_estimatif).label('total_cout')
+        ).group_by(Project.poles).all()
+
+        # Statistiques utilisateurs
+        total_users = User.query.count()
+        users_by_role = db.session.query(
+            User.role,
+            func.count(User.id).label('count')
+        ).group_by(User.role).all()
+
+        # Créer le PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm,
+                                topMargin=2*cm, bottomMargin=2*cm)
+
+        # Conteneur pour les éléments du PDF
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Style personnalisé pour le titre
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            textColor=colors.HexColor('#2c3e50'),
+            spaceAfter=30,
+            alignment=1  # Centre
+        )
+
+        # Style pour les sous-titres
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#34495e'),
+            spaceAfter=12,
+            spaceBefore=12
+        )
+
+        # En-tête avec logo (identique au site)
+        logo_path = os.path.join(os.path.dirname(__file__), 'static', 'logo-dgppe.png')
+
+        # Créer un tableau pour l'en-tête avec logo et textes
+        if os.path.exists(logo_path):
+            logo = RLImage(logo_path, width=1.8*cm, height=1.8*cm)
+
+            # Styles pour les textes de l'en-tête
+            ministry_style = ParagraphStyle(
+                'MinistryStyle',
+                parent=styles['Normal'],
+                fontSize=10,
+                textColor=colors.HexColor('#2c3e50'),
+                fontName='Helvetica-Bold'
+            )
+
+            direction_style = ParagraphStyle(
+                'DirectionStyle',
+                parent=styles['Normal'],
+                fontSize=9,
+                textColor=colors.HexColor('#5a6c7d')
+            )
+
+            platform_style = ParagraphStyle(
+                'PlatformStyle',
+                parent=styles['Normal'],
+                fontSize=11,
+                textColor=colors.HexColor('#1e40af'),
+                fontName='Helvetica-Bold'
+            )
+
+            # Tableau pour l'en-tête
+            header_data = [[
+                logo,
+                Paragraph("Ministère de l'Économie, du Plan et de la Coopération<br/>" +
+                         "<font size=9 color='#5a6c7d'>Direction Générale de la Planification des Politiques Économiques</font><br/>" +
+                         "<font size=11 color='#1e40af'><b>Plateforme de Maturation des Projets Publics</b></font>",
+                         ministry_style)
+            ]]
+
+            header_table = Table(header_data, colWidths=[2.2*cm, 14*cm])
+            header_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+                ('ALIGN', (1, 0), (1, 0), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('TOPPADDING', (0, 0), (-1, -1), 0),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ]))
+
+            elements.append(header_table)
+        else:
+            # Fallback si le logo n'existe pas
+            elements.append(Paragraph("Ministère de l'Économie, du Plan et de la Coopération", title_style))
+            elements.append(Paragraph("Direction Générale de la Planification des Politiques Économiques", styles['Normal']))
+            elements.append(Paragraph("Plateforme de Maturation des Projets Publics", styles['Normal']))
+
+        elements.append(Spacer(1, 0.8*cm))
+
+        # Ligne de séparation
+        line_table = Table([['']], colWidths=[17*cm])
+        line_table.setStyle(TableStyle([
+            ('LINEABOVE', (0, 0), (-1, 0), 2, colors.HexColor('#1e40af')),
+        ]))
+        elements.append(line_table)
+        elements.append(Spacer(1, 0.8*cm))
+
+        # Titre du rapport
+        elements.append(Paragraph("RAPPORT DE STATISTIQUES", title_style))
+        elements.append(Paragraph(f"Période : {datetime.now().strftime('%d/%m/%Y')}", styles['Normal']))
+        elements.append(Spacer(1, 1*cm))
+
+        # 1. Vue d'ensemble
+        elements.append(Paragraph("1. VUE D'ENSEMBLE DES PROJETS", subtitle_style))
+
+        data_overview = [
+            ['Indicateur', 'Nombre', 'Pourcentage'],
+            ['Total des projets', str(total_projets), '100%'],
+            ['Projets soumis', str(projets_soumis), f'{round(projets_soumis/total_projets*100 if total_projets > 0 else 0, 1)}%'],
+            ['Projets en évaluation', str(projets_en_evaluation), f'{round(projets_en_evaluation/total_projets*100 if total_projets > 0 else 0, 1)}%'],
+            ['Projets approuvés', str(projets_approuves), f'{round(projets_approuves/total_projets*100 if total_projets > 0 else 0, 1)}%'],
+            ['Projets rejetés', str(projets_rejetes), f'{round(projets_rejetes/total_projets*100 if total_projets > 0 else 0, 1)}%'],
+        ]
+
+        table_overview = Table(data_overview, colWidths=[8*cm, 3*cm, 3*cm])
+        table_overview.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table_overview)
+        elements.append(Spacer(1, 1*cm))
+
+        # 2. Répartition par secteur
+        elements.append(Paragraph("2. RÉPARTITION PAR SECTEUR", subtitle_style))
+
+        data_secteurs = [['Secteur', 'Nombre de projets', 'Coût estimatif (FCFA)']]
+        for secteur, count, cout in stats_secteurs:
+            cout_str = f'{int(cout):,}' if cout else '0'
+            data_secteurs.append([secteur or 'Non spécifié', str(count), cout_str])
+
+        table_secteurs = Table(data_secteurs, colWidths=[7*cm, 4*cm, 5*cm])
+        table_secteurs.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#27ae60')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightgreen),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table_secteurs)
+        elements.append(Spacer(1, 1*cm))
+
+        # 3. Répartition par pôle territorial
+        elements.append(Paragraph("3. RÉPARTITION PAR PÔLE TERRITORIAL", subtitle_style))
+
+        data_poles = [['Pôle Territorial', 'Nombre de projets', 'Coût estimatif (FCFA)']]
+        for pole, count, cout in stats_poles:
+            cout_str = f'{int(cout):,}' if cout else '0'
+            data_poles.append([pole or 'Non spécifié', str(count), cout_str])
+
+        table_poles = Table(data_poles, colWidths=[7*cm, 4*cm, 5*cm])
+        table_poles.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table_poles)
+        elements.append(Spacer(1, 1*cm))
+
+        # 4. Statistiques utilisateurs
+        elements.append(Paragraph("4. STATISTIQUES UTILISATEURS", subtitle_style))
+
+        role_names = {
+            'admin': 'Administrateur',
+            'soumissionnaire': 'Soumissionnaire',
+            'evaluateur': 'Évaluateur',
+            'secretariatsct': 'Secrétariat SCT',
+            'presidencesct': 'Présidence SCT',
+            'presidencecomite': 'Présidence Comité'
+        }
+
+        data_users = [['Rôle', 'Nombre d\'utilisateurs']]
+        for role, count in users_by_role:
+            role_display = role_names.get(role, role)
+            data_users.append([role_display, str(count)])
+        data_users.append(['Total utilisateurs', str(total_users)])
+
+        table_users = Table(data_users, colWidths=[10*cm, 4*cm])
+        table_users.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e74c3c')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -2), colors.lightcoral),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#c0392b')),
+            ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table_users)
+        elements.append(Spacer(1, 1*cm))
+
+        # Pied de page
+        elements.append(Spacer(1, 2*cm))
+        elements.append(Paragraph("_______________________________________________", styles['Normal']))
+        elements.append(Paragraph(f"Rapport généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+        elements.append(Paragraph("Direction Générale de la Planification des Politiques Économiques (DGPPE)", styles['Normal']))
+
+        # Construire le PDF
+        doc.build(elements)
+
+        # Préparer la réponse
+        buffer.seek(0)
+        filename = f"rapport_statistiques_dgppe_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 # Import and register evaluation routes
 try:

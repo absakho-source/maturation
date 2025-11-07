@@ -1,8 +1,18 @@
 <template>
   <div class="gestion-comptes-page">
     <div class="header-section">
-      <h1>Gestion des comptes soumissionnaires</h1>
-      <p class="subtitle">Validation et gestion des comptes utilisateurs</p>
+      <div class="header-with-back">
+        <button @click="retourDashboard" class="btn-retour">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Retour au tableau de bord
+        </button>
+        <div class="header-content">
+          <h1>Gestion des comptes soumissionnaires</h1>
+          <p class="subtitle">Validation et gestion des comptes utilisateurs</p>
+        </div>
+      </div>
     </div>
 
     <!-- Filtres -->
@@ -204,7 +214,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
+
+const router = useRouter()
 
 // État
 const comptes = ref([])
@@ -362,6 +375,18 @@ function formatDate(dateStr) {
     minute: '2-digit'
   })
 }
+
+function retourDashboard() {
+  // Déterminer la route du dashboard selon le rôle
+  const roleRoutes = {
+    admin: '/admin',
+    presidencesct: '/presidencesct',
+    secretariatsct: '/secretariatsct',
+    presidencecomite: '/presidencecomite'
+  }
+  const route = roleRoutes[user?.role] || '/'
+  router.push(route)
+}
 </script>
 
 <style scoped>
@@ -375,7 +400,43 @@ function formatDate(dateStr) {
   margin-bottom: 2rem;
 }
 
-.header-section h1 {
+.header-with-back {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: white;
+  color: var(--dgppe-primary, #1e40af);
+  border: 2px solid var(--dgppe-primary, #1e40af);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.btn-retour:hover {
+  background: var(--dgppe-primary, #1e40af);
+  color: white;
+  transform: translateX(-4px);
+}
+
+.btn-retour svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-retour:hover svg {
+  transform: translateX(-4px);
+}
+
+.header-content h1 {
   font-size: 2rem;
   color: #1a202c;
   margin-bottom: 0.5rem;

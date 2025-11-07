@@ -13,8 +13,13 @@ def init_demo_data():
     with app.app_context():
         # Vérifier si des utilisateurs existent déjà
         existing_users = User.query.count()
+        existing_projects = Project.query.count()
+
         if existing_users > 0:
-            print(f"[DEMO] {existing_users} utilisateurs déjà présents, skip initialisation")
+            print(f"[DEMO] ✅ Base de données déjà initialisée:")
+            print(f"  - {existing_users} utilisateurs existants")
+            print(f"  - {existing_projects} projets existants")
+            print("[DEMO] Conservation des données existantes")
             return
 
         print("[DEMO] Création des utilisateurs de démonstration...")

@@ -3,15 +3,25 @@
     <div class="secretariat-container">
       <!-- Tableau de bord statistiques -->
       <div class="dashboard-section">
-        <h2 class="dashboard-title">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 3v5h5"/>
-            <path d="M3 8s2-4 8-4 8 4 8 4"/>
-            <path d="M21 21v-5h-5"/>
-            <path d="M21 16s-2 4-8 4-8-4-8-4"/>
-          </svg>
-          Tableau de bord - Secrétariat SCT
-        </h2>
+        <div class="header-row">
+          <h2 class="dashboard-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v5h5"/>
+              <path d="M3 8s2-4 8-4 8 4 8 4"/>
+              <path d="M21 21v-5h-5"/>
+              <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+            </svg>
+            Tableau de bord - Secrétariat SCT
+          </h2>
+          <button @click="telechargerRapport" class="btn-download-rapport">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Télécharger Rapport PDF
+          </button>
+        </div>
         
         <!-- Statistiques principales -->
         <div class="stats">
@@ -960,6 +970,26 @@ export default {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       }).format(value) + ' F CFA';
+    },
+    async telechargerRapport() {
+      try {
+        const response = await fetch('/api/stats/rapport-pdf');
+        if (!response.ok) {
+          throw new Error('Erreur lors de la génération du rapport');
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `rapport_statistiques_dgppe_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Erreur téléchargement rapport:', error);
+        alert('Erreur lors du téléchargement du rapport PDF');
+      }
     }
   }
 };
@@ -977,6 +1007,40 @@ export default {
   margin-bottom: 24px;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.btn-download-rapport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--dgppe-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-download-rapport:hover {
+  background: var(--dgppe-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-download-rapport svg {
+  width: 18px;
+  height: 18px;
+}
+
 .dashboard-title {
   display: flex;
   align-items: center;
@@ -984,7 +1048,7 @@ export default {
   font-size: 24px;
   font-weight: 600;
   color: var(--dgppe-primary);
-  margin-bottom: 24px;
+  margin-bottom: 0;
   border-bottom: 2px solid var(--dgppe-accent);
   padding-bottom: 12px;
 }
