@@ -59,3 +59,20 @@ backend/static/uploads/
 # Fichiers temporaires
 *.tmp
 *.bak
+
+# Claude Code configuration
+.claude/
+
+# Fichiers de test et debug
+test_*.py
+*_test.py
+creer_*.py
+generer_*.py
+migrate_*.py
+update_*.py
+add_*.py
+analyze_*.py
+rapport_*.py
+*_old.vue
+*.json.debug
+poles_debug.json
