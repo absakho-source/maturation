@@ -39,7 +39,7 @@ class Project(db.Model):
     fichiers = db.Column(db.Text, nullable=True)
     statut = db.Column(db.String(100), default="soumis", nullable=False)
     auteur_nom = db.Column(db.String(100), nullable=True)  # Réajouté pour compatibilité
-    soumissionnaire_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    soumissionnaire_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     evaluateur_nom = db.Column(db.String(100), nullable=True)
     avis = db.Column(db.String(100), nullable=True)  # favorable, favorable sous conditions, défavorable, compléments demandés
     avis_presidencesct = db.Column(db.String(100), nullable=True)
