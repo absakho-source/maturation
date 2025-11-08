@@ -168,7 +168,8 @@ def init_demo_data():
                 'poles': 'Diourbel-Louga',
                 'cout_estimatif': 1900000000.0,
                 'budget': 1900000000.0,
-                'statut': 'valide_comite',
+                'statut': 'approuvé',
+                'decision_finale': 'confirme',
                 'auteur_nom': 'Ministère Agriculture',
                 'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
                 'organisme_tutelle': 'Ministère de l\'Éducation Nationale'
@@ -180,7 +181,8 @@ def init_demo_data():
                 'poles': 'Centre (Kaolack, Fatick, Kaffrine)',
                 'cout_estimatif': 720000000.0,
                 'budget': 720000000.0,
-                'statut': 'valide_comite',
+                'statut': 'approuvé',
+                'decision_finale': 'confirme',
                 'auteur_nom': 'Ministère Agriculture',
                 'soumissionnaire_id': soumissionnaire.id if soumissionnaire else None,
                 'organisme_tutelle': 'Ministère de l\'Agriculture'

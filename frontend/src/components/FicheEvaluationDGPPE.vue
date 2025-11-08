@@ -415,8 +415,9 @@ export default {
     
     async genererPDF() {
       try {
-        // Utiliser l'URL complète du backend car window.open ne passe pas par le proxy Vite
-        const url = `http://127.0.0.1:5002/api/projects/${this.project.id}/fiche-evaluation/pdf`;
+        // Utiliser l'URL du backend (configurée via VITE_API_URL en production)
+        const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+        const url = `${API_BASE_URL}/api/projects/${this.project.id}/fiche-evaluation/pdf`;
         window.open(url, '_blank');
       } catch (error) {
         console.error('Erreur:', error);

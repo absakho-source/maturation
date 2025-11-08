@@ -1490,9 +1490,15 @@ def get_project_documents(project_id):
         # Récupérer tous les documents du projet
         documents = DocumentProjet.query.filter_by(project_id=project_id).order_by(DocumentProjet.date_ajout.desc()).all()
 
-        # Filtrer selon le rôle : soumissionnaire ne voit que ses propres documents
+        # Filtrer selon le rôle : soumissionnaire voit tous les documents de soumissionnaire pour ce projet
         if user_role == "soumissionnaire":
-            documents = [doc for doc in documents if doc.auteur_nom == user_name]
+            # Vérifier que l'utilisateur a accès à ce projet (est l'auteur)
+            if project.auteur_nom == user_name or project.auteur == user_name:
+                # Voir tous les documents avec auteur_role soumissionnaire pour ce projet
+                documents = [doc for doc in documents if doc.auteur_role == "soumissionnaire"]
+            else:
+                # Pas d'accès à ce projet
+                documents = []
         # secteur_territorial voit les documents du soumissionnaire et ses propres documents
         elif user_role == "secteur_territorial":
             documents = [doc for doc in documents if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]]
@@ -1546,7 +1552,13 @@ def get_project_documents(project_id):
 
             # Réappliquer le filtrage après rechargement
             if user_role == "soumissionnaire":
-                documents = [doc for doc in documents if doc.auteur_nom == user_name]
+                # Vérifier que l'utilisateur a accès à ce projet (est l'auteur)
+                if project.auteur_nom == user_name or project.auteur == user_name:
+                    # Voir tous les documents avec auteur_role soumissionnaire pour ce projet
+                    documents = [doc for doc in documents if doc.auteur_role == "soumissionnaire"]
+                else:
+                    # Pas d'accès à ce projet
+                    documents = []
             elif user_role == "secteur_territorial":
                 documents = [doc for doc in documents if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]]
 

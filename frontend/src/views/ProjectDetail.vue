@@ -335,8 +335,9 @@ export default {
         alert('L\'évaluation préalable doit être positive avant d\'accéder à la fiche d\'évaluation détaillée');
         return;
       }
-      // Utiliser l'URL complète du backend car window.open ne passe pas par le proxy Vite
-      window.open(`http://127.0.0.1:5002/api/projects/${this.project.id}/fiche-evaluation/pdf`, '_blank');
+      // Utiliser l'URL du backend (configurée via VITE_API_URL en production)
+      const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+      window.open(`${API_BASE_URL}/api/projects/${this.project.id}/fiche-evaluation/pdf`, '_blank');
     },
 
     peutAccederFicheEvaluation() {
