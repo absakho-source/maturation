@@ -24,7 +24,21 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + app.config["DB_PATH"]
 print("Using DB:", app.config["DB_PATH"])
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.abspath(os.path.dirname(__file__)), "uploads")
-CORS(app)
+
+# Configuration CORS pour permettre les requêtes depuis le frontend
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://127.0.0.1:5173",  # Dev local
+            "http://localhost:5173",
+            "https://maturation-frontend.onrender.com"  # Production
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
+
 db.init_app(app)
 
 # Fonction pour générer le numéro de projet automatiquement
