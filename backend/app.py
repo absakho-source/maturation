@@ -18,12 +18,26 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me-in-production"
-# Unifie le chemin de la DB et log pour vérifier
-app.config["DB_PATH"] = os.path.join(os.path.abspath(os.path.dirname(__file__)), "maturation.db")
+
+# Configuration du stockage persistant
+# En production Render, utilise /data (disque persistant)
+# En local, utilise le dossier backend
+DATA_DIR = os.environ.get("DATA_DIR", os.path.abspath(os.path.dirname(__file__)))
+print(f"[CONFIG] DATA_DIR: {DATA_DIR}")
+
+# Créer le dossier data s'il n'existe pas
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Configuration de la base de données
+app.config["DB_PATH"] = os.path.join(DATA_DIR, "maturation.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + app.config["DB_PATH"]
-print("Using DB:", app.config["DB_PATH"])
+print(f"[CONFIG] Using DB: {app.config['DB_PATH']}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["UPLOAD_FOLDER"] = os.path.join(os.path.abspath(os.path.dirname(__file__)), "uploads")
+
+# Configuration du dossier uploads
+app.config["UPLOAD_FOLDER"] = os.path.join(DATA_DIR, "uploads")
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+print(f"[CONFIG] Using UPLOAD_FOLDER: {app.config['UPLOAD_FOLDER']}")
 
 # Configuration CORS pour permettre les requêtes depuis le frontend
 CORS(app, resources={
