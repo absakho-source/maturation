@@ -19,7 +19,8 @@ def init_demo_data():
         # Forcer la réinitialisation si FORCE_INIT=true dans les variables d'environnement
         force_init = os.environ.get('FORCE_INIT', 'false').lower() == 'true'
 
-        if existing_users > 0 and not force_init:
+        # Ne quitter que si TOUS les utilisateurs ET projets existent déjà (pas de FORCE_INIT)
+        if existing_users > 7 and existing_projects > 0 and not force_init:
             print(f"[DEMO] ✅ Base de données déjà initialisée:")
             print(f"  - {existing_users} utilisateurs existants")
             print(f"  - {existing_projects} projets existants")
@@ -32,99 +33,9 @@ def init_demo_data():
             User.query.delete()
             db.session.commit()
             print("[DEMO] Données supprimées")
+            existing_users = 0  # Reset le compteur après suppression
 
-        print("[DEMO] Création des utilisateurs de démonstration...")
-
-        # Créer les utilisateurs par défaut
-        users_data = [
-            {
-                'username': 'soumissionnaire',
-                'password': 'demo123',
-                'role': 'soumissionnaire',
-                'display_name': 'Ministère Agriculture',
-                'nom_complet': 'Direction Planning Agricole',
-                'telephone': '+221 77 123 45 67',
-                'type_structure': 'ministere',
-                'nom_structure': 'Ministère de l\'Agriculture',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'evaluateur1',
-                'password': 'demo123',
-                'role': 'evaluateur',
-                'display_name': 'Agent DPSE 1',
-                'nom_complet': 'Mamadou Diop',
-                'telephone': '+221 77 234 56 78',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'evaluateur2',
-                'password': 'demo123',
-                'role': 'evaluateur',
-                'display_name': 'Agent DPSE 2',
-                'nom_complet': 'Fatou Sall',
-                'telephone': '+221 77 345 67 89',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'secretariatsct',
-                'password': 'demo123',
-                'role': 'secretariatsct',
-                'display_name': 'Chef Division DP',
-                'nom_complet': 'Amadou Ba',
-                'telephone': '+221 77 456 78 90',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'presidencesct',
-                'password': 'demo123',
-                'role': 'presidencesct',
-                'display_name': 'Directeur Planification',
-                'nom_complet': 'Ousmane Ndiaye',
-                'telephone': '+221 77 567 89 01',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'presidencecomite',
-                'password': 'demo123',
-                'role': 'presidencecomite',
-                'display_name': 'DG DGPPE',
-                'nom_complet': 'Awa Thiam',
-                'telephone': '+221 77 678 90 12',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'admin',
-                'password': 'demo123',
-                'role': 'admin',
-                'display_name': 'CT DGPPE',
-                'nom_complet': 'Abdou Kane',
-                'telephone': '+221 77 789 01 23',
-                'statut_compte': 'verifie'
-            },
-            {
-                'username': 'abou.sakho@economie.gouv.sn',
-                'password': 'demo123',
-                'role': 'soumissionnaire',
-                'display_name': 'Abou Sakho',
-                'nom_complet': 'Abou Sakho',
-                'telephone': '+221 77 000 00 00',
-                'type_structure': 'ministere',
-                'nom_structure': 'DGPPE',
-                'statut_compte': 'verifie'
-            }
-        ]
-
-        created_users = []
-        for user_data in users_data:
-            user = User(**user_data)
-            db.session.add(user)
-            created_users.append(user)
-
-        db.session.commit()
-        print(f"[DEMO] ✅ {len(created_users)} utilisateurs créés")
-
-        # Créer quelques projets de démonstration
+        # Les utilisateurs sont créés par app.py, on se concentre sur les projets
         print("[DEMO] Création de projets de démonstration...")
 
         soumissionnaire = User.query.filter_by(username='soumissionnaire').first()
