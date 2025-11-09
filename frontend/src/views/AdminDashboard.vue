@@ -412,7 +412,7 @@ export default {
         "Sud (Ziguinchor, Sédhiou, Kolda)",
         "Sud-Est (Tambacounda, Kédougou)",
         "Nord (Saint-Louis)",
-        "Nord-Est à Matam",
+        "Nord-Est (Matam)",
       ],
     };
   },
