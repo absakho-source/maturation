@@ -1,42 +1,27 @@
 services:
-  # Backend API (Python/Flask)
+  # Backend API
   - type: web
     name: maturation-backend
-    runtime: python
-    region: frankfurt  # ou oregon, singapore selon votre préférence
-    buildCommand: "cd backend && pip install -r requirements.txt"
+    env: python
+    region: oregon
+    buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && bash start.sh"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 5000
-    healthCheckPath: /api/projets
-    autoDeploy: true
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: maturation-data
+      mountPath: /data
+      sizeGB: 1
 
-  # Frontend (Vue.js) - Static Site
+  # Frontend
   - type: web
     name: maturation-frontend
-    runtime: static
-    region: frankfurt
+    env: static
+    region: oregon
     buildCommand: "cd frontend && npm install && npm run build"
     staticPublishPath: ./frontend/dist
-    envVars:
-      - key: NODE_VERSION
-        value: 18.18.0
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: maturation-backend
-          envVarKey: RENDER_EXTERNAL_URL
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
-    autoDeploy: true
