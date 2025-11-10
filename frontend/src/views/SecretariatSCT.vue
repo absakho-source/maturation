@@ -582,6 +582,25 @@
                 </p>
                 <p v-if="projet.evaluation_prealable_commentaires"><strong>Commentaires:</strong> {{ projet.evaluation_prealable_commentaires }}</p>
                 <p class="eval-date" v-if="projet.evaluation_prealable_date">{{ new Date(projet.evaluation_prealable_date).toLocaleString('fr-FR') }}</p>
+
+                <!-- Si c'est un rejet proposé (pas encore validé), afficher un bouton de validation -->
+                <div v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="validation-rejet">
+                  <p class="alert-warning">⚠️ Ce rejet a été proposé par l'évaluateur et attend votre validation.</p>
+                  <label class="commentaire-label">Commentaires de validation (optionnel):</label>
+                  <textarea
+                    v-model="evaluationPrealableCommentaires[projet.id]"
+                    rows="2"
+                    placeholder="Ajouter des commentaires supplémentaires si nécessaire..."
+                    class="commentaire-textarea"
+                  ></textarea>
+                  <button
+                    @click="validerRejet(projet.id)"
+                    class="btn-danger-validation"
+                    :disabled="envoiEvaluationPrealable[projet.id]"
+                  >
+                    ✅ Valider le rejet définitif
+                  </button>
+                </div>
               </div>
 
               <!-- Section d'évaluation complète (uniquement si dossier évaluable) -->
@@ -1090,10 +1109,48 @@ export default {
         } else if (decision === "complements_requis") {
           message = "📝 Compléments demandés. Le soumissionnaire sera notifié.";
         } else if (decision === "dossier_rejete") {
-          message = "❌ Dossier rejeté. Le soumissionnaire sera notifié.";
+          message = "❌ Rejet validé. Le soumissionnaire a été notifié.";
         }
 
         alert(message);
+        this.evaluationPrealableCommentaires[projectId] = "";
+        this.loadProjects();
+      } catch (error) {
+        alert("Erreur: " + error.message);
+      } finally {
+        this.envoiEvaluationPrealable[projectId] = false;
+      }
+    },
+
+    // Méthode pour valider un rejet proposé par l'évaluateur
+    async validerRejet(projectId) {
+      const commentaire = (this.evaluationPrealableCommentaires[projectId] || "").trim();
+
+      if (!confirm("Êtes-vous sûr de vouloir valider ce rejet définitivement ? Le soumissionnaire sera notifié.")) {
+        return;
+      }
+
+      this.envoiEvaluationPrealable[projectId] = true;
+
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+        const response = await fetch(`/api/projects/${projectId}/evaluation-prealable`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            decision: "dossier_rejete",
+            commentaires: commentaire,
+            evaluateur: user.username,
+            role: user.role
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Erreur lors de la validation");
+        }
+
+        alert("✅ Rejet validé. Le soumissionnaire a été notifié.");
         this.evaluationPrealableCommentaires[projectId] = "";
         this.loadProjects();
       } catch (error) {
@@ -2111,5 +2168,50 @@ export default {
   font-size: 13px;
   color: #6b7280;
   font-style: italic;
+}
+
+/* Styles pour la validation de rejet */
+.validation-rejet {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 2px solid #fca5a5;
+  border-radius: 8px;
+}
+
+.alert-warning {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fee2e2;
+  border-left: 4px solid #dc2626;
+  border-radius: 4px;
+}
+
+.btn-danger-validation {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.75rem;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger-validation:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.btn-danger-validation:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

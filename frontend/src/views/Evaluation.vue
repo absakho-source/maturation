@@ -224,7 +224,7 @@ export default {
         } else if (decision === "complements_requis") {
           message = "Compléments demandés. Le soumissionnaire a été notifié.";
         } else if (decision === "dossier_rejete") {
-          message = "Dossier rejeté. Le soumissionnaire a été notifié.";
+          message = "Rejet proposé. En attente de validation par le Secrétariat SCT.";
         }
         alert(message);
 
