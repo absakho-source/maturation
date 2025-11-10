@@ -68,32 +68,20 @@
               <input
                 id="nom-institution"
                 v-model="nomInstitution"
-                placeholder="Ex: Conseil Economique Social et Environnemental"
+                placeholder="Ex: Assemblée nationale"
                 required
               />
             </div>
 
-            <!-- Champ pour sélectionner le ministère si "Ministère" -->
+            <!-- Champ pour saisir le ministère si "Ministère" -->
             <div v-if="typeInstitution === 'ministere'">
-              <label for="nom-ministere">Ministère *</label>
-              <select id="nom-ministere" v-model="nomMinistere" required>
-                <option value="">-- Sélectionnez un ministère --</option>
-                <option value="__libre__">Autre ministère (saisie libre)</option>
-                <option v-for="ministere in ministeres" :key="ministere" :value="ministere">
-                  {{ ministere }}
-                </option>
-              </select>
-
-              <!-- Champ libre si "Autre ministère" sélectionné -->
-              <div v-if="nomMinistere === '__libre__'">
-                <label for="nom-ministere-libre">Nom du ministère *</label>
-                <input
-                  id="nom-ministere-libre"
-                  v-model="nomMinistereLibre"
-                  placeholder="Ex: Ministère de l'Économie, du Plan et de la Coopération"
-                  required
-                />
-              </div>
+              <label for="nom-ministere">Nom du ministère / Direction nationale *</label>
+              <input
+                id="nom-ministere"
+                v-model="nomMinistere"
+                placeholder="Ex: Ministère de l'Économie, du Plan et de la Coopération"
+                required
+              />
             </div>
 
             <!-- Direction/Service - commun à tous les types d'institution -->
@@ -390,7 +378,6 @@ function onTypeStructureChange() {
   nomInstitution.value = ''
   directionService.value = ''
   nomMinistere.value = ''
-  nomMinistereLibre.value = ''
   nomAgence.value = ''
   tutelleAgence.value = ''
   tutelleAgenceLibre.value = ''
@@ -403,7 +390,6 @@ function onTypeInstitutionChange() {
   // Réinitialiser les champs spécifiques quand le type d'institution change
   nomInstitution.value = ''
   nomMinistere.value = ''
-  nomMinistereLibre.value = ''
 }
 
 function onNiveauCollectiviteChange() {
@@ -488,7 +474,7 @@ async function register() {
       } else if (typeInstitution.value === 'primature') {
         structureFinal = 'Primature'
       } else if (typeInstitution.value === 'ministere') {
-        structureFinal = nomMinistere.value === '__libre__' ? nomMinistereLibre.value : nomMinistere.value
+        structureFinal = nomMinistere.value
       } else if (typeInstitution.value === 'autre_institution') {
         structureFinal = nomInstitution.value
       }
@@ -551,7 +537,6 @@ async function register() {
     directionService.value = ''
     niveauCollectivite.value = ''
     nomMinistere.value = ''
-    nomMinistereLibre.value = ''
     nomAgence.value = ''
     tutelleAgence.value = ''
     tutelleAgenceLibre.value = ''
