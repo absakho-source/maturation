@@ -606,7 +606,7 @@ def traiter_project(project_id):
                 action = "Projet approuvé par le Comité"
             else:
                 p.statut = "rejeté"
-                action = "Projet rejeté par le Comité"
+                action = "Dossier rejeté"
 
         db.session.commit()
         if action:
@@ -653,11 +653,21 @@ def evaluation_prealable(project_id):
             p.complements_reponse_pieces = None
             action = f"Évaluation préalable: compléments requis - {commentaires}"
         elif decision == "dossier_rejete":
-            # Dossier rejeté dès l'évaluation préalable
-            p.statut = "rejeté"
-            p.avis = "dossier rejeté (évaluation préalable)"
-            p.commentaires = commentaires
-            action = f"Évaluation préalable: dossier rejeté - {commentaires}"
+            # Dossier rejeté lors de l'évaluation préalable
+            # Si c'est le secretariatsct qui valide (et que evaluation_prealable est déjà 'dossier_rejete'), on rejette définitivement
+            # Sinon, c'est une proposition de rejet par l'évaluateur
+            if role == "secretariatsct" and p.evaluation_prealable == "dossier_rejete":
+                # Validation du rejet par le Secrétariat SCT
+                p.statut = "rejeté"
+                p.avis = "dossier rejeté (évaluation préalable)"
+                p.commentaires = commentaires
+                action = f"Rejet validé par le Secrétariat SCT - {commentaires}"
+            else:
+                # Proposition de rejet par l'évaluateur - attend validation du secrétariat
+                # Le statut ne change PAS, le soumissionnaire n'est PAS encore informé
+                p.avis = None
+                p.commentaires = commentaires
+                action = f"Évaluation préalable: rejet proposé par l'évaluateur - {commentaires}"
 
         db.session.commit()
 

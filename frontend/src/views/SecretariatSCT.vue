@@ -1074,7 +1074,8 @@ export default {
           body: JSON.stringify({
             decision: decision,
             commentaires: commentaire,
-            evaluateur: user.username
+            evaluateur: user.username,
+            role: user.role
           })
         });
 
