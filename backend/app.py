@@ -1230,7 +1230,7 @@ def check_and_reset_db():
         os.remove(db_path)
 
 if __name__ == "__main__":
-    check_and_reset_db()  # <-- Ajout ici
+    # check_and_reset_db()  # Désactivé pour éviter les réinitialisations automatiques
     with app.app_context():
         db.create_all()
         ensure_sqlite_columns()
