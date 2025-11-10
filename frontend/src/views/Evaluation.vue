@@ -77,6 +77,13 @@
               >
                 📝 Compléments requis
               </button>
+              <button
+                @click="soumettreEvaluationPrealable(p.id, 'dossier_rejete')"
+                class="btn-danger"
+                :disabled="envoiEvaluationPrealable[p.id] || !evaluationPrealableCommentaires[p.id]?.trim()"
+              >
+                ❌ Dossier rejeté
+              </button>
             </div>
           </div>
 
@@ -85,8 +92,8 @@
             <h4>🔍 Évaluation Préalable</h4>
             <p>
               <strong>Décision:</strong>
-              <span :class="p.evaluation_prealable === 'dossier_evaluable' ? 'decision-evaluable' : 'decision-complements'">
-                {{ p.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier évaluable' : '📝 Compléments requis' }}
+              <span :class="getEvaluationPrealableClass(p.evaluation_prealable)">
+                {{ getEvaluationPrealableText(p.evaluation_prealable) }}
               </span>
             </p>
             <p v-if="p.evaluation_prealable_commentaire">
@@ -186,9 +193,9 @@ export default {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const commentaire = (this.evaluationPrealableCommentaires[projectId] || "").trim();
 
-      // Validation: commentaire obligatoire si compléments requis
-      if (decision === "complements_requis" && !commentaire) {
-        alert("Commentaire obligatoire pour justifier la demande de compléments");
+      // Validation: commentaire obligatoire si compléments requis ou dossier rejeté
+      if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
+        alert("Commentaire obligatoire pour justifier la décision");
         return;
       }
 
@@ -211,9 +218,15 @@ export default {
           throw new Error(error.error || "Erreur lors de l'envoi");
         }
 
-        alert(decision === "dossier_evaluable"
-          ? "Dossier déclaré évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée."
-          : "Compléments demandés. Le soumissionnaire a été notifié.");
+        let message;
+        if (decision === "dossier_evaluable") {
+          message = "Dossier déclaré évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.";
+        } else if (decision === "complements_requis") {
+          message = "Compléments demandés. Le soumissionnaire a été notifié.";
+        } else if (decision === "dossier_rejete") {
+          message = "Dossier rejeté. Le soumissionnaire a été notifié.";
+        }
+        alert(message);
 
         // Recharger la page complètement pour forcer l'actualisation
         window.location.reload();
@@ -223,6 +236,22 @@ export default {
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
+    },
+    getEvaluationPrealableText(decision) {
+      const map = {
+        'dossier_evaluable': '✅ Dossier évaluable',
+        'complements_requis': '📝 Compléments requis',
+        'dossier_rejete': '❌ Dossier rejeté'
+      };
+      return map[decision] || decision;
+    },
+    getEvaluationPrealableClass(decision) {
+      const map = {
+        'dossier_evaluable': 'decision-evaluable',
+        'complements_requis': 'decision-complements',
+        'dossier_rejete': 'decision-rejete'
+      };
+      return map[decision] || '';
     },
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
@@ -464,6 +493,14 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   font-weight: 600;
   padding: 4px 8px;
   background: #fef3c7;
+  border-radius: 4px;
+}
+
+.decision-rejete {
+  color: #dc2626;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #fee2e2;
   border-radius: 4px;
 }
 

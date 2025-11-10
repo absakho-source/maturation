@@ -629,29 +629,35 @@ def evaluation_prealable(project_id):
         auteur = data.get("auteur", "")
         role = data.get("role", "")
 
-        decision = data.get("decision")  # "dossier_evaluable" ou "complements_requis"
-        commentaire = data.get("commentaire", "").strip()
+        decision = data.get("decision")  # "dossier_evaluable", "complements_requis", ou "dossier_rejete"
+        commentaires = data.get("commentaires", "").strip()
 
-        if not decision or decision not in ["dossier_evaluable", "complements_requis"]:
+        if not decision or decision not in ["dossier_evaluable", "complements_requis", "dossier_rejete"]:
             return jsonify({"error": "Décision invalide"}), 400
 
         # Enregistrer l'évaluation préalable
         p.evaluation_prealable = decision
         p.evaluation_prealable_date = datetime.utcnow()
-        p.evaluation_prealable_commentaire = commentaire
+        p.evaluation_prealable_commentaire = commentaires
 
         # Changer le statut en fonction de la décision
         action = ""
         if decision == "dossier_evaluable":
             p.statut = "en évaluation"
             action = "Évaluation préalable: dossier évaluable - passage à l'évaluation détaillée"
-        else:  # complements_requis
+        elif decision == "complements_requis":
             p.statut = "compléments demandés"
-            p.complements_demande_message = commentaire
+            p.complements_demande_message = commentaires
             # Réinitialiser les réponses de compléments
             p.complements_reponse_message = None
             p.complements_reponse_pieces = None
-            action = f"Évaluation préalable: compléments requis - {commentaire}"
+            action = f"Évaluation préalable: compléments requis - {commentaires}"
+        elif decision == "dossier_rejete":
+            # Dossier rejeté dès l'évaluation préalable
+            p.statut = "rejeté"
+            p.avis = "dossier rejeté (évaluation préalable)"
+            p.commentaires = commentaires
+            action = f"Évaluation préalable: dossier rejeté - {commentaires}"
 
         db.session.commit()
 

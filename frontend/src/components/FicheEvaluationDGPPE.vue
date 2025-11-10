@@ -258,6 +258,26 @@
 
       <div class="conclusion-section">
         <div class="form-group">
+          <label>AVIS FINAL</label>
+          <div class="avis-automatique">
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" value="favorable" v-model="fiche.avis_final" required>
+                <span class="radio-label favorable">Avis favorable (80 points et plus)</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" value="favorable_sous_reserves" v-model="fiche.avis_final" required>
+                <span class="radio-label conditionnel">Avis favorable sous réserves (70-79 points)</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" value="defavorable" v-model="fiche.avis_final" required>
+                <span class="radio-label defavorable">Avis défavorable (0-69 points)</span>
+              </label>
+            </div>
+            <p class="avis-note">Avis automatiquement sélectionné selon le score: <strong>{{ avisAutomatique }}</strong></p>
+          </div>
+        </div>
+        <div class="form-group">
           <label>PROPOSITION</label>
           <textarea v-model="fiche.proposition" rows="3" placeholder="Votre proposition..."></textarea>
         </div>
@@ -356,7 +376,8 @@ export default {
         proposition: '',
         recommandations_generales: '',
         impact_sur_emploi: '',
-        
+        avis_final: '',
+
         // Section IV
         evaluateur_signature: ''
       }
@@ -377,6 +398,30 @@ export default {
       if (this.scoreTotal >= 65) return 'Bien';
       if (this.scoreTotal >= 50) return 'Passable';
       return 'Insuffisant';
+    },
+    avisAutomatique() {
+      // Calcul automatique de l'avis selon les seuils définis
+      // Score 0-69: Avis défavorable
+      // Score 70-79: Avis favorable sous réserves
+      // Score 80+: Avis favorable
+      if (this.scoreTotal >= 80) return 'Avis favorable';
+      if (this.scoreTotal >= 70) return 'Avis favorable sous réserves';
+      return 'Avis défavorable';
+    }
+  },
+  watch: {
+    scoreTotal: {
+      handler(newScore) {
+        // Mise à jour automatique de l'avis final selon le score
+        if (newScore >= 80) {
+          this.fiche.avis_final = 'favorable';
+        } else if (newScore >= 70) {
+          this.fiche.avis_final = 'favorable_sous_reserves';
+        } else {
+          this.fiche.avis_final = 'defavorable';
+        }
+      },
+      immediate: true
     }
   },
   mounted() {
@@ -707,6 +752,65 @@ export default {
 .conclusion-section,
 .annexes-section {
   margin-bottom: 30px;
+}
+
+.avis-automatique {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-item:hover {
+  background: #f9fafb;
+  border-color: #2d7a2d;
+}
+
+.radio-item input[type="radio"] {
+  margin-right: 10px;
+}
+
+.radio-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.radio-label.favorable {
+  color: #2d7a2d;
+}
+
+.radio-label.conditionnel {
+  color: #d97706;
+}
+
+.radio-label.defavorable {
+  color: #dc2626;
+}
+
+.avis-note {
+  margin: 10px 0 0 0;
+  padding: 10px;
+  background: #e8f5e9;
+  border-left: 4px solid #2d7a2d;
+  font-size: 14px;
+  color: #333;
 }
 
 .form-actions {

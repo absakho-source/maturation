@@ -530,11 +530,62 @@
             </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
-              
+
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
-              
-              <!-- Section d'évaluation -->
-              <div class="eval-section">
+
+              <!-- Évaluation préalable -->
+              <div v-if="!projet.evaluation_prealable" class="eval-section eval-prealable">
+                <h4>🔍 Évaluation Préalable</h4>
+                <p class="eval-prealable-description">Vérifier la recevabilité du dossier avant l'évaluation détaillée</p>
+
+                <div class="eval-prealable-buttons">
+                  <button
+                    @click="soumettreEvaluationPrealable(projet.id, 'dossier_evaluable')"
+                    class="btn-success"
+                    :disabled="envoiEvaluationPrealable[projet.id]"
+                  >
+                    ✅ Dossier évaluable
+                  </button>
+                  <button
+                    @click="soumettreEvaluationPrealable(projet.id, 'complements_requis')"
+                    class="btn-warning"
+                    :disabled="envoiEvaluationPrealable[projet.id] || !evaluationPrealableCommentaires[projet.id]?.trim()"
+                  >
+                    📝 Compléments requis
+                  </button>
+                  <button
+                    @click="soumettreEvaluationPrealable(projet.id, 'dossier_rejete')"
+                    class="btn-danger"
+                    :disabled="envoiEvaluationPrealable[projet.id] || !evaluationPrealableCommentaires[projet.id]?.trim()"
+                  >
+                    ❌ Dossier rejeté
+                  </button>
+                </div>
+
+                <label class="commentaire-label">Commentaires (obligatoire pour compléments/rejet):</label>
+                <textarea
+                  v-model="evaluationPrealableCommentaires[projet.id]"
+                  rows="3"
+                  placeholder="Justification de la décision (obligatoire si compléments requis ou dossier rejeté)"
+                  class="commentaire-textarea"
+                ></textarea>
+              </div>
+
+              <!-- Résultat de l'évaluation préalable -->
+              <div class="eval-section eval-prealable-result" v-else-if="projet.evaluation_prealable">
+                <h4>🔍 Évaluation Préalable</h4>
+                <p>
+                  <strong>Décision:</strong>
+                  <span :class="getEvaluationPrealableClass(projet.evaluation_prealable)">
+                    {{ getEvaluationPrealableText(projet.evaluation_prealable) }}
+                  </span>
+                </p>
+                <p v-if="projet.evaluation_prealable_commentaires"><strong>Commentaires:</strong> {{ projet.evaluation_prealable_commentaires }}</p>
+                <p class="eval-date" v-if="projet.evaluation_prealable_date">{{ new Date(projet.evaluation_prealable_date).toLocaleString('fr-FR') }}</p>
+              </div>
+
+              <!-- Section d'évaluation complète (uniquement si dossier évaluable) -->
+              <div v-if="projet.evaluation_prealable === 'dossier_evaluable'" class="eval-section">
                 <label>Mon évaluation:</label>
                 <select v-model="avis[projet.id]">
                   <option value="">--Choisir--</option>
@@ -591,7 +642,10 @@ export default {
         countSubmitted: 0,
         totalApproved: 0,
         countApproved: 0
-      }
+      },
+      // Évaluation préalable
+      evaluationPrealableCommentaires: {},
+      envoiEvaluationPrealable: {}
     };
   },
   computed: {
@@ -998,6 +1052,72 @@ export default {
         console.error('Erreur téléchargement rapport:', error);
         alert('Erreur lors du téléchargement du rapport PDF');
       }
+    },
+
+    // Méthodes pour l'évaluation préalable
+    async soumettreEvaluationPrealable(projectId, decision) {
+      const commentaire = (this.evaluationPrealableCommentaires[projectId] || "").trim();
+
+      // Validation: commentaire obligatoire si compléments requis ou dossier rejeté
+      if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
+        alert("Commentaire obligatoire pour justifier cette décision");
+        return;
+      }
+
+      this.envoiEvaluationPrealable[projectId] = true;
+
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+        const response = await fetch(`/api/projects/${projectId}/evaluation-prealable`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            decision: decision,
+            commentaires: commentaire,
+            evaluateur: user.username
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Erreur lors de l'envoi");
+        }
+
+        let message = "";
+        if (decision === "dossier_evaluable") {
+          message = "✅ Dossier marqué comme évaluable. Vous pouvez maintenant procéder à l'évaluation détaillée.";
+        } else if (decision === "complements_requis") {
+          message = "📝 Compléments demandés. Le soumissionnaire sera notifié.";
+        } else if (decision === "dossier_rejete") {
+          message = "❌ Dossier rejeté. Le soumissionnaire sera notifié.";
+        }
+
+        alert(message);
+        this.evaluationPrealableCommentaires[projectId] = "";
+        this.loadProjects();
+      } catch (error) {
+        alert("Erreur: " + error.message);
+      } finally {
+        this.envoiEvaluationPrealable[projectId] = false;
+      }
+    },
+
+    getEvaluationPrealableText(decision) {
+      const map = {
+        'dossier_evaluable': '✅ Dossier évaluable',
+        'complements_requis': '📝 Compléments requis',
+        'dossier_rejete': '❌ Dossier rejeté'
+      };
+      return map[decision] || decision;
+    },
+
+    getEvaluationPrealableClass(decision) {
+      const map = {
+        'dossier_evaluable': 'decision-evaluable',
+        'complements_requis': 'decision-complements',
+        'dossier_rejete': 'decision-rejete'
+      };
+      return map[decision] || '';
     }
   }
 };
@@ -1836,5 +1956,159 @@ export default {
   .financing-amount {
     font-size: 1.5rem;
   }
+}
+
+/* Styles pour l'évaluation préalable */
+.eval-prealable {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.eval-prealable h4 {
+  color: #0369a1;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.eval-prealable-description {
+  color: #0c4a6e;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.eval-prealable-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.eval-prealable-buttons button {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.eval-prealable-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.eval-prealable-buttons .btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.eval-prealable-buttons .btn-success:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.eval-prealable-buttons .btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.eval-prealable-buttons .btn-warning:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.eval-prealable-buttons .btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.eval-prealable-buttons .btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.commentaire-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #0369a1;
+  font-size: 0.95rem;
+}
+
+.commentaire-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #bae6fd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.commentaire-textarea:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.eval-prealable-result {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #22c55e;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.eval-prealable-result h4 {
+  color: #15803d;
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.decision-evaluable {
+  color: #10b981;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #d1fae5;
+  border-radius: 4px;
+}
+
+.decision-complements {
+  color: #f59e0b;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #fef3c7;
+  border-radius: 4px;
+}
+
+.decision-rejete {
+  color: #dc2626;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #fee2e2;
+  border-radius: 4px;
+}
+
+.eval-date {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
 }
 </style>

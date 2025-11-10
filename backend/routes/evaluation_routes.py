@@ -9,14 +9,14 @@ import json
 from datetime import datetime
 from models import db, Project, FicheEvaluation
 
-# Import pdf_generator depuis le dossier parent
+# Import pdf_generator DGPPE depuis le dossier parent
 try:
-    from pdf_generator import generer_fiche_evaluation_pdf
+    from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 except ImportError:
     # Si l'import échoue, essayer avec le chemin absolu
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.insert(0, parent_dir)
-    from pdf_generator import generer_fiche_evaluation_pdf
+    from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 
 evaluation_bp = Blueprint('evaluation', __name__)
 
@@ -384,9 +384,9 @@ def generate_fiche_evaluation_pdf(project_id):
         
         # Répertoire de sortie pour les PDFs
         pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
-        
-        # Générer le PDF
-        pdf_path = generer_fiche_evaluation_pdf(fiche_data, project_data, pdf_directory)
+
+        # Générer le PDF avec le générateur DGPPE
+        pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
         
         # Mettre à jour le chemin du fichier PDF dans la base
         fiche.fichier_pdf = os.path.basename(pdf_path)
