@@ -20,7 +20,15 @@
       "Read(//tmp/**)",
       "Bash(xargs kill:*)",
       "Bash(npm run build:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm --cached creer_donnees_test_entete.py test_pdf_complet.py test_server_minimal.py creer_utilisateurs_test.py update_projets_auteur.py add_missing_columns.py migrate_discussion.py update_poles.py test_workflow_complete.py rapport_final_numerotation.py test_carte_avancee.py generer_carte_simple.py poles_debug.json add_auteur_nom_column.py analyze_shapefiles.py analyze_shapefiles_simple.py)",
+      "Bash(git rm --cached backend/add_numero_projet_column.py backend/creer_projets_exemples.py backend/generer_numeros_projets.py backend/migrate_projects_table.py backend/pdf_generator.py backend/pdf_generator_simple.py backend/start_server.py backend/update_evaluateur_nom.py frontend/src/components/CartePolesTerritoriaux_old.vue)",
+      "Bash(python:*)",
+      "Bash(FORCE_INIT=true python:*)"
     ],
     "deny": [],
     "ask": []

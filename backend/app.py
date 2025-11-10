@@ -280,7 +280,15 @@ def projects():
         cout_estimatif = request.form.get("cout_estimatif")
         organisme_tutelle = request.form.get("organisme_tutelle")
         auteur_nom = request.form.get("auteur_nom")
-        files = request.files.getlist("files")
+
+        # Récupérer tous les fichiers catégorisés
+        files = []
+        files.extend(request.files.getlist("lettre_soumission"))
+        files.extend(request.files.getlist("note_conceptuelle"))
+        files.extend(request.files.getlist("etudes_plans"))
+        files.extend(request.files.getlist("autres_pieces"))
+        files.extend(request.files.getlist("files"))  # Garde la compatibilité
+
         filenames = _save_files(files)
 
         # Générer le numéro de projet automatiquement

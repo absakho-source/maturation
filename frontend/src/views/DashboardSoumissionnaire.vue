@@ -520,6 +520,13 @@ export default {
     async handleSubmit() {
       this.submitError = ""; this.submitSuccess = ""; this.submitting = true;
 
+      // Validation: vérifier la certification
+      if (!this.form.certification) {
+        this.submitError = "Vous devez cocher la case de certification pour soumettre votre projet";
+        this.submitting = false;
+        return;
+      }
+
       // Validation: vérifier que les 3 documents requis sont fournis
       if (this.form.lettre_soumission.length === 0) {
         this.submitError = "La lettre de soumission signée est requise";

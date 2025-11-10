@@ -149,8 +149,8 @@
             </div>
           </div>
 
-          <!-- Section Fiche d'évaluation PDF -->
-          <div class="info-card" v-if="ficheEvaluation">
+          <!-- Section Fiche d'évaluation PDF - masquée si projet non validé par presidencecomite -->
+          <div class="info-card" v-if="ficheEvaluation && project.decision_finale">
             <h3>📋 Fiche d'évaluation</h3>
             <div class="files-list">
               <a @click.prevent="ouvrirFichePDF"
