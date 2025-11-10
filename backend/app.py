@@ -280,6 +280,7 @@ def projects():
                             "evaluation_prealable": str(p.evaluation_prealable) if p.evaluation_prealable else "",
                             "evaluation_prealable_date": evaluation_prealable_date,
                             "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
+                            "evaluation_prealable_commentaires": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",  # Alias pour compatibilité frontend
                             "pieces_jointes": pieces_jointes,
                             "date_soumission": date_soumission
                         })
@@ -429,6 +430,12 @@ def traiter_project(project_id):
         # Assignation (mais pas pour la réassignation de projets rejetés)
         if ("evaluateur_nom" in data and "avis" not in data and "validation_secretariat" not in data
             and data.get("statut_action") != "reassigner_rejete"):
+
+            # Empêcher la réassignation au même évaluateur
+            nouveau_evaluateur = data["evaluateur_nom"]
+            if p.evaluateur_nom == nouveau_evaluateur:
+                return jsonify({"error": f"Le projet est déjà assigné à {nouveau_evaluateur}. Veuillez choisir un autre évaluateur."}), 400
+
             # Supprimer la fiche d'évaluation existante lors d'une réassignation
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
             if fiche_existante:
@@ -443,15 +450,15 @@ def traiter_project(project_id):
             p.evaluation_prealable_date = None
             p.evaluation_prealable_commentaire = None
 
-            p.evaluateur_nom = data["evaluateur_nom"]
+            p.evaluateur_nom = nouveau_evaluateur
             p.statut = "assigné"
 
             # Récupérer la motivation facultative
             motivation = (data.get("motivation") or "").strip()
             if motivation:
-                action = f"Projet assigné à {data['evaluateur_nom']} - Motivation: {motivation}"
+                action = f"Projet assigné à {nouveau_evaluateur} - Motivation: {motivation}"
             else:
-                action = f"Projet assigné à {data['evaluateur_nom']}"
+                action = f"Projet assigné à {nouveau_evaluateur}"
 
         # Avis (par évaluateur ou secrétariat)
         elif "avis" in data:

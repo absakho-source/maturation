@@ -117,8 +117,12 @@
           <div class="info-card" v-if="project.evaluation_prealable">
             <h3>🔍 Évaluation Préalable</h3>
             <div class="evaluation-prealable-resultat">
-              <div :class="['decision-badge', project.evaluation_prealable === 'dossier_evaluable' ? 'success' : 'warning']">
-                {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier évaluable' : '📝 Compléments requis' }}
+              <div :class="['decision-badge',
+                project.evaluation_prealable === 'dossier_evaluable' ? 'success' :
+                project.evaluation_prealable === 'dossier_rejete' ? 'danger' : 'warning']">
+                {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier évaluable' :
+                   project.evaluation_prealable === 'dossier_rejete' ? '❌ Dossier rejeté' :
+                   '📝 Compléments requis' }}
               </div>
               <p v-if="project.evaluation_prealable_commentaire" class="commentaire">
                 <strong>Commentaire:</strong> {{ project.evaluation_prealable_commentaire }}
@@ -711,6 +715,11 @@ export default {
 .decision-badge.warning {
   background: #fef3c7;
   color: #92400e;
+}
+
+.decision-badge.danger {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .evaluation-prealable-resultat .commentaire {
