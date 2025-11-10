@@ -319,7 +319,7 @@ export default {
         })
       }).then(() => {
         alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé');
-        location.reload();
+        this.$router.push('/presidencecomite');
       });
     },
     getEvaluateurLabel(ev) {

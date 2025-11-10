@@ -296,7 +296,10 @@ export default {
           auteur: user.username,
           role: user.role
         })
-      }).then(() => location.reload());
+      }).then(() => {
+        alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté');
+        this.$router.push('/presidencesct');
+      });
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
     getEvaluateurLabel(ev){ return ({evaluateur1:"Évaluateur 1", evaluateur2:"Évaluateur 2", secretariatsct:"Secrétariat SCT"}[ev]||ev); },
