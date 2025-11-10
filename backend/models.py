@@ -15,9 +15,11 @@ class User(db.Model):
     fonction = db.Column(db.String(255), nullable=True)  # Fonction/Poste
     telephone = db.Column(db.String(20), nullable=True)
 
-    # Champs pour la structure d'appartenance
-    type_structure = db.Column(db.String(50), nullable=True)  # Type de structure (ministère, région, département, etc.)
-    nom_structure = db.Column(db.String(255), nullable=True)  # Nom de la structure
+    # Champs pour la structure d'appartenance (nouveau système: Institution)
+    type_structure = db.Column(db.String(50), nullable=True)  # Type de structure (institution, collectivite, agence, autre)
+    type_institution = db.Column(db.String(50), nullable=True)  # Sous-type: presidence, primature, ministere, autre_institution
+    nom_structure = db.Column(db.String(255), nullable=True)  # Nom de la structure/institution
+    direction_service = db.Column(db.String(255), nullable=True)  # Direction/Service au sein de l'institution
 
     # Champs pour le système de validation des comptes
     justificatif_path = db.Column(db.String(500), nullable=True)  # Chemin vers le justificatif (facultatif)

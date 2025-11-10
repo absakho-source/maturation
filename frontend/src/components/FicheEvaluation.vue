@@ -462,15 +462,15 @@ export default {
   computed: {
     sousTotal() {
       return {
-        pertinence: this.fiche.alignement_national + this.fiche.pertinence_territoriale + 
+        pertinence: this.fiche.alignement_national + this.fiche.pertinence_territoriale +
                    this.fiche.innovation_valeur + this.fiche.urgence_priorite,
-        technique: this.fiche.solidite_technique + this.fiche.capacites_mise_oeuvre + 
+        technique: this.fiche.solidite_technique + this.fiche.capacites_mise_oeuvre +
                   this.fiche.gestion_risques,
-        financiere: this.fiche.realisme_budget + this.fiche.rapport_cout_benefice + 
+        financiere: this.fiche.realisme_budget + this.fiche.rapport_cout_benefice +
                    this.fiche.durabilite_financiere,
-        impact: this.fiche.impact_social + this.fiche.impact_economique + 
+        impact: this.fiche.impact_social + this.fiche.impact_economique +
                this.fiche.impact_environnemental + this.fiche.effet_multiplicateur,
-        gouvernance: this.fiche.organisation_projet + this.fiche.planification + 
+        gouvernance: this.fiche.organisation_projet + this.fiche.planification +
                     this.fiche.suivi_evaluation + this.fiche.transparence_redevabilite
       }
     },
@@ -484,6 +484,15 @@ export default {
       if (this.scoreTotal >= 60) return 'passable'
       return 'insuffisant'
     },
+    avisAutomatique() {
+      // Calcul automatique de l'avis selon les seuils définis
+      // Score 0-69: Avis défavorable
+      // Score 70-79: Avis favorable sous réserves
+      // Score 80-105: Avis favorable
+      if (this.scoreTotal >= 80) return 'favorable'
+      if (this.scoreTotal >= 70) return 'favorable_sous_conditions'
+      return 'defavorable'
+    },
     formulaireValide() {
       // Le bouton est actif dès qu'au moins une note est donnée
       return this.scoreTotal > 0;
@@ -494,6 +503,8 @@ export default {
       handler(newScore) {
         this.fiche.score_total = newScore
         this.fiche.appreciation_globale = this.appreciationGlobale
+        // Mise à jour automatique de l'avis final selon le score
+        this.fiche.avis_final = this.avisAutomatique
       },
       immediate: true
     }

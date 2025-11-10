@@ -319,7 +319,13 @@ export default {
         })
       }).then(() => {
         alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé');
-        this.$router.push('/presidencecomite');
+        // Rediriger vers la même route pour forcer le rechargement
+        this.$router.push('/presidencecomite').then(() => {
+          window.location.reload();
+        });
+      }).catch(error => {
+        console.error('Erreur lors de la validation:', error);
+        alert('Erreur lors de la validation. Veuillez réessayer.');
       });
     },
     getEvaluateurLabel(ev) {

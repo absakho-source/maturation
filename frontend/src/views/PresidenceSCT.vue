@@ -298,7 +298,13 @@ export default {
         })
       }).then(() => {
         alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté');
-        this.$router.push('/presidencesct');
+        // Rediriger vers la même route pour forcer le rechargement
+        this.$router.push('/presidencesct').then(() => {
+          window.location.reload();
+        });
+      }).catch(error => {
+        console.error('Erreur lors de la validation:', error);
+        alert('Erreur lors de la validation. Veuillez réessayer.');
       });
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },

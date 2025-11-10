@@ -11,42 +11,62 @@ def get_stats_overview():
     from models import Project
     role = request.args.get('role', '')
     username = request.args.get('username', '')
-    
+
     # Tous les projets selon les permissions du rôle
     if role == 'admin':
         projects = Project.query.all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
         projects = Project.query.all()  # Ces rôles voient tous les projets
+    elif role == 'invite':
+        # Rôle invité: accès en lecture seule à tous les projets
+        projects = Project.query.all()
     else:
         # Autres rôles (évaluateurs, soumissionnaires) - limités
-    projects = Project.query.filter_by().all()
-    
+        projects = Project.query.filter_by().all()
+
     # Calculs statistiques
     total_projets = len(projects)
-    cout_total = sum(p.cout_estimatif or 0 for p in projects)
-    
+
     # Répartition par statut
     statuts = {}
     for project in projects:
         statut = project.statut or 'non défini'
         statuts[statut] = statuts.get(statut, 0) + 1
-    
+
     # Répartition par secteur
     secteurs = {}
-    cout_par_secteur = {}
     for project in projects:
         secteur = project.secteur or 'non défini'
         secteurs[secteur] = secteurs.get(secteur, 0) + 1
-        cout_par_secteur[secteur] = cout_par_secteur.get(secteur, 0) + (project.cout_estimatif or 0)
-    
+
     # Répartition par pôle territorial
     poles = {}
-    cout_par_pole = {}
     for project in projects:
         pole = project.poles or 'non défini'
         poles[pole] = poles.get(pole, 0) + 1
+
+    # Pour le rôle invité: retourner seulement les données de base (pas de coûts)
+    if role == 'invite':
+        return jsonify({
+            'total_projets': total_projets,
+            'statuts': statuts,
+            'secteurs': secteurs,
+            'poles': poles
+        })
+
+    # Pour les autres rôles: retourner toutes les données y compris financières
+    cout_total = sum(p.cout_estimatif or 0 for p in projects)
+
+    cout_par_secteur = {}
+    for project in projects:
+        secteur = project.secteur or 'non défini'
+        cout_par_secteur[secteur] = cout_par_secteur.get(secteur, 0) + (project.cout_estimatif or 0)
+
+    cout_par_pole = {}
+    for project in projects:
+        pole = project.poles or 'non défini'
         cout_par_pole[pole] = cout_par_pole.get(pole, 0) + (project.cout_estimatif or 0)
-    
+
     return jsonify({
         'total_projets': total_projets,
         'cout_total': cout_total,
@@ -62,14 +82,17 @@ def get_stats_overview():
 def get_stats_secteurs():
     """Statistiques détaillées par secteur"""
     role = request.args.get('role', '')
-    
+
     # Filtrer selon les permissions
     if role == 'admin':
         projects = Project.query.all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
         projects = Project.query.all()
+    elif role == 'invite':
+        # Rôle invité: accès autorisé en lecture seule
+        projects = Project.query.all()
     else:
-    projects = Project.query.filter_by().all()
+        projects = Project.query.filter_by().all()
     
     secteurs_stats = {}
     
@@ -134,16 +157,19 @@ def get_pole_territorial(pole_db):
 def get_stats_poles():
     """Statistiques détaillées par pôle territorial (regroupées selon la carte)"""
     from models import Project
-    
+
     role = request.args.get('role', '')
-    
+
     # Filtrer selon les permissions
     if role == 'admin':
         projects = Project.query.all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
         projects = Project.query.all()
+    elif role == 'invite':
+        # Rôle invité: accès autorisé en lecture seule
+        projects = Project.query.all()
     else:
-    projects = Project.query.filter_by().all()
+        projects = Project.query.filter_by().all()
     
     poles_stats = {}
     
@@ -189,7 +215,8 @@ def get_stats_poles():
 def get_stats_workflow():
     """Statistiques sur le flux de travail (pour secrétariat et présidences)"""
     role = request.args.get('role', '')
-    
+
+    # Rôle invité: accès INTERDIT aux statistiques workflow
     if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
         return jsonify({'error': 'Accès non autorisé'}), 403
     
@@ -231,7 +258,8 @@ def get_stats_workflow():
 def get_stats_financial():
     """Statistiques financières détaillées"""
     role = request.args.get('role', '')
-    
+
+    # Rôle invité: accès INTERDIT aux statistiques financières
     if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
         return jsonify({'error': 'Accès non autorisé'}), 403
     

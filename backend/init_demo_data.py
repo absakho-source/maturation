@@ -20,7 +20,8 @@ def init_demo_data():
         force_init = os.environ.get('FORCE_INIT', 'false').lower() == 'true'
 
         # Ne quitter que si TOUS les utilisateurs ET projets existent déjà (pas de FORCE_INIT)
-        if existing_users > 7 and existing_projects > 0 and not force_init:
+        # Note: 8 utilisateurs par défaut (soumissionnaire, evaluateur1, evaluateur2, secretariatsct, presidencesct, presidencecomite, admin, invite)
+        if existing_users >= 8 and existing_projects > 0 and not force_init:
             print(f"[DEMO] ✅ Base de données déjà initialisée:")
             print(f"  - {existing_users} utilisateurs existants")
             print(f"  - {existing_projects} projets existants")

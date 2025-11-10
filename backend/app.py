@@ -175,6 +175,9 @@ def projects():
                 items = Project.query.all()
             elif role in ["secretariatsct", "presidencesct", "admin"]:
                 items = Project.query.all()
+            elif role == "invite":
+                # Rôle invité: voir tous les projets mais avec données limitées
+                items = Project.query.all()
             else:
                 items = Project.query.all()
 
@@ -228,36 +231,48 @@ def projects():
                     if role == "evaluateur" and username:
                         est_assigne_a_moi = (p.evaluateur_nom == username)
 
-                    # Correction : conversion systématique des champs pour éviter les erreurs de type
-                    result.append({
-                        "id": int(p.id) if p.id is not None else None,
-                        "numero_projet": str(p.numero_projet) if p.numero_projet else "",
-                        "titre": str(p.titre) if p.titre else "",
-                        "description": str(p.description) if p.description else "",
-                        "secteur": str(p.secteur) if p.secteur else "",
-                        "poles": str(p.poles) if p.poles else "",
-                        "cout_estimatif": float(p.cout_estimatif) if p.cout_estimatif else 0,
-                        "organisme_tutelle": str(p.organisme_tutelle) if p.organisme_tutelle else "",
-                        "auteur_nom": str(p.auteur_nom) if p.auteur_nom else "",
-                        "statut": str(statut_affiche) if statut_affiche else "",
-                        "evaluateur_nom": str(p.evaluateur_nom) if p.evaluateur_nom else "",
-                        "evaluateur_display_name": str(evaluateur_display_name),
-                        "est_assigne_a_moi": est_assigne_a_moi,
-                        "avis": str(p.avis) if p.avis else "",
-                        "commentaires": str(p.commentaires) if p.commentaires else "",
-                        "validation_secretariat": str(p.validation_secretariat) if p.validation_secretariat else "",
-                        "avis_presidencesct": str(p.avis_presidencesct) if p.avis_presidencesct else "",
-                        "decision_finale": str(p.decision_finale) if p.decision_finale else "",
-                        "commentaires_finaux": str(p.commentaires_finaux) if p.commentaires_finaux else "",
-                        "complements_demande_message": str(p.complements_demande_message) if p.complements_demande_message else "",
-                        "complements_reponse_message": str(p.complements_reponse_message) if p.complements_reponse_message else "",
-                        "complements_reponse_pieces": str(p.complements_reponse_pieces) if p.complements_reponse_pieces else "",
-                        "evaluation_prealable": str(p.evaluation_prealable) if p.evaluation_prealable else "",
-                        "evaluation_prealable_date": evaluation_prealable_date,
-                        "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
-                        "pieces_jointes": pieces_jointes,
-                        "date_soumission": date_soumission
-                    })
+                    # Rôle invité: retourner SEULEMENT les champs de base (pas de données sensibles)
+                    if role == "invite":
+                        result.append({
+                            "id": int(p.id) if p.id is not None else None,
+                            "numero_projet": str(p.numero_projet) if p.numero_projet else "",
+                            "titre": str(p.titre) if p.titre else "",
+                            "secteur": str(p.secteur) if p.secteur else "",
+                            "poles": str(p.poles) if p.poles else "",
+                            "statut": str(statut_affiche) if statut_affiche else "",
+                            "date_soumission": date_soumission
+                        })
+                    else:
+                        # Correction : conversion systématique des champs pour éviter les erreurs de type
+                        result.append({
+                            "id": int(p.id) if p.id is not None else None,
+                            "numero_projet": str(p.numero_projet) if p.numero_projet else "",
+                            "titre": str(p.titre) if p.titre else "",
+                            "description": str(p.description) if p.description else "",
+                            "secteur": str(p.secteur) if p.secteur else "",
+                            "poles": str(p.poles) if p.poles else "",
+                            "cout_estimatif": float(p.cout_estimatif) if p.cout_estimatif else 0,
+                            "organisme_tutelle": str(p.organisme_tutelle) if p.organisme_tutelle else "",
+                            "auteur_nom": str(p.auteur_nom) if p.auteur_nom else "",
+                            "statut": str(statut_affiche) if statut_affiche else "",
+                            "evaluateur_nom": str(p.evaluateur_nom) if p.evaluateur_nom else "",
+                            "evaluateur_display_name": str(evaluateur_display_name),
+                            "est_assigne_a_moi": est_assigne_a_moi,
+                            "avis": str(p.avis) if p.avis else "",
+                            "commentaires": str(p.commentaires) if p.commentaires else "",
+                            "validation_secretariat": str(p.validation_secretariat) if p.validation_secretariat else "",
+                            "avis_presidencesct": str(p.avis_presidencesct) if p.avis_presidencesct else "",
+                            "decision_finale": str(p.decision_finale) if p.decision_finale else "",
+                            "commentaires_finaux": str(p.commentaires_finaux) if p.commentaires_finaux else "",
+                            "complements_demande_message": str(p.complements_demande_message) if p.complements_demande_message else "",
+                            "complements_reponse_message": str(p.complements_reponse_message) if p.complements_reponse_message else "",
+                            "complements_reponse_pieces": str(p.complements_reponse_pieces) if p.complements_reponse_pieces else "",
+                            "evaluation_prealable": str(p.evaluation_prealable) if p.evaluation_prealable else "",
+                            "evaluation_prealable_date": evaluation_prealable_date,
+                            "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
+                            "pieces_jointes": pieces_jointes,
+                            "date_soumission": date_soumission
+                        })
                 except Exception as err:
                     import traceback
                     print(f"[ERROR] Projet id={getattr(p, 'id', None)}: {err}")
@@ -1072,12 +1087,14 @@ def create_user():
         role = data.get("role", "").strip()
         display_name = data.get("display_name", "").strip()
 
-        # Nouveaux champs pour la validation des comptes
+        # Nouveaux champs pour la validation des comptes (système Institution)
         nom_complet = data.get("nom_complet", "").strip()
         telephone = data.get("telephone", "").strip()
         fonction = data.get("fonction", "").strip()
         type_structure = data.get("type_structure", "").strip()
+        type_institution = data.get("type_institution", "").strip()
         nom_structure = data.get("nom_structure", "").strip()
+        direction_service = data.get("direction_service", "").strip()
 
         if not username or not password or not role:
             return jsonify({"error": "Username, password et rôle sont requis"}), 400
@@ -1097,7 +1114,9 @@ def create_user():
             telephone=telephone,
             fonction=fonction,
             type_structure=type_structure,
+            type_institution=type_institution,
             nom_structure=nom_structure,
+            direction_service=direction_service,
             statut_compte='non_verifie',
             date_creation=datetime.utcnow()
         )
@@ -1208,7 +1227,8 @@ if __name__ == "__main__":
                 ("secretariatsct", "secretariatsct"),
                 ("presidencesct", "presidencesct"),
                 ("presidencecomite", "presidencecomite"),
-                ("admin", "admin")
+                ("admin", "admin"),
+                ("invite", "invite")
             ]
             
             for username, role in user_data:

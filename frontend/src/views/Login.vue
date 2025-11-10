@@ -100,7 +100,8 @@ export default {
           { username: 'secretariatsct', role: 'secretariatsct', display_name: 'Chef de Division DP' },
           { username: 'presidencesct', role: 'presidencesct', display_name: 'Directeur Planification' },
           { username: 'presidencecomite', role: 'presidencecomite', display_name: 'DG DGPPE' },
-          { username: 'admin', role: 'admin', display_name: 'CT DGPPE' }
+          { username: 'admin', role: 'admin', display_name: 'CT DGPPE' },
+          { username: 'invite', role: 'invite', display_name: 'Invite' }
         ];
         const map = {};
         for (const u of fallbackUsers) map[u.username] = u.role;
@@ -119,7 +120,8 @@ export default {
         secretariatsct: "Secrétariat SCT",
         presidencesct: "Présidence SCT",
         presidencecomite: "Présidence Comité",
-        admin: "Administrateur"
+        admin: "Administrateur",
+        invite: "Invité"
       };
       return labels[role] || role;
     },
