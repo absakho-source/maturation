@@ -2272,7 +2272,13 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import evaluation routes: {e}")
 
-# Note: project_routes n'utilise pas de blueprint, les routes sont définies directement dans app.py
+# Import and register project routes
+try:
+    from routes.project_routes import register_project_routes
+    register_project_routes(app, Project, FicheEvaluation, db, User)
+    print("Project routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import project routes: {e}")
 
 # Import and register user routes
 try:
