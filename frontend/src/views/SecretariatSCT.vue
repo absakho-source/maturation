@@ -155,9 +155,6 @@
           </div>
         </div>
 
-        <!-- Carte des pôles territoriaux -->
-        <CartesPolesComparaison />
-
         <!-- Alertes -->
         <div v-if="alerts.length > 0" class="alerts-section">
           <h3>
@@ -186,6 +183,7 @@
         <button @click="activeTab = 'complements'" :class="{ active: activeTab === 'complements' }" class="tab-btn">📝 Demandes compléments</button>
         <button @click="activeTab = 'evaluation'" :class="{ active: activeTab === 'evaluation' }" class="tab-btn">✍️ Mes évaluations</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
+        <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
       </div>
 
       <!-- Tous -->
@@ -555,10 +553,15 @@
 
       <!-- Onglet Statistiques -->
       <div v-if="activeTab === 'stats'" class="tab-content">
-        <StatsDashboard 
-          role="secretariatsct" 
+        <StatsDashboard
+          role="secretariatsct"
           username="secretariatsct"
         />
+      </div>
+
+      <!-- Onglet Carte des pôles territoriaux -->
+      <div v-if="activeTab === 'carte'" class="tab-content">
+        <CartesPolesComparaison />
       </div>
     </div>
   </PageWrapper>
