@@ -21,11 +21,7 @@ services:
   # Frontend
   - type: web
     name: maturation-frontend
-    env: static
+    env: node
     region: oregon
     buildCommand: "cd frontend && npm install && npm run build"
-    staticPublishPath: ./frontend/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    startCommand: "cd frontend && node server.js"
