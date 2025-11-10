@@ -184,12 +184,12 @@ def projects():
             # Filter out projects from suspended accounts
             if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'admin']:
                 # These roles should not see projects from suspended accounts in their workflow
-                items = [p for p in items if p.author_id]
+                items = [p for p in items if p.soumissionnaire_id]
                 # Get list of suspended user IDs
                 suspended_users = User.query.filter_by(statut_compte='suspendu').all()
                 suspended_ids = [u.id for u in suspended_users]
                 # Filter out projects from suspended users
-                items = [p for p in items if p.author_id not in suspended_ids]
+                items = [p for p in items if p.soumissionnaire_id not in suspended_ids]
 
             # Correction : si aucun projet, retourne explicitement une liste vide
             if not items:
