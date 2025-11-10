@@ -148,29 +148,40 @@ def get_stats_poles():
     poles_stats = {}
     
     for project in projects:
-        # Convertir le pôle DB vers le pôle territorial standardisé
-        pole_db = project.poles or 'non défini'
-        pole_territorial = get_pole_territorial(pole_db)
-        print(f"DEBUG: {pole_db} -> {pole_territorial}")  # Debug
-        
-        if pole_territorial not in poles_stats:
-            poles_stats[pole_territorial] = {
-                'nombre_projets': 0,
-                'cout_total': 0,
-                'secteurs': {},
-                'statuts': {}
-            }
-        
-        poles_stats[pole_territorial]['nombre_projets'] += 1
-        poles_stats[pole_territorial]['cout_total'] += project.cout_estimatif or 0
-        
-        # Répartition par secteur dans ce pôle
-        secteur = project.secteur or 'non défini'
-        poles_stats[pole_territorial]['secteurs'][secteur] = poles_stats[pole_territorial]['secteurs'].get(secteur, 0) + 1
-        
-        # Répartition par statut dans ce pôle
-        statut = project.statut or 'non défini'
-        poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
+        # Un projet peut concerner plusieurs pôles (CSV)
+        poles_db = project.poles or 'non défini'
+        poles_list = [p.strip() for p in poles_db.split(',') if p.strip()]
+
+        if not poles_list:
+            poles_list = ['non défini']
+
+        # Répartir équitablement le coût entre les pôles
+        nb_poles = len(poles_list)
+        cout_par_pole = (project.cout_estimatif or 0) / nb_poles
+
+        for pole_db in poles_list:
+            pole_territorial = get_pole_territorial(pole_db)
+            print(f"DEBUG: {pole_db} -> {pole_territorial}, coût réparti: {cout_par_pole}")  # Debug
+
+            if pole_territorial not in poles_stats:
+                poles_stats[pole_territorial] = {
+                    'nombre_projets': 0,
+                    'cout_total': 0,
+                    'secteurs': {},
+                    'statuts': {}
+                }
+
+            # Compter 1/n projet par pôle pour les projets multi-pôles
+            poles_stats[pole_territorial]['nombre_projets'] += 1 / nb_poles
+            poles_stats[pole_territorial]['cout_total'] += cout_par_pole
+
+            # Répartition par secteur dans ce pôle (fraction)
+            secteur = project.secteur or 'non défini'
+            poles_stats[pole_territorial]['secteurs'][secteur] = poles_stats[pole_territorial]['secteurs'].get(secteur, 0) + 1 / nb_poles
+
+            # Répartition par statut dans ce pôle (fraction)
+            statut = project.statut or 'non défini'
+            poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1 / nb_poles
     
     return jsonify(poles_stats)
 
