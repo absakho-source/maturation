@@ -331,8 +331,13 @@ async function suspendreCompte(compteId) {
 }
 
 function voirJustificatif(path) {
-  // Ouvrir le justificatif dans un nouvel onglet
-  window.open(`/api/uploads/${path.replace('justificatifs/', '')}`, '_blank')
+  // Gérer les chemins multiples (séparés par virgules)
+  const paths = path.split(',').map(p => p.trim())
+
+  // Ouvrir chaque justificatif dans un nouvel onglet
+  paths.forEach(p => {
+    window.open(`/api/uploads/${p}`, '_blank')
+  })
 }
 
 function voirDetails(compte) {

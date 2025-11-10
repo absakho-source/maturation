@@ -181,6 +181,16 @@ def projects():
             else:
                 items = Project.query.all()
 
+            # Filter out projects from suspended accounts
+            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'admin']:
+                # These roles should not see projects from suspended accounts in their workflow
+                items = [p for p in items if p.author_id]
+                # Get list of suspended user IDs
+                suspended_users = User.query.filter_by(statut_compte='suspendu').all()
+                suspended_ids = [u.id for u in suspended_users]
+                # Filter out projects from suspended users
+                items = [p for p in items if p.author_id not in suspended_ids]
+
             # Correction : si aucun projet, retourne explicitement une liste vide
             if not items:
                 print("[DEBUG] Aucun projet trouvé pour ce filtre.")
@@ -709,8 +719,9 @@ def submit_complements(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/uploads/<filename>")
+@app.route("/api/uploads/<path:filename>")
 def uploaded_file(filename):
+    """Serve uploaded files including those in subfolders"""
     try:
         return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
     except Exception as e:

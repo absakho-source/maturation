@@ -18,7 +18,15 @@
     <main class="register-main">
       <div class="register-container">
         <div class="register-card">
-          <h3 class="register-title">Création de compte soumissionnaire</h3>
+          <div class="header-with-back">
+            <button @click="$router.push('/')" type="button" class="btn-retour">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Retour
+            </button>
+            <h3 class="register-title">Création de compte soumissionnaire</h3>
+          </div>
           <form @submit.prevent="register">
         <!-- Informations personnelles -->
         <div class="form-section">
@@ -652,6 +660,47 @@ async function register() {
   margin: 0 0 1.5rem 0;
   font-size: 1.4rem;
   font-weight: 600;
+}
+
+.header-with-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.btn-retour {
+  position: absolute;
+  left: 0;
+  background: transparent;
+  color: var(--dgppe-primary);
+  border: none;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  margin: 0;
+  box-shadow: none;
+}
+
+.btn-retour:hover {
+  color: var(--dgppe-primary-light);
+  transform: translateX(-2px);
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn-retour svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header-with-back .register-title {
+  margin: 0;
 }
 
 /* Compatibilité: cacher les anciens éléments */
