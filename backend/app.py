@@ -704,16 +704,38 @@ def uploaded_file(filename):
 @app.route("/api/logs/<int:project_id>")
 def get_project_logs(project_id):
     try:
+        import re
+
+        # Récupérer le projet pour vérifier son statut
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({"error": "Project not found"}), 404
+
+        # Déterminer si on doit masquer les scores/propositions
+        # On les masque tant que le projet n'est pas approuvé ou rejeté (validation complète)
+        should_hide_scores = project.statut not in ['approuvé', 'rejeté']
+
         logs = Historique.query.filter_by(project_id=project_id).order_by(Historique.date_action.desc()).all()
-        result = [{
-            "id": log.id,
-            "action": log.action,
-            "auteur": log.auteur,
-            "role": log.role,
-            "date": log.date_action.isoformat() if log.date_action else None,
-            "statut": "",  # Le statut peut être extrait de l'action si nécessaire
-            "commentaire": ""  # Les commentaires sont dans l'action principale
-        } for log in logs]
+        result = []
+
+        for log in logs:
+            action = log.action
+
+            # Si on doit masquer les scores et que l'action contient score/proposition
+            if should_hide_scores and action and "Fiche d'évaluation soumise" in action:
+                # Strip score and proposition, keep only "Fiche d'évaluation soumise"
+                action = re.sub(r'\s*-\s*Score:.*$', '', action)
+
+            result.append({
+                "id": log.id,
+                "action": action,
+                "auteur": log.auteur,
+                "role": log.role,
+                "date": log.date_action.isoformat() if log.date_action else None,
+                "statut": "",  # Le statut peut être extrait de l'action si nécessaire
+                "commentaire": ""  # Les commentaires sont dans l'action principale
+            })
+
         return jsonify(result), 200
     except Exception as e:
         import traceback; traceback.print_exc()
