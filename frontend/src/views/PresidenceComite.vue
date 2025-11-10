@@ -297,16 +297,25 @@ export default {
       return this.allProjects.filter(p => p.statut === status).length;
     },
     confirmer(id, decision) {
+      // Confirmation avant décision finale pour éviter clics accidentels
+      const actionMessage = decision === 'confirme'
+        ? "Êtes-vous sûr de vouloir confirmer cet avis ? Cette décision est finale."
+        : "Êtes-vous sûr de vouloir infirmer cet avis ? Cette décision est finale.";
+
+      if (!confirm(actionMessage)) {
+        return;
+      }
+
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const com = (this.commentaires[id] || "").trim();
       fetch(`/api/projects/${id}/traiter`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          decision_finale: decision, 
-          commentaires: com, 
-          auteur: user.username, 
-          role: user.role 
+        body: JSON.stringify({
+          decision_finale: decision,
+          commentaires: com,
+          auteur: user.username,
+          role: user.role
         })
       }).then(() => {
         alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé');

@@ -277,15 +277,24 @@ export default {
       return this.allProjects.filter(p => p.statut === status).length;
     },
     valider(id, decision) {
+      // Confirmation avant validation pour éviter clics accidentels
+      const actionMessage = decision === 'valide'
+        ? "Êtes-vous sûr de vouloir valider cet avis et le transmettre à la Présidence du Comité ?"
+        : "Êtes-vous sûr de vouloir rejeter cet avis ?";
+
+      if (!confirm(actionMessage)) {
+        return;
+      }
+
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const com = (this.commentaires[id] || "").trim();
       fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          avis_presidencesct: decision, 
+        body: JSON.stringify({
+          avis_presidencesct: decision,
           commentaires: com,
-          auteur: user.username, 
-          role: user.role 
+          auteur: user.username,
+          role: user.role
         })
       }).then(() => location.reload());
     },

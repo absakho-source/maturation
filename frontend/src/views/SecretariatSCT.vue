@@ -917,6 +917,11 @@ export default {
       alert("Réassigné"); this.loadProjects();
     },
     async validerAvis(id) {
+      // Confirmation avant validation pour éviter clics accidentels
+      if (!confirm("Êtes-vous sûr de vouloir valider cet avis et le transmettre à la Présidence SCT ?")) {
+        return;
+      }
+
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
