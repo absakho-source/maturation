@@ -4,10 +4,19 @@ Routes pour les fiches d'évaluation conformes au format réel DGPPE
 
 from flask import Blueprint, request, jsonify, send_file
 import os
+import sys
 import json
 from datetime import datetime
 from models import db, Project, FicheEvaluation
-from pdf_generator import generer_fiche_evaluation_pdf
+
+# Import pdf_generator depuis le dossier parent
+try:
+    from pdf_generator import generer_fiche_evaluation_pdf
+except ImportError:
+    # Si l'import échoue, essayer avec le chemin absolu
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, parent_dir)
+    from pdf_generator import generer_fiche_evaluation_pdf
 
 evaluation_bp = Blueprint('evaluation', __name__)
 
