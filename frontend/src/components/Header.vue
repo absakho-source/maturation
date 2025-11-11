@@ -10,19 +10,43 @@
         </div>
       </div>
       <nav v-if="user" class="nav-section">
-        <router-link
-          v-if="user.role === 'admin' || user.role === 'secretariatsct'"
-          to="/gestion-comptes"
-          class="nav-link"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-            <path d="M16 3.13a4 4 0 010 7.75"/>
-          </svg>
-          Gestion des comptes
-        </router-link>
+        <div v-if="user.role === 'admin' || user.role === 'secretariatsct'" class="dropdown" ref="dropdown">
+          <button @click="toggleDropdown" class="nav-link dropdown-toggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+            </svg>
+            Administration
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron" :class="{ 'chevron-open': dropdownOpen }">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div v-if="dropdownOpen" class="dropdown-menu">
+            <router-link to="/gestion-comptes" class="dropdown-item" @click="closeDropdown">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              Gestion des comptes
+            </router-link>
+            <router-link to="/formulaire-editor" class="dropdown-item" @click="closeDropdown">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Éditeur de formulaire
+            </router-link>
+            <router-link to="/ministeres-editor" class="dropdown-item" @click="closeDropdown">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              Gestion des ministères
+            </router-link>
+          </div>
+        </div>
         <div class="user-info">
           <div class="user-details">
             <span class="user-display-name">{{ user.display_name || user.username }}</span>
@@ -46,6 +70,11 @@
 <script>
 export default {
   name: "Header",
+  data() {
+    return {
+      dropdownOpen: false
+    };
+  },
   computed: {
     user() {
       return JSON.parse(localStorage.getItem("user") || "null");
@@ -64,10 +93,27 @@ export default {
     }
   },
   methods: {
+    toggleDropdown() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
+    closeDropdown() {
+      this.dropdownOpen = false;
+    },
     logout() {
       localStorage.removeItem("user");
       this.$router.push("/");
+    },
+    handleClickOutside(event) {
+      if (this.$refs.dropdown && !this.$refs.dropdown.contains(event.target)) {
+        this.dropdownOpen = false;
+      }
     }
+  },
+  mounted() {
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
   }
 };
 </script>
@@ -136,30 +182,100 @@ export default {
 .nav-section {
   display: flex;
   align-items: center;
-  gap: var(--dgppe-spacing-4);
+  gap: 0.5rem;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: var(--dgppe-primary);
-  color: white;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  color: var(--dgppe-text);
   text-decoration: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--dgppe-gray-300);
+  font-size: 0.85rem;
+  font-weight: 400;
   transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-  background: var(--dgppe-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 64, 128, 0.2);
+  background: var(--dgppe-light);
+  border-color: var(--dgppe-primary);
+  color: var(--dgppe-primary);
 }
 
 .nav-link svg {
+  flex-shrink: 0;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+  margin-left: 0.2rem;
+}
+
+.chevron-open {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 220px;
+  background: var(--dgppe-white);
+  border: 1px solid var(--dgppe-gray-300);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  color: var(--dgppe-text);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--dgppe-gray-200);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: var(--dgppe-light);
+  color: var(--dgppe-primary);
+  padding-left: 1.2rem;
+}
+
+.dropdown-item svg {
   flex-shrink: 0;
 }
 

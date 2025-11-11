@@ -12,6 +12,8 @@ import AdminDashboard from '../views/AdminDashboard.vue';
 import ProjectDetail from '../views/ProjectDetail.vue';
 import GestionComptes from '../views/GestionComptes.vue';
 import Invite from '../views/Invite.vue';
+import FormulaireEditor from '../views/FormulaireEditor.vue';
+import MinisteresEditor from '../views/MinisteresEditor.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -28,6 +30,8 @@ const routes = [
   { path: '/presidencecomite', name: 'PresidenceComite', component: PresidenceComite, meta: { requiresAuth: true } },
   { path: '/admin', name: 'Admin', component: AdminDashboard, meta: { requiresAuth: true } },
   { path: '/gestion-comptes', name: 'GestionComptes', component: GestionComptes, meta: { requiresAuth: true } },
+  { path: '/formulaire-editor', name: 'FormulaireEditor', component: FormulaireEditor, meta: { requiresAuth: true } },
+  { path: '/ministeres-editor', name: 'MinisteresEditor', component: MinisteresEditor, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
   { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } }
 ];

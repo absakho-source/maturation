@@ -35,7 +35,7 @@
           </ul>
           <button @click="envoyerFichiers" class="btn-upload" :disabled="uploading">
             <span v-if="uploading">⏳ Envoi en cours...</span>
-            <span v-else">📤 Envoyer</span>
+            <span v-else>📤 Envoyer</span>
           </button>
         </div>
       </div>

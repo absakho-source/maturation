@@ -204,10 +204,19 @@
                 <h3>{{ projet.titre }}</h3>
               </div>
               <span :class="'badge status-' + projet.statut.replace(' ', '-')">{{ projet.statut }}</span>
+              <!-- Alerte pour rejet proposé en attente de validation -->
+              <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="badge status-rejected" style="margin-left: 8px;">⚠️ Rejet proposé</span>
             </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
               <p v-if="projet.evaluateur_nom"><strong>Évaluateur:</strong> {{ getEvaluateurLabel(projet.evaluateur_nom) }}</p>
+
+              <!-- Afficher le message de rejet proposé -->
+              <div v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="rejection-proposal" style="margin: 10px 0;">
+                <p><strong>⚠️ Rejet proposé par l'évaluateur:</strong></p>
+                <div class="rejection-message">{{ projet.evaluation_prealable_commentaire || "Aucun commentaire" }}</div>
+              </div>
+
               <p v-if="projet.avis"><strong>Avis:</strong> <span :class="getAvisClass(projet.avis)">{{ projet.avis }}</span></p>
               <p v-if="projet.commentaires"><strong>Commentaires:</strong> {{ projet.commentaires }}</p>
               
@@ -246,8 +255,8 @@
                   <div class="reassign-controls">
                     <select v-model="assignation[projet.id]">
                       <option value="">--Choisir--</option>
-                      <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                      <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                      <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                      <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
                         {{ evaluateur.display_name || evaluateur.username }}
                       </option>
                     </select>
@@ -267,13 +276,21 @@
               <div v-if="projet.statut === 'rejeté'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
-                    ❌ <strong>Avis rejeté par le Comité</strong>
+                    <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par le comité -->
+                    <template v-if="projet.avis === 'dossier rejeté'">
+                      ❌ <strong>Projet rejeté</strong>
+                    </template>
+                    <template v-else>
+                      ❌ <strong>Avis rejeté par le Comité</strong>
+                    </template>
                   </div>
                   <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
-                  <p><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
+                  <p v-else-if="projet.commentaires"><strong>Motif de rejet:</strong> {{ projet.commentaires }}</p>
+                  <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
                 </div>
-                
-                <div class="reassign-rejected-section">
+
+                <!-- Réassignation disponible uniquement pour les rejets par le comité, pas pour les rejets lors de l'évaluation préalable -->
+                <div v-if="projet.avis !== 'dossier rejeté'" class="reassign-rejected-section">
                   <h4>🔄 Réassigner pour nouvelle évaluation</h4>
 
                   <div class="reassign-controls-vertical">
@@ -281,8 +298,8 @@
                       <label>Réassigner à:</label>
                       <select v-model="assignation[projet.id]" class="reassign-select">
                         <option value="">--Choisir un évaluateur--</option>
-                        <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                        <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                        <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                        <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
                           {{ evaluateur.display_name || evaluateur.username }}
                         </option>
                       </select>
@@ -410,8 +427,8 @@
                 <label>{{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
-                  <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                  <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                  <option v-if="!(projet.statut === 'assigné' || projet.statut === 'en évaluation') || projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                  <option v-for="evaluateur in ((projet.statut === 'assigné' || projet.statut === 'en évaluation') ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
                     {{ evaluateur.display_name || evaluateur.username }}
                   </option>
                 </select>
@@ -442,24 +459,46 @@
                 <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
                 <h3>{{ p.titre }}</h3>
               </div>
-              <span class="badge status-evaluated">évalué</span>
+              <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
+              <span v-else class="badge status-evaluated">évalué</span>
             </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
               <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
-              <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-              <p v-if="p.commentaires"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
-              
+
+              <!-- Affichage pour un rejet proposé -->
+              <div v-if="p.evaluation_prealable === 'dossier_rejete'" class="rejection-proposal">
+                <p><strong>⚠️ Proposition de rejet:</strong></p>
+                <div class="rejection-message">{{ p.evaluation_prealable_commentaire || p.commentaires || "Aucun commentaire" }}</div>
+              </div>
+
+              <!-- Affichage pour un avis normal -->
+              <div v-else>
+                <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+                <p v-if="p.commentaires"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
+              </div>
+
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
-              
-              <div class="validation-actions">
+
+              <!-- Actions pour un rejet proposé -->
+              <div v-if="p.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
+                <button class="btn-danger" @click="validerRejet(p.id)">
+                  ✓ Valider le rejet
+                </button>
+                <button class="btn-warning" @click="refuserRejet(p.id)">
+                  ✗ Refuser et réassigner
+                </button>
+              </div>
+
+              <!-- Actions pour un avis normal -->
+              <div v-else class="validation-actions">
                 <button class="btn-primary" @click="validerAvis(p.id)">Valider l'avis ➜ Présidence SCT</button>
                 <div class="reassign">
                   <label>Réassigner à
                     <select v-model="assignation[p.id]">
                       <option value="">--Choisir--</option>
-                      <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                      <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                      <option v-if="p.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                      <option v-for="evaluateur in getAvailableEvaluateurs(p)" :key="evaluateur.username" :value="evaluateur.username">
                         {{ evaluateur.display_name || evaluateur.username }}
                       </option>
                     </select>
@@ -678,7 +717,13 @@ export default {
       return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné'].includes(p.statut));
     },
     projectsToValidate() {
-      return this.allProjects.filter(p => p.statut === 'évalué');
+      // Inclure à la fois :
+      // 1. Les projets avec statut 'évalué' (avis normaux)
+      // 2. Les projets avec evaluation_prealable === 'dossier_rejete' ET statut !== 'rejeté' (rejets proposés par évaluateur en attente de validation)
+      //    (On exclut les projets déjà rejetés définitivement)
+      return this.allProjects.filter(p =>
+        p.statut === 'évalué' || (p.evaluation_prealable === 'dossier_rejete' && p.statut !== 'rejeté')
+      );
     },
     demandesComplementsEnAttente() {
       return this.allProjects.filter(p => p.statut === 'en attente validation demande compléments');
@@ -1002,6 +1047,73 @@ export default {
       });
       alert("Avis validé ➜ Présidence SCT"); this.loadProjects();
     },
+    async validerRejet(id) {
+      // Validation du rejet proposé par l'évaluateur
+      if (!confirm("Êtes-vous sûr de vouloir valider ce rejet ? Le dossier sera définitivement rejeté.")) {
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      // DEBUG: Vérifier l'état du projet avant la validation
+      const projectBefore = this.allProjects.find(p => p.id === id);
+      console.log("[DEBUG validerRejet] État du projet AVANT validation:", {
+        id,
+        statut: projectBefore?.statut,
+        evaluation_prealable: projectBefore?.evaluation_prealable,
+        evaluation_prealable_commentaire: projectBefore?.evaluation_prealable_commentaire
+      });
+
+      // Appeler l'endpoint d'évaluation préalable avec role=secretariatsct et decision=dossier_rejete
+      // Cela validera le rejet proposé
+      // On envoie le commentaire de l'évaluateur (déjà présent dans evaluation_prealable_commentaire)
+      const response = await fetch(`/api/projects/${id}/evaluation-prealable`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          decision: "dossier_rejete",
+          commentaires: projectBefore?.evaluation_prealable_commentaire || "",
+          auteur: user.username,
+          role: "secretariatsct"
+        })
+      });
+
+      const data = await response.json();
+      console.log("[DEBUG validerRejet] Réponse de l'API:", {
+        status: response.status,
+        data
+      });
+
+      alert("Rejet validé. Le dossier a été rejeté définitivement.");
+      await this.loadProjects();
+
+      // DEBUG: Vérifier l'état du projet après la validation
+      const projectAfter = this.allProjects.find(p => p.id === id);
+      console.log("[DEBUG validerRejet] État du projet APRÈS validation:", {
+        id,
+        statut: projectAfter?.statut,
+        evaluation_prealable: projectAfter?.evaluation_prealable,
+        avis: projectAfter?.avis
+      });
+    },
+    async refuserRejet(id) {
+      // Refuser le rejet et réassigner
+      if (!confirm("Êtes-vous sûr de vouloir refuser ce rejet et renvoyer le dossier en évaluation ?")) {
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      // Réinitialiser l'évaluation préalable en réassignant le projet
+      await fetch(`/api/projects/${id}/traiter`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          statut_action: "rejeter_demande_complements", // Utiliser cette action qui réinitialise tout
+          auteur: user.username,
+          role: user.role
+        })
+      });
+      alert("Rejet refusé. Le dossier a été renvoyé en assignation pour réévaluation.");
+      this.loadProjects();
+    },
     async soumettre(id) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const av = this.avis[id]; const com = (this.commentaires[id] || "").trim();
@@ -1026,6 +1138,18 @@ export default {
       // Chercher l'évaluateur dans la liste et retourner son display_name
       const evaluateur = this.evaluateurs.find(e => e.username === ev);
       return evaluateur ? (evaluateur.display_name || evaluateur.username) : ev;
+    },
+    getAvailableEvaluateurs(projet) {
+      // Filtrer les évaluateurs pour exclure celui actuellement assigné
+      if (!projet || !projet.evaluateur_nom) {
+        return this.evaluateurs;
+      }
+      // Filtrer en excluant l'évaluateur actuellement assigné
+      const filtered = this.evaluateurs.filter(e => {
+        return e.username !== projet.evaluateur_nom;
+      });
+      console.log('getAvailableEvaluateurs - Projet:', projet.numero_projet, 'Assigné à:', projet.evaluateur_nom, 'Evaluateurs filtrés:', filtered.length, 'Total:', this.evaluateurs.length);
+      return filtered;
     },
     getAvisClass(a){ const m={"favorable":"avis-favorable","favorable sous conditions":"avis-conditions","défavorable":"avis-defavorable","compléments demandés":"avis-complement"}; return m[a]||""; },
 
@@ -1738,6 +1862,25 @@ export default {
   margin-top: 0.5rem;
   font-style: italic;
   border: 1px solid #e5e7eb;
+}
+
+.rejection-proposal {
+  margin: 1rem 0;
+}
+
+.rejection-message {
+  background: #fef2f2;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
 }
 
 .validation-actions {

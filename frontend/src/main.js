@@ -21,8 +21,8 @@ const originalFetch = window.fetch
 
 // Remplacement global de fetch
 window.fetch = function(url, options) {
-  // Si l'URL commence par /api, ajoute l'URL de base
-  if (typeof url === 'string' && url.startsWith('/api')) {
+  // Si l'URL commence par /api ET qu'on a une URL de base configurée (production)
+  if (typeof url === 'string' && url.startsWith('/api') && API_BASE_URL) {
     const newUrl = `${API_BASE_URL}${url}`
     console.log('[API Fetch] Redirection:', url, '→', newUrl)
     url = newUrl

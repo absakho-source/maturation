@@ -31,8 +31,7 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None):
                     typologie_projet = {'productif': False, 'appui_production': False, 'social': False, 'environnemental': False}
             except Exception:
                 typologie_projet = {'productif': False, 'appui_production': False, 'social': False, 'environnemental': False}
-            
-            print(f"DEBUG: project.id={project.id}, evaluateur_nom={getattr(project, 'evaluateur_nom', None)}")
+
             presentation_data = {
                 'id': project.id,
                 'intitule': project.titre,

@@ -73,15 +73,32 @@
               />
             </div>
 
-            <!-- Champ pour saisir le ministère si "Ministère" -->
+            <!-- Champ pour sélectionner le ministère -->
             <div v-if="typeInstitution === 'ministere'">
               <label for="nom-ministere">Nom du ministère / Direction nationale *</label>
-              <input
+              <select
                 id="nom-ministere"
                 v-model="nomMinistere"
-                placeholder="Ex: Ministère de l'Économie, du Plan et de la Coopération"
+                @change="onMinistereChange"
                 required
-              />
+              >
+                <option value="">-- Sélectionnez un ministère --</option>
+                <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                  {{ ministere.nom_complet }}
+                </option>
+                <option value="__autre__">Autre (non listé)</option>
+              </select>
+
+              <!-- Champ libre si "Autre" est sélectionné -->
+              <div v-if="nomMinistere === '__autre__'">
+                <label for="nom-ministere-libre">Nom du ministère *</label>
+                <input
+                  id="nom-ministere-libre"
+                  v-model="nomMinistereLibre"
+                  placeholder="Ex: Autre ministère ou direction nationale"
+                  required
+                />
+              </div>
             </div>
 
             <!-- Direction/Service - commun à tous les types d'institution -->
@@ -184,22 +201,39 @@
             />
 
             <label for="tutelle-agence">Autorité de tutelle *</label>
-            <select id="tutelle-agence" v-model="tutelleAgence" required>
+            <select id="tutelle-agence" v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
               <option value="">-- Sélectionnez l'autorité de tutelle --</option>
               <option value="Primature">Primature</option>
               <option value="Présidence de la République">Présidence de la République</option>
               <option value="__ministere__">Ministère sectoriel</option>
             </select>
 
-            <!-- Champ libre si ministère sectoriel sélectionné -->
+            <!-- Sélection du ministère de tutelle si ministère sélectionné -->
             <div v-if="tutelleAgence === '__ministere__'">
-              <label for="tutelle-agence-libre">Nom du ministère de tutelle *</label>
-              <input
-                id="tutelle-agence-libre"
+              <label for="tutelle-ministere-select">Ministère de tutelle *</label>
+              <select
+                id="tutelle-ministere-select"
                 v-model="tutelleAgenceLibre"
-                placeholder="Ex: Ministère de l'Économie, du Plan et de la Coopération"
+                @change="onTutelleMinistereChange"
                 required
-              />
+              >
+                <option value="">-- Sélectionnez un ministère --</option>
+                <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                  {{ ministere.nom_complet }}
+                </option>
+                <option value="__autre__">Autre (non listé)</option>
+              </select>
+
+              <!-- Champ libre si "Autre" est sélectionné -->
+              <div v-if="tutelleAgenceLibre === '__autre__'">
+                <label for="tutelle-agence-autre">Nom du ministère de tutelle *</label>
+                <input
+                  id="tutelle-agence-autre"
+                  v-model="tutelleAgenceAutre"
+                  placeholder="Ex: Autre ministère de tutelle"
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -305,6 +339,7 @@ const nomMinistereLibre = ref('') // Pour le nom du ministère si saisie libre
 const nomAgence = ref('') // Pour les agences
 const tutelleAgence = ref('') // Tutelle agence - select
 const tutelleAgenceLibre = ref('') // Nom ministère si ministère sectoriel sélectionné
+const tutelleAgenceAutre = ref('') // Champ libre si "Autre" sélectionné pour la tutelle
 const nomStructure = ref('')
 const regionParente = ref('')
 const departementParent = ref('') // Pour la sélection de commune
@@ -320,7 +355,7 @@ const error = ref('')
 const regions = ref([])
 const departements = ref({}) // Format: { region: [dept1, dept2, ...] }
 const communes = ref({}) // Format: { departement: [commune1, commune2, ...] }
-const ministeres = ref([])
+const ministeresActifs = ref([]) // Liste des ministères actifs depuis la base de données
 const agences = ref([])
 
 // Départements filtrés selon la région sélectionnée
@@ -357,9 +392,9 @@ async function loadDataLists() {
     const resCommunes = await axios.get('/api/data/communes?format=dict')
     communes.value = resCommunes.data
 
-    // Charger les ministères
-    const resMinisteres = await axios.get('/api/data/ministeres')
-    ministeres.value = resMinisteres.data
+    // Charger les ministères actifs depuis la nouvelle API
+    const resMinisteres = await axios.get('/api/ministeres')
+    ministeresActifs.value = resMinisteres.data
 
     // Charger les agences
     const resAgences = await axios.get('/api/data/agences')
@@ -390,6 +425,29 @@ function onTypeInstitutionChange() {
   // Réinitialiser les champs spécifiques quand le type d'institution change
   nomInstitution.value = ''
   nomMinistere.value = ''
+  nomMinistereLibre.value = ''
+}
+
+function onMinistereChange() {
+  // Réinitialiser le champ libre si on change la sélection
+  if (nomMinistere.value !== '__autre__') {
+    nomMinistereLibre.value = ''
+  }
+}
+
+function onTutelleAgenceChange() {
+  // Réinitialiser les champs de tutelle si on change le type de tutelle
+  if (tutelleAgence.value !== '__ministere__') {
+    tutelleAgenceLibre.value = ''
+    tutelleAgenceAutre.value = ''
+  }
+}
+
+function onTutelleMinistereChange() {
+  // Réinitialiser le champ libre si on change la sélection de ministère
+  if (tutelleAgenceLibre.value !== '__autre__') {
+    tutelleAgenceAutre.value = ''
+  }
 }
 
 function onNiveauCollectiviteChange() {
@@ -474,7 +532,8 @@ async function register() {
       } else if (typeInstitution.value === 'primature') {
         structureFinal = 'Primature'
       } else if (typeInstitution.value === 'ministere') {
-        structureFinal = nomMinistere.value
+        // Utiliser le champ libre si "Autre" est sélectionné
+        structureFinal = nomMinistere.value === '__autre__' ? nomMinistereLibre.value : nomMinistere.value
       } else if (typeInstitution.value === 'autre_institution') {
         structureFinal = nomInstitution.value
       }
@@ -482,7 +541,11 @@ async function register() {
 
     // Pour les agences, combiner nom agence et tutelle
     if (typeStructure.value === 'agence' && nomAgence.value && tutelleAgence.value) {
-      const tutelleFinal = tutelleAgence.value === '__ministere__' ? tutelleAgenceLibre.value : tutelleAgence.value
+      let tutelleFinal = tutelleAgence.value
+      if (tutelleAgence.value === '__ministere__') {
+        // Utiliser le champ libre si "Autre" est sélectionné pour le ministère de tutelle
+        tutelleFinal = tutelleAgenceLibre.value === '__autre__' ? tutelleAgenceAutre.value : tutelleAgenceLibre.value
+      }
       structureFinal = `${nomAgence.value} - ${tutelleFinal}`
     }
 

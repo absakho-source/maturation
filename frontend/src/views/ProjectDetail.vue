@@ -48,9 +48,11 @@
           <!-- Informations sur les compléments -->
           <div class="info-card" v-if="project.complements_reponse_message || project.commentaires">
             <h3>💬 Échanges et compléments</h3>
-            
+
             <div v-if="project.commentaires" class="complement-section">
-              <h4>Demande de compléments :</h4>
+              <!-- Afficher le titre approprié selon le statut du projet -->
+              <h4 v-if="project.statut === 'rejeté' || project.avis === 'dossier rejeté'">Motif de rejet :</h4>
+              <h4 v-else>Demande de compléments :</h4>
               <div class="complement-message demande">{{ project.commentaires }}</div>
             </div>
             
@@ -89,7 +91,8 @@
               <span class="label">Avis:</span>
               <span class="value" :class="getAvisClass(project.avis)">{{ project.avis }}</span>
             </div>
-            <div class="info-row" v-if="project.commentaires">
+            <!-- Ne pas afficher les commentaires ici si c'est un rejet (ils sont déjà dans la section "Échanges et compléments") -->
+            <div class="info-row" v-if="project.commentaires && project.statut !== 'rejeté' && project.avis !== 'dossier rejeté'">
               <span class="label">Commentaires:</span>
               <span class="value">{{ project.commentaires }}</span>
             </div>

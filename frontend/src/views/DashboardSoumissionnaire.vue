@@ -39,18 +39,179 @@
             </div>
           </div>
 
-          <!-- Structure soumissionnaire et Organisme de tutelle -->
+          <!-- Structure soumissionnaire -->
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>Structure soumissionnaire / Maître d'ouvrage *</label>
               <input v-model="form.structure_soumissionnaire" type="text" required placeholder="Ex: Direction des Infrastructures Sanitaires" />
             </div>
-            <div class="form-group">
-              <label>Organisme de tutelle *</label>
-              <select v-model="form.organisme_tutelle" required>
-                <option value="" disabled>-- Sélectionner un ministère --</option>
-                <option v-for="ministere in ministeres" :key="ministere" :value="ministere">{{ ministere }}</option>
+          </div>
+
+          <!-- Organisme de tutelle - Sélection hiérarchique -->
+          <div class="form-section-title">Organisme de tutelle</div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label>Type d'organisme de tutelle *</label>
+              <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
+                <option value="">-- Sélectionnez --</option>
+                <option value="institution">Institution</option>
+                <option value="collectivite">Collectivité territoriale</option>
+                <option value="agence">Agence / Établissement public</option>
+                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Institution -->
+          <div v-if="typeOrganisme === 'institution'" class="form-row">
+            <div class="form-group full-width">
+              <label>Type d'institution *</label>
+              <select v-model="typeInstitution" @change="onTypeInstitutionChange" required>
+                <option value="">-- Sélectionnez --</option>
+                <option value="presidence">Présidence de la République</option>
+                <option value="primature">Primature</option>
+                <option value="ministere">Ministère / Direction nationale</option>
+                <option value="autre_institution">Autre Institution</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere'" class="form-row">
+            <div class="form-group full-width">
+              <label>Ministère / Direction nationale *</label>
+              <select v-model="nomMinistere" required>
+                <option value="">-- Sélectionnez --</option>
+                <option v-for="m in ministeresActifs" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
+                <option value="__autre__">Autre (à préciser)</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere' && nomMinistere === '__autre__'" class="form-row">
+            <div class="form-group full-width">
+              <label>Préciser le ministère / direction *</label>
+              <input v-model="nomMinistereLibre" type="text" required placeholder="Ex: Ministère de..." />
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'institution' && typeInstitution === 'autre_institution'" class="form-row">
+            <div class="form-group full-width">
+              <label>Nom de l'institution *</label>
+              <input v-model="nomInstitution" type="text" required placeholder="Ex: Conseil économique, social et environnemental" />
+            </div>
+          </div>
+
+          <!-- Collectivité territoriale -->
+          <div v-if="typeOrganisme === 'collectivite'" class="form-row">
+            <div class="form-group full-width">
+              <label>Niveau de collectivité *</label>
+              <select v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required>
+                <option value="">-- Sélectionnez --</option>
+                <option value="region">Région</option>
+                <option value="departement">Département</option>
+                <option value="commune">Commune</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'collectivite' && niveauCollectivite === 'region'" class="form-row">
+            <div class="form-group full-width">
+              <label>Région *</label>
+              <select v-model="nomStructure" required>
+                <option value="">-- Sélectionnez --</option>
+                <option v-for="r in regions" :key="r" :value="`Région de ${r}`">Région de {{ r }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'collectivite' && niveauCollectivite === 'departement'" class="form-row">
+            <div class="form-group">
+              <label>Région parente *</label>
+              <select v-model="regionParente" required>
+                <option value="">-- Sélectionnez --</option>
+                <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Département *</label>
+              <select v-model="nomStructure" required :disabled="!regionParente">
+                <option value="">-- Sélectionnez --</option>
+                <option v-for="d in departementsFiltered" :key="d" :value="`Département de ${d}`">Département de {{ d }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'collectivite' && niveauCollectivite === 'commune'">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Région *</label>
+                <select v-model="regionParente" required>
+                  <option value="">-- Sélectionnez --</option>
+                  <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Département *</label>
+                <select v-model="departementParent" required :disabled="!regionParente">
+                  <option value="">-- Sélectionnez --</option>
+                  <option v-for="d in departementsFiltered" :key="d" :value="d">{{ d }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>Commune *</label>
+                <select v-model="nomStructure" required :disabled="!departementParent">
+                  <option value="">-- Sélectionnez --</option>
+                  <option v-for="c in communesFiltered" :key="c" :value="`Commune de ${c}`">Commune de {{ c }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agence / Établissement public -->
+          <div v-if="typeOrganisme === 'agence'" class="form-row">
+            <div class="form-group full-width">
+              <label>Nom de l'agence / établissement *</label>
+              <input v-model="nomAgence" type="text" required placeholder="Ex: ADIE, APIX, ARTP..." />
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'agence'" class="form-row">
+            <div class="form-group full-width">
+              <label>Autorité de tutelle *</label>
+              <select v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
+                <option value="">-- Sélectionnez --</option>
+                <option value="presidence">Présidence de la République</option>
+                <option value="primature">Primature</option>
+                <option value="__ministere__">Ministère (à préciser)</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'agence' && tutelleAgence === '__ministere__'" class="form-row">
+            <div class="form-group full-width">
+              <label>Ministère de tutelle *</label>
+              <select v-model="tutelleAgenceLibre" required>
+                <option value="">-- Sélectionnez --</option>
+                <option v-for="m in ministeresActifs" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
+                <option value="__autre__">Autre (à préciser)</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="typeOrganisme === 'agence' && tutelleAgence === '__ministere__' && tutelleAgenceLibre === '__autre__'" class="form-row">
+            <div class="form-group full-width">
+              <label>Préciser le ministère de tutelle *</label>
+              <input v-model="tutelleAgenceAutre" type="text" required placeholder="Ex: Ministère de..." />
+            </div>
+          </div>
+
+          <!-- Autre -->
+          <div v-if="typeOrganisme === 'autre'" class="form-row">
+            <div class="form-group full-width">
+              <label>Nom de la structure *</label>
+              <input v-model="nomStructure" type="text" required placeholder="Ex: ONG Caritas, Cabinet XYZ..." />
             </div>
           </div>
 
@@ -340,34 +501,29 @@ export default {
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
 
-      ministeres: [
-        "Ministère de l'Intérieur et de la Sécurité publique",
-        "Ministère des Affaires étrangères et des Sénégalais de l'Extérieur",
-        "Ministère de la Justice",
-        "Ministère des Forces armées",
-        "Ministère de l'Économie, du Plan et de la Coopération",
-        "Ministère des Finances et du Budget",
-        "Ministère de l'Hydraulique et de l'Assainissement",
-        "Ministère de l'Énergie, du Pétrole et des Mines",
-        "Ministère de l'Agriculture, de la Souveraineté alimentaire et de l'Élevage",
-        "Ministère de la Pêche et de l'Économie maritime",
-        "Ministère de l'Industrie et du Commerce",
-        "Ministère des Infrastructures et des Transports terrestres et aériens",
-        "Ministère de l'Urbanisme, des Collectivités territoriales et de l'Aménagement des territoires",
-        "Ministère de l'Enseignement supérieur, de la Recherche et de l'Innovation",
-        "Ministère de l'Éducation nationale",
-        "Ministère de la Formation professionnelle",
-        "Ministère de la Santé et de l'Action sociale",
-        "Ministère de la Jeunesse, des Sports et de la Culture",
-        "Ministère de la Famille et des Solidarités",
-        "Ministère de l'Emploi et des Relations avec les institutions",
-        "Ministère de l'Environnement et de la Transition écologique",
-        "Ministère du Tourisme et de l'Artisanat",
-        "Ministère de la Communication, des Télécommunications et de l'Économie numérique",
-        "Ministère de la Fonction publique et de la Réforme du service public",
-        "Ministère de la Microfinance et de l'Économie sociale et solidaire",
-        "Autre administration (à préciser)"
-      ],
+      ministeres: [], // Chargé dynamiquement depuis l'API (deprecated - use ministeresActifs)
+      ministeresActifs: [], // Liste d'objets ministères actifs
+
+      // Variables pour l'organisme de tutelle hiérarchique
+      typeOrganisme: "",
+      typeInstitution: "",
+      nomInstitution: "",
+      nomMinistere: "",
+      nomMinistereLibre: "",
+      niveauCollectivite: "",
+      regionParente: "",
+      departementParent: "",
+      communeSelectionnee: "",
+      nomStructure: "",
+      nomAgence: "",
+      tutelleAgence: "",
+      tutelleAgenceLibre: "",
+      tutelleAgenceAutre: "",
+
+      // Données de collectivités territoriales
+      regions: [],
+      departements: {}, // Format: { region: [dept1, dept2, ...] }
+      communes: {}, // Format: { departement: [commune1, commune2, ...] }
 
       secteurs: [
         "agriculture-élevage-pêche",
@@ -400,8 +556,129 @@ export default {
       ]
     };
   },
-  mounted() { this.loadProjects(); },
+  computed: {
+    departementsFiltered() {
+      if (!this.regionParente) return [];
+      return this.departements[this.regionParente] || [];
+    },
+
+    communesFiltered() {
+      if (!this.departementParent) return [];
+      return this.communes[this.departementParent] || [];
+    }
+  },
+  mounted() {
+    this.loadProjects();
+    this.loadMinisteres();
+    this.loadDataLists();
+  },
   methods: {
+    async loadMinisteres() {
+      try {
+        const response = await fetch('/api/ministeres');
+        if (response.ok) {
+          const data = await response.json();
+          this.ministeresActifs = data.filter(m => m.actif);
+          // Pour la compatibilité avec l'ancien code (si utilisé ailleurs)
+          this.ministeres = data.map(m =>
+            m.abreviation ? `${m.abreviation} - ${m.nom_complet}` : m.nom_complet
+          );
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des ministères:', error);
+        this.ministeresActifs = [];
+        this.ministeres = [];
+      }
+    },
+
+    async loadDataLists() {
+      try {
+        const resRegions = await fetch('/api/data/regions');
+        if (resRegions.ok) {
+          this.regions = await resRegions.json();
+        }
+
+        const resDept = await fetch('/api/data/departements?format=dict');
+        if (resDept.ok) {
+          this.departements = await resDept.json();
+        }
+
+        const resCommunes = await fetch('/api/data/communes?format=dict');
+        if (resCommunes.ok) {
+          this.communes = await resCommunes.json();
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement des données territoriales:', err);
+      }
+    },
+
+    // Gestionnaires de changement pour réinitialiser les champs enfants
+    onTypeOrganismeChange() {
+      // Réinitialiser tous les champs
+      this.typeInstitution = "";
+      this.nomInstitution = "";
+      this.nomMinistere = "";
+      this.nomMinistereLibre = "";
+      this.niveauCollectivite = "";
+      this.regionParente = "";
+      this.departementParent = "";
+      this.nomStructure = "";
+      this.nomAgence = "";
+      this.tutelleAgence = "";
+      this.tutelleAgenceLibre = "";
+      this.tutelleAgenceAutre = "";
+    },
+
+    onTypeInstitutionChange() {
+      this.nomInstitution = "";
+      this.nomMinistere = "";
+      this.nomMinistereLibre = "";
+    },
+
+    onNiveauCollectiviteChange() {
+      this.regionParente = "";
+      this.departementParent = "";
+      this.nomStructure = "";
+    },
+
+    onTutelleAgenceChange() {
+      this.tutelleAgenceLibre = "";
+      this.tutelleAgenceAutre = "";
+    },
+
+    // Construire la valeur finale de l'organisme de tutelle
+    construireOrganismeTutelle() {
+      if (this.typeOrganisme === 'institution') {
+        if (this.typeInstitution === 'presidence') {
+          return 'Présidence de la République';
+        } else if (this.typeInstitution === 'primature') {
+          return 'Primature';
+        } else if (this.typeInstitution === 'ministere') {
+          if (this.nomMinistere === '__autre__') {
+            return this.nomMinistereLibre;
+          } else {
+            return this.nomMinistere;
+          }
+        } else if (this.typeInstitution === 'autre_institution') {
+          return this.nomInstitution;
+        }
+      } else if (this.typeOrganisme === 'collectivite') {
+        return this.nomStructure;
+      } else if (this.typeOrganisme === 'agence') {
+        let tutelle = '';
+        if (this.tutelleAgence === 'presidence') {
+          tutelle = 'Présidence de la République';
+        } else if (this.tutelleAgence === 'primature') {
+          tutelle = 'Primature';
+        } else if (this.tutelleAgence === '__ministere__') {
+          tutelle = this.tutelleAgenceLibre === '__autre__' ? this.tutelleAgenceAutre : this.tutelleAgenceLibre;
+        }
+        return `${this.nomAgence} (Tutelle: ${tutelle})`;
+      } else if (this.typeOrganisme === 'autre') {
+        return this.nomStructure;
+      }
+      return '';
+    },
     // Méthodes pour le formatage du coût estimatif
     formatNumber(value) {
       if (!value && value !== 0) return "";
@@ -544,6 +821,14 @@ export default {
         return;
       }
 
+      // Construire et valider l'organisme de tutelle
+      const organismeTutelle = this.construireOrganismeTutelle();
+      if (!organismeTutelle || organismeTutelle.trim() === '') {
+        this.submitError = "Veuillez sélectionner un organisme de tutelle avant de soumettre le projet.";
+        this.submitting = false;
+        return;
+      }
+
       try {
         const user = JSON.parse(localStorage.getItem("user") || "null");
         if (!user) return this.$router.push("/login");
@@ -561,12 +846,8 @@ export default {
         formData.append("point_focal_telephone", this.form.point_focal_telephone || "");
         formData.append("point_focal_email", this.form.point_focal_email || "");
 
-        // Gérer l'organisme de tutelle avec l'option "Autre administration"
-        let organismeValue = this.form.organisme_tutelle || "";
-        if (organismeValue === "Autre administration (à préciser)" && this.form.autre_administration) {
-          organismeValue = this.form.autre_administration;
-        }
-        formData.append("organisme_tutelle", organismeValue);
+        // Utiliser l'organisme de tutelle construit
+        formData.append("organisme_tutelle", organismeTutelle);
         formData.append("auteur_nom", user.username);
 
         // Ajouter tous les fichiers avec leurs catégories
@@ -603,6 +884,21 @@ export default {
           etudes_plans: [],
           autres_pieces: []
         };
+        // Réinitialiser les champs hiérarchiques
+        this.typeOrganisme = "";
+        this.typeInstitution = "";
+        this.nomInstitution = "";
+        this.nomMinistere = "";
+        this.nomMinistereLibre = "";
+        this.niveauCollectivite = "";
+        this.regionParente = "";
+        this.departementParent = "";
+        this.nomStructure = "";
+        this.nomAgence = "";
+        this.tutelleAgence = "";
+        this.tutelleAgenceLibre = "";
+        this.tutelleAgenceAutre = "";
+
         this.coutFormate = "";
         this.files = [];
         this.showSubmissionForm = false; // Fermer le formulaire après soumission réussie
@@ -681,6 +977,21 @@ export default {
         etudes_plans: [],
         autres_pieces: []
       };
+      // Réinitialiser les champs hiérarchiques
+      this.typeOrganisme = "";
+      this.typeInstitution = "";
+      this.nomInstitution = "";
+      this.nomMinistere = "";
+      this.nomMinistereLibre = "";
+      this.niveauCollectivite = "";
+      this.regionParente = "";
+      this.departementParent = "";
+      this.nomStructure = "";
+      this.nomAgence = "";
+      this.tutelleAgence = "";
+      this.tutelleAgenceLibre = "";
+      this.tutelleAgenceAutre = "";
+
       this.coutFormate = "";
       this.files = [];
       this.submitError = "";

@@ -383,3 +383,165 @@ class FichierMessage(db.Model):
             'taille_fichier': self.taille_fichier,
             'date_ajout': self.date_ajout.isoformat() if self.date_ajout else None
         }
+
+class FormulaireConfig(db.Model):
+    """Configuration globale du formulaire d'évaluation"""
+    __tablename__ = "formulaire_config"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(200), nullable=False)  # Nom de la configuration
+    version = db.Column(db.String(50), nullable=False)  # Version (ex: "1.0", "2.0")
+    version_affichage = db.Column(db.String(200), nullable=True)  # Texte libre pour affichage (ex: "Version 1.0 - Janvier 2025")
+    description = db.Column(db.Text, nullable=True)  # Description de la configuration
+    active = db.Column(db.Boolean, default=False)  # Configuration active?
+    score_total_max = db.Column(db.Integer, default=100)  # Score total maximum
+
+    # Seuils de proposition (en pourcentage)
+    seuil_favorable = db.Column(db.Integer, default=80)  # >= 80%
+    seuil_conditionnel = db.Column(db.Integer, default=70)  # >= 70% et < 80%
+    # En dessous de seuil_conditionnel = défavorable
+
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    date_modification = db.Column(db.DateTime, nullable=True)
+    modifie_par = db.Column(db.String(100), nullable=True)  # Username de qui a modifié
+
+    # Relations
+    sections = db.relationship('SectionFormulaire', backref='config', lazy=True, cascade='all, delete-orphan', order_by='SectionFormulaire.ordre')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nom': self.nom,
+            'version': self.version,
+            'version_affichage': self.version_affichage,
+            'description': self.description,
+            'active': self.active,
+            'score_total_max': self.score_total_max,
+            'seuil_favorable': self.seuil_favorable,
+            'seuil_conditionnel': self.seuil_conditionnel,
+            'date_creation': self.date_creation.isoformat() if self.date_creation else None,
+            'date_modification': self.date_modification.isoformat() if self.date_modification else None,
+            'modifie_par': self.modifie_par,
+            'sections': [s.to_dict() for s in sorted(self.sections, key=lambda x: x.ordre)]
+        }
+
+class SectionFormulaire(db.Model):
+    """Sections du formulaire (I, II, III, IV)"""
+    __tablename__ = "section_formulaire"
+
+    id = db.Column(db.Integer, primary_key=True)
+    config_id = db.Column(db.Integer, db.ForeignKey('formulaire_config.id'), nullable=False)
+    titre = db.Column(db.String(300), nullable=False)  # Ex: "PRÉSENTATION DU PROJET"
+    numero = db.Column(db.String(10), nullable=False)  # Ex: "I", "II", "III", "IV"
+    ordre = db.Column(db.Integer, nullable=False)  # Ordre d'affichage
+    type_section = db.Column(db.String(50), nullable=False)  # 'presentation', 'classification', 'evaluation', 'conclusion'
+    editable = db.Column(db.Boolean, default=True)  # Si l'utilisateur peut éditer cette section
+
+    # Relations
+    champs = db.relationship('ChampFormulaire', backref='section', lazy=True, cascade='all, delete-orphan', order_by='ChampFormulaire.ordre')
+    criteres = db.relationship('CritereEvaluation', backref='section', lazy=True, cascade='all, delete-orphan', order_by='CritereEvaluation.ordre')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'config_id': self.config_id,
+            'titre': self.titre,
+            'numero': self.numero,
+            'ordre': self.ordre,
+            'type_section': self.type_section,
+            'editable': self.editable,
+            'champs': [c.to_dict() for c in sorted(self.champs, key=lambda x: x.ordre)],
+            'criteres': [c.to_dict() for c in sorted(self.criteres, key=lambda x: x.ordre)]
+        }
+
+class ChampFormulaire(db.Model):
+    """Champs personnalisés dans une section (pour présentation et classification)"""
+    __tablename__ = "champ_formulaire"
+
+    id = db.Column(db.Integer, primary_key=True)
+    section_id = db.Column(db.Integer, db.ForeignKey('section_formulaire.id'), nullable=False)
+    libelle = db.Column(db.String(300), nullable=False)  # Label du champ
+    cle = db.Column(db.String(100), nullable=False)  # Clé technique (ex: 'origine_projet')
+    type_champ = db.Column(db.String(50), nullable=False)  # 'text', 'textarea', 'number', 'select', 'checkbox_group', 'radio_group'
+    ordre = db.Column(db.Integer, nullable=False)
+    obligatoire = db.Column(db.Boolean, default=False)
+    largeur = db.Column(db.String(20), default='full')  # 'full', 'half', 'third'
+    options = db.Column(db.Text, nullable=True)  # JSON pour les options (select, checkbox, radio)
+    valeur_defaut = db.Column(db.Text, nullable=True)
+    aide = db.Column(db.Text, nullable=True)  # Texte d'aide
+    lecture_seule = db.Column(db.Boolean, default=False)  # Si le champ est en lecture seule
+
+    def to_dict(self):
+        import json
+        options_parsed = None
+        if self.options:
+            try:
+                options_parsed = json.loads(self.options)
+            except:
+                pass
+
+        return {
+            'id': self.id,
+            'section_id': self.section_id,
+            'libelle': self.libelle,
+            'cle': self.cle,
+            'type_champ': self.type_champ,
+            'ordre': self.ordre,
+            'obligatoire': self.obligatoire,
+            'largeur': self.largeur,
+            'options': options_parsed,
+            'valeur_defaut': self.valeur_defaut,
+            'aide': self.aide,
+            'lecture_seule': self.lecture_seule
+        }
+
+class CritereEvaluation(db.Model):
+    """Critères d'évaluation dans la section résultats"""
+    __tablename__ = "critere_evaluation"
+
+    id = db.Column(db.Integer, primary_key=True)
+    section_id = db.Column(db.Integer, db.ForeignKey('section_formulaire.id'), nullable=False)
+    nom = db.Column(db.String(300), nullable=False)  # Nom du critère
+    cle = db.Column(db.String(100), nullable=False)  # Clé technique (ex: 'pertinence')
+    description_aide = db.Column(db.Text, nullable=True)  # Description/aide pour l'évaluateur
+    score_max = db.Column(db.Integer, nullable=False)  # Score maximum pour ce critère
+    ordre = db.Column(db.Integer, nullable=False)
+    avec_description = db.Column(db.Boolean, default=True)  # Si on demande une description textuelle
+    avec_recommandations = db.Column(db.Boolean, default=False)  # Si on demande des recommandations
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'section_id': self.section_id,
+            'nom': self.nom,
+            'cle': self.cle,
+            'description_aide': self.description_aide,
+            'score_max': self.score_max,
+            'ordre': self.ordre,
+            'avec_description': self.avec_description,
+            'avec_recommandations': self.avec_recommandations
+        }
+
+
+class Ministere(db.Model):
+    """Liste des ministères du Sénégal pour sélection dans les formulaires"""
+    __tablename__ = "ministere"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom_complet = db.Column(db.String(300), nullable=False)
+    abreviation = db.Column(db.String(100), nullable=True)
+    actif = db.Column(db.Boolean, default=True)
+    ordre = db.Column(db.Integer, nullable=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    date_modification = db.Column(db.DateTime, nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nom_complet': self.nom_complet,
+            'abreviation': self.abreviation,
+            'actif': self.actif,
+            'ordre': self.ordre,
+            'date_creation': self.date_creation.isoformat() if self.date_creation else None,
+            'date_modification': self.date_modification.isoformat() if self.date_modification else None
+        }

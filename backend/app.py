@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -159,11 +159,6 @@ def projects():
         try:
             role = request.args.get("role", "")
             username = request.args.get("username", "")
-            # Ajoute ces logs pour diagnostiquer le filtrage et la base
-            print("[DEBUG] role:", role, "username:", username)
-            print("[DEBUG] Nombre total de projets:", Project.query.count())
-            print("[DEBUG] Projets auteur_nom == username:", Project.query.filter_by(auteur_nom=username).count())
-            print("[DEBUG] Tous les auteur_nom:", [p.auteur_nom for p in Project.query.all()])
 
             # Correction : filtrage pour le dashboard soumissionnaire
             if role == "soumissionnaire" and username:
@@ -193,14 +188,10 @@ def projects():
 
             # Correction : si aucun projet, retourne explicitement une liste vide
             if not items:
-                print("[DEBUG] Aucun projet trouvé pour ce filtre.")
                 return jsonify([]), 200
 
             result = []
             for p in items:
-                # Ajoute ce log pour chaque projet
-                print(f"[DEBUG] Projet: id={p.id}, titre={p.titre}, pieces_jointes={p.pieces_jointes}, date_soumission={getattr(p, 'date_soumission', None)}")
-
                 try:
                     if role == "soumissionnaire":
                         statut_affiche = get_statut_soumissionnaire(p)
@@ -288,13 +279,10 @@ def projects():
                     import traceback
                     print(f"[ERROR] Projet id={getattr(p, 'id', None)}: {err}")
                     traceback.print_exc()
-            print(f"[DEBUG] Nombre de projets retournés: {len(result)}")
             return jsonify(result), 200
         except Exception as e:
             import traceback
-            print("=== ERREUR /api/projects ===")
             traceback.print_exc()
-            print("Exception:", e)
             return jsonify([]), 500
 
     # POST: soumission d'un projet
@@ -421,7 +409,6 @@ def delete_project(project_id):
 def traiter_project(project_id):
     try:
         data = request.json or {}
-        print(f"🔍 DEBUG traiter_project: data = {data}")
         p = Project.query.get_or_404(project_id)
         auteur = data.get("auteur", "")
         role = data.get("role", "")
@@ -431,10 +418,7 @@ def traiter_project(project_id):
         if ("evaluateur_nom" in data and "avis" not in data and "validation_secretariat" not in data
             and data.get("statut_action") != "reassigner_rejete"):
 
-            # Empêcher la réassignation au même évaluateur
             nouveau_evaluateur = data["evaluateur_nom"]
-            if p.evaluateur_nom == nouveau_evaluateur:
-                return jsonify({"error": f"Le projet est déjà assigné à {nouveau_evaluateur}. Veuillez choisir un autre évaluateur."}), 400
 
             # Supprimer la fiche d'évaluation existante lors d'une réassignation
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
@@ -637,10 +621,15 @@ def evaluation_prealable(project_id):
         role = data.get("role", "")
 
         decision = data.get("decision")  # "dossier_evaluable", "complements_requis", ou "dossier_rejete"
-        commentaires = data.get("commentaires", "").strip()
+        # Le frontend envoie "commentaire" (sans s) - accepter les deux formats
+        commentaires = data.get("commentaire", data.get("commentaires", "")).strip()
+
 
         if not decision or decision not in ["dossier_evaluable", "complements_requis", "dossier_rejete"]:
             return jsonify({"error": "Décision invalide"}), 400
+
+        # Sauvegarder l'état précédent de evaluation_prealable AVANT de le modifier
+        previous_evaluation_prealable = p.evaluation_prealable
 
         # Enregistrer l'évaluation préalable
         p.evaluation_prealable = decision
@@ -661,19 +650,22 @@ def evaluation_prealable(project_id):
             action = f"Évaluation préalable: compléments requis - {commentaires}"
         elif decision == "dossier_rejete":
             # Dossier rejeté lors de l'évaluation préalable
-            # Si c'est le secretariatsct qui valide (et que evaluation_prealable est déjà 'dossier_rejete'), on rejette définitivement
+            # Si c'est le secretariatsct qui valide (et que evaluation_prealable ÉTAIT déjà 'dossier_rejete'), on rejette définitivement
             # Sinon, c'est une proposition de rejet par l'évaluateur
-            if role == "secretariatsct" and p.evaluation_prealable == "dossier_rejete":
+            if role == "secretariatsct" and previous_evaluation_prealable == "dossier_rejete":
                 # Validation du rejet par le Secrétariat SCT
+                # Conserver le commentaire original de l'évaluateur (déjà dans evaluation_prealable_commentaire)
                 p.statut = "rejeté"
-                p.avis = "dossier rejeté (évaluation préalable)"
-                p.commentaires = commentaires
-                action = f"Rejet validé par le Secrétariat SCT - {commentaires}"
+                p.avis = "dossier rejeté"
+                # Conserver le commentaire de l'évaluateur qui est dans evaluation_prealable_commentaire
+                p.commentaires = p.evaluation_prealable_commentaire or commentaires
+                action = f"Rejet validé par le Secrétariat SCT"
             else:
                 # Proposition de rejet par l'évaluateur - attend validation du secrétariat
                 # Le statut ne change PAS, le soumissionnaire n'est PAS encore informé
                 p.avis = None
                 p.commentaires = commentaires
+                p.evaluation_prealable_commentaire = commentaires  # Sauvegarder aussi dans ce champ pour la validation ultérieure
                 action = f"Évaluation préalable: rejet proposé par l'évaluateur - {commentaires}"
 
         db.session.commit()
@@ -1284,6 +1276,15 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
 
+        # Initialiser la configuration du formulaire par défaut
+        try:
+            from init_formulaire_default import init_default_config
+            init_default_config()
+        except Exception as e:
+            print(f"[INIT] Erreur lors de l'initialisation de la configuration du formulaire: {e}")
+            import traceback
+            traceback.print_exc()
+
 # ===================== ROUTES STATISTIQUES =====================
 
 @app.route('/api/stats/overview', methods=['GET'])
@@ -1509,10 +1510,6 @@ def stats_poles_territorial():
         username = request.args.get('username', '')
         status_filter = request.args.get('filter', '')  # 'approved' pour filtrer uniquement les projets approuvés
 
-        print(f"\n{'='*80}")
-        print(f"[DEBUG /api/stats/poles] Filtre reçu: '{status_filter}'")
-        print(f"{'='*80}")
-
         # Filtrer selon les permissions - Par défaut afficher tous les projets pour la carte territoriale
         if role == 'admin' or not role:  # Si pas de rôle spécifié, afficher tous les projets
             projects = Project.query.all()
@@ -1523,31 +1520,12 @@ def stats_poles_territorial():
         else:
             projects = Project.query.all()
 
-        print(f"[DEBUG] Nombre total de projets AVANT filtrage: {len(projects)}")
-
-        # Afficher quelques exemples de decision_finale
-        print(f"[DEBUG] Exemples de valeurs decision_finale dans la DB:")
-        for i, p in enumerate(projects[:10]):  # Afficher les 10 premiers
-            print(f"  - Projet {p.id}: decision_finale = '{p.decision_finale}'")
-
         # Filtrer par statut si demandé
         if status_filter == 'approved':
             # Uniquement les projets avec décision finale confirmée par la présidence du comité
             # Note: decision_finale peut avoir les valeurs 'confirme' ou 'infirme'
             approved_decisions = ['confirme']
-            print(f"[DEBUG] Filtrage par decision_finale in {approved_decisions}")
-
-            projects_before = len(projects)
             projects = [p for p in projects if p.decision_finale in approved_decisions]
-            projects_after = len(projects)
-
-            print(f"[DEBUG] Nombre de projets APRÈS filtrage: {projects_after}")
-            print(f"[DEBUG] Projets filtrés: {projects_before} -> {projects_after} ({projects_before - projects_after} exclus)")
-
-            if projects_after > 0:
-                print(f"[DEBUG] Exemples de projets approuvés:")
-                for p in projects[:5]:
-                    print(f"  - Projet {p.id}: decision_finale = '{p.decision_finale}', pole = '{p.poles}'")
 
         poles_stats = {}
 
@@ -1555,8 +1533,7 @@ def stats_poles_territorial():
             # Convertir le pôle DB vers le pôle territorial standardisé
             pole_db = project.poles or 'non défini'
             pole_territorial = get_pole_territorial(pole_db)
-            print(f"DEBUG: {pole_db} -> {pole_territorial}")  # Debug
-            
+
             if pole_territorial not in poles_stats:
                 poles_stats[pole_territorial] = {
                     'nombre_projets': 0,
@@ -1575,13 +1552,10 @@ def stats_poles_territorial():
             # Répartition par statut dans ce pôle
             statut = project.statut or 'non défini'
             poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
-        
-        print(f"[DEBUG] Nombre de projets: {len(projects)}")
-        print(f"[DEBUG] poles_stats: {poles_stats}")
+
         # Correction : toujours retourner un JSON valide
         return jsonify(poles_stats if poles_stats else {})
     except Exception as e:
-        print(f"ERROR in stats_poles_territorial: {e}")
         import traceback
         traceback.print_exc()
         # Correction : toujours retourner un JSON valide même en cas d'erreur
@@ -2371,6 +2345,22 @@ try:
     print("User routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import user routes: {e}")
+
+# Import and register formulaire config routes
+try:
+    from routes.formulaire_config_routes import formulaire_config_bp
+    app.register_blueprint(formulaire_config_bp, url_prefix='')
+    print("Formulaire config routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import formulaire config routes: {e}")
+
+# Import and register ministere routes
+try:
+    from routes.ministere_routes import ministere_bp
+    app.register_blueprint(ministere_bp, url_prefix='')
+    print("Ministere routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import ministere routes: {e}")
 
 if __name__ == '__main__':
     import os
