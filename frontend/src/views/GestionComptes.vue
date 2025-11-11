@@ -1,19 +1,20 @@
 <template>
-  <div class="gestion-comptes-page">
-    <div class="header-section">
-      <div class="header-with-back">
-        <button @click="retourDashboard" class="btn-retour">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Retour au tableau de bord
-        </button>
-        <div class="header-content">
-          <h1>Gestion des comptes soumissionnaires</h1>
-          <p class="subtitle">Validation et gestion des comptes utilisateurs</p>
+  <PageWrapper>
+    <div class="gestion-comptes-page">
+      <div class="header-section">
+        <div class="header-with-back">
+          <button @click="retourDashboard" class="btn-retour">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour au tableau de bord
+          </button>
+          <div class="header-content">
+            <h1>Gestion des comptes soumissionnaires</h1>
+            <p class="subtitle">Validation et gestion des comptes utilisateurs</p>
+          </div>
         </div>
       </div>
-    </div>
 
     <!-- Filtres -->
     <div class="filters-section">
@@ -209,13 +210,15 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </PageWrapper>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import PageWrapper from '../components/PageWrapper.vue'
 
 const router = useRouter()
 

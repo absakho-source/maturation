@@ -6,22 +6,15 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from app import app, db
-from models import Ministere
-
-with app.app_context():
-    print("[CREATE MINISTERES] Création de la table ministere...")
-
-    # Créer la table si elle n'existe pas
-    db.create_all()
-
-    print("[CREATE MINISTERES] ✅ Table créée avec succès!")
+def init_ministeres():
+    """Initialise les ministères par défaut si la table est vide"""
+    from models import Ministere, db
 
     # Vérifier si des ministères existent déjà
     count = Ministere.query.count()
     if count > 0:
-        print(f"[CREATE MINISTERES] ⚠️  {count} ministères existent déjà. Pas d'initialisation.")
-        sys.exit(0)
+        print(f"[INIT MINISTERES] {count} ministères existent déjà. Pas d'initialisation.")
+        return
 
     # Liste des ministères du Sénégal (gouvernement actuel)
     ministeres = [
@@ -50,7 +43,7 @@ with app.app_context():
         {"nom": "Ministère de la Communication, des Télécommunications et du Numérique", "abr": "MCTN"},
     ]
 
-    print(f"[CREATE MINISTERES] Initialisation de {len(ministeres)} ministères...")
+    print(f"[INIT MINISTERES] Initialisation de {len(ministeres)} ministères...")
 
     for idx, min_data in enumerate(ministeres, 1):
         ministere = Ministere(
@@ -63,4 +56,12 @@ with app.app_context():
 
     db.session.commit()
 
-    print(f"[CREATE MINISTERES] ✅ {len(ministeres)} ministères initialisés avec succès!")
+    print(f"[INIT MINISTERES] ✅ {len(ministeres)} ministères initialisés avec succès!")
+
+if __name__ == "__main__":
+    from app import app, db
+    with app.app_context():
+        print("[CREATE MINISTERES] Création de la table ministere...")
+        db.create_all()
+        print("[CREATE MINISTERES] ✅ Table créée avec succès!")
+        init_ministeres()

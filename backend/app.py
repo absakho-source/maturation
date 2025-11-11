@@ -1285,6 +1285,15 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
 
+        # Initialiser les ministères par défaut
+        try:
+            from create_ministeres_table import init_ministeres
+            init_ministeres()
+        except Exception as e:
+            print(f"[INIT] Erreur lors de l'initialisation des ministères: {e}")
+            import traceback
+            traceback.print_exc()
+
 # ===================== ROUTES STATISTIQUES =====================
 
 @app.route('/api/stats/overview', methods=['GET'])
