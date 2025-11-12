@@ -159,14 +159,55 @@
           <!-- Section Fiche d'évaluation PDF - visible dès qu'elle existe et que l'utilisateur peut la voir -->
           <div class="info-card" v-if="ficheEvaluation && !isSoumissionnaire() && peutVoirEvaluation()">
             <h3>📋 Fiche d'évaluation</h3>
-            <div class="files-list">
+
+            <!-- Score total et avis global -->
+            <div class="fiche-summary">
+              <div class="score-total-box">
+                <div class="score-label">Score total</div>
+                <div class="score-value">{{ ficheEvaluation.score_total || 0 }} / 100</div>
+                <div class="appreciation">{{ ficheEvaluation.appreciation_globale }}</div>
+              </div>
+              <div class="avis-global-box">
+                <div class="avis-label">Avis global</div>
+                <div class="avis-value" :class="getPropositionClass(ficheEvaluation.proposition)">
+                  {{ ficheEvaluation.proposition || 'Non renseigné' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Commentaires généraux (recommandations) -->
+            <div v-if="ficheEvaluation.recommandations" class="recommandations-section">
+              <h4>Commentaires généraux / Conclusion</h4>
+              <div class="recommandations-content">{{ ficheEvaluation.recommandations }}</div>
+            </div>
+
+            <!-- Détail des critères -->
+            <div class="criteres-detail">
+              <h4>Détail des critères</h4>
+              <div class="criteres-list-detail">
+                <div v-for="(critere, key) in getCriteresConfig()" :key="key" class="critere-detail-item">
+                  <div class="critere-header-detail">
+                    <span class="critere-label-detail">{{ critere.label }}</span>
+                    <span class="critere-score-detail">
+                      {{ ficheEvaluation.criteres?.[key]?.score || 0 }} / {{ critere.max }}
+                    </span>
+                  </div>
+                  <div v-if="ficheEvaluation.criteres?.[key]?.description" class="critere-description">
+                    {{ ficheEvaluation.criteres[key].description }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lien PDF -->
+            <div class="files-list" style="margin-top: 1.5rem;">
               <a @click.prevent="ouvrirFichePDF"
                  href="#"
                  :class="['file-link pdf-link', { 'disabled': !peutAccederFicheEvaluation() }]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                Fiche d'évaluation détaillée (PDF)
+                Télécharger la fiche complète (PDF)
                 <span v-if="!peutAccederFicheEvaluation()" class="disabled-hint">
                   (Disponible après évaluation préalable positive)
                 </span>
@@ -426,6 +467,32 @@ export default {
       return !this.project.evaluation_prealable ||
              this.project.evaluation_prealable === 'dossier_evaluable' ||
              statutsApres.includes(this.project.statut);
+    },
+
+    getPropositionClass(proposition) {
+      const map = {
+        "favorable": "proposition-favorable",
+        "favorable sous réserve": "proposition-reserve",
+        "défavorable": "proposition-defavorable"
+      };
+      return map[proposition] || "";
+    },
+
+    getCriteresConfig() {
+      return {
+        'pertinence': { label: 'PERTINENCE', max: 5 },
+        'alignement': { label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
+        'activites_couts': { label: 'PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', max: 15 },
+        'equite': { label: 'ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', max: 15 },
+        'viabilite': { label: 'VIABILITÉ/RENTABILITÉ FINANCIÈRE', max: 5 },
+        'rentabilite': { label: 'RENTABILITÉ SOCIO-ÉCONOMIQUE (ACA/MPR)', max: 5 },
+        'benefices_strategiques': { label: 'BÉNÉFICES STRATÉGIQUES', max: 10 },
+        'perennite': { label: 'PÉRENNITÉ ET DURABILITÉ DES EFFETS ET IMPACTS DU PROJET', max: 5 },
+        'avantages_intangibles': { label: 'AVANTAGES ET COÛTS INTANGIBLES', max: 10 },
+        'faisabilite': { label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
+        'ppp': { label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
+        'impact_environnemental': { label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
+      };
     }
   }
 };
@@ -819,6 +886,150 @@ export default {
   margin-top: 0.25rem;
 }
 
+/* Fiche evaluation display styles */
+.fiche-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.score-total-box, .avis-global-box {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #3b82f6;
+  text-align: center;
+}
+
+.score-label, .avis-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 0.5rem;
+}
+
+.appreciation {
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.avis-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+}
+
+.proposition-favorable {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.proposition-reserve {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.proposition-defavorable {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.recommandations-section {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.recommandations-section h4 {
+  color: #92400e;
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.recommandations-content {
+  color: #78350f;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}
+
+.criteres-detail {
+  margin-top: 2rem;
+}
+
+.criteres-detail h4 {
+  color: #1e40af;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.criteres-list-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.critere-detail-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s;
+}
+
+.critere-detail-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.critere-header-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.critere-label-detail {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.critere-score-detail {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.critere-description {
+  color: #475569;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 768px) {
   .info-row {
     grid-template-columns: 1fr;
@@ -827,6 +1038,15 @@ export default {
 
   .evaluation-prealable-buttons {
     flex-direction: column;
+  }
+
+  .fiche-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .score-value {
+    font-size: 2rem;
   }
 }
 </style>
