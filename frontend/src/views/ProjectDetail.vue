@@ -256,8 +256,48 @@ export default {
     } finally {
       this.loadingHistorique = false;
     }
+
+    // Écouter les messages du popup d'édition de fiche
+    window.addEventListener('message', this.handleFicheUpdate);
+  },
+  beforeUnmount() {
+    // Nettoyer le listener quand le composant est détruit
+    window.removeEventListener('message', this.handleFicheUpdate);
   },
   methods: {
+    handleFicheUpdate(event) {
+      // Vérifier l'origine pour la sécurité
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === 'ficheUpdated' && event.data.projetId == this.project?.id) {
+        console.log('Message ficheUpdated reçu, rechargement des données...');
+        this.rechargerFicheEtHistorique();
+      }
+    },
+    async rechargerFicheEtHistorique() {
+      const id = this.$route.params.id;
+      try {
+        // Recharger l'historique
+        const historiqueRes = await fetch(`/api/logs/${id}`);
+        this.historique = await historiqueRes.json();
+
+        // Recharger la fiche d'évaluation
+        try {
+          const ficheRes = await fetch(`/api/projects/${id}/fiche-evaluation`);
+          if (ficheRes.ok) {
+            this.ficheEvaluation = await ficheRes.json();
+            console.log('Fiche rechargée:', this.ficheEvaluation);
+          } else if (ficheRes.status === 404) {
+            this.ficheEvaluation = null;
+          }
+        } catch (ficheErr) {
+          console.error('Erreur rechargement fiche:', ficheErr);
+          this.ficheEvaluation = null;
+        }
+      } catch (err) {
+        console.error('Erreur rechargement données:', err);
+      }
+    },
     formatDate(dateStr) {
       if (!dateStr) return "";
       return new Date(dateStr).toLocaleDateString("fr-FR", {
