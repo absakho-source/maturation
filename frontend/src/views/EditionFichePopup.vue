@@ -8,47 +8,39 @@
     </div>
 
     <div class="popup-content" v-if="ficheEdition">
-      <div class="criteres-section">
-        <h3>Critères d'évaluation</h3>
-        <div v-for="critere in criteresConfig" :key="critere.key" class="critere-item">
-          <div class="critere-header">
-            <label>{{ critere.label }}</label>
-            <span class="score-display">{{ ficheEdition.criteres[critere.key]?.score || 0 }}/{{ critere.max }}</span>
+      <div class="criteres-list">
+        <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
+          <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
+          <div class="critere-inputs">
+            <label>Score:
+              <input type="number" :min="0" :max="critere.max"
+                v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
+              / {{ critere.max }}
+            </label>
+            <label>Commentaire:
+              <textarea v-model="ficheEdition.criteres[critere.key].commentaire"
+                class="textarea-commentaire" rows="2"></textarea>
+            </label>
           </div>
-          <input
-            type="range"
-            :min="0"
-            :max="critere.max"
-            v-model.number="ficheEdition.criteres[critere.key].score"
-            class="score-slider"
-          />
-          <textarea
-            v-model="ficheEdition.criteres[critere.key].commentaire"
-            :placeholder="`Commentaire pour ${critere.label}`"
-            rows="2"
-            class="commentaire-input"
-          ></textarea>
         </div>
       </div>
 
-      <div class="avis-section">
-        <h3>Avis global</h3>
-        <select v-model="ficheEdition.avis" class="avis-select">
-          <option value="">-- Sélectionner un avis --</option>
+      <div class="form-group">
+        <label>Avis global:</label>
+        <select v-model="ficheEdition.avis" class="form-control">
           <option value="favorable">Favorable</option>
           <option value="favorable sous réserve">Favorable sous réserve</option>
           <option value="défavorable">Défavorable</option>
         </select>
       </div>
 
-      <div class="commentaires-section">
-        <h3>Commentaires généraux</h3>
-        <textarea
-          v-model="ficheEdition.commentaires"
-          placeholder="Commentaires généraux sur le projet"
-          rows="5"
-          class="commentaires-textarea"
-        ></textarea>
+      <div class="form-group">
+        <label>Commentaires généraux:</label>
+        <textarea v-model="ficheEdition.commentaires" class="form-control" rows="4"></textarea>
+      </div>
+
+      <div class="total-score-display">
+        Score total: <strong>{{ calculerScoreTotal() }} / 100</strong>
       </div>
 
       <div class="actions">
@@ -77,16 +69,16 @@ export default {
       enregistrementEnCours: false,
       criteresConfig: [
         { key: 'pertinence', label: 'PERTINENCE', max: 5 },
-        { key: 'faisabilite_technique', label: 'FAISABILITÉ TECHNIQUE', max: 5 },
-        { key: 'faisabilite_financiere', label: 'FAISABILITÉ FINANCIÈRE', max: 5 },
-        { key: 'impact_economique', label: 'RETOMBÉES ÉCONOMIQUES', max: 5 },
-        { key: 'innovation', label: 'INNOVATION', max: 5 },
-        { key: 'equipe', label: 'ÉQUIPE', max: 5 },
-        { key: 'partenariat', label: 'PARTENARIAT', max: 5 },
-        { key: 'coherence_budget', label: 'COHÉRENCE DU BUDGET', max: 5 },
-        { key: 'maturite_technologique', label: 'MATURITÉ TECHNOLOGIQUE', max: 5 },
-        { key: 'impact_social', label: 'IMPACTS SOCIAUX', max: 5 },
-        { key: 'strategie_commercialisation', label: 'STRATÉGIE DE COMMERCIALISATION', max: 5 },
+        { key: 'alignement', label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
+        { key: 'activites_couts', label: 'PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', max: 15 },
+        { key: 'equite', label: 'ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', max: 15 },
+        { key: 'viabilite', label: 'VIABILITÉ/RENTABILITÉ FINANCIÈRE', max: 5 },
+        { key: 'rentabilite', label: 'RENTABILITÉ SOCIO-ÉCONOMIQUE (ACA/MPR)', max: 5 },
+        { key: 'benefices_strategiques', label: 'BÉNÉFICES STRATÉGIQUES', max: 10 },
+        { key: 'perennite', label: 'PÉRENNITÉ ET DURABILITÉ DES EFFETS ET IMPACTS DU PROJET', max: 5 },
+        { key: 'avantages_intangibles', label: 'AVANTAGES ET COÛTS INTANGIBLES', max: 10 },
+        { key: 'faisabilite', label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
+        { key: 'ppp', label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
         { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       ]
     };
@@ -171,6 +163,11 @@ export default {
     },
     fermer() {
       window.close();
+    },
+    calculerScoreTotal() {
+      return this.criteresConfig.reduce((sum, c) => {
+        return sum + (this.ficheEdition.criteres[c.key]?.score || 0);
+      }, 0);
     }
   }
 };
@@ -206,81 +203,93 @@ export default {
   background: white;
 }
 
-.criteres-section,
-.avis-section,
-.commentaires-section {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.criteres-section h3,
-.avis-section h3,
-.commentaires-section h3 {
-  margin: 0 0 15px 0;
-  color: #2c5282;
-  font-size: 18px;
-}
-
-.critere-item {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.critere-header {
+.criteres-list {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
 }
 
-.critere-header label {
+.critere-edit-item {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.critere-edit-item h4 {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 1rem;
   font-weight: 600;
-  color: #2d3748;
-  font-size: 14px;
 }
 
-.score-display {
-  font-size: 16px;
-  font-weight: bold;
-  color: #2c5282;
-  min-width: 50px;
-  text-align: right;
+.critere-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.score-slider {
+.critere-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.input-score {
+  width: 100px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.textarea-commentaire {
   width: 100%;
-  margin-bottom: 10px;
-}
-
-.commentaire-input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  font-size: 13px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
   resize: vertical;
+  margin-top: 0.25rem;
+  font-family: inherit;
 }
 
-.avis-select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  font-size: 14px;
+.form-group {
+  margin-bottom: 1.5rem;
 }
 
-.commentaires-textarea {
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-control {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #cbd5e0;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.total-score-display {
+  padding: 1rem;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
   border-radius: 4px;
-  font-size: 14px;
-  resize: vertical;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.total-score-display strong {
+  color: #1e40af;
+  font-size: 1.3rem;
 }
 
 .actions {
@@ -289,6 +298,7 @@ export default {
   justify-content: flex-end;
   padding-top: 20px;
   border-top: 1px solid #e2e8f0;
+  margin-top: 1.5rem;
 }
 
 .btn-primary,
