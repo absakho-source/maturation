@@ -18,7 +18,7 @@
               / {{ critere.max }}
             </label>
             <label>Commentaire:
-              <textarea v-model="ficheEdition.criteres[critere.key].commentaire"
+              <textarea v-model="ficheEdition.criteres[critere.key].description"
                 class="textarea-commentaire" rows="2"></textarea>
             </label>
           </div>
@@ -27,7 +27,7 @@
 
       <div class="form-group">
         <label>Avis global:</label>
-        <select v-model="ficheEdition.avis" class="form-control">
+        <select v-model="ficheEdition.proposition" class="form-control">
           <option value="favorable">Favorable</option>
           <option value="favorable sous réserve">Favorable sous réserve</option>
           <option value="défavorable">Défavorable</option>
@@ -36,7 +36,7 @@
 
       <div class="form-group">
         <label>Commentaires généraux:</label>
-        <textarea v-model="ficheEdition.commentaires" class="form-control" rows="4"></textarea>
+        <textarea v-model="ficheEdition.recommandations" class="form-control" rows="4"></textarea>
       </div>
 
       <div class="total-score-display">
@@ -112,15 +112,16 @@ export default {
         // Initialiser ficheEdition
         this.ficheEdition = {
           criteres: {},
-          avis: fiche.avis || '',
-          commentaires: fiche.commentaires || ''
+          proposition: fiche.proposition || '',
+          recommandations: fiche.recommandations || ''
         };
 
         // Initialiser tous les critères
         this.criteresConfig.forEach(c => {
           this.ficheEdition.criteres[c.key] = {
             score: fiche.criteres?.[c.key]?.score || 0,
-            commentaire: fiche.criteres?.[c.key]?.commentaire || ''
+            description: fiche.criteres?.[c.key]?.description || '',
+            recommandations: fiche.criteres?.[c.key]?.recommandations || ''
           };
         });
       } catch (error) {

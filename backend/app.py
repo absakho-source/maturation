@@ -2623,7 +2623,7 @@ except ImportError as e:
 # Import and register project routes
 try:
     from routes.project_routes import register_project_routes
-    register_project_routes(app, Project, FicheEvaluation, db, User)
+    register_project_routes(app, Project, FicheEvaluation, db, User, Historique)
     print("Project routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import project routes: {e}")

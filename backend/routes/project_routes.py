@@ -4,7 +4,7 @@ Routes pour la gestion des projets et des fiches d'évaluation
 from flask import request, jsonify
 import traceback
 
-def register_project_routes(app, Project, FicheEvaluation, db, User=None):
+def register_project_routes(app, Project, FicheEvaluation, db, User=None, Historique=None):
         
     @app.route('/api/projects/<int:project_id>/presentation', methods=['GET'])
     def get_project_presentation(project_id):
@@ -256,9 +256,26 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None):
             # Impact emploi (description seulement selon le modèle)
             impact_emploi = criteres.get('impact_emploi', {})
             fiche.impact_sur_emploi = impact_emploi.get('description', '')
-            
+
             db.session.commit()
-            
+
+            # Enregistrer dans l'historique
+            if Historique:
+                try:
+                    evaluateur_nom = data.get('evaluateur_nom', fiche.evaluateur_nom)
+                    action_text = f"Modification de la fiche d'évaluation (Score: {fiche.calculer_score_total()}/100)"
+                    historique_entry = Historique(
+                        project_id=project_id,
+                        action=action_text,
+                        auteur=evaluateur_nom or 'Evaluateur',
+                        role='evaluateur'
+                    )
+                    db.session.add(historique_entry)
+                    db.session.commit()
+                except Exception as hist_error:
+                    print(f"Erreur lors de l'enregistrement dans l'historique: {hist_error}")
+                    # Continue même si l'historique échoue
+
             return jsonify({
                 'message': 'Fiche d\'évaluation sauvegardée avec succès',
                 'id': fiche.id,
