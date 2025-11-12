@@ -115,7 +115,7 @@ textarea:focus {
   border: 1px solid #b7dfb9;
 }
 
-.alert-error {
+.alert-error, .alert-danger {
   background-color: #fdecea;
   color: #611a15;
   border: 1px solid #f5c6cb;

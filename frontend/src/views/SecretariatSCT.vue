@@ -785,6 +785,14 @@
             ⚠️ Modification par le Secrétariat SCT - Cette action sera enregistrée dans l'historique
           </div>
 
+          <!-- Messages de succès et d'erreur -->
+          <div v-if="messageSucces" class="alert alert-success">
+            ✓ {{ messageSucces }}
+          </div>
+          <div v-if="messageErreur" class="alert alert-danger">
+            ✗ {{ messageErreur }}
+          </div>
+
           <div class="form-group">
             <label>Motif de modification (obligatoire):</label>
             <textarea v-model="editionMotif" required class="form-control" rows="3"
@@ -827,9 +835,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button @click="fermerModalEdition" class="btn-secondary">Annuler</button>
-          <button @click="enregistrerEditionFiche" class="btn-primary" :disabled="!editionMotif || !editionMotif.trim()">
-            Enregistrer les modifications
+          <button @click="fermerModalEdition" class="btn-secondary" :disabled="enregistrementEnCours">Annuler</button>
+          <button @click="enregistrerEditionFiche" class="btn-primary"
+                  :disabled="!editionMotif || !editionMotif.trim() || enregistrementEnCours">
+            <span v-if="enregistrementEnCours">⏳ Enregistrement en cours...</span>
+            <span v-else>Enregistrer les modifications</span>
           </button>
         </div>
       </div>
@@ -874,6 +884,9 @@ export default {
         commentaires: ''
       },
       editionMotif: '',
+      enregistrementEnCours: false,
+      messageSucces: '',
+      messageErreur: '',
       criteresConfig: [
         { key: 'pertinence', label: 'PERTINENCE', max: 5 },
         { key: 'alignement', label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
@@ -1085,17 +1098,26 @@ export default {
       this.projetEnEdition = {};
       this.ficheEdition = { criteres: {}, avis: '', commentaires: '' };
       this.editionMotif = '';
+      this.messageSucces = '';
+      this.messageErreur = '';
+      this.enregistrementEnCours = false;
     },
     calculerScoreTotal() {
       return Object.values(this.ficheEdition.criteres).reduce((sum, c) => sum + (c.score || 0), 0);
     },
     async enregistrerEditionFiche() {
       if (!this.editionMotif || !this.editionMotif.trim()) {
-        alert('Veuillez indiquer le motif de modification');
+        this.messageErreur = 'Veuillez indiquer le motif de modification';
+        setTimeout(() => { this.messageErreur = ''; }, 3000);
         return;
       }
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      // Réinitialiser les messages
+      this.messageSucces = '';
+      this.messageErreur = '';
+      this.enregistrementEnCours = true;
 
       try {
         const res = await fetch(`/api/projects/${this.projetEnEdition.id}/editer-fiche`, {
@@ -1114,12 +1136,20 @@ export default {
           throw new Error(error.error || 'Erreur lors de l\'enregistrement');
         }
 
-        alert('Fiche modifiée avec succès');
-        this.fermerModalEdition();
-        this.loadProjects();
+        this.messageSucces = 'Fiche modifiée avec succès! Les modifications ont été enregistrées dans l\'historique.';
+
+        // Recharger les projets
+        await this.loadProjects();
+
+        // Fermer le modal après 2 secondes
+        setTimeout(() => {
+          this.fermerModalEdition();
+        }, 2000);
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
+        this.messageErreur = 'Erreur lors de l\'enregistrement: ' + error.message;
+      } finally {
+        this.enregistrementEnCours = false;
       }
     },
     async loadProjects() {
