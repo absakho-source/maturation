@@ -346,26 +346,41 @@
 
               <!-- Actions pour projets évalués -->
               <div v-if="projet.statut === 'évalué'" class="project-actions">
-                <div class="action-buttons">
-                  <button class="btn-info" @click="editerFiche(projet.id)">
-                    📝 Éditer la fiche
+                <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas de rejet proposé) -->
+                <button
+                  v-if="projet.evaluation_prealable !== 'dossier_rejete' && projet.avis"
+                  @click="ouvrirModalEditionFiche(projet)"
+                  class="btn-edit-fiche"
+                  style="margin-bottom: 10px;"
+                >
+                  ✏️ Éditer la fiche
+                </button>
+
+                <!-- Actions pour un rejet proposé -->
+                <div v-if="projet.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
+                  <button class="btn-danger" @click="validerRejet(projet.id)">
+                    ✓ Valider le rejet
                   </button>
-                  <button class="btn-success" @click="validerAvis(projet.id)">
-                    ✅ Valider l'avis
+                  <button class="btn-warning" @click="refuserRejet(projet.id)">
+                    ✗ Refuser et réassigner
                   </button>
                 </div>
-                <div class="reassign">
-                  <label>Réassigner à:</label>
-                  <select v-model="assignation[projet.id]">
-                    <option value="">--Choisir un évaluateur--</option>
-                    <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                    <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
-                      {{ evaluateur.display_name || evaluateur.username }}
-                    </option>
-                  </select>
-                  <button class="btn-warning" :disabled="!assignation[projet.id]" @click="reassignerProjet(projet.id)">
-                    🔄 Réassigner
-                  </button>
+
+                <!-- Actions pour un avis normal -->
+                <div v-else class="validation-actions">
+                  <button class="btn-primary" @click="validerAvis(projet.id)">Valider l'avis ➜ Présidence SCT</button>
+                  <div class="reassign">
+                    <label>Réassigner à:
+                      <select v-model="assignation[projet.id]">
+                        <option value="">--Choisir--</option>
+                        <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                        <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
+                          {{ evaluateur.display_name || evaluateur.username }}
+                        </option>
+                      </select>
+                    </label>
+                    <button class="btn-secondary" @click="reassigner(projet.id)">Réassigner</button>
+                  </div>
                 </div>
               </div>
 
