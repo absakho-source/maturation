@@ -432,7 +432,7 @@ class FicheEvaluationDGPPEPDF:
 
         # Calculer le score total pour déterminer la proposition
         criteres = self.fiche.get('criteres', {})
-        total_score = sum(criteres.get(key, {}).get('score', 0) for key in [
+        total_score = sum((criteres.get(key, {}).get('score') or 0) for key in [
             'pertinence', 'alignement', 'activites_couts', 'equite', 'viabilite',
             'rentabilite', 'benefices_strategiques', 'perennite', 'avantages_intangibles',
             'faisabilite', 'ppp', 'impact_environnemental', 'impact_emploi'

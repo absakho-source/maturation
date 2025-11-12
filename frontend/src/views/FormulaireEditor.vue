@@ -40,15 +40,19 @@
           <div class="param-grid">
             <div class="param-item full-width">
               <label>
-                Version à afficher sur le formulaire:
-                <span class="help-text">(Ex: "Version 1.0 - Janvier 2025" ou "V1.0 - 15 janvier 2025")</span>
+                Version en cours d'affichage:
+                <span class="help-text">Cette version apparaît sur tous les formulaires d'évaluation générés</span>
               </label>
-              <input
-                type="text"
-                v-model="config.version_affichage"
-                @input="marquerConfigModifiee"
-                class="param-input"
-                placeholder="Ex: Version 1.0 - Janvier 2025">
+              <div class="version-display">
+                <span class="current-version">{{ config.version_affichage || 'v1.0 - Décembre 2025' }}</span>
+                <button type="button" @click="modifierVersion" class="btn-edit-version">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Modifier
+                </button>
+              </div>
             </div>
             <div class="param-item">
               <label>Score Total Maximum:</label>
@@ -412,6 +416,14 @@ export default {
       return this.criteresEvaluation.reduce((sum, c) => sum + c.score_max, 0)
     },
 
+    modifierVersion() {
+      const nouvelleVersion = prompt('Entrez la nouvelle version à afficher:', this.config.version_affichage || 'v1.0 - Décembre 2025')
+      if (nouvelleVersion && nouvelleVersion.trim()) {
+        this.config.version_affichage = nouvelleVersion.trim()
+        this.marquerConfigModifiee()
+      }
+    },
+
     async previsualiserPDF() {
       try {
         // Créer une prévisualisation du formulaire avec les paramètres actuels
@@ -574,6 +586,45 @@ export default {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.version-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+}
+
+.current-version {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  font-family: 'Courier New', monospace;
+}
+
+.btn-edit-version {
+  padding: 8px 16px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-edit-version:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
 }
 
 .criteres-list {
