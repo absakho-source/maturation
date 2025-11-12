@@ -94,13 +94,13 @@
             </td>
             <td>
               <div class="structure-info">
-                <div class="structure-type">{{ formatTypeStructure(compte.type_structure) }}</div>
-                <div class="structure-nom">{{ compte.nom_structure }}</div>
+                <div class="structure-nom">{{ compte.nom_structure || 'N/A' }}</div>
+                <div v-if="compte.direction_service" class="structure-direction">{{ compte.direction_service }}</div>
               </div>
             </td>
             <td>
               <div class="contact-info">
-                <div v-if="compte.telephone">📞 {{ compte.telephone }}</div>
+                <div class="contact-email">✉️ {{ compte.username }}</div>
               </div>
             </td>
             <td>
