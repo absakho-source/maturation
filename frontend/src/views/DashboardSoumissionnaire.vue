@@ -52,6 +52,13 @@
             📝 Soumettre un nouveau projet
             <span class="icon-plus">➕</span>
           </button>
+          <button
+            v-if="!showSubmissionForm"
+            @click="goToProfile"
+            class="btn-profile"
+          >
+            👤 Mon Profil
+          </button>
           <button v-if="showSubmissionForm" @click="cancelSubmission" class="btn-cancel">
             ✖️ Annuler
           </button>
@@ -649,6 +656,10 @@ export default {
       } else if (this.userAccountStatus === 'suspendu') {
         alert("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.");
       }
+    },
+
+    goToProfile() {
+      this.$router.push('/mon-profil');
     },
 
     async loadMinisteres() {
@@ -1305,6 +1316,28 @@ export default {
 .btn-cancel:hover {
   background: #4b5563;
   transform: translateY(-2px);
+}
+
+.btn-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.btn-profile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
 }
 
 .icon-plus {

@@ -858,6 +858,7 @@ def get_all_users_admin():
                 "fonction": u.fonction if hasattr(u, 'fonction') else None,
                 "type_structure": u.type_structure if hasattr(u, 'type_structure') else None,
                 "nom_structure": u.nom_structure if hasattr(u, 'nom_structure') else None,
+                "direction_service": u.direction_service if hasattr(u, 'direction_service') else None,
                 "justificatif_path": u.justificatif_path if hasattr(u, 'justificatif_path') else None,
                 "statut_compte": u.statut_compte if hasattr(u, 'statut_compte') else 'non_verifie',
                 "date_verification": u.date_verification.isoformat() if hasattr(u, 'date_verification') and u.date_verification else None,

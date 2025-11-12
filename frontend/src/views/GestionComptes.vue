@@ -197,10 +197,6 @@
             <span class="detail-value">{{ compteSelectionne.fonction || 'N/A' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Type de structure :</span>
-            <span class="detail-value">{{ formatTypeStructure(compteSelectionne.type_structure) }}</span>
-          </div>
-          <div class="detail-row">
             <span class="detail-label">Nom de la structure :</span>
             <span class="detail-value">{{ compteSelectionne.nom_structure || 'N/A' }}</span>
           </div>
