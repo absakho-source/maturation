@@ -793,12 +793,6 @@
             ✗ {{ messageErreur }}
           </div>
 
-          <div class="form-group">
-            <label>Motif de modification (obligatoire):</label>
-            <textarea v-model="editionMotif" required class="form-control" rows="3"
-              placeholder="Expliquez la raison de cette modification..."></textarea>
-          </div>
-
           <div class="criteres-edition-grid">
             <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
               <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
@@ -1088,6 +1082,11 @@ export default {
 
         this.editionMotif = '';
         this.showModalEdition = true;
+
+        // Scroll to top for better UX
+        this.$nextTick(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       } catch (error) {
         console.error('Erreur:', error);
         alert('Erreur lors de l\'ouverture du modal');
@@ -1106,12 +1105,6 @@ export default {
       return Object.values(this.ficheEdition.criteres).reduce((sum, c) => sum + (c.score || 0), 0);
     },
     async enregistrerEditionFiche() {
-      if (!this.editionMotif || !this.editionMotif.trim()) {
-        this.messageErreur = 'Veuillez indiquer le motif de modification';
-        setTimeout(() => { this.messageErreur = ''; }, 3000);
-        return;
-      }
-
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
       // Réinitialiser les messages

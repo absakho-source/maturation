@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
@@ -783,10 +784,6 @@ def editer_fiche(project_id):
         auteur = data.get('auteur', 'Inconnu')
         role = data.get('role', 'SecretariatSCT')
 
-        # Validation du motif
-        if not motif:
-            return jsonify({"error": "Le motif de modification est obligatoire"}), 400
-
         # Charger la fiche existante
         try:
             fiche_actuelle = json.loads(p.fiche_evaluation) if p.fiche_evaluation else {}
@@ -813,7 +810,10 @@ def editer_fiche(project_id):
         db.session.commit()
 
         # Ajouter une entrée dans l'historique
-        action = f"Fiche d'évaluation modifiée par {auteur} ({role}). Motif: {motif} - Nouveau score: {score_total}/100"
+        if motif:
+            action = f"Fiche d'évaluation modifiée par {auteur} ({role}). Motif: {motif} - Nouveau score: {score_total}/100"
+        else:
+            action = f"Fiche d'évaluation modifiée par {auteur} ({role}) - Nouveau score: {score_total}/100"
         hist = Historique(
             project_id=p.id,
             action=action,
