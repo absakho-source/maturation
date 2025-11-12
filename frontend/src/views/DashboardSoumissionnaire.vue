@@ -23,15 +23,24 @@
 
       <!-- Tableau de bord -->
       <div class="dashboard-section">
-        <h2 class="dashboard-title">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 3v5h5"/>
-            <path d="M3 8s2-4 8-4 8 4 8 4"/>
-            <path d="M21 21v-5h-5"/>
-            <path d="M21 16s-2 4-8 4-8-4-8-4"/>
-          </svg>
-          Tableau de bord - Soumissionnaire
-        </h2>
+        <div class="header-row">
+          <h2 class="dashboard-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v5h5"/>
+              <path d="M3 8s2-4 8-4 8 4 8 4"/>
+              <path d="M21 21v-5h-5"/>
+              <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+            </svg>
+            Tableau de bord - Soumissionnaire
+          </h2>
+          <button @click="goToProfile" class="btn-profile-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Mon Profil
+          </button>
+        </div>
 
         <!-- Action principale -->
         <div class="action-section">
@@ -51,13 +60,6 @@
           >
             📝 Soumettre un nouveau projet
             <span class="icon-plus">➕</span>
-          </button>
-          <button
-            v-if="!showSubmissionForm"
-            @click="goToProfile"
-            class="btn-profile"
-          >
-            👤 Mon Profil
           </button>
           <button v-if="showSubmissionForm" @click="cancelSubmission" class="btn-cancel">
             ✖️ Annuler
@@ -1256,6 +1258,13 @@ export default {
   margin-bottom: 24px;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
 .dashboard-title {
   display: flex;
   align-items: center;
@@ -1263,9 +1272,7 @@ export default {
   font-size: 24px;
   font-weight: 600;
   color: var(--dgppe-primary);
-  margin: 0 0 24px 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--dgppe-accent);
+  margin: 0;
 }
 
 /* Section d'action */
@@ -1318,26 +1325,31 @@ export default {
   transform: translateY(-2px);
 }
 
-.btn-profile {
+.btn-profile-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 28px;
-  font-size: 16px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  padding: 10px 20px;
+  background: var(--dgppe-accent);
   color: white;
   border: none;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  white-space: nowrap;
 }
 
-.btn-profile:hover {
+.btn-profile-header:hover {
+  background: var(--dgppe-secondary);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
-  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-profile-header svg {
+  width: 18px;
+  height: 18px;
 }
 
 .icon-plus {
