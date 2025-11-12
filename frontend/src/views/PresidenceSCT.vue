@@ -153,6 +153,16 @@
               <p v-if="p.commentaires && p.validation_secretariat === 'valide'"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
               <p v-if="p.validation_secretariat"><strong>Validation secrétariat:</strong> {{ p.validation_secretariat }}</p>
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
+
+              <!-- Actions de validation pour projets en attente -->
+              <div v-if="p.statut === 'validé secretariat' && p.validation_secretariat === 'valide'" class="decision-section">
+                <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
+                <button @click="valider(p.id, 'valide')" class="btn-success">✓ Valider</button>
+                <button @click="valider(p.id, 'rejete')" class="btn-danger">✗ Rejeter</button>
+              </div>
+              <div v-else-if="p.statut === 'validé secretariat' && p.validation_secretariat !== 'valide'" class="validation-pending">
+                <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
+              </div>
             </div>
           </div>
         </div>

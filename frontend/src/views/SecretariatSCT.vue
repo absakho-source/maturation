@@ -343,6 +343,63 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Actions pour projets évalués -->
+              <div v-if="projet.statut === 'évalué'" class="project-actions">
+                <div class="action-buttons">
+                  <button class="btn-info" @click="editerFiche(projet.id)">
+                    📝 Éditer la fiche
+                  </button>
+                  <button class="btn-success" @click="validerAvis(projet.id)">
+                    ✅ Valider l'avis
+                  </button>
+                </div>
+                <div class="reassign">
+                  <label>Réassigner à:</label>
+                  <select v-model="assignation[projet.id]">
+                    <option value="">--Choisir un évaluateur--</option>
+                    <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                    <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
+                      {{ evaluateur.display_name || evaluateur.username }}
+                    </option>
+                  </select>
+                  <button class="btn-warning" :disabled="!assignation[projet.id]" @click="reassignerProjet(projet.id)">
+                    🔄 Réassigner
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions pour demandes de compléments en attente de validation -->
+              <div v-if="projet.statut === 'en attente validation demande compléments'" class="project-actions">
+                <div class="action-buttons">
+                  <button class="btn-success" @click="approuverDemandeComplements(projet.id)">
+                    ✅ Approuver et transmettre
+                  </button>
+                  <button class="btn-danger" @click="rejeterDemandeComplements(projet.id)">
+                    ❌ Rejeter et réassigner
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions pour compléments fournis -->
+              <div v-if="projet.statut === 'compléments fournis'" class="project-actions">
+                <div class="action-buttons">
+                  <button class="btn-success" @click="validerComplements(projet.id)">
+                    ✅ Valider les compléments
+                  </button>
+                </div>
+              </div>
+
+              <!-- Section d'évaluation directe pour projets assignés à secretariatsct -->
+              <div v-if="projet.evaluateur_nom === 'secretariatsct' && (projet.statut === 'assigné' || projet.statut === 'en évaluation')" class="project-actions">
+                <div class="direct-evaluation-section">
+                  <h4>📋 Évaluation directe</h4>
+                  <p class="info-text">Ce projet vous a été assigné pour évaluation directe</p>
+                  <button class="btn-primary" @click="commencerEvaluation(projet.id)">
+                    🔍 Commencer/Continuer l'évaluation
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

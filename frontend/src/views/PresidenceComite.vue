@@ -158,6 +158,22 @@
               <p v-if="p.avis_presidencesct"><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
               <p v-if="p.decision_finale"><strong>Décision finale:</strong> <span :class="p.decision_finale === 'confirme' ? 'decision-confirme' : 'decision-infirme'">{{ p.decision_finale === 'confirme' ? 'Avis confirmé' : 'Avis infirmé' }}</span></p>
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails</button>
+
+              <!-- Actions de décision finale pour projets validés par la présidence SCT -->
+              <div v-if="p.statut === 'validé presidenceSCT' && p.avis_presidencesct === 'valide' && !p.decision_finale" class="final-section">
+                <h4>Votre décision finale</h4>
+                <p class="instruction">Confirmez-vous l'avis de l'évaluateur ou souhaitez-vous l'infirmer ?</p>
+                <div class="decision-buttons">
+                  <button @click="confirmer(p.id, 'confirme')" class="btn-success">✓ Confirmer l'avis</button>
+                  <button @click="confirmer(p.id, 'infirme')" class="btn-danger">✗ Infirmer l'avis</button>
+                </div>
+                <label>Commentaires (optionnel):
+                  <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..."></textarea>
+                </label>
+              </div>
+              <div v-else-if="p.statut === 'validé presidenceSCT' && p.validation_secretariat !== 'valide'" class="validation-pending">
+                <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
+              </div>
             </div>
           </div>
         </div>
