@@ -1289,7 +1289,7 @@ def create_user():
         # Vérifier si l'utilisateur existe déjà
         existing = User.query.filter_by(username=username).first()
         if existing:
-            return jsonify({"error": "Un utilisateur avec ce nom existe déjà"}), 400
+            return jsonify({"error": "Un utilisateur avec cet identifiant existe déjà"}), 400
 
         # Créer le nouvel utilisateur avec les nouveaux champs
         new_user = User(

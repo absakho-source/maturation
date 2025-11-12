@@ -31,6 +31,29 @@
           />
         </div>
 
+        <div class="form-group">
+          <label for="fonction">Fonction / Poste</label>
+          <input
+            type="text"
+            id="fonction"
+            v-model="profile.fonction"
+            placeholder="Ex: Chef de service, Directeur, etc."
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="structure">Structure d'appartenance</label>
+          <input
+            type="text"
+            id="structure"
+            v-model="profile.nom_structure"
+            placeholder="Votre structure d'appartenance"
+            disabled
+            class="readonly-input"
+          />
+          <small class="form-hint">Ce champ ne peut être modifié que par un administrateur</small>
+        </div>
+
         <div class="form-actions">
           <button type="button" @click="goBack" class="btn-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -117,12 +140,16 @@ const router = useRouter()
 // États
 const profile = ref({
   email: '',
-  telephone: ''
+  telephone: '',
+  fonction: '',
+  nom_structure: ''
 })
 
 const originalProfile = ref({
   email: '',
-  telephone: ''
+  telephone: '',
+  fonction: '',
+  nom_structure: ''
 })
 
 const passwordForm = ref({
@@ -151,16 +178,24 @@ onMounted(async () => {
       const data = await response.json()
       profile.value.email = data.email
       profile.value.telephone = data.telephone || ''
+      profile.value.fonction = data.fonction || ''
+      profile.value.nom_structure = data.nom_structure || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = data.email
       originalProfile.value.telephone = data.telephone || ''
+      originalProfile.value.fonction = data.fonction || ''
+      originalProfile.value.nom_structure = data.nom_structure || ''
     } else {
       // En cas d'erreur, utiliser les données du localStorage comme fallback
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
+      profile.value.fonction = user.fonction || ''
+      profile.value.nom_structure = user.nom_structure || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
+      originalProfile.value.fonction = user.fonction || ''
+      originalProfile.value.nom_structure = user.nom_structure || ''
     }
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error)
@@ -169,9 +204,13 @@ onMounted(async () => {
     if (user) {
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
+      profile.value.fonction = user.fonction || ''
+      profile.value.nom_structure = user.nom_structure || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
+      originalProfile.value.fonction = user.fonction || ''
+      originalProfile.value.nom_structure = user.nom_structure || ''
     }
     errorMessage.value = 'Erreur lors du chargement du profil'
   }
@@ -197,7 +236,8 @@ async function updateProfile() {
       },
       body: JSON.stringify({
         email: profile.value.email,
-        telephone: profile.value.telephone
+        telephone: profile.value.telephone,
+        fonction: profile.value.fonction
       })
     })
 
@@ -233,6 +273,8 @@ async function updateProfile() {
 function cancelProfileChanges() {
   profile.value.email = originalProfile.value.email
   profile.value.telephone = originalProfile.value.telephone
+  profile.value.fonction = originalProfile.value.fonction
+  profile.value.nom_structure = originalProfile.value.nom_structure
   successMessage.value = ''
   errorMessage.value = ''
 }
@@ -475,5 +517,18 @@ async function changePassword() {
   background-color: #fed7d7;
   color: #742a2a;
   border: 1px solid #fc8181;
+}
+
+.readonly-input {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  color: #718096;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+  margin-top: 0.25rem;
 }
 </style>
