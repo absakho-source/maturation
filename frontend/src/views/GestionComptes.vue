@@ -435,7 +435,10 @@ function voirJustificatif(path) {
   // Ouvrir chaque justificatif dans un nouvel onglet
   paths.forEach(p => {
     // Construire l'URL complète pour le fichier
-    const fileUrl = `${window.location.origin}/api/uploads/${p}`
+    // En production sur Render, utiliser l'URL backend, sinon utiliser l'origine actuelle
+    const isProduction = window.location.hostname.includes('render.com')
+    const backendUrl = isProduction ? 'https://maturation-backend.onrender.com' : window.location.origin
+    const fileUrl = `${backendUrl}/api/uploads/${p}`
     window.open(fileUrl, '_blank')
   })
 }
