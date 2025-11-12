@@ -222,9 +222,13 @@ export default {
         const ficheRes = await fetch(`/api/projects/${id}/fiche-evaluation`);
         if (ficheRes.ok) {
           this.ficheEvaluation = await ficheRes.json();
+        } else if (ficheRes.status === 404) {
+          // La fiche n'existe pas encore, c'est normal - ne pas afficher d'erreur
+          this.ficheEvaluation = null;
         }
       } catch (ficheErr) {
-        console.log('Aucune fiche d\'évaluation disponible');
+        // Erreur réseau ou autre - ignorer silencieusement
+        this.ficheEvaluation = null;
       }
     } catch (err) {
       console.error(err);
@@ -450,6 +454,7 @@ export default {
   color: #374151;
   line-height: 1.6;
   margin: 0;
+  white-space: pre-wrap;
 }
 .avis-favorable { color: #10b981; font-weight: 600; }
 .avis-conditions { color: #f59e0b; font-weight: 600; }

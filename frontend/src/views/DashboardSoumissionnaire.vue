@@ -231,7 +231,14 @@
           <div class="form-row">
             <div class="form-group">
               <label>Téléphone *</label>
-              <input v-model="form.point_focal_telephone" type="tel" required placeholder="Ex: +221 77 123 45 67" />
+              <input
+                v-model="form.point_focal_telephone"
+                type="tel"
+                required
+                placeholder="Ex: +221 77 123 45 67"
+                @input="formatTelephone"
+                @focus="initTelephone"
+              />
             </div>
             <div class="form-group">
               <label>Email *</label>
@@ -679,6 +686,47 @@ export default {
       }
       return '';
     },
+    // Méthodes pour le formatage du téléphone
+    initTelephone() {
+      // Pré-remplir avec +221 si le champ est vide
+      if (!this.form.point_focal_telephone || this.form.point_focal_telephone.trim() === "") {
+        this.form.point_focal_telephone = "+221 ";
+      }
+    },
+
+    formatTelephone(event) {
+      let value = event.target.value;
+
+      // Toujours garder +221 au début
+      if (!value.startsWith("+221")) {
+        // Si l'utilisateur efface le +221, le restaurer
+        value = "+221 " + value.replace(/^\+221\s*/, "").replace(/[^\d]/g, "");
+      }
+
+      // Retirer tous les espaces pour reformater
+      let numbers = value.replace(/^\+221\s*/, "").replace(/\s/g, "");
+
+      // Limiter à 9 chiffres (format sénégalais)
+      numbers = numbers.slice(0, 9);
+
+      // Formater: +221 XX XXX XX XX
+      let formatted = "+221";
+      if (numbers.length > 0) {
+        formatted += " " + numbers.slice(0, 2);
+      }
+      if (numbers.length > 2) {
+        formatted += " " + numbers.slice(2, 5);
+      }
+      if (numbers.length > 5) {
+        formatted += " " + numbers.slice(5, 7);
+      }
+      if (numbers.length > 7) {
+        formatted += " " + numbers.slice(7, 9);
+      }
+
+      this.form.point_focal_telephone = formatted;
+    },
+
     // Méthodes pour le formatage du coût estimatif
     formatNumber(value) {
       if (!value && value !== 0) return "";
@@ -799,8 +847,9 @@ export default {
 
       // Validation: vérifier la certification
       if (!this.form.certification) {
-        this.submitError = "Vous devez cocher la case de certification pour soumettre votre projet";
+        this.submitError = "Veuillez certifier que les informations fournies sont exactes avant de soumettre le projet";
         this.submitting = false;
+        alert("Veuillez certifier que les informations fournies sont exactes avant de soumettre le projet");
         return;
       }
 
