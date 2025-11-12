@@ -28,6 +28,7 @@
             id="telephone"
             v-model="profile.telephone"
             placeholder="+221 XX XXX XX XX"
+            @focus="initTelephone"
           />
         </div>
 
@@ -328,6 +329,13 @@ function goBack() {
     router.push(route)
   } else {
     router.push('/')
+  }
+}
+
+// Initialiser le téléphone avec +221 si vide
+function initTelephone() {
+  if (!profile.value.telephone || profile.value.telephone.trim() === '') {
+    profile.value.telephone = '+221 '
   }
 }
 

@@ -37,7 +37,7 @@
         <div class="action-section">
           <button
             v-if="!showSubmissionForm && canSubmitProject"
-            @click="showSubmissionForm = true"
+            @click="openSubmissionForm"
             class="btn-new-project"
           >
             📝 Soumettre un nouveau projet
@@ -796,6 +796,74 @@ export default {
       }
 
       this.form.point_focal_telephone = formatted;
+    },
+
+    // Ouvrir le formulaire et pré-remplir avec les données utilisateur
+    openSubmissionForm() {
+      this.showSubmissionForm = true;
+      this.initializeFormWithUserData();
+    },
+
+    // Pré-remplir le formulaire avec les données du compte utilisateur
+    async initializeFormWithUserData() {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (!user) return;
+
+        // Charger les données complètes du profil utilisateur
+        const response = await fetch(`/api/users/${user.username}/profile`);
+        if (response.ok) {
+          const userData = await response.json();
+
+          // Pré-remplir la structure soumissionnaire
+          if (userData.nom_structure) {
+            this.form.structure_soumissionnaire = userData.nom_structure;
+          }
+
+          // Pré-remplir l'organisme de tutelle si disponible
+          if (userData.nom_structure) {
+            // Mettre la même valeur que la structure par défaut
+            // L'utilisateur pourra la modifier si nécessaire
+            this.nomStructure = userData.nom_structure;
+          }
+
+          // Pré-remplir les informations du point focal
+          if (userData.display_name) {
+            this.form.point_focal_nom = userData.display_name;
+          }
+          if (userData.fonction) {
+            this.form.point_focal_fonction = userData.fonction;
+          }
+          if (userData.telephone) {
+            this.form.point_focal_telephone = userData.telephone;
+          }
+          if (userData.email || userData.username) {
+            this.form.point_focal_email = userData.email || userData.username;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des données utilisateur:', error);
+        // En cas d'erreur, utiliser les données du localStorage
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (user) {
+          if (user.display_name) {
+            this.form.point_focal_nom = user.display_name;
+          }
+          if (user.fonction) {
+            this.form.point_focal_fonction = user.fonction;
+          }
+          if (user.telephone) {
+            this.form.point_focal_telephone = user.telephone;
+          }
+          if (user.username) {
+            this.form.point_focal_email = user.username;
+          }
+          if (user.nom_structure) {
+            this.form.structure_soumissionnaire = user.nom_structure;
+            this.nomStructure = user.nom_structure;
+          }
+        }
+      }
     },
 
     // Méthodes pour le formatage du coût estimatif

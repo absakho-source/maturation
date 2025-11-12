@@ -206,6 +206,7 @@
                 v-model="compteSelectionne.telephone"
                 type="tel"
                 placeholder="+221 XX XXX XX XX"
+                @focus="initTelephone"
               />
             </div>
             <div class="form-group-modal">
@@ -450,6 +451,12 @@ function voirDetails(compte) {
 
 function fermerDetails() {
   compteSelectionne.value = null
+}
+
+function initTelephone() {
+  if (compteSelectionne.value && (!compteSelectionne.value.telephone || compteSelectionne.value.telephone.trim() === '')) {
+    compteSelectionne.value.telephone = '+221 '
+  }
 }
 
 async function sauvegarderModifications() {
