@@ -15,6 +15,7 @@ import Invite from '../views/Invite.vue';
 import FormulaireEditor from '../views/FormulaireEditor.vue';
 import MinisteresEditor from '../views/MinisteresEditor.vue';
 import MonProfil from '../views/MonProfil.vue';
+import EditionFichePopup from '../views/EditionFichePopup.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -35,7 +36,8 @@ const routes = [
   { path: '/formulaire-editor', name: 'FormulaireEditor', component: FormulaireEditor, meta: { requiresAuth: true } },
   { path: '/ministeres-editor', name: 'MinisteresEditor', component: MinisteresEditor, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
-  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } }
+  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } },
+  { path: '/edition-fiche-popup', name: 'EditionFichePopup', component: EditionFichePopup, meta: { requiresAuth: false } }
 ];
 
 const router = createRouter({

@@ -1055,41 +1055,29 @@ export default {
       }
     },
     async ouvrirModalEditionFiche(projet) {
-      try {
-        // Charger la fiche d'évaluation actuelle
-        const res = await fetch(`/api/projects/${projet.id}/fiche-evaluation`);
-        if (!res.ok) {
-          alert('Erreur lors du chargement de la fiche');
-          return;
-        }
-        const fiche = await res.json();
+      // Ouvrir un popup avec la page d'édition
+      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
+      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
+      const popup = window.open(popupUrl, 'EditionFiche', popupFeatures);
 
-        this.projetEnEdition = projet;
-        this.ficheEdition = {
-          criteres: {},
-          avis: fiche.avis || '',
-          commentaires: fiche.commentaires || ''
-        };
-
-        // Initialiser tous les critères
-        this.criteresConfig.forEach(c => {
-          this.ficheEdition.criteres[c.key] = {
-            score: fiche.criteres?.[c.key]?.score || 0,
-            commentaire: fiche.criteres?.[c.key]?.commentaire || ''
-          };
-        });
-
-        this.editionMotif = '';
-        this.showModalEdition = true;
-
-        // Scroll to top for better UX
-        this.$nextTick(() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors de l\'ouverture du modal');
+      if (!popup) {
+        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
+        return;
       }
+
+      // Écouter les messages du popup
+      const messageHandler = (event) => {
+        // Vérifier l'origine pour la sécurité
+        if (event.origin !== window.location.origin) return;
+
+        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
+          // Recharger les projets pour afficher les modifications
+          this.chargerProjets();
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
     },
     fermerModalEdition() {
       this.showModalEdition = false;
