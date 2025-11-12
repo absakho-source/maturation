@@ -289,38 +289,56 @@
                   <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
                 </div>
 
-                <!-- Réassignation disponible uniquement pour les rejets par le comité, pas pour les rejets lors de l'évaluation préalable -->
-                <div v-if="projet.avis !== 'dossier rejeté'" class="reassign-rejected-section">
-                  <h4>🔄 Réassigner pour nouvelle évaluation</h4>
+                <!-- Actions disponibles pour tous les projets rejetés -->
+                <div class="reassign-rejected-section">
+                  <h4>🔄 Options de traitement</h4>
 
                   <div class="reassign-controls-vertical">
-                    <div class="reassign-select-container">
-                      <label>Réassigner à:</label>
-                      <select v-model="assignation[projet.id]" class="reassign-select">
-                        <option value="">--Choisir un évaluateur--</option>
-                        <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                        <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
-                          {{ evaluateur.display_name || evaluateur.username }}
-                        </option>
-                      </select>
+                    <!-- Réassignation à un évaluateur -->
+                    <div class="action-group">
+                      <h5>Réassigner pour nouvelle évaluation</h5>
+                      <div class="reassign-select-container">
+                        <label>Réassigner à:</label>
+                        <select v-model="assignation[projet.id]" class="reassign-select">
+                          <option value="">--Choisir un évaluateur--</option>
+                          <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                          <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
+                            {{ evaluateur.display_name || evaluateur.username }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="reassign-select-container">
+                        <label>Motivation (facultatif):</label>
+                        <textarea
+                          v-model="motivations[projet.id]"
+                          rows="2"
+                          placeholder="Justification de cette réassignation (facultatif)"
+                          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
+                        ></textarea>
+                      </div>
+                      <div class="reassign-button-container">
+                        <button
+                          class="btn-warning btn-reassign"
+                          :disabled="!assignation[projet.id]"
+                          @click="reassignerProjetRejete(projet.id)"
+                        >
+                          🔄 Réassigner pour nouvelle évaluation
+                        </button>
+                      </div>
                     </div>
-                    <div class="reassign-select-container">
-                      <label>Motivation (facultatif):</label>
-                      <textarea
-                        v-model="motivations[projet.id]"
-                        rows="2"
-                        placeholder="Justification de cette réassignation (facultatif)"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
-                      ></textarea>
-                    </div>
-                    <div class="reassign-button-container">
-                      <button
-                        class="btn-warning btn-reassign"
-                        :disabled="!assignation[projet.id]"
-                        @click="reassignerProjetRejete(projet.id)"
-                      >
-                        🔄 Réassigner pour nouvelle évaluation
-                      </button>
+
+                    <!-- Soumission par voie hiérarchique -->
+                    <div class="action-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                      <h5>Ou soumettre par voie hiérarchique</h5>
+                      <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
+                      <div class="reassign-button-container">
+                        <button
+                          class="btn-primary"
+                          @click="soumettreVoieHierarchique(projet.id)"
+                        >
+                          ⬆️ Soumettre à la Présidence SCT
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -479,6 +497,15 @@
               </div>
 
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
+
+              <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas encore transmis) -->
+              <button
+                v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
+                @click="ouvrirModalEditionFiche(p)"
+                class="btn-edit-fiche"
+              >
+                ✏️ Éditer la fiche
+              </button>
 
               <!-- Actions pour un rejet proposé -->
               <div v-if="p.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
@@ -673,6 +700,68 @@
         <CartesPolesComparaison />
       </div>
     </div>
+
+    <!-- Modal d'édition de fiche d'évaluation -->
+    <div v-if="showModalEdition" class="modal-overlay" @click="fermerModalEdition">
+      <div class="modal-content-large" @click.stop>
+        <div class="modal-header">
+          <h2>Éditer la fiche d'évaluation - {{ projetEnEdition.titre }}</h2>
+          <button class="btn-close" @click="fermerModalEdition">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="warning-box">
+            ⚠️ Modification par le Secrétariat SCT - Cette action sera enregistrée dans l'historique
+          </div>
+
+          <div class="form-group">
+            <label>Motif de modification (obligatoire):</label>
+            <textarea v-model="editionMotif" required class="form-control" rows="3"
+              placeholder="Expliquez la raison de cette modification..."></textarea>
+          </div>
+
+          <div class="criteres-edition-grid">
+            <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
+              <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
+              <div class="critere-inputs">
+                <label>Score:
+                  <input type="number" :min="0" :max="critere.max"
+                    v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
+                  / {{ critere.max }}
+                </label>
+                <label>Commentaire:
+                  <textarea v-model="ficheEdition.criteres[critere.key].commentaire"
+                    class="textarea-commentaire" rows="2"></textarea>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Avis global:</label>
+            <select v-model="ficheEdition.avis" class="form-control">
+              <option value="favorable">Favorable</option>
+              <option value="favorable avec réserves">Favorable avec réserves</option>
+              <option value="défavorable">Défavorable</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Commentaires généraux:</label>
+            <textarea v-model="ficheEdition.commentaires" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="total-score-display">
+            Score total: <strong>{{ calculerScoreTotal() }} / 100</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="fermerModalEdition" class="btn-secondary">Annuler</button>
+          <button @click="enregistrerEditionFiche" class="btn-primary" :disabled="!editionMotif || !editionMotif.trim()">
+            Enregistrer les modifications
+          </button>
+        </div>
+      </div>
+    </div>
   </PageWrapper>
 </template>
 
@@ -703,7 +792,31 @@ export default {
       },
       // Évaluation préalable
       evaluationPrealableCommentaires: {},
-      envoiEvaluationPrealable: {}
+      envoiEvaluationPrealable: {},
+      // Édition de fiche
+      showModalEdition: false,
+      projetEnEdition: {},
+      ficheEdition: {
+        criteres: {},
+        avis: '',
+        commentaires: ''
+      },
+      editionMotif: '',
+      criteresConfig: [
+        { key: 'pertinence', label: 'PERTINENCE', max: 5 },
+        { key: 'alignement', label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
+        { key: 'activites_couts', label: 'PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', max: 15 },
+        { key: 'equite', label: 'ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', max: 15 },
+        { key: 'viabilite', label: 'VIABILITÉ/RENTABILITÉ FINANCIÈRE', max: 5 },
+        { key: 'rentabilite', label: 'RENTABILITÉ SOCIO-ÉCONOMIQUE (ACA/MPR)', max: 5 },
+        { key: 'benefices_strategiques', label: 'BÉNÉFICES STRATÉGIQUES', max: 10 },
+        { key: 'perennite', label: 'PÉRENNITÉ ET DURABILITÉ DES EFFETS ET IMPACTS DU PROJET', max: 5 },
+        { key: 'avantages_intangibles', label: 'AVANTAGES ET COÛTS INTANGIBLES', max: 10 },
+        { key: 'faisabilite', label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
+        { key: 'ppp', label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
+        { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 },
+        { key: 'impact_emploi', label: 'IMPACT SUR L\'EMPLOI', max: 5 }
+      ]
     };
   },
   computed: {
@@ -861,6 +974,80 @@ export default {
         }
       } catch (error) {
         console.error('Erreur lors du chargement des évaluateurs:', error);
+      }
+    },
+    async ouvrirModalEditionFiche(projet) {
+      try {
+        // Charger la fiche d'évaluation actuelle
+        const res = await fetch(`/api/projects/${projet.id}/fiche`);
+        if (!res.ok) {
+          alert('Erreur lors du chargement de la fiche');
+          return;
+        }
+        const fiche = await res.json();
+
+        this.projetEnEdition = projet;
+        this.ficheEdition = {
+          criteres: {},
+          avis: fiche.avis || '',
+          commentaires: fiche.commentaires || ''
+        };
+
+        // Initialiser tous les critères
+        this.criteresConfig.forEach(c => {
+          this.ficheEdition.criteres[c.key] = {
+            score: fiche.criteres?.[c.key]?.score || 0,
+            commentaire: fiche.criteres?.[c.key]?.commentaire || ''
+          };
+        });
+
+        this.editionMotif = '';
+        this.showModalEdition = true;
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ouverture du modal');
+      }
+    },
+    fermerModalEdition() {
+      this.showModalEdition = false;
+      this.projetEnEdition = {};
+      this.ficheEdition = { criteres: {}, avis: '', commentaires: '' };
+      this.editionMotif = '';
+    },
+    calculerScoreTotal() {
+      return Object.values(this.ficheEdition.criteres).reduce((sum, c) => sum + (c.score || 0), 0);
+    },
+    async enregistrerEditionFiche() {
+      if (!this.editionMotif || !this.editionMotif.trim()) {
+        alert('Veuillez indiquer le motif de modification');
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      try {
+        const res = await fetch(`/api/projects/${this.projetEnEdition.id}/editer-fiche`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fiche: this.ficheEdition,
+            motif: this.editionMotif,
+            auteur: user.username,
+            role: user.role
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Erreur lors de l\'enregistrement');
+        }
+
+        alert('Fiche modifiée avec succès');
+        this.fermerModalEdition();
+        this.loadProjects();
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
     },
     async loadProjects() {
@@ -1046,6 +1233,38 @@ export default {
         body: JSON.stringify({ validation_secretariat: "valide", auteur: user.username, role: user.role })
       });
       alert("Avis validé ➜ Présidence SCT"); this.loadProjects();
+    },
+
+    async soumettreVoieHierarchique(id) {
+      // Confirmer la soumission par voie hiérarchique
+      if (!confirm("Êtes-vous sûr de vouloir soumettre ce projet à la Présidence SCT par voie hiérarchique, malgré le rejet ?")) {
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      try {
+        const response = await fetch(`/api/projects/${id}/traiter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            validation_secretariat: "valide",
+            statut_action: "soumission_hierarchique",
+            auteur: user.username,
+            role: user.role
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la soumission");
+        }
+
+        alert("Projet soumis à la Présidence SCT par voie hiérarchique");
+        this.loadProjects();
+      } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la soumission par voie hiérarchique");
+      }
     },
     async validerRejet(id) {
       // Validation du rejet proposé par l'évaluateur
@@ -2034,6 +2253,13 @@ export default {
   margin-bottom: 15px;
 }
 
+.action-group h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 15px;
+}
+
 .warning-note {
   margin-top: 10px;
   padding: 8px;
@@ -2356,5 +2582,113 @@ export default {
 .btn-danger-validation:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Styles pour le modal d'édition de fiche */
+.btn-edit-fiche {
+  margin-top: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.btn-edit-fiche:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.modal-content-large {
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.warning-box {
+  padding: 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.criteres-edition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.critere-edit-item {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.critere-edit-item h4 {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.critere-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.critere-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.input-score {
+  width: 100px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.textarea-commentaire {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  resize: vertical;
+  margin-top: 0.25rem;
+  font-family: inherit;
+}
+
+.total-score-display {
+  padding: 1rem;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.total-score-display strong {
+  color: #1e40af;
+  font-size: 1.3rem;
 }
 </style>

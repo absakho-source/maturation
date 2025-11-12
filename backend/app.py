@@ -763,6 +763,76 @@ def submit_complements(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+# Édition de la fiche d'évaluation par le Secrétariat SCT
+@app.route("/api/projects/<int:project_id>/editer-fiche", methods=["POST"])
+def editer_fiche(project_id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Données manquantes"}), 400
+
+        p = Project.query.get_or_404(project_id)
+
+        # Vérifier que le projet a une fiche d'évaluation
+        if not p.avis:
+            return jsonify({"error": "Aucune fiche d'évaluation à modifier"}), 400
+
+        # Récupérer les données de la requête
+        fiche_data = data.get('fiche', {})
+        motif = data.get('motif', '').strip()
+        auteur = data.get('auteur', 'Inconnu')
+        role = data.get('role', 'SecretariatSCT')
+
+        # Validation du motif
+        if not motif:
+            return jsonify({"error": "Le motif de modification est obligatoire"}), 400
+
+        # Charger la fiche existante
+        try:
+            fiche_actuelle = json.loads(p.fiche_evaluation) if p.fiche_evaluation else {}
+        except:
+            fiche_actuelle = {}
+
+        # Mettre à jour la fiche avec les nouvelles valeurs
+        fiche_actuelle['criteres'] = fiche_data.get('criteres', {})
+        fiche_actuelle['avis'] = fiche_data.get('avis', p.avis)
+        fiche_actuelle['commentaires'] = fiche_data.get('commentaires', '')
+
+        # Calculer le nouveau score total (gérer les valeurs None)
+        score_total = sum(
+            critere.get('score', 0) or 0
+            for critere in fiche_actuelle.get('criteres', {}).values()
+        )
+        fiche_actuelle['score_total'] = score_total
+
+        # Sauvegarder dans la base de données
+        p.fiche_evaluation = json.dumps(fiche_actuelle, ensure_ascii=False)
+        p.avis = fiche_actuelle['avis']
+        p.score = score_total
+
+        db.session.commit()
+
+        # Ajouter une entrée dans l'historique
+        action = f"Fiche d'évaluation modifiée par {auteur} ({role}). Motif: {motif} - Nouveau score: {score_total}/100"
+        hist = Historique(
+            project_id=p.id,
+            action=action,
+            auteur=auteur,
+            role=role
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Fiche modifiée avec succès",
+            "score_total": score_total
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/uploads/<path:filename>")
 def uploaded_file(filename):
     """Serve uploaded files including those in subfolders"""
