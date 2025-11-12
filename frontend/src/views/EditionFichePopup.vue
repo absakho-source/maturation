@@ -139,11 +139,17 @@ export default {
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const evaluateurNom = user?.display_name || user?.username || 'Utilisateur';
 
+        console.log('Utilisateur connecté:', user);
+        console.log('Nom évaluateur:', evaluateurNom);
+
         // Ajouter evaluateur_nom aux données
         const dataToSend = {
           ...this.ficheEdition,
           evaluateur_nom: evaluateurNom
         };
+
+        console.log('Données envoyées:', dataToSend);
+        console.log('Score total calculé:', this.calculerScoreTotal());
 
         const response = await fetch(`/api/projects/${this.projet.id}/fiche-evaluation`, {
           method: 'PUT',
@@ -152,11 +158,17 @@ export default {
         });
 
         if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Erreur réponse serveur:', errorData);
           throw new Error('Erreur lors de l\'enregistrement');
         }
 
+        const result = await response.json();
+        console.log('Réponse serveur:', result);
+
         // Notifier la fenêtre parent
         if (window.opener) {
+          console.log('Envoi message à la fenêtre parent');
           window.opener.postMessage({
             type: 'ficheUpdated',
             projetId: this.projet.id
