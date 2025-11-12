@@ -32,6 +32,15 @@
         </div>
 
         <div class="form-actions">
+          <button type="button" @click="goBack" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour
+          </button>
+          <button type="button" @click="cancelProfileChanges" class="btn-cancel">
+            Annuler
+          </button>
           <button type="submit" class="btn-primary" :disabled="updating">
             {{ updating ? 'Mise à jour...' : 'Mettre à jour' }}
           </button>
@@ -77,6 +86,9 @@
         </div>
 
         <div class="form-actions">
+          <button type="button" @click="cancelPasswordChanges" class="btn-cancel">
+            Annuler
+          </button>
           <button type="submit" class="btn-primary" :disabled="changingPassword">
             {{ changingPassword ? 'Changement...' : 'Changer le mot de passe' }}
           </button>
@@ -108,6 +120,11 @@ const profile = ref({
   telephone: ''
 })
 
+const originalProfile = ref({
+  email: '',
+  telephone: ''
+})
+
 const passwordForm = ref({
   oldPassword: '',
   newPassword: '',
@@ -134,10 +151,16 @@ onMounted(async () => {
       const data = await response.json()
       profile.value.email = data.email
       profile.value.telephone = data.telephone || ''
+      // Sauvegarder les valeurs originales
+      originalProfile.value.email = data.email
+      originalProfile.value.telephone = data.telephone || ''
     } else {
       // En cas d'erreur, utiliser les données du localStorage comme fallback
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
+      // Sauvegarder les valeurs originales
+      originalProfile.value.email = user.username
+      originalProfile.value.telephone = user.telephone || ''
     }
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error)
@@ -146,6 +169,9 @@ onMounted(async () => {
     if (user) {
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
+      // Sauvegarder les valeurs originales
+      originalProfile.value.email = user.username
+      originalProfile.value.telephone = user.telephone || ''
     }
     errorMessage.value = 'Erreur lors du chargement du profil'
   }
@@ -200,6 +226,44 @@ async function updateProfile() {
     errorMessage.value = 'Erreur lors de la mise à jour du profil'
   } finally {
     updating.value = false
+  }
+}
+
+// Annuler les modifications du profil
+function cancelProfileChanges() {
+  profile.value.email = originalProfile.value.email
+  profile.value.telephone = originalProfile.value.telephone
+  successMessage.value = ''
+  errorMessage.value = ''
+}
+
+// Annuler le changement de mot de passe
+function cancelPasswordChanges() {
+  passwordForm.value.oldPassword = ''
+  passwordForm.value.newPassword = ''
+  passwordForm.value.confirmPassword = ''
+  successMessage.value = ''
+  errorMessage.value = ''
+}
+
+// Retour à la page précédente
+function goBack() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  if (user) {
+    // Rediriger vers le dashboard approprié selon le rôle
+    const dashboardRoutes = {
+      'soumissionnaire': '/dashboard-soumissionnaire',
+      'evaluateur1': '/evaluateur',
+      'evaluateur2': '/evaluateur',
+      'secretariatsct': '/secretariat-sct',
+      'presidencesct': '/presidence-sct',
+      'presidencecomite': '/presidence-comite',
+      'admin': '/gestion-comptes'
+    }
+    const route = dashboardRoutes[user.role] || '/'
+    router.push(route)
+  } else {
+    router.push('/')
   }
 }
 
@@ -335,11 +399,14 @@ async function changePassword() {
 
 .form-actions {
   margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.btn-primary {
-  background-color: #4299e1;
-  color: white;
+.btn-primary,
+.btn-secondary,
+.btn-cancel {
   padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 600;
@@ -347,6 +414,14 @@ async function changePassword() {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: #4299e1;
+  color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -359,6 +434,28 @@ async function changePassword() {
   background-color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.btn-secondary {
+  background-color: #718096;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-cancel {
+  background-color: transparent;
+  color: #e53e3e;
+  border: 1px solid #e53e3e;
+}
+
+.btn-cancel:hover {
+  background-color: #fff5f5;
+  transform: translateY(-1px);
 }
 
 .alert {
