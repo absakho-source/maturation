@@ -170,21 +170,21 @@ class FicheEvaluation(db.Model):
     def calculer_score_total(self):
         """Calcule le score total sur 105 selon le barème réel + impact emploi"""
         self.score_total = (
-            self.pertinence_score +              # /5
-            self.alignement_score +              # /10
-            self.activites_couts_score +         # /15
-            self.equite_score +                  # /15
-            self.viabilite_score +               # /5
-            self.rentabilite_score +             # /5
-            self.benefices_strategiques_score +  # /15
-            self.perennite_score +               # /5
-            self.avantages_intangibles_score +   # /10
-            self.faisabilite_score +             # /5
-            self.ppp_score +                     # /5
-            self.impact_environnemental_score +  # /5
-            self.impact_emploi_score             # /5 (nouveau)
+            (self.pertinence_score or 0) +              # /5
+            (self.alignement_score or 0) +              # /10
+            (self.activites_couts_score or 0) +         # /15
+            (self.equite_score or 0) +                  # /15
+            (self.viabilite_score or 0) +               # /5
+            (self.rentabilite_score or 0) +             # /5
+            (self.benefices_strategiques_score or 0) +  # /15
+            (self.perennite_score or 0) +               # /5
+            (self.avantages_intangibles_score or 0) +   # /10
+            (self.faisabilite_score or 0) +             # /5
+            (self.ppp_score or 0) +                     # /5
+            (self.impact_environnemental_score or 0) +  # /5
+            (self.impact_emploi_score or 0)             # /5 (nouveau)
         )  # Total = 105
-        
+
         return self.score_total
     
     def get_appreciation_globale(self):
