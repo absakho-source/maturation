@@ -318,7 +318,7 @@ async function chargerComptes() {
     }
 
     const response = await axios.get('/api/admin/users', { params })
-    comptes.value = response.data.filter(u => u.role === 'soumissionnaire')
+    comptes.value = response.data.filter(u => u.role === 'soumissionnaire' || u.role === 'invite')
     filtrerComptes()
   } catch (err) {
     console.error('Erreur lors du chargement des comptes:', err)
