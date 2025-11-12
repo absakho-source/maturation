@@ -19,8 +19,28 @@
           <div class="info-card">
             <h3>Informations générales</h3>
             <div class="info-row">
-              <span class="label">Auteur:</span>
-              <span class="value">{{ project.auteur_nom }}</span>
+              <span class="label">Point focal / Responsable:</span>
+              <span class="value">{{ project.point_focal_nom || project.auteur_nom }}</span>
+            </div>
+            <div class="info-row" v-if="project.point_focal_fonction">
+              <span class="label">Fonction:</span>
+              <span class="value">{{ project.point_focal_fonction }}</span>
+            </div>
+            <div class="info-row" v-if="project.point_focal_email">
+              <span class="label">Email:</span>
+              <span class="value">{{ project.point_focal_email }}</span>
+            </div>
+            <div class="info-row" v-if="project.point_focal_telephone">
+              <span class="label">Téléphone:</span>
+              <span class="value">{{ project.point_focal_telephone }}</span>
+            </div>
+            <div class="info-row" v-if="project.organisme_tutelle">
+              <span class="label">Organisme de tutelle:</span>
+              <span class="value">{{ project.organisme_tutelle }}</span>
+            </div>
+            <div class="info-row" v-if="project.structure_soumissionnaire">
+              <span class="label">Structure soumissionnaire:</span>
+              <span class="value">{{ project.structure_soumissionnaire }}</span>
             </div>
             <div class="info-row">
               <span class="label">Date de soumission:</span>
@@ -336,9 +356,12 @@ export default {
     },
     
     ouvrirFichier(fileName) {
-      // Ouvrir le fichier dans un nouvel onglet
-      const url = `/api/uploads/${fileName}`;
-      window.open(url, '_blank');
+      // Construire l'URL complète pour le fichier
+      // En production sur Render, utiliser l'URL backend, sinon utiliser l'origine actuelle
+      const isProduction = window.location.hostname.includes('render.com')
+      const backendUrl = isProduction ? 'https://maturation-backend.onrender.com' : window.location.origin
+      const fileUrl = `${backendUrl}/api/uploads/${fileName}`
+      window.open(fileUrl, '_blank')
     },
 
     ouvrirFichePDF() {

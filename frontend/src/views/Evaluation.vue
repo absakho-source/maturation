@@ -178,9 +178,16 @@ export default {
     },
     needsEvaluationPrealable(project) {
       // Afficher l'interface d'évaluation préalable si:
-      // - Le projet est assigné
-      // - Aucune évaluation préalable n'a été faite
-      return project.statut === "assigné" && !project.evaluation_prealable;
+      // - Le projet est assigné ET aucune évaluation préalable n'a été faite
+      // OU
+      // - Des compléments ont été demandés ET le soumissionnaire a répondu (complements_reponse_message existe)
+      //   Dans ce cas, l'évaluateur doit pouvoir réévaluer
+      const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
+      const hasReceivedComplements = project.evaluation_prealable === "complements_requis" &&
+                                     project.complements_reponse_message &&
+                                     project.complements_reponse_message.trim() !== "";
+
+      return isInitialAssignment || hasReceivedComplements;
     },
     peutAccederFicheEvaluation(project) {
       // Le bouton "Fiche d'évaluation détaillée" est visible si:

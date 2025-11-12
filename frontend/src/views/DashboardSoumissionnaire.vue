@@ -426,7 +426,7 @@
 
           <div v-if="submitError" class="error-message">{{ submitError }}</div>
 
-          <button type="submit" class="btn-submit" :disabled="submitting || !form.certification">
+          <button type="submit" class="btn-submit" :disabled="submitting">
             <span v-if="!submitting">✓ Soumettre le projet</span>
             <span v-else>⏳ Envoi en cours...</span>
           </button>
