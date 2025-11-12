@@ -979,6 +979,56 @@ def reintegrate_user_account(user_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/users/<int:user_id>", methods=["PUT"])
+def update_user_details(user_id):
+    """Modifier les détails d'un compte utilisateur (accessible par admin/secretariatsct/presidences)"""
+    try:
+        # Vérifier les permissions
+        data = request.json or {}
+        role = data.get('role', '').lower()
+
+        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+            return jsonify({"error": "Accès non autorisé"}), 403
+
+        # Récupérer l'utilisateur
+        user = User.query.get_or_404(user_id)
+
+        # Mettre à jour les champs autorisés
+        if 'display_name' in data and data['display_name'] is not None:
+            user.display_name = data['display_name']
+
+        if 'telephone' in data and data['telephone'] is not None:
+            user.telephone = data['telephone']
+
+        if 'fonction' in data and data['fonction'] is not None:
+            user.fonction = data['fonction']
+
+        if 'nom_structure' in data and data['nom_structure'] is not None:
+            user.nom_structure = data['nom_structure']
+
+        if 'direction_service' in data and data['direction_service'] is not None:
+            user.direction_service = data['direction_service']
+
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Détails de {user.username} mis à jour avec succès",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "display_name": user.display_name,
+                "telephone": user.telephone,
+                "fonction": user.fonction,
+                "nom_structure": user.nom_structure,
+                "direction_service": user.direction_service
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/users/<username>/status", methods=["GET"])
 def get_user_status(username):
     """Récupérer le statut du compte d'un utilisateur"""

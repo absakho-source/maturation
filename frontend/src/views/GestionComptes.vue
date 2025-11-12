@@ -172,56 +172,95 @@
       </table>
     </div>
 
-    <!-- Modal détails -->
+    <!-- Modal édition des détails -->
     <div v-if="compteSelectionne" class="modal-overlay" @click.self="fermerDetails">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Détails du compte</h2>
+          <h2>Modifier le compte</h2>
           <button @click="fermerDetails" class="btn-close">×</button>
         </div>
         <div class="modal-body">
-          <div class="detail-row">
-            <span class="detail-label">Nom complet :</span>
-            <span class="detail-value">{{ compteSelectionne.nom_complet || compteSelectionne.display_name || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Email :</span>
-            <span class="detail-value">{{ compteSelectionne.username }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Téléphone :</span>
-            <span class="detail-value">{{ compteSelectionne.telephone || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Fonction :</span>
-            <span class="detail-value">{{ compteSelectionne.fonction || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Nom de la structure :</span>
-            <span class="detail-value">{{ compteSelectionne.nom_structure || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Direction / Service :</span>
-            <span class="detail-value">{{ compteSelectionne.direction_service || 'N/A' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Statut du compte :</span>
-            <span :class="['badge-statut', compteSelectionne.statut_compte || 'non_verifie']">
-              {{ formatStatut(compteSelectionne.statut_compte) }}
-            </span>
-          </div>
-          <div v-if="compteSelectionne.date_verification" class="detail-row">
-            <span class="detail-label">Date de vérification :</span>
-            <span class="detail-value">{{ formatDate(compteSelectionne.date_verification) }}</span>
-          </div>
-          <div v-if="compteSelectionne.verifie_par" class="detail-row">
-            <span class="detail-label">Vérifié par :</span>
-            <span class="detail-value">{{ compteSelectionne.verifie_par }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Date de création :</span>
-            <span class="detail-value">{{ formatDate(compteSelectionne.date_creation) }}</span>
-          </div>
+          <form @submit.prevent="sauvegarderModifications" class="edit-form">
+            <div class="form-group-modal">
+              <label>Nom complet :</label>
+              <input
+                v-model="compteSelectionne.display_name"
+                type="text"
+                placeholder="Nom complet de l'utilisateur"
+              />
+            </div>
+            <div class="form-group-modal">
+              <label>Email :</label>
+              <input
+                v-model="compteSelectionne.username"
+                type="email"
+                placeholder="Email de l'utilisateur"
+                readonly
+                class="readonly-field"
+              />
+              <small class="field-hint">L'email ne peut pas être modifié</small>
+            </div>
+            <div class="form-group-modal">
+              <label>Téléphone :</label>
+              <input
+                v-model="compteSelectionne.telephone"
+                type="tel"
+                placeholder="+221 XX XXX XX XX"
+              />
+            </div>
+            <div class="form-group-modal">
+              <label>Fonction :</label>
+              <input
+                v-model="compteSelectionne.fonction"
+                type="text"
+                placeholder="Fonction de l'utilisateur"
+              />
+            </div>
+            <div class="form-group-modal">
+              <label>Nom de la structure :</label>
+              <input
+                v-model="compteSelectionne.nom_structure"
+                type="text"
+                placeholder="Nom de la structure"
+              />
+            </div>
+            <div class="form-group-modal">
+              <label>Direction / Service :</label>
+              <input
+                v-model="compteSelectionne.direction_service"
+                type="text"
+                placeholder="Direction ou service"
+              />
+            </div>
+
+            <div class="detail-row readonly-section">
+              <span class="detail-label">Statut du compte :</span>
+              <span :class="['badge-statut', compteSelectionne.statut_compte || 'non_verifie']">
+                {{ formatStatut(compteSelectionne.statut_compte) }}
+              </span>
+            </div>
+            <div v-if="compteSelectionne.date_verification" class="detail-row readonly-section">
+              <span class="detail-label">Date de vérification :</span>
+              <span class="detail-value">{{ formatDate(compteSelectionne.date_verification) }}</span>
+            </div>
+            <div v-if="compteSelectionne.verifie_par" class="detail-row readonly-section">
+              <span class="detail-label">Vérifié par :</span>
+              <span class="detail-value">{{ compteSelectionne.verifie_par }}</span>
+            </div>
+            <div class="detail-row readonly-section">
+              <span class="detail-label">Date de création :</span>
+              <span class="detail-value">{{ formatDate(compteSelectionne.date_creation) }}</span>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" @click="fermerDetails" class="btn-modal-cancel">
+                Annuler
+              </button>
+              <button type="submit" class="btn-modal-save" :disabled="enregistrementEnCours">
+                {{ enregistrementEnCours ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -246,6 +285,7 @@ const loading = ref(false)
 const error = ref('')
 const actionEnCours = ref(null)
 const compteSelectionne = ref(null)
+const enregistrementEnCours = ref(false)
 
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
@@ -394,16 +434,47 @@ function voirJustificatif(path) {
 
   // Ouvrir chaque justificatif dans un nouvel onglet
   paths.forEach(p => {
-    window.open(`/api/uploads/${p}`, '_blank')
+    // Construire l'URL complète pour le fichier
+    const fileUrl = `${window.location.origin}/api/uploads/${p}`
+    window.open(fileUrl, '_blank')
   })
 }
 
 function voirDetails(compte) {
-  compteSelectionne.value = compte
+  // Créer une copie pour éviter la modification directe
+  compteSelectionne.value = { ...compte }
 }
 
 function fermerDetails() {
   compteSelectionne.value = null
+}
+
+async function sauvegarderModifications() {
+  if (!compteSelectionne.value) return
+
+  enregistrementEnCours.value = true
+
+  try {
+    const response = await axios.put(`/api/admin/users/${compteSelectionne.value.id}`, {
+      display_name: compteSelectionne.value.display_name,
+      telephone: compteSelectionne.value.telephone,
+      fonction: compteSelectionne.value.fonction,
+      nom_structure: compteSelectionne.value.nom_structure,
+      direction_service: compteSelectionne.value.direction_service,
+      role: user?.role
+    })
+
+    if (response.status === 200) {
+      alert('Modifications enregistrées avec succès')
+      await chargerComptes()
+      fermerDetails()
+    }
+  } catch (err) {
+    console.error('Erreur lors de la sauvegarde:', err)
+    alert('Erreur lors de la sauvegarde des modifications')
+  } finally {
+    enregistrementEnCours.value = false
+  }
 }
 
 function formatStatut(statut) {
@@ -860,6 +931,104 @@ function retourDashboard() {
 
 .modal-body {
   padding: 1.5rem;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group-modal label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.form-group-modal input {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group-modal input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.readonly-field {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  color: #718096;
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: #718096;
+  font-style: italic;
+}
+
+.readonly-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.btn-modal-cancel {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-cancel:hover {
+  background: #cbd5e0;
+}
+
+.btn-modal-save {
+  flex: 2;
+  padding: 0.75rem 1.5rem;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-save:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.btn-modal-save:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .detail-row {
