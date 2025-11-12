@@ -145,10 +145,25 @@
                   {{ actionEnCours === compte.id ? '...' : '🔴 Suspendre' }}
                 </button>
                 <button
+                  v-if="compte.statut_compte === 'suspendu'"
+                  @click="reintegrerCompte(compte.id)"
+                  class="btn-action btn-reintegrate"
+                  :disabled="actionEnCours === compte.id"
+                >
+                  {{ actionEnCours === compte.id ? '...' : '✅ Réintégrer' }}
+                </button>
+                <button
                   @click="voirDetails(compte)"
                   class="btn-action btn-details"
                 >
                   👁️ Détails
+                </button>
+                <button
+                  @click="supprimerCompte(compte.id, compte.username)"
+                  class="btn-action btn-delete"
+                  :disabled="actionEnCours === compte.id"
+                >
+                  {{ actionEnCours === compte.id ? '...' : '🗑️ Supprimer' }}
                 </button>
               </div>
             </td>
@@ -328,6 +343,46 @@ async function suspendreCompte(compteId) {
   } catch (err) {
     console.error('Erreur lors de la suspension:', err)
     alert('Erreur lors de la suspension du compte')
+  } finally {
+    actionEnCours.value = null
+  }
+}
+
+async function reintegrerCompte(compteId) {
+  if (!confirm('Voulez-vous réintégrer ce compte suspendu ? L\'utilisateur pourra à nouveau soumettre des projets.')) return
+
+  actionEnCours.value = compteId
+
+  try {
+    await axios.post(`/api/admin/users/${compteId}/reintegrate`, {
+      role: user?.role
+    })
+
+    // Recharger les comptes
+    await chargerComptes()
+    alert('Compte réintégré avec succès')
+  } catch (err) {
+    console.error('Erreur lors de la réintégration:', err)
+    alert('Erreur lors de la réintégration du compte')
+  } finally {
+    actionEnCours.value = null
+  }
+}
+
+async function supprimerCompte(compteId, username) {
+  if (!confirm(`Voulez-vous SUPPRIMER DÉFINITIVEMENT le compte "${username}" ?\n\n⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nTous les projets associés à ce compte seront également supprimés.`)) return
+
+  actionEnCours.value = compteId
+
+  try {
+    await axios.delete(`/api/users/${compteId}`)
+
+    // Recharger les comptes
+    await chargerComptes()
+    alert('Compte supprimé définitivement')
+  } catch (err) {
+    console.error('Erreur lors de la suppression:', err)
+    alert('Erreur lors de la suppression du compte')
   } finally {
     actionEnCours.value = null
   }
@@ -713,6 +768,24 @@ function retourDashboard() {
 
 .btn-suspend:hover:not(:disabled) {
   background: #c82333;
+}
+
+.btn-reintegrate {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-reintegrate:hover:not(:disabled) {
+  background: #138496;
+}
+
+.btn-delete {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: #ee5a52;
 }
 
 .btn-details {

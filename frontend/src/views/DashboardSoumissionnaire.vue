@@ -1,6 +1,26 @@
 <template>
   <PageWrapper>
     <div class="dashboard-container">
+      <!-- Bannière d'avertissement pour compte non vérifié -->
+      <div v-if="userAccountStatus === 'non_verifie'" class="warning-banner warning-banner-info">
+        <div class="banner-icon">⏳</div>
+        <div class="banner-content">
+          <h3>Compte en attente de vérification</h3>
+          <p>Votre compte n'a pas encore été vérifié par l'administration. Vous ne pouvez pas soumettre de projet tant que votre compte n'a pas été validé.</p>
+          <p class="banner-note">Veuillez patienter ou contacter l'administration si cela prend trop de temps.</p>
+        </div>
+      </div>
+
+      <!-- Bannière d'avertissement pour compte suspendu -->
+      <div v-if="userAccountStatus === 'suspendu'" class="warning-banner warning-banner-danger">
+        <div class="banner-icon">🚫</div>
+        <div class="banner-content">
+          <h3>Compte suspendu</h3>
+          <p>Votre compte a été suspendu. Vous ne pouvez pas soumettre de nouveaux projets.</p>
+          <p class="banner-note">Pour plus d'informations, veuillez contacter l'administration.</p>
+        </div>
+      </div>
+
       <!-- Tableau de bord -->
       <div class="dashboard-section">
         <h2 class="dashboard-title">
@@ -15,7 +35,20 @@
 
         <!-- Action principale -->
         <div class="action-section">
-          <button v-if="!showSubmissionForm" @click="showSubmissionForm = true" class="btn-new-project">
+          <button
+            v-if="!showSubmissionForm && canSubmitProject"
+            @click="showSubmissionForm = true"
+            class="btn-new-project"
+          >
+            📝 Soumettre un nouveau projet
+            <span class="icon-plus">➕</span>
+          </button>
+          <button
+            v-if="!showSubmissionForm && !canSubmitProject"
+            @click="showBlockedMessage"
+            class="btn-new-project btn-disabled"
+            disabled
+          >
             📝 Soumettre un nouveau projet
             <span class="icon-plus">➕</span>
           </button>
@@ -507,6 +540,7 @@ export default {
       submitSuccess: "",
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
+      userAccountStatus: null, // Statut du compte utilisateur (verifie, non_verifie, suspendu)
 
       ministeres: [], // Chargé dynamiquement depuis l'API (deprecated - use ministeresActifs)
       ministeresActifs: [], // Liste d'objets ministères actifs
@@ -572,14 +606,51 @@ export default {
     communesFiltered() {
       if (!this.departementParent) return [];
       return this.communes[this.departementParent] || [];
+    },
+
+    canSubmitProject() {
+      // L'utilisateur peut soumettre un projet seulement si son compte est vérifié
+      return this.userAccountStatus === 'verifie';
     }
   },
   mounted() {
+    this.loadUserAccountStatus();
     this.loadProjects();
     this.loadMinisteres();
     this.loadDataLists();
   },
   methods: {
+    async loadUserAccountStatus() {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (!user) {
+          this.$router.push("/login");
+          return;
+        }
+
+        // Récupérer le statut du compte utilisateur
+        const res = await fetch(`/api/users/${user.username}/status`);
+        if (res.ok) {
+          const data = await res.json();
+          this.userAccountStatus = data.statut_compte || 'verifie'; // Par défaut vérifié si pas de statut
+        } else {
+          // En cas d'erreur, on suppose que le compte est vérifié (pour ne pas bloquer les anciens comptes)
+          this.userAccountStatus = 'verifie';
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du statut du compte:', error);
+        this.userAccountStatus = 'verifie'; // Par défaut vérifié en cas d'erreur
+      }
+    },
+
+    showBlockedMessage() {
+      if (this.userAccountStatus === 'non_verifie') {
+        alert("Votre compte n'a pas encore été vérifié. Veuillez attendre la validation de votre compte avant de soumettre un projet.");
+      } else if (this.userAccountStatus === 'suspendu') {
+        alert("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.");
+      }
+    },
+
     async loadMinisteres() {
       try {
         const response = await fetch('/api/ministeres');
@@ -1321,5 +1392,80 @@ export default {
   background: var(--dgppe-primary);
   color: white;
   font-weight: 600;
+}
+
+/* Bannières d'avertissement */
+.warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.warning-banner-info {
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+  border: 2px solid #0ea5e9;
+}
+
+.warning-banner-danger {
+  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+  border: 2px solid #ef4444;
+}
+
+.banner-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.banner-content {
+  flex: 1;
+}
+
+.warning-banner-info .banner-content h3 {
+  color: #0369a1;
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.warning-banner-danger .banner-content h3 {
+  color: #b91c1c;
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.warning-banner-info .banner-content p {
+  color: #075985;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.warning-banner-danger .banner-content p {
+  color: #991b1b;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.banner-note {
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+/* Bouton désactivé */
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9ca3af;
+}
+
+.btn-disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #9ca3af;
 }
 </style>

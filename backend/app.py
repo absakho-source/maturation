@@ -286,13 +286,27 @@ def projects():
 
     # POST: soumission d'un projet
     try:
+        auteur_nom = request.form.get("auteur_nom")
+
+        # Vérifier le statut du compte de l'utilisateur
+        if auteur_nom:
+            user = User.query.filter_by(username=auteur_nom).first()
+            if user:
+                if user.statut_compte == 'non_verifie':
+                    return jsonify({
+                        "error": "Votre compte n'a pas encore été vérifié. Veuillez attendre la validation de votre compte avant de soumettre un projet."
+                    }), 403
+                elif user.statut_compte == 'suspendu':
+                    return jsonify({
+                        "error": "Votre compte est suspendu. Vous ne pouvez pas soumettre de projet."
+                    }), 403
+
         titre = request.form.get("titre")
         description = request.form.get("description")
         secteur = request.form.get("secteur")
         poles = request.form.get("poles")  # CSV
         cout_estimatif = request.form.get("cout_estimatif")
         organisme_tutelle = request.form.get("organisme_tutelle")
-        auteur_nom = request.form.get("auteur_nom")
 
         # Récupérer tous les fichiers catégorisés
         files = []
@@ -908,6 +922,61 @@ def suspend_user_account(user_id):
 
     except Exception as e:
         db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/admin/users/<int:user_id>/reintegrate", methods=["POST"])
+def reintegrate_user_account(user_id):
+    """Réintégrer un compte utilisateur suspendu (accessible par admin/secretariatsct/presidences)"""
+    try:
+        # Vérifier les permissions
+        data = request.json or {}
+        role = data.get('role', '').lower()
+
+        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+            return jsonify({"error": "Accès non autorisé"}), 403
+
+        # Récupérer l'utilisateur
+        user = User.query.get_or_404(user_id)
+
+        # Vérifier que le compte est bien suspendu
+        if user.statut_compte != 'suspendu':
+            return jsonify({"error": "Ce compte n'est pas suspendu"}), 400
+
+        # Réintégrer le compte (retour au statut vérifié)
+        user.statut_compte = 'verifie'
+
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Compte de {user.username} réintégré avec succès",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "statut_compte": user.statut_compte
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/users/<username>/status", methods=["GET"])
+def get_user_status(username):
+    """Récupérer le statut du compte d'un utilisateur"""
+    try:
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "Utilisateur non trouvé"}), 404
+
+        return jsonify({
+            "username": user.username,
+            "statut_compte": user.statut_compte,
+            "date_verification": user.date_verification.isoformat() if user.date_verification else None,
+            "verifie_par": user.verifie_par
+        }), 200
+    except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
