@@ -205,6 +205,10 @@
             <span class="detail-value">{{ compteSelectionne.nom_structure || 'N/A' }}</span>
           </div>
           <div class="detail-row">
+            <span class="detail-label">Direction / Service :</span>
+            <span class="detail-value">{{ compteSelectionne.direction_service || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
             <span class="detail-label">Statut du compte :</span>
             <span :class="['badge-statut', compteSelectionne.statut_compte || 'non_verifie']">
               {{ formatStatut(compteSelectionne.statut_compte) }}

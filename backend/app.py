@@ -37,7 +37,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Configuration du dossier uploads
 app.config["UPLOAD_FOLDER"] = os.path.join(DATA_DIR, "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+# Configuration de la taille maximale des fichiers (50MB)
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 print(f"[CONFIG] Using UPLOAD_FOLDER: {app.config['UPLOAD_FOLDER']}")
+print(f"[CONFIG] MAX_CONTENT_LENGTH: {app.config['MAX_CONTENT_LENGTH'] / (1024*1024)}MB")
 
 # Configuration CORS pour permettre les requêtes depuis le frontend
 CORS(app, resources={
@@ -1088,6 +1091,82 @@ def upload_justificatifs():
             "message": f"{len(uploaded_paths)} justificatif(s) uploadé(s) avec succès",
             "justificatif_paths": uploaded_paths
         }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/users/<username>/profile", methods=["PUT"])
+def update_user_profile(username):
+    """Mettre à jour les informations du profil utilisateur (téléphone, email)"""
+    try:
+        data = request.get_json()
+
+        # Récupérer l'utilisateur
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "Utilisateur non trouvé"}), 404
+
+        # Mettre à jour les champs autorisés
+        if 'telephone' in data:
+            user.telephone = data['telephone']
+
+        # Note: Le username est aussi l'email dans ce système
+        # Si on veut permettre de changer l'email, il faut mettre à jour le username
+        if 'email' in data and data['email'] != user.username:
+            # Vérifier que le nouvel email n'est pas déjà utilisé
+            existing_user = User.query.filter_by(username=data['email']).first()
+            if existing_user and existing_user.id != user.id:
+                return jsonify({"error": "Cet email est déjà utilisé par un autre compte"}), 400
+            user.username = data['email']
+
+        db.session.commit()
+
+        print(f"[PROFILE UPDATE] Profil mis à jour pour {username}")
+        return jsonify({
+            "message": "Profil mis à jour avec succès",
+            "user": {
+                "username": user.username,
+                "telephone": user.telephone,
+                "display_name": user.display_name
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/users/<username>/password", methods=["PUT"])
+def change_user_password(username):
+    """Changer le mot de passe de l'utilisateur après vérification de l'ancien"""
+    try:
+        data = request.get_json()
+
+        # Vérifier les champs requis
+        if not data.get('old_password') or not data.get('new_password'):
+            return jsonify({"error": "Ancien et nouveau mot de passe requis"}), 400
+
+        # Récupérer l'utilisateur
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "Utilisateur non trouvé"}), 404
+
+        # Vérifier l'ancien mot de passe
+        if user.password != data['old_password']:
+            return jsonify({"error": "L'ancien mot de passe est incorrect"}), 401
+
+        # Vérifier que le nouveau mot de passe est différent
+        if data['old_password'] == data['new_password']:
+            return jsonify({"error": "Le nouveau mot de passe doit être différent de l'ancien"}), 400
+
+        # Mettre à jour le mot de passe
+        user.password = data['new_password']
+        db.session.commit()
+
+        print(f"[PASSWORD CHANGE] Mot de passe changé pour {username}")
+        return jsonify({"message": "Mot de passe changé avec succès"}), 200
 
     except Exception as e:
         db.session.rollback()

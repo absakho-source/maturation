@@ -14,11 +14,13 @@ import GestionComptes from '../views/GestionComptes.vue';
 import Invite from '../views/Invite.vue';
 import FormulaireEditor from '../views/FormulaireEditor.vue';
 import MinisteresEditor from '../views/MinisteresEditor.vue';
+import MonProfil from '../views/MonProfil.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
+  { path: '/mon-profil', name: 'MonProfil', component: MonProfil, meta: { requiresAuth: true } },
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },
   { path: '/evaluateur', name: 'Evaluateur', component: Evaluation, meta: { requiresAuth: true } },
   { path: '/evaluation/:id', name: 'EvaluationDetaillee', component: EvaluationDetaillee },
