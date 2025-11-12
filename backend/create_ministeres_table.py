@@ -16,31 +16,33 @@ def init_ministeres():
         print(f"[INIT MINISTERES] {count} ministères existent déjà. Pas d'initialisation.")
         return
 
-    # Liste des ministères du Sénégal (gouvernement actuel)
+    # Liste des ministères du Sénégal (ordre protocolaire)
     ministeres = [
-        {"nom": "Ministère des Affaires étrangères et des Sénégalais de l'Extérieur", "abr": "MAESE"},
-        {"nom": "Ministère des Forces armées", "abr": "MFA"},
-        {"nom": "Ministère de l'Intérieur et de la Sécurité publique", "abr": "MISP"},
         {"nom": "Ministère de la Justice", "abr": "MJ"},
+        {"nom": "Ministère de l'Énergie, du Pétrole et des Mines", "abr": "MEPM"},
+        {"nom": "Ministère de l'Intégration Africaine, des Affaires étrangères et des Sénégalais de l'Extérieur", "abr": "MIAESE"},
+        {"nom": "Ministère des Forces Armées", "abr": "MFA"},
+        {"nom": "Ministère de l'Intérieur et de la Sécurité publique", "abr": "MISP"},
         {"nom": "Ministère de l'Économie, du Plan et de la Coopération", "abr": "MEPC"},
         {"nom": "Ministère des Finances et du Budget", "abr": "MFB"},
-        {"nom": "Ministère de l'Hydraulique et de l'Assainissement", "abr": "MHA"},
-        {"nom": "Ministère de l'Énergie, du Pétrole et des Mines", "abr": "MEPM"},
-        {"nom": "Ministère de l'Agriculture, de la Souveraineté alimentaire et de l'Élevage", "abr": "MASAE"},
-        {"nom": "Ministère de l'Industrie et du Commerce", "abr": "MIC"},
-        {"nom": "Ministère des Infrastructures et des Transports terrestres et aériens", "abr": "MITTA"},
-        {"nom": "Ministère de la Pêche et des Infrastructures maritimes et portuaires", "abr": "MPIMP"},
-        {"nom": "Ministère de l'Urbanisme, des Collectivités territoriales et de l'Aménagement des territoires", "abr": "MUCTAT"},
-        {"nom": "Ministère de la Santé et de l'Action sociale", "abr": "MSAS"},
-        {"nom": "Ministère de l'Éducation nationale", "abr": "MEN"},
         {"nom": "Ministère de l'Enseignement supérieur, de la Recherche et de l'Innovation", "abr": "MESRI"},
-        {"nom": "Ministère de la Formation professionnelle", "abr": "MFP"},
-        {"nom": "Ministère de la Jeunesse, des Sports et de la Culture", "abr": "MJSC"},
-        {"nom": "Ministère de la Famille et des Solidarités", "abr": "MFS"},
-        {"nom": "Ministère du Travail et de la Fonction publique", "abr": "MTFP"},
-        {"nom": "Ministère de l'Environnement et de la Transition écologique", "abr": "METE"},
-        {"nom": "Ministère du Tourisme et de l'Artisanat", "abr": "MTA"},
+        {"nom": "Ministère des Transports Terrestres et Aériens", "abr": "MTTA"},
         {"nom": "Ministère de la Communication, des Télécommunications et du Numérique", "abr": "MCTN"},
+        {"nom": "Ministère de l'Éducation Nationale", "abr": "MEN"},
+        {"nom": "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage", "abr": "MASAE"},
+        {"nom": "Ministère de l'Hydraulique et de l'Assainissement", "abr": "MHA"},
+        {"nom": "Ministère de la Santé et de l'Hygiène Publique", "abr": "MSHP"},
+        {"nom": "Ministère de la Famille, de l'Action sociale et des Solidarités", "abr": "MFASS"},
+        {"nom": "Ministère de l'Emploi et de la Formation Professionnelle et Technique", "abr": "MEFPT"},
+        {"nom": "Ministère de l'Environnement et de la Transition Écologique", "abr": "METE"},
+        {"nom": "Ministère de l'Urbanisme, des Collectivités territoriales et de l'Aménagement des Territoires", "abr": "MUCTAT"},
+        {"nom": "Ministère de l'Industrie et du Commerce", "abr": "MIC"},
+        {"nom": "Ministère des Pêches et de l'Économie Maritime", "abr": "MPEM"},
+        {"nom": "Ministère de la Fonction Publique, du Travail et de la Réforme du Service Public", "abr": "MFPTRSP"},
+        {"nom": "Ministère de la Jeunesse et des Sports", "abr": "MJS"},
+        {"nom": "Ministère de la Microfinance et de l'Économie Sociale et Solidaire", "abr": "MMESS"},
+        {"nom": "Ministère des Infrastructures", "abr": "MI"},
+        {"nom": "Ministère de la Culture, de l'Artisanat et du Tourisme", "abr": "MCAT"},
     ]
 
     print(f"[INIT MINISTERES] Initialisation de {len(ministeres)} ministères...")
