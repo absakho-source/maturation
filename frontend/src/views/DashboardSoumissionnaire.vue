@@ -70,7 +70,7 @@
                 <option value="">-- Sélectionnez --</option>
                 <option value="presidence">Présidence de la République</option>
                 <option value="primature">Primature</option>
-                <option value="ministere">Ministère / Direction nationale</option>
+                <option value="ministere">Ministère</option>
                 <option value="autre_institution">Autre Institution</option>
               </select>
             </div>
@@ -78,7 +78,7 @@
 
           <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere'" class="form-row">
             <div class="form-group full-width">
-              <label>Ministère / Direction nationale *</label>
+              <label>Ministère *</label>
               <select v-model="nomMinistere" required>
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="m in ministeresActifs" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
@@ -89,7 +89,7 @@
 
           <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere' && nomMinistere === '__autre__'" class="form-row">
             <div class="form-group full-width">
-              <label>Préciser le ministère / direction *</label>
+              <label>Préciser le ministère *</label>
               <input v-model="nomMinistereLibre" type="text" required placeholder="Ex: Ministère de..." />
             </div>
           </div>
