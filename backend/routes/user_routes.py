@@ -17,6 +17,7 @@ def get_user_profile_by_username(username):
             "telephone": user.telephone or "",
             "fonction": user.fonction or "",
             "nom_structure": user.nom_structure or "",
+            "direction_service": user.direction_service or "",
             "display_name": user.display_name,
             "role": user.role
         }), 200

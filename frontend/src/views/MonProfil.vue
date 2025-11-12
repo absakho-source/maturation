@@ -54,6 +54,19 @@
           <small class="form-hint">Ce champ ne peut être modifié que par un administrateur</small>
         </div>
 
+        <div class="form-group">
+          <label for="direction">Direction / Service</label>
+          <input
+            type="text"
+            id="direction"
+            v-model="profile.direction_service"
+            placeholder="Votre direction ou service"
+            disabled
+            class="readonly-input"
+          />
+          <small class="form-hint">Ce champ ne peut être modifié que par un administrateur</small>
+        </div>
+
         <div class="form-actions">
           <button type="button" @click="goBack" class="btn-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -142,14 +155,16 @@ const profile = ref({
   email: '',
   telephone: '',
   fonction: '',
-  nom_structure: ''
+  nom_structure: '',
+  direction_service: ''
 })
 
 const originalProfile = ref({
   email: '',
   telephone: '',
   fonction: '',
-  nom_structure: ''
+  nom_structure: '',
+  direction_service: ''
 })
 
 const passwordForm = ref({
@@ -180,22 +195,26 @@ onMounted(async () => {
       profile.value.telephone = data.telephone || ''
       profile.value.fonction = data.fonction || ''
       profile.value.nom_structure = data.nom_structure || ''
+      profile.value.direction_service = data.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = data.email
       originalProfile.value.telephone = data.telephone || ''
       originalProfile.value.fonction = data.fonction || ''
       originalProfile.value.nom_structure = data.nom_structure || ''
+      originalProfile.value.direction_service = data.direction_service || ''
     } else {
       // En cas d'erreur, utiliser les données du localStorage comme fallback
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
       profile.value.fonction = user.fonction || ''
       profile.value.nom_structure = user.nom_structure || ''
+      profile.value.direction_service = user.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
       originalProfile.value.fonction = user.fonction || ''
       originalProfile.value.nom_structure = user.nom_structure || ''
+      originalProfile.value.direction_service = user.direction_service || ''
     }
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error)
@@ -206,11 +225,13 @@ onMounted(async () => {
       profile.value.telephone = user.telephone || ''
       profile.value.fonction = user.fonction || ''
       profile.value.nom_structure = user.nom_structure || ''
+      profile.value.direction_service = user.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
       originalProfile.value.fonction = user.fonction || ''
       originalProfile.value.nom_structure = user.nom_structure || ''
+      originalProfile.value.direction_service = user.direction_service || ''
     }
     errorMessage.value = 'Erreur lors du chargement du profil'
   }
@@ -275,6 +296,7 @@ function cancelProfileChanges() {
   profile.value.telephone = originalProfile.value.telephone
   profile.value.fonction = originalProfile.value.fonction
   profile.value.nom_structure = originalProfile.value.nom_structure
+  profile.value.direction_service = originalProfile.value.direction_service
   successMessage.value = ''
   errorMessage.value = ''
 }
