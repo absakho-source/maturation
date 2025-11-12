@@ -1,5 +1,6 @@
 <template>
-  <div class="mon-profil-container">
+  <PageWrapper>
+    <div class="mon-profil-container">
     <div class="profile-header">
       <h1>Mon Profil</h1>
       <p class="subtitle">Gérer mes informations personnelles</p>
@@ -90,12 +91,14 @@
     <div v-if="errorMessage" class="alert alert-error">
       {{ errorMessage }}
     </div>
-  </div>
+    </div>
+  </PageWrapper>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PageWrapper from '../components/PageWrapper.vue'
 
 const router = useRouter()
 
