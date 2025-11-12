@@ -135,10 +135,20 @@ export default {
 
       this.enregistrementEnCours = true;
       try {
+        // Récupérer l'utilisateur connecté pour l'historique
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const evaluateurNom = user?.display_name || user?.username || 'Utilisateur';
+
+        // Ajouter evaluateur_nom aux données
+        const dataToSend = {
+          ...this.ficheEdition,
+          evaluateur_nom: evaluateurNom
+        };
+
         const response = await fetch(`/api/projects/${this.projet.id}/fiche-evaluation`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.ficheEdition)
+          body: JSON.stringify(dataToSend)
         });
 
         if (!response.ok) {
