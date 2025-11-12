@@ -23,24 +23,15 @@
 
       <!-- Tableau de bord -->
       <div class="dashboard-section">
-        <div class="header-row">
-          <h2 class="dashboard-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3v5h5"/>
-              <path d="M3 8s2-4 8-4 8 4 8 4"/>
-              <path d="M21 21v-5h-5"/>
-              <path d="M21 16s-2 4-8 4-8-4-8-4"/>
-            </svg>
-            Tableau de bord - Soumissionnaire
-          </h2>
-          <button @click="goToProfile" class="btn-profile-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Mon Profil
-          </button>
-        </div>
+        <h2 class="dashboard-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v5h5"/>
+            <path d="M3 8s2-4 8-4 8 4 8 4"/>
+            <path d="M21 21v-5h-5"/>
+            <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+          </svg>
+          Tableau de bord - Soumissionnaire
+        </h2>
 
         <!-- Action principale -->
         <div class="action-section">
@@ -658,10 +649,6 @@ export default {
       } else if (this.userAccountStatus === 'suspendu') {
         alert("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.");
       }
-    },
-
-    goToProfile() {
-      this.$router.push('/mon-profil');
     },
 
     async loadMinisteres() {

@@ -125,10 +125,25 @@ onMounted(async () => {
       return
     }
 
-    profile.value.email = user.username
-    profile.value.telephone = user.telephone || ''
+    // Charger le profil depuis l'API backend
+    const response = await fetch(`/api/users/${user.username}/profile`)
+    if (response.ok) {
+      const data = await response.json()
+      profile.value.email = data.email
+      profile.value.telephone = data.telephone || ''
+    } else {
+      // En cas d'erreur, utiliser les données du localStorage comme fallback
+      profile.value.email = user.username
+      profile.value.telephone = user.telephone || ''
+    }
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error)
+    // En cas d'erreur, utiliser les données du localStorage comme fallback
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    if (user) {
+      profile.value.email = user.username
+      profile.value.telephone = user.telephone || ''
+    }
     errorMessage.value = 'Erreur lors du chargement du profil'
   }
 })
