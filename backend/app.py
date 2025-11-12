@@ -427,6 +427,19 @@ def traiter_project(project_id):
         role = data.get("role", "")
         action = ""
 
+        # Vérifier le statut du soumissionnaire
+        if p.auteur_nom:
+            soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+            if soumissionnaire:
+                if soumissionnaire.statut_compte == 'suspendu':
+                    return jsonify({
+                        "error": "Ce projet ne peut pas être traité car le compte du soumissionnaire est suspendu. Veuillez contacter l'administration pour réintégrer le compte avant de traiter ce projet."
+                    }), 403
+                elif soumissionnaire.statut_compte == 'non_verifie':
+                    return jsonify({
+                        "error": "Ce projet ne peut pas être traité car le compte du soumissionnaire n'a pas encore été vérifié."
+                    }), 403
+
         # Assignation (mais pas pour la réassignation de projets rejetés)
         if ("evaluateur_nom" in data and "avis" not in data and "validation_secretariat" not in data
             and data.get("statut_action") != "reassigner_rejete"):
