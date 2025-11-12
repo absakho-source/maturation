@@ -814,7 +814,7 @@
             <label>Avis global:</label>
             <select v-model="ficheEdition.avis" class="form-control">
               <option value="favorable">Favorable</option>
-              <option value="favorable avec réserves">Favorable avec réserves</option>
+              <option value="favorable sous réserve">Favorable sous réserve</option>
               <option value="défavorable">Défavorable</option>
             </select>
           </div>
@@ -831,7 +831,7 @@
         <div class="modal-footer">
           <button @click="fermerModalEdition" class="btn-secondary" :disabled="enregistrementEnCours">Annuler</button>
           <button @click="enregistrerEditionFiche" class="btn-primary"
-                  :disabled="!editionMotif || !editionMotif.trim() || enregistrementEnCours">
+                  :disabled="enregistrementEnCours">
             <span v-if="enregistrementEnCours">⏳ Enregistrement en cours...</span>
             <span v-else>Enregistrer les modifications</span>
           </button>
@@ -893,8 +893,7 @@ export default {
         { key: 'avantages_intangibles', label: 'AVANTAGES ET COÛTS INTANGIBLES', max: 10 },
         { key: 'faisabilite', label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
         { key: 'ppp', label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
-        { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 },
-        { key: 'impact_emploi', label: 'IMPACT SUR L\'EMPLOI', max: 5 }
+        { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       ]
     };
   },
