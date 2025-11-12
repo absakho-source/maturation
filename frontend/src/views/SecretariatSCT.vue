@@ -979,7 +979,7 @@ export default {
     async ouvrirModalEditionFiche(projet) {
       try {
         // Charger la fiche d'évaluation actuelle
-        const res = await fetch(`/api/projects/${projet.id}/fiche`);
+        const res = await fetch(`/api/projects/${projet.id}/fiche-evaluation`);
         if (!res.ok) {
           alert('Erreur lors du chargement de la fiche');
           return;
@@ -1359,11 +1359,19 @@ export default {
       return evaluateur ? (evaluateur.display_name || evaluateur.username) : ev;
     },
     getAvailableEvaluateurs(projet) {
-      // Filtrer les évaluateurs pour exclure celui actuellement assigné
+      // Pour les projets évalués, inclure l'évaluateur actuel pour permettre la réassignation au même évaluateur
+      // Pour les autres statuts, exclure l'évaluateur actuellement assigné
       if (!projet || !projet.evaluateur_nom) {
         return this.evaluateurs;
       }
-      // Filtrer en excluant l'évaluateur actuellement assigné
+
+      // Si le projet est évalué, inclure tous les évaluateurs (y compris l'actuel)
+      if (projet.statut === 'évalué') {
+        console.log('getAvailableEvaluateurs - Projet évalué:', projet.numero_projet, 'Assigné à:', projet.evaluateur_nom, 'Incluant évaluateur actuel');
+        return this.evaluateurs;
+      }
+
+      // Sinon, filtrer en excluant l'évaluateur actuellement assigné
       const filtered = this.evaluateurs.filter(e => {
         return e.username !== projet.evaluateur_nom;
       });
@@ -1824,7 +1832,9 @@ export default {
 .btn-outline{background:#10b981;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer;margin-top:.5rem}
 .btn-view{width:100%;margin-top:.75rem;padding:.6rem;background:#6b7280;color:#fff;border:none;border-radius:8px}
 .assign-section, .eval-section, .validation-actions { margin-top:.75rem; padding: .9rem; background: #f8fafc; border:1px solid #e5e7eb; border-radius:8px; }
-.reassign { display:flex; gap:.5rem; align-items:center; margin-top:.5rem; }
+.reassign { display:flex; gap:.5rem; align-items:center; margin-top:.5rem; flex-wrap: wrap; }
+.reassign button { flex-shrink: 0; white-space: nowrap; }
+.reassign select { min-width: 150px; max-width: 250px; }
 .avis-favorable{color:#10b981;font-weight:600}.avis-conditions{color:#f59e0b;font-weight:600}.avis-defavorable{color:#ef4444;font-weight:600}.avis-complement{color:#f97316;font-weight:600}
 
 /* Styles pour les compléments */
