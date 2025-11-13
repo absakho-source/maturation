@@ -293,17 +293,28 @@ def create_or_update_fiche_evaluation(project_id):
         db.session.commit()
 
         # Ajouter l'entrée dans l'historique
-        from models import Historique
+        from models import Historique, User
         if is_update:
             action_text = f"Fiche d'évaluation modifiée - Score: {score_total}/100 - Proposition: {fiche.proposition}"
         else:
             action_text = f"Fiche d'évaluation soumise - Score: {score_total}/100 - Proposition: {fiche.proposition}"
 
+        # Déterminer le rôle de l'auteur de l'action
+        auteur_username = data.get('evaluateur_nom', fiche.evaluateur_nom)
+        auteur_user = User.query.filter_by(username=auteur_username).first()
+
+        # Si c'est une mise à jour, utiliser le rôle de l'utilisateur qui modifie
+        # Sinon, utiliser "evaluateur" pour la création initiale
+        if is_update and auteur_user:
+            auteur_role = auteur_user.role
+        else:
+            auteur_role = "evaluateur"
+
         hist = Historique(
             project_id=project_id,
             action=action_text,
-            auteur=fiche.evaluateur_nom,
-            role="evaluateur"
+            auteur=auteur_username,
+            role=auteur_role
         )
         db.session.add(hist)
         db.session.commit()
