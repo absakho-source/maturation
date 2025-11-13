@@ -305,7 +305,7 @@
                         <select v-model="assignation[projet.id]" class="reassign-select">
                           <option value="">--Choisir un évaluateur--</option>
                           <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                          <option v-for="evaluateur in getAvailableEvaluateurs(projet)" :key="evaluateur.username" :value="evaluateur.username">
+                          <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
                             {{ evaluateur.display_name || evaluateur.username }}
                           </option>
                         </select>
