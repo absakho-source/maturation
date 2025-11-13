@@ -23,5 +23,9 @@ echo "[MIGRATION] Exécution des migrations..."
 python add_visibility_column.py
 python add_motivation_column.py
 
+# Exécuter les migrations de données
+echo "[DATA MIGRATION] Correction des données existantes..."
+echo "oui" | python fix_stale_decision_finale.py || echo "[WARNING] fix_stale_decision_finale.py n'a pas corrigé de données (normal si aucune donnée à corriger)"
+
 # Lancer l'application
 python app.py
