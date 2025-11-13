@@ -100,7 +100,7 @@ export default {
     async chargerDonnees(projetId) {
       try {
         // Construire l'URL de base pour l'API
-        const apiBase = window.location.origin;
+        const apiBase = import.meta.env.VITE_API_URL || '';
 
         // Charger les infos du projet avec cache-busting
         const projetRes = await fetch(`${apiBase}/api/projects/${projetId}?t=${Date.now()}`, {
@@ -172,7 +172,7 @@ export default {
         console.log('Données envoyées:', dataToSend);
         console.log('Score total calculé:', this.calculerScoreTotal());
 
-        const apiBase = window.location.origin;
+        const apiBase = import.meta.env.VITE_API_URL || '';
         const response = await fetch(`${apiBase}/api/projects/${this.projet.id}/fiche-evaluation`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
