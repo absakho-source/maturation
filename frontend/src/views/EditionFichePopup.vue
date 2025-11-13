@@ -108,7 +108,7 @@ export default {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
           },
-          credentials: 'same-origin'
+          credentials: 'include'
         });
         if (!projetRes.ok) {
           console.error('Erreur chargement projet:', projetRes.status, await projetRes.text());
@@ -122,7 +122,7 @@ export default {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
           },
-          credentials: 'same-origin'
+          credentials: 'include'
         });
         if (!ficheRes.ok && ficheRes.status !== 404) {
           console.error('Erreur chargement fiche:', ficheRes.status, await ficheRes.text());
@@ -177,7 +177,7 @@ export default {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataToSend),
-          credentials: 'same-origin'
+          credentials: 'include'
         });
 
         if (!response.ok) {
