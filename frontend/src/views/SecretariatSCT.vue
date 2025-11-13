@@ -340,7 +340,18 @@
                     <div class="action-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
                       <h5>Soumettre de nouveau</h5>
                       <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
-                      <div class="reassign-button-container">
+
+                      <label style="display: block; margin-top: 10px; margin-bottom: 5px; font-weight: 500;">
+                        Motivation de la resoumission (facultatif):
+                      </label>
+                      <textarea
+                        v-model="motivationsResoumission[projet.id]"
+                        rows="3"
+                        placeholder="Expliquez brièvement pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet..."
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;"
+                      ></textarea>
+
+                      <div class="reassign-button-container" style="margin-top: 10px;">
                         <button
                           class="btn-primary"
                           @click="soumettreVoieHierarchique(projet.id)"
@@ -867,6 +878,7 @@ export default {
       evaluateurs: [],
       assignation: {},
       motivations: {},
+      motivationsResoumission: {},
       avis: {},
       commentaires: {},
       activeTab: 'all',
@@ -1351,16 +1363,8 @@ export default {
         return;
       }
 
-      // Demander une motivation (facultatif)
-      const motivation = prompt(
-        "Motivation de la resoumission (facultatif) :\n" +
-        "Veuillez expliquer brièvement pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet de l'évaluateur."
-      );
-
-      // Si l'utilisateur clique sur Annuler, on arrête
-      if (motivation === null) {
-        return;
-      }
+      // Récupérer la motivation depuis le textarea
+      const motivation = this.motivationsResoumission[id] || "";
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
@@ -1386,6 +1390,9 @@ export default {
         if (!response.ok) {
           throw new Error("Erreur lors de la soumission");
         }
+
+        // Effacer le champ motivation après soumission réussie
+        this.motivationsResoumission[id] = "";
 
         alert("Projet soumis à la Présidence SCT");
         this.loadProjects();
