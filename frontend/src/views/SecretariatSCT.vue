@@ -332,7 +332,7 @@
 
                     <!-- Soumission par voie hiérarchique -->
                     <div class="action-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                      <h5>Ou soumettre par voie hiérarchique</h5>
+                      <h5>Soumettre de nouveau</h5>
                       <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
                       <div class="reassign-button-container">
                         <button
