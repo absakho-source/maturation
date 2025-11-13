@@ -219,7 +219,13 @@
 
               <p v-if="projet.avis"><strong>Avis:</strong> <span :class="getAvisClass(projet.avis)">{{ projet.avis }}</span></p>
               <p v-if="projet.commentaires"><strong>Commentaires:</strong> {{ projet.commentaires }}</p>
-              
+
+              <!-- Afficher la motivation de resoumission si présente -->
+              <div v-if="projet.motivation_resoumission" class="resubmission-motivation" style="margin: 10px 0;">
+                <p><strong>💬 Motivation de la resoumission:</strong></p>
+                <div class="motivation-message">{{ projet.motivation_resoumission }}</div>
+              </div>
+
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
               
               <!-- Actions pour assigner -->
@@ -270,12 +276,6 @@
                   ></textarea>
                   <button class="btn-secondary" @click="assigner(projet.id)" style="width: 100%; margin-top: 10px;">Réassigner</button>
                 </div>
-              </div>
-
-              <!-- Afficher la motivation de resoumission si présente -->
-              <div v-if="projet.motivation_resoumission" class="resubmission-motivation" style="margin: 10px 0;">
-                <p><strong>💬 Motivation de la resoumission:</strong></p>
-                <div class="motivation-message">{{ projet.motivation_resoumission }}</div>
               </div>
 
               <!-- Actions pour projets rejetés - Nouvelle fonctionnalité -->
