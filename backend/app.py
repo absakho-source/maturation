@@ -785,6 +785,11 @@ def traiter_project(project_id):
                 # Rejet par Présidence SCT
                 p.statut = "rejeté"
                 p.evaluateur_nom = None
+
+                # Réinitialiser les décisions de présidence pour permettre un nouveau cycle
+                p.decision_finale = None
+                p.commentaires_finaux = None
+
                 action = "Avis rejeté par Présidence SCT"
 
         # Décision finale (Comité)
