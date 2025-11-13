@@ -334,6 +334,23 @@ def create_or_update_fiche_evaluation(project_id):
                         evaluateur_display_name = evaluateur.display_name
 
                 # Préparer les données pour le PDF
+                import json
+
+                # Parser les champs JSON si nécessaire
+                origine_projet = {}
+                typologie_projet = {}
+                try:
+                    if project.origine_projet:
+                        origine_projet = json.loads(project.origine_projet) if isinstance(project.origine_projet, str) else project.origine_projet
+                except:
+                    pass
+
+                try:
+                    if project.typologie_projet:
+                        typologie_projet = json.loads(project.typologie_projet) if isinstance(project.typologie_projet, str) else project.typologie_projet
+                except:
+                    pass
+
                 project_data = {
                     'id': project.id,
                     'numero_projet': project.numero_projet,
@@ -341,7 +358,9 @@ def create_or_update_fiche_evaluation(project_id):
                     'poles': project.poles,
                     'secteur': project.secteur,
                     'cout_estimatif': project.cout_estimatif,
-                    'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None
+                    'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
+                    'origine_projet': origine_projet,
+                    'typologie_projet': typologie_projet
                 }
 
                 fiche_data = fiche.to_dict()
@@ -391,6 +410,23 @@ def generate_fiche_evaluation_pdf(project_id):
                 evaluateur_display_name = evaluateur.display_name
 
         # Préparer les données pour le PDF
+        import json
+
+        # Parser les champs JSON si nécessaire
+        origine_projet = {}
+        typologie_projet = {}
+        try:
+            if project.origine_projet:
+                origine_projet = json.loads(project.origine_projet) if isinstance(project.origine_projet, str) else project.origine_projet
+        except:
+            pass
+
+        try:
+            if project.typologie_projet:
+                typologie_projet = json.loads(project.typologie_projet) if isinstance(project.typologie_projet, str) else project.typologie_projet
+        except:
+            pass
+
         project_data = {
             'id': project.id,
             'numero_projet': project.numero_projet,
@@ -399,7 +435,9 @@ def generate_fiche_evaluation_pdf(project_id):
             'poles': project.poles,
             'secteur': project.secteur,
             'cout_estimatif': project.cout_estimatif,
-            'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None
+            'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
+            'origine_projet': origine_projet,
+            'typologie_projet': typologie_projet
         }
 
         fiche_data = fiche.to_dict()

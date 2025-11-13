@@ -251,9 +251,9 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(section_title_table)
         self.story.append(Spacer(1, 10))
 
-        # Origine et typologie
-        origine_data = self.fiche.get('origine_projet', {})
-        typologie_data = self.fiche.get('typologie_projet', {})
+        # Origine et typologie (depuis project_data, pas fiche_data)
+        origine_data = self.project.get('origine_projet', {})
+        typologie_data = self.project.get('typologie_projet', {})
 
         # Construire les textes avec cases cochées
         origine_items = []
