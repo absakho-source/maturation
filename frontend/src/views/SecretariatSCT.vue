@@ -1340,8 +1340,8 @@ export default {
     },
 
     async soumettreVoieHierarchique(id) {
-      // Confirmer la soumission par voie hiérarchique
-      if (!confirm("Êtes-vous sûr de vouloir soumettre ce projet à la Présidence SCT par voie hiérarchique, malgré le rejet ?")) {
+      // Confirmer la soumission
+      if (!confirm("Êtes-vous sûr de vouloir soumettre ce projet à la Présidence SCT malgré le rejet ?")) {
         return;
       }
 
