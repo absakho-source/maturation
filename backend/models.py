@@ -64,6 +64,9 @@ class Project(db.Model):
     evaluation_prealable_date = db.Column(db.DateTime, nullable=True)
     evaluation_prealable_commentaire = db.Column(db.Text, nullable=True)
 
+    # Motivation pour la resoumission après rejet (nullable pour compatibilité)
+    motivation_resoumission = db.Column(db.Text, nullable=True)
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auteur = db.Column(db.String(100))

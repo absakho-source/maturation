@@ -586,6 +586,14 @@ def traiter_project(project_id):
 
                 # Vérifier si c'est une resoumission après rejet (par Présidence SCT ou Comité)
                 if data.get("statut_action") == "resoumission_apres_rejet":
+                    # Enregistrer la motivation de resoumission si fournie (compatible avec anciennes BDD)
+                    motivation = data.get("motivation_resoumission")
+                    if motivation and hasattr(p, 'motivation_resoumission'):
+                        try:
+                            p.motivation_resoumission = motivation
+                        except Exception:
+                            pass  # Ignorer silencieusement si la colonne n'existe pas
+
                     # Récupérer les données de la fiche d'évaluation pour le log
                     fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
                     if fiche:
@@ -593,8 +601,12 @@ def traiter_project(project_id):
                                 f"Score: {fiche.score_total}/100, "
                                 f"Avis: {fiche.proposition or 'N/A'}, "
                                 f"Évaluateur: {fiche.evaluateur_nom or 'N/A'}")
+                        if motivation:
+                            action += f" - Motivation: {motivation[:100]}..." if len(motivation) > 100 else f" - Motivation: {motivation}"
                     else:
                         action = "Projet soumis à la Présidence SCT malgré le rejet"
+                        if motivation:
+                            action += f" - Motivation: {motivation[:100]}..." if len(motivation) > 100 else f" - Motivation: {motivation}"
                 else:
                     action = "Avis validé par le Secrétariat SCT"
             elif v == "reassigne":

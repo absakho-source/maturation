@@ -1345,18 +1345,36 @@ export default {
         return;
       }
 
+      // Demander une motivation (facultatif)
+      const motivation = prompt(
+        "Motivation de la resoumission (facultatif) :\n" +
+        "Veuillez expliquer brièvement pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet de l'évaluateur."
+      );
+
+      // Si l'utilisateur clique sur Annuler, on arrête
+      if (motivation === null) {
+        return;
+      }
+
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
       try {
+        const requestBody = {
+          validation_secretariat: "valide",
+          statut_action: "resoumission_apres_rejet",
+          auteur: user.username,
+          role: user.role
+        };
+
+        // Ajouter la motivation si elle a été fournie
+        if (motivation && motivation.trim() !== "") {
+          requestBody.motivation_resoumission = motivation.trim();
+        }
+
         const response = await fetch(`/api/projects/${id}/traiter`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            validation_secretariat: "valide",
-            statut_action: "resoumission_apres_rejet",
-            auteur: user.username,
-            role: user.role
-          })
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
