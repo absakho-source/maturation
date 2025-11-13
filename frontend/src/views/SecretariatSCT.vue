@@ -249,6 +249,16 @@
                   ℹ️ Ce projet vous est assigné - Rendez-vous dans l'onglet "Mes évaluations" pour l'évaluer
                 </div>
 
+                <!-- Bouton Éditer fiche pour les projets évaluables (dossier_evaluable) -->
+                <button
+                  v-if="projet.evaluation_prealable === 'dossier_evaluable'"
+                  @click="ouvrirModalEditionFiche(projet)"
+                  class="btn-edit-fiche"
+                  style="margin-bottom: 10px; width: 100%;"
+                >
+                  📝 Remplir/Éditer la fiche d'évaluation
+                </button>
+
                 <!-- Possibilité de réassigner -->
                 <div class="reassign-section">
                   <label>Réassigner à:</label>
