@@ -575,7 +575,7 @@
                     placeholder="Justification de cette réassignation (facultatif)"
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
                   ></textarea>
-                  <button class="btn-warning" @click="reassignerRejete(projet.id)" style="width: 100%; margin-top: 10px;">
+                  <button class="btn-warning" @click="assigner(projet.id)" style="width: 100%; margin-top: 10px;">
                     🔄 Réassigner pour réévaluation
                   </button>
                 </div>
