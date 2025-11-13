@@ -272,6 +272,12 @@
                 </div>
               </div>
 
+              <!-- Afficher la motivation de resoumission si présente -->
+              <div v-if="projet.motivation_resoumission && projet.statut === 'en attente validation presidencesct'" class="resubmission-motivation" style="margin: 10px 0;">
+                <p><strong>💬 Motivation de la resoumission:</strong></p>
+                <div class="motivation-message">{{ projet.motivation_resoumission }}</div>
+              </div>
+
               <!-- Actions pour projets rejetés - Nouvelle fonctionnalité -->
               <div v-if="projet.statut === 'rejeté'" class="project-actions rejected-actions">
                 <div class="rejected-info">
@@ -2227,6 +2233,20 @@ export default {
   margin-top: 0.5rem;
   border: 1px solid #fecaca;
   color: #991b1b;
+}
+
+.resubmission-motivation {
+  margin: 1rem 0;
+}
+
+.motivation-message {
+  background: #eff6ff;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-style: italic;
 }
 
 .status-rejected {

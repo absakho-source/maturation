@@ -127,6 +127,14 @@
             </div>
           </div>
 
+          <!-- Section Motivation de resoumission - masquée pour les soumissionnaires -->
+          <div class="info-card" v-if="project.motivation_resoumission && !isSoumissionnaire()">
+            <h3>💬 Motivation de la resoumission</h3>
+            <div class="resubmission-motivation-detail">
+              <p>{{ project.motivation_resoumission }}</p>
+            </div>
+          </div>
+
           <!-- Section Décision finale - masquée pour les soumissionnaires -->
           <div class="info-card" v-if="project.decision_finale && !isSoumissionnaire()">
             <h3>Décision finale (Présidence Comité)</h3>
@@ -1007,6 +1015,20 @@ export default {
   padding-top: 0.5rem;
   border-top: 1px solid #e2e8f0;
   white-space: pre-wrap;
+}
+
+.resubmission-motivation-detail {
+  background: #eff6ff;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.resubmission-motivation-detail p {
+  margin: 0;
+  color: #1e40af;
+  font-style: italic;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
