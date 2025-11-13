@@ -273,7 +273,7 @@
               </div>
 
               <!-- Afficher la motivation de resoumission si présente -->
-              <div v-if="projet.motivation_resoumission && projet.statut === 'en attente validation presidencesct'" class="resubmission-motivation" style="margin: 10px 0;">
+              <div v-if="projet.motivation_resoumission" class="resubmission-motivation" style="margin: 10px 0;">
                 <p><strong>💬 Motivation de la resoumission:</strong></p>
                 <div class="motivation-message">{{ projet.motivation_resoumission }}</div>
               </div>
