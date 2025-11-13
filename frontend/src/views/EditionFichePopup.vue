@@ -99,25 +99,34 @@ export default {
   methods: {
     async chargerDonnees(projetId) {
       try {
+        // Construire l'URL de base pour l'API
+        const apiBase = window.location.origin;
+
         // Charger les infos du projet avec cache-busting
-        const projetRes = await fetch(`/api/projects/${projetId}?t=${Date.now()}`, {
+        const projetRes = await fetch(`${apiBase}/api/projects/${projetId}?t=${Date.now()}`, {
           headers: {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
-          }
+          },
+          credentials: 'same-origin'
         });
-        if (!projetRes.ok) throw new Error('Erreur lors du chargement du projet');
+        if (!projetRes.ok) {
+          console.error('Erreur chargement projet:', projetRes.status, await projetRes.text());
+          throw new Error(`Erreur lors du chargement du projet (${projetRes.status})`);
+        }
         this.projet = await projetRes.json();
 
         // Charger la fiche d'évaluation avec cache-busting pour garantir des données fraîches
-        const ficheRes = await fetch(`/api/projects/${projetId}/fiche-evaluation?t=${Date.now()}`, {
+        const ficheRes = await fetch(`${apiBase}/api/projects/${projetId}/fiche-evaluation?t=${Date.now()}`, {
           headers: {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
-          }
+          },
+          credentials: 'same-origin'
         });
         if (!ficheRes.ok && ficheRes.status !== 404) {
-          throw new Error('Erreur lors du chargement de la fiche');
+          console.error('Erreur chargement fiche:', ficheRes.status, await ficheRes.text());
+          throw new Error(`Erreur lors du chargement de la fiche (${ficheRes.status})`);
         }
         const fiche = ficheRes.ok ? await ficheRes.json() : { criteres: {}, proposition: '', recommandations: '' };
 
@@ -163,10 +172,12 @@ export default {
         console.log('Données envoyées:', dataToSend);
         console.log('Score total calculé:', this.calculerScoreTotal());
 
-        const response = await fetch(`/api/projects/${this.projet.id}/fiche-evaluation`, {
+        const apiBase = window.location.origin;
+        const response = await fetch(`${apiBase}/api/projects/${this.projet.id}/fiche-evaluation`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataToSend)
+          body: JSON.stringify(dataToSend),
+          credentials: 'same-origin'
         });
 
         if (!response.ok) {
