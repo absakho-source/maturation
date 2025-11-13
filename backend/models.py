@@ -172,16 +172,16 @@ class FicheEvaluation(db.Model):
         self.score_total = (
             (self.pertinence_score or 0) +                    # /5
             (self.alignement_score or 0) +                    # /10
-            (self.pertinence_activites_score or 0) +          # /15
+            (self.activites_couts_score or 0) +               # /15
             (self.equite_score or 0) +                        # /15
-            (self.rentabilite_financiere_score or 0) +        # /5
-            (self.rentabilite_socio_score or 0) +             # /5
+            (self.viabilite_score or 0) +                     # /5
+            (self.rentabilite_score or 0) +                   # /5
             (self.benefices_strategiques_score or 0) +        # /10
             (self.perennite_score or 0) +                     # /5
-            (self.avantages_couts_score or 0) +               # /10
+            (self.avantages_intangibles_score or 0) +         # /10
             (self.faisabilite_score or 0) +                   # /5
-            (self.capacite_execution_score or 0) +            # /5
-            (self.impacts_environnementaux_score or 0)        # /5
+            (self.ppp_score or 0) +                           # /5
+            (self.impact_environnemental_score or 0)          # /5
         )  # Total = 100
 
         return self.score_total

@@ -307,43 +307,6 @@ def create_or_update_fiche_evaluation(project_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Erreur lors de l\'enregistrement: {str(e)}'}), 500
-        
-        # Vérifier si une fiche existe déjà
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-        
-        if fiche:
-            # Mise à jour de la fiche existante
-            for key, value in data.items():
-                if hasattr(fiche, key) and key not in ['id', 'project_id']:
-                    setattr(fiche, key, value)
-        else:
-            # Création d'une nouvelle fiche
-            fiche = FicheEvaluation(project_id=project_id)
-            for key, value in data.items():
-                if hasattr(fiche, key) and key not in ['id']:
-                    setattr(fiche, key, value)
-            
-            # Générer la référence si pas fournie
-            if not fiche.reference_fiche:
-                date_str = datetime.now().strftime('%Y%m%d')
-                fiche.reference_fiche = f"EVAL-{project.numero_projet or project.id}-{date_str}"
-            
-            db.session.add(fiche)
-        
-        # Calculer le score total
-        fiche.calculer_score_total()
-        
-        # Sauvegarder
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Fiche d\'évaluation sauvegardée avec succès',
-            'fiche': fiche.to_dict()
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': f'Erreur lors de la sauvegarde: {str(e)}'}), 500
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation/pdf', methods=['GET', 'POST'])
 def generate_fiche_evaluation_pdf(project_id):
