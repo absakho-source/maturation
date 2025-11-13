@@ -581,6 +581,8 @@ def traiter_project(project_id):
             if v == "valide":
                 p.validation_secretariat = "valide"
                 p.statut = "en attente validation presidencesct"
+                # Retirer l'assignation de l'évaluateur pour que le projet sorte de son panier
+                p.evaluateur_nom = None
 
                 # Vérifier si c'est une resoumission après rejet (par Présidence SCT ou Comité)
                 if data.get("statut_action") == "resoumission_apres_rejet":
@@ -590,7 +592,7 @@ def traiter_project(project_id):
                         action = (f"Projet soumis à la Présidence SCT malgré le rejet - "
                                 f"Score: {fiche.score_total}/100, "
                                 f"Avis: {fiche.proposition or 'N/A'}, "
-                                f"Évaluateur: {fiche.evaluateur_nom or p.evaluateur_nom}")
+                                f"Évaluateur: {fiche.evaluateur_nom or 'N/A'}")
                     else:
                         action = "Projet soumis à la Présidence SCT malgré le rejet"
                 else:
