@@ -3,6 +3,7 @@ Routes pour la gestion des projets et des fiches d'évaluation
 """
 from flask import request, jsonify
 import traceback
+import os
 
 def register_project_routes(app, Project, FicheEvaluation, db, User=None, Historique=None):
         
@@ -256,6 +257,19 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             # Impact emploi (description seulement selon le modèle)
             impact_emploi = criteres.get('impact_emploi', {})
             fiche.impact_sur_emploi = impact_emploi.get('description', '')
+
+            # IMPORTANT: Supprimer l'ancien PDF pour forcer la régénération avec les nouvelles données
+            if fiche.fichier_pdf:
+                try:
+                    pdf_directory = os.path.join(os.path.dirname(__file__), '..', 'pdfs', 'fiches_evaluation')
+                    pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
+                    if os.path.exists(pdf_path):
+                        os.remove(pdf_path)
+                        print(f"[FICHE UPDATE] Ancien PDF supprimé: {fiche.fichier_pdf}")
+                    fiche.fichier_pdf = None  # Réinitialiser le champ pour indiquer qu'il n'y a plus de PDF
+                except Exception as pdf_error:
+                    print(f"[FICHE UPDATE] Erreur lors de la suppression du PDF: {pdf_error}")
+                    # Continue même si la suppression échoue
 
             db.session.commit()
 

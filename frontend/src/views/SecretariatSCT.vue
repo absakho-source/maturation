@@ -1058,7 +1058,9 @@ export default {
       // Ouvrir un popup avec la page d'édition
       const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
       const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
-      const popup = window.open(popupUrl, 'EditionFiche', popupFeatures);
+      // Utiliser un nom unique pour forcer le rechargement complet à chaque ouverture
+      const uniqueWindowName = `EditionFiche_${Date.now()}`;
+      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
 
       if (!popup) {
         alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
@@ -1067,13 +1069,27 @@ export default {
 
       // Écouter les messages du popup
       const messageHandler = (event) => {
+        console.log('[SecretariatSCT] Message reçu:', event.data);
+        console.log('[SecretariatSCT] Origin:', event.origin, 'Expected:', window.location.origin);
+
         // Vérifier l'origine pour la sécurité
-        if (event.origin !== window.location.origin) return;
+        if (event.origin !== window.location.origin) {
+          console.warn('[SecretariatSCT] Message ignoré: origine différente');
+          return;
+        }
 
         if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
+          console.log('[SecretariatSCT] Message ficheUpdated reçu, rechargement des projets...');
           // Recharger les projets pour afficher les modifications
           this.chargerProjets();
           window.removeEventListener('message', messageHandler);
+          console.log('[SecretariatSCT] Projets rechargés');
+        } else {
+          console.log('[SecretariatSCT] Message ignoré:', {
+            type: event.data.type,
+            projetId: event.data.projetId,
+            expectedProjetId: projet.id
+          });
         }
       };
 

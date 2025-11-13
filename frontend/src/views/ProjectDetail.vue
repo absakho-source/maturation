@@ -156,64 +156,12 @@
             </div>
           </div>
 
-          <!-- Section Fiche d'évaluation PDF - visible dès qu'elle existe et que l'utilisateur peut la voir -->
+          <!-- Section Fiche d'évaluation PDF - MASQUÉE (uniquement accessible via popup d'édition) -->
+          <!--
           <div class="info-card" v-if="ficheEvaluation && !isSoumissionnaire() && peutVoirEvaluation()">
-            <h3>📋 Fiche d'évaluation</h3>
-
-            <!-- Score total et avis global -->
-            <div class="fiche-summary">
-              <div class="score-total-box">
-                <div class="score-label">Score total</div>
-                <div class="score-value">{{ ficheEvaluation.score_total || 0 }} / 100</div>
-                <div class="appreciation">{{ ficheEvaluation.appreciation_globale }}</div>
-              </div>
-              <div class="avis-global-box">
-                <div class="avis-label">Avis global</div>
-                <div class="avis-value" :class="getPropositionClass(ficheEvaluation.proposition)">
-                  {{ ficheEvaluation.proposition || 'Non renseigné' }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Commentaires généraux (recommandations) -->
-            <div v-if="ficheEvaluation.recommandations" class="recommandations-section">
-              <h4>Commentaires généraux / Conclusion</h4>
-              <div class="recommandations-content">{{ ficheEvaluation.recommandations }}</div>
-            </div>
-
-            <!-- Détail des critères -->
-            <div class="criteres-detail">
-              <h4>Détail des critères</h4>
-              <div class="criteres-list-detail">
-                <div v-for="(critere, key) in getCriteresConfig()" :key="key" class="critere-detail-item">
-                  <div class="critere-header-detail">
-                    <span class="critere-label-detail">{{ critere.label }}</span>
-                    <span class="critere-score-detail">
-                      {{ ficheEvaluation.criteres?.[key]?.score || 0 }} / {{ critere.max }}
-                    </span>
-                  </div>
-                  <div v-if="ficheEvaluation.criteres?.[key]?.description" class="critere-description">
-                    {{ ficheEvaluation.criteres[key].description }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Lien PDF -->
-            <div class="files-list" style="margin-top: 1.5rem;">
-              <a @click.prevent="ouvrirFichePDF"
-                 href="#"
-                 :class="['file-link pdf-link', { 'disabled': !peutAccederFicheEvaluation() }]">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Télécharger la fiche complète (PDF)
-                <span v-if="!peutAccederFicheEvaluation()" class="disabled-hint">
-                  (Disponible après évaluation préalable positive)
-                </span>
-              </a>
-            </div>
+            Cette section a été masquée car la fiche d'évaluation doit être consultée/modifiée uniquement via le popup
           </div>
+          -->
 
           <!-- Section Historique - masquée pour les soumissionnaires -->
           <div class="info-card" v-if="!isSoumissionnaire()">
@@ -307,36 +255,60 @@ export default {
   },
   methods: {
     handleFicheUpdate(event) {
+      console.log('[ProjectDetail] Message reçu:', event.data);
+      console.log('[ProjectDetail] Origin:', event.origin, 'Expected:', window.location.origin);
+
       // Vérifier l'origine pour la sécurité
-      if (event.origin !== window.location.origin) return;
+      if (event.origin !== window.location.origin) {
+        console.warn('[ProjectDetail] Message ignoré: origine différente');
+        return;
+      }
 
       if (event.data.type === 'ficheUpdated' && event.data.projetId == this.project?.id) {
-        console.log('Message ficheUpdated reçu, rechargement des données...');
+        console.log('[ProjectDetail] Message ficheUpdated reçu, rechargement des données...');
         this.rechargerFicheEtHistorique();
+      } else {
+        console.log('[ProjectDetail] Message ignoré:', {
+          type: event.data.type,
+          projetId: event.data.projetId,
+          currentProjectId: this.project?.id
+        });
       }
     },
     async rechargerFicheEtHistorique() {
       const id = this.$route.params.id;
+      console.log('[ProjectDetail] Début rechargement pour projet ID:', id);
+
       try {
         // Recharger l'historique
+        console.log('[ProjectDetail] Rechargement historique...');
         const historiqueRes = await fetch(`/api/logs/${id}`);
         this.historique = await historiqueRes.json();
+        console.log('[ProjectDetail] Historique rechargé:', this.historique.length, 'entrées');
 
         // Recharger la fiche d'évaluation
         try {
+          console.log('[ProjectDetail] Rechargement fiche d\'évaluation...');
           const ficheRes = await fetch(`/api/projects/${id}/fiche-evaluation`);
+          console.log('[ProjectDetail] Statut réponse fiche:', ficheRes.status);
+
           if (ficheRes.ok) {
-            this.ficheEvaluation = await ficheRes.json();
-            console.log('Fiche rechargée:', this.ficheEvaluation);
+            const ficheData = await ficheRes.json();
+            this.ficheEvaluation = ficheData;
+            console.log('[ProjectDetail] Fiche rechargée avec succès!');
+            console.log('[ProjectDetail] Score total:', ficheData.score_total);
+            console.log('[ProjectDetail] Recommandations:', ficheData.recommandations);
+            console.log('[ProjectDetail] Proposition:', ficheData.proposition);
           } else if (ficheRes.status === 404) {
+            console.log('[ProjectDetail] Aucune fiche trouvée (404)');
             this.ficheEvaluation = null;
           }
         } catch (ficheErr) {
-          console.error('Erreur rechargement fiche:', ficheErr);
+          console.error('[ProjectDetail] Erreur rechargement fiche:', ficheErr);
           this.ficheEvaluation = null;
         }
       } catch (err) {
-        console.error('Erreur rechargement données:', err);
+        console.error('[ProjectDetail] Erreur rechargement données:', err);
       }
     },
     formatDate(dateStr) {

@@ -99,13 +99,23 @@ export default {
   methods: {
     async chargerDonnees(projetId) {
       try {
-        // Charger les infos du projet
-        const projetRes = await fetch(`/api/projects/${projetId}`);
+        // Charger les infos du projet avec cache-busting
+        const projetRes = await fetch(`/api/projects/${projetId}?t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         if (!projetRes.ok) throw new Error('Erreur lors du chargement du projet');
         this.projet = await projetRes.json();
 
-        // Charger la fiche d'évaluation
-        const ficheRes = await fetch(`/api/projects/${projetId}/fiche-evaluation`);
+        // Charger la fiche d'évaluation avec cache-busting pour garantir des données fraîches
+        const ficheRes = await fetch(`/api/projects/${projetId}/fiche-evaluation?t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         if (!ficheRes.ok) throw new Error('Erreur lors du chargement de la fiche');
         const fiche = await ficheRes.json();
 
@@ -167,12 +177,18 @@ export default {
         console.log('Réponse serveur:', result);
 
         // Notifier la fenêtre parent
+        console.log('[EditionFichePopup] window.opener existe?', !!window.opener);
+        console.log('[EditionFichePopup] window.opener:', window.opener);
+
         if (window.opener) {
-          console.log('Envoi message à la fenêtre parent');
+          console.log('[EditionFichePopup] Envoi message à la fenêtre parent');
           window.opener.postMessage({
             type: 'ficheUpdated',
             projetId: this.projet.id
           }, '*');
+          console.log('[EditionFichePopup] Message envoyé avec succès');
+        } else {
+          console.warn('[EditionFichePopup] window.opener est null! Le message ne peut pas être envoyé.');
         }
 
         alert('Fiche enregistrée avec succès');
