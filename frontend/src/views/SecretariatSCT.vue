@@ -584,7 +584,7 @@
                         <button
                           class="btn-warning btn-reassign"
                           :disabled="!assignation[projet.id]"
-                          @click="assigner(projet.id)"
+                          @click="reassignerProjetRejete(projet.id)"
                         >
                           🔄 Réassigner pour nouvelle évaluation
                         </button>
