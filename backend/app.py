@@ -652,6 +652,11 @@ def traiter_project(project_id):
                 p.avis = None
                 p.commentaires = None
 
+                # Réinitialiser les avis des présidences (SCT et Comité)
+                p.avis_presidencesct = None
+                p.decision_finale = None
+                p.commentaires_finaux = None
+
                 # Réinitialiser l'évaluation préalable
                 p.evaluation_prealable = None
                 p.evaluation_prealable_date = None
@@ -710,7 +715,14 @@ def traiter_project(project_id):
 
                 p.validation_secretariat = "reassigne"
                 p.evaluateur_nom = to
-                p.avis = None; p.commentaires = None
+                p.avis = None
+                p.commentaires = None
+
+                # Réinitialiser les avis des présidences (SCT et Comité)
+                p.avis_presidencesct = None
+                p.decision_finale = None
+                p.commentaires_finaux = None
+
                 p.statut = "assigné"
                 action = f"Avis rejeté par le Secrétariat — réassigné à {to}"
             else:
