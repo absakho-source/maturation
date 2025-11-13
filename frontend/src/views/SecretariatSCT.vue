@@ -347,14 +347,15 @@
               <!-- Actions pour projets évalués -->
               <div v-if="projet.statut === 'évalué'" class="project-actions">
                 <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas de rejet proposé) -->
-                <button
-                  v-if="projet.evaluation_prealable !== 'dossier_rejete' && projet.avis"
-                  @click="ouvrirModalEditionFiche(projet)"
-                  class="btn-edit-fiche"
-                  style="margin-bottom: 10px;"
-                >
-                  ✏️ Éditer la fiche
-                </button>
+                <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                  <button
+                    v-if="projet.evaluation_prealable !== 'dossier_rejete' && projet.avis"
+                    @click="ouvrirModalEditionFiche(projet)"
+                    class="btn-edit-fiche"
+                  >
+                    ✏️ Éditer la fiche
+                  </button>
+                </div>
 
                 <!-- Actions pour un rejet proposé -->
                 <div v-if="projet.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
@@ -571,13 +572,15 @@
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
 
               <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas encore transmis) -->
-              <button
-                v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
-                @click="ouvrirModalEditionFiche(p)"
-                class="btn-edit-fiche"
-              >
-                ✏️ Éditer la fiche
-              </button>
+              <div style="display: flex; justify-content: center; margin-top: 10px;">
+                <button
+                  v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
+                  @click="ouvrirModalEditionFiche(p)"
+                  class="btn-edit-fiche"
+                >
+                  ✏️ Éditer la fiche
+                </button>
+              </div>
 
               <!-- Actions pour un rejet proposé -->
               <div v-if="p.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
