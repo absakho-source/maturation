@@ -116,8 +116,10 @@ export default {
             'Pragma': 'no-cache'
           }
         });
-        if (!ficheRes.ok) throw new Error('Erreur lors du chargement de la fiche');
-        const fiche = await ficheRes.json();
+        if (!ficheRes.ok && ficheRes.status !== 404) {
+          throw new Error('Erreur lors du chargement de la fiche');
+        }
+        const fiche = ficheRes.ok ? await ficheRes.json() : { criteres: {}, proposition: '', recommandations: '' };
 
         // Initialiser ficheEdition
         this.ficheEdition = {
