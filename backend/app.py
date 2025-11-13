@@ -581,7 +581,20 @@ def traiter_project(project_id):
             if v == "valide":
                 p.validation_secretariat = "valide"
                 p.statut = "en attente validation presidencesct"
-                action = "Avis validé par le Secrétariat SCT"
+
+                # Vérifier si c'est une resoumission après rejet (par Présidence SCT ou Comité)
+                if data.get("statut_action") == "resoumission_apres_rejet":
+                    # Récupérer les données de la fiche d'évaluation pour le log
+                    fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                    if fiche:
+                        action = (f"Projet soumis à la Présidence SCT malgré le rejet - "
+                                f"Score: {fiche.score_total}/100, "
+                                f"Avis: {fiche.proposition or 'N/A'}, "
+                                f"Évaluateur: {fiche.evaluateur_nom or p.evaluateur_nom}")
+                    else:
+                        action = "Projet soumis à la Présidence SCT malgré le rejet"
+                else:
+                    action = "Avis validé par le Secrétariat SCT"
             elif v == "reassigne":
                 to = data.get("evaluateur_nom")
                 if not to:

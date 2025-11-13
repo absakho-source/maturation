@@ -1353,7 +1353,7 @@ export default {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             validation_secretariat: "valide",
-            statut_action: "soumission_hierarchique",
+            statut_action: "resoumission_apres_rejet",
             auteur: user.username,
             role: user.role
           })
