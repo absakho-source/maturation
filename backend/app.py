@@ -2900,6 +2900,57 @@ def run_migration():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/fix-stale-decision-finale", methods=["POST"])
+def fix_stale_decision_finale_endpoint():
+    """Endpoint temporaire pour corriger les decision_finale obsolètes"""
+    try:
+        # Trouver les projets concernés
+        projets = Project.query.filter(
+            Project.statut == 'validé par presidencesct',
+            Project.avis_presidencesct == 'valide',
+            Project.decision_finale.isnot(None)
+        ).all()
+
+        if not projets:
+            return jsonify({"message": "Aucun projet à corriger"}), 200
+
+        corrections = []
+        for projet in projets:
+            old_decision = projet.decision_finale
+
+            # Réinitialiser decision_finale et commentaires_finaux
+            projet.decision_finale = None
+            projet.commentaires_finaux = None
+
+            # Ajouter une entrée dans l'historique
+            hist = Historique(
+                project_id=projet.id,
+                action=f"Migration: Réinitialisation de decision_finale (ancienne valeur: '{old_decision}') pour permettre nouvelle décision du Comité",
+                auteur="system",
+                role="admin"
+            )
+            db.session.add(hist)
+
+            corrections.append({
+                "id": projet.id,
+                "numero_projet": projet.numero_projet,
+                "titre": projet.titre,
+                "old_decision_finale": old_decision
+            })
+
+        db.session.commit()
+
+        return jsonify({
+            "message": f"{len(corrections)} projet(s) corrigé(s)",
+            "projets_corriges": corrections
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5002))
