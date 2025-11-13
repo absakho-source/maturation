@@ -192,7 +192,7 @@ def _archiver_fiche_evaluation(fiche, project, auteur="system"):
             nom_archive = f"Fiche_Evaluation_Archivee_{evaluateur}_{timestamp}.pdf"
 
             # Copier le PDF vers le dossier des documents du projet
-            documents_folder = os.path.join(UPLOAD_FOLDER, "documents_projet")
+            documents_folder = os.path.join(app.config["UPLOAD_FOLDER"], "documents_projet")
             os.makedirs(documents_folder, exist_ok=True)
 
             dest_path = os.path.join(documents_folder, nom_archive)
