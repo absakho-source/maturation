@@ -1463,24 +1463,25 @@ export default {
       return evaluateur ? (evaluateur.display_name || evaluateur.username) : ev;
     },
     getAvailableEvaluateurs(projet) {
-      // Pour les projets évalués, inclure l'évaluateur actuel pour permettre la réassignation au même évaluateur
-      // Pour les autres statuts, exclure l'évaluateur actuellement assigné
+      // Inclure tous les évaluateurs SAUF si le projet est encore dans le panier de l'évaluateur actuel
+      // (c'est-à-dire statut 'assigné' ou 'en évaluation')
+      // Une fois évalué, l'évaluateur précédent doit pouvoir être réassigné le projet
       if (!projet || !projet.evaluateur_nom) {
         return this.evaluateurs;
       }
 
-      // Si le projet est évalué, inclure tous les évaluateurs (y compris l'actuel)
-      if (projet.statut === 'évalué') {
-        console.log('getAvailableEvaluateurs - Projet évalué:', projet.numero_projet, 'Assigné à:', projet.evaluateur_nom, 'Incluant évaluateur actuel');
-        return this.evaluateurs;
+      // Seulement filtrer l'évaluateur actuel si le projet est toujours dans son panier
+      if (projet.statut === 'assigné' || projet.statut === 'en évaluation') {
+        const filtered = this.evaluateurs.filter(e => {
+          return e.username !== projet.evaluateur_nom;
+        });
+        console.log('getAvailableEvaluateurs - Projet dans panier:', projet.numero_projet, 'Assigné à:', projet.evaluateur_nom, 'Filtré');
+        return filtered;
       }
 
-      // Sinon, filtrer en excluant l'évaluateur actuellement assigné
-      const filtered = this.evaluateurs.filter(e => {
-        return e.username !== projet.evaluateur_nom;
-      });
-      console.log('getAvailableEvaluateurs - Projet:', projet.numero_projet, 'Assigné à:', projet.evaluateur_nom, 'Evaluateurs filtrés:', filtered.length, 'Total:', this.evaluateurs.length);
-      return filtered;
+      // Pour tous les autres statuts (évalué, rejeté, etc.), inclure tous les évaluateurs
+      console.log('getAvailableEvaluateurs - Projet hors panier:', projet.numero_projet, 'Incluant tous les évaluateurs');
+      return this.evaluateurs;
     },
     getAvisClass(a){ const m={"favorable":"avis-favorable","favorable sous conditions":"avis-conditions","défavorable":"avis-defavorable","compléments demandés":"avis-complement"}; return m[a]||""; },
 
