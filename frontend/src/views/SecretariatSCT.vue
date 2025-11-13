@@ -276,12 +276,15 @@
               <div v-if="projet.statut === 'rejeté'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
-                    <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par le comité -->
+                    <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par présidence -->
                     <template v-if="projet.avis === 'dossier rejeté'">
                       ❌ <strong>Projet rejeté</strong>
                     </template>
+                    <template v-else-if="projet.avis_presidencesct === 'rejette'">
+                      ❌ <strong>Avis rejeté par la Présidence SCT</strong>
+                    </template>
                     <template v-else>
-                      ❌ <strong>Avis rejeté par le Comité</strong>
+                      ❌ <strong>Avis rejeté par la Présidence du comité</strong>
                     </template>
                   </div>
                   <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
