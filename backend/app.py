@@ -2041,18 +2041,51 @@ def get_project_documents(project_id):
         # Récupérer tous les documents du projet
         documents = DocumentProjet.query.filter_by(project_id=project_id).order_by(DocumentProjet.date_ajout.desc()).all()
 
-        # Filtrer selon le rôle : soumissionnaire voit tous les documents de soumissionnaire pour ce projet
+        # Fonction helper pour vérifier la visibilité selon visible_pour_roles
+        def is_visible_for_role(doc, role):
+            import json
+            if not doc.visible_pour_roles:
+                # Si pas de restriction, visible par tous
+                return True
+            try:
+                allowed_roles = json.loads(doc.visible_pour_roles)
+                return role in allowed_roles
+            except Exception:
+                # En cas d'erreur, considérer comme visible
+                return True
+
+        # Filtrer selon le rôle et visible_pour_roles
         if user_role == "soumissionnaire":
             # Vérifier que l'utilisateur a accès à ce projet (est l'auteur)
             if project.auteur_nom == user_name or project.auteur == user_name:
-                # Voir tous les documents avec auteur_role soumissionnaire pour ce projet
-                documents = [doc for doc in documents if doc.auteur_role == "soumissionnaire"]
+                # Voir les documents de soumissionnaire et ceux visibles pour soumissionnaire
+                documents = [doc for doc in documents
+                           if doc.auteur_role == "soumissionnaire" and is_visible_for_role(doc, "soumissionnaire")]
             else:
                 # Pas d'accès à ce projet
                 documents = []
-        # secteur_territorial voit les documents du soumissionnaire et ses propres documents
+
         elif user_role == "secteur_territorial":
-            documents = [doc for doc in documents if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]]
+            # Voit documents du soumissionnaire et ses propres documents, selon visible_pour_roles
+            documents = [doc for doc in documents
+                       if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]
+                       and is_visible_for_role(doc, "secteur_territorial")]
+
+        elif user_role == "secretariatsct":
+            # Voit tous les documents visibles pour secretariatsct
+            documents = [doc for doc in documents if is_visible_for_role(doc, "secretariatsct")]
+
+        elif user_role == "evaluateur":
+            # Voit tous les documents visibles pour evaluateur
+            documents = [doc for doc in documents if is_visible_for_role(doc, "evaluateur")]
+
+        elif user_role in ["presidencesct", "presidencecomite", "admin"]:
+            # Ces rôles voient tous les documents (accès complet)
+            documents = [doc for doc in documents if is_visible_for_role(doc, user_role)]
+
+        else:
+            # Rôle non reconnu, aucun accès
+            documents = []
 
         # Ajouter les pièces jointes initiales si elles n'ont pas encore été migrées
         if project.pieces_jointes:
@@ -2103,15 +2136,23 @@ def get_project_documents(project_id):
 
             # Réappliquer le filtrage après rechargement
             if user_role == "soumissionnaire":
-                # Vérifier que l'utilisateur a accès à ce projet (est l'auteur)
                 if project.auteur_nom == user_name or project.auteur == user_name:
-                    # Voir tous les documents avec auteur_role soumissionnaire pour ce projet
-                    documents = [doc for doc in documents if doc.auteur_role == "soumissionnaire"]
+                    documents = [doc for doc in documents
+                               if doc.auteur_role == "soumissionnaire" and is_visible_for_role(doc, "soumissionnaire")]
                 else:
-                    # Pas d'accès à ce projet
                     documents = []
             elif user_role == "secteur_territorial":
-                documents = [doc for doc in documents if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]]
+                documents = [doc for doc in documents
+                           if doc.auteur_role in ["soumissionnaire", "secteur_territorial"]
+                           and is_visible_for_role(doc, "secteur_territorial")]
+            elif user_role == "secretariatsct":
+                documents = [doc for doc in documents if is_visible_for_role(doc, "secretariatsct")]
+            elif user_role == "evaluateur":
+                documents = [doc for doc in documents if is_visible_for_role(doc, "evaluateur")]
+            elif user_role in ["presidencesct", "presidencecomite", "admin"]:
+                documents = [doc for doc in documents if is_visible_for_role(doc, user_role)]
+            else:
+                documents = []
 
         return jsonify([doc.to_dict() for doc in documents]), 200
     except Exception as e:
