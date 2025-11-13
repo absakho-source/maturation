@@ -52,7 +52,7 @@ CORS(app, resources={
             "https://maturation-frontend.onrender.com"  # Production
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
+        "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma"],
         "supports_credentials": True
     }
 })
