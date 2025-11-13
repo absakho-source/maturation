@@ -2729,6 +2729,33 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import ministere routes: {e}")
 
+@app.route("/api/admin/run-migration", methods=["POST"])
+def run_migration():
+    """Execute the migration script to add motivation_resoumission column"""
+    try:
+        from sqlalchemy import text
+
+        # Vérifier si la colonne existe déjà
+        result = db.session.execute(text("PRAGMA table_info(project)"))
+        columns = [row[1] for row in result.fetchall()]
+
+        if 'motivation_resoumission' in columns:
+            return jsonify({"message": "La colonne 'motivation_resoumission' existe déjà."}), 200
+
+        # Ajouter la colonne
+        db.session.execute(text(
+            "ALTER TABLE project ADD COLUMN motivation_resoumission TEXT"
+        ))
+        db.session.commit()
+
+        return jsonify({"message": "Colonne 'motivation_resoumission' ajoutée avec succès!"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5002))
