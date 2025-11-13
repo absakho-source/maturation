@@ -18,5 +18,10 @@ python create_ministeres_table.py
 echo "[INIT] Initialisation des données de démonstration..."
 python init_demo_data.py
 
+# Exécuter les migrations de base de données
+echo "[MIGRATION] Exécution des migrations..."
+python add_visibility_column.py
+python add_motivation_column.py
+
 # Lancer l'application
 python app.py
