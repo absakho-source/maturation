@@ -681,11 +681,10 @@ def traiter_project(project_id):
                     # On ne bloque pas la validation même si l'ajout échoue
 
             else:
-                # retour en soumission pour révision
-                p.statut = "soumis"
+                # Rejet par Présidence SCT
+                p.statut = "rejeté"
                 p.evaluateur_nom = None
-                p.avis = None; p.commentaires = None
-                action = "Rejeté par Présidence SCT - retour au Secrétariat"
+                action = "Avis rejeté par Présidence SCT"
 
         # Décision finale (Comité)
         elif "decision_finale" in data:
@@ -699,12 +698,10 @@ def traiter_project(project_id):
                 p.statut = "approuvé"
                 action = "Projet approuvé par le Comité"
             else:
-                # Rejet par Présidence du Comité - retour au Secrétariat pour réassignation
-                p.statut = "soumis"
+                # Rejet par Présidence du Comité
+                p.statut = "rejeté"
                 p.evaluateur_nom = None
-                p.avis = None
-                p.commentaires = None
-                action = "Avis rejeté par Présidence du Comité - retour au Secrétariat"
+                action = "Avis rejeté par Présidence du Comité"
 
         db.session.commit()
         if action:
