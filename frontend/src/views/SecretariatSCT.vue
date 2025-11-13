@@ -929,7 +929,7 @@ export default {
       return this.allProjects.filter(p => p.statut === this.filtreStatut);
     },
     projectsToAssign() {
-      return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné'].includes(p.statut));
+      return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné', 'rejeté'].includes(p.statut));
     },
     projectsToValidate() {
       // Inclure à la fois :
