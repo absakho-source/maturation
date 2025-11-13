@@ -508,7 +508,7 @@ def traiter_project(project_id):
                 action = f"Avis émis: {avis}"
 
         # Actions spéciales sur les compléments
-        elif "statut_action" in data:
+        elif "statut_action" in data and "validation_secretariat" not in data:
             statut_action = data.get("statut_action")
             if statut_action == "reevaluer_complements":
                 # Supprimer la fiche d'évaluation existante pour une nouvelle évaluation
