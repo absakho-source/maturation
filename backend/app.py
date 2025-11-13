@@ -607,6 +607,52 @@ def traiter_project(project_id):
                 p.statut = "validé par presidencesct"
                 # NE PAS mettre de decision_finale ici - c'est le rôle du Comité
                 action = "Validation par Présidence SCT - transmission au Comité"
+
+                # Ajouter la fiche d'évaluation PDF à la documenthèque
+                try:
+                    import shutil
+                    fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                    if fiche and fiche.fichier_pdf:
+                        # Chemin source du PDF (dans routes/pdfs/fiches_evaluation/)
+                        pdf_source_dir = os.path.join(os.path.dirname(__file__), 'routes', 'pdfs', 'fiches_evaluation')
+                        pdf_source_path = os.path.join(pdf_source_dir, fiche.fichier_pdf)
+
+                        if os.path.exists(pdf_source_path):
+                            # Chemin destination dans uploads
+                            pdf_dest_name = f"FICHE_EVAL_{fiche.reference_fiche}.pdf"
+                            pdf_dest_path = os.path.join(app.config['UPLOAD_FOLDER'], pdf_dest_name)
+
+                            # Copier le PDF vers uploads
+                            shutil.copy2(pdf_source_path, pdf_dest_path)
+
+                            # Vérifier si une entrée DocumentProjet existe déjà pour cette fiche
+                            existing_doc = DocumentProjet.query.filter_by(
+                                project_id=project_id,
+                                type_document='fiche_evaluation'
+                            ).first()
+
+                            if not existing_doc:
+                                # Créer une entrée DocumentProjet
+                                taille_fichier = os.path.getsize(pdf_dest_path)
+                                doc = DocumentProjet(
+                                    project_id=project_id,
+                                    nom_fichier=pdf_dest_name,
+                                    nom_original=f"Fiche_Evaluation_{fiche.reference_fiche}.pdf",
+                                    description="Fiche d'évaluation du projet (validée par Présidence SCT)",
+                                    type_document='fiche_evaluation',
+                                    auteur_nom='presidencesct',
+                                    auteur_role='presidencesct',
+                                    date_ajout=datetime.utcnow(),
+                                    taille_fichier=taille_fichier
+                                )
+                                db.session.add(doc)
+                                print(f"[INFO] Fiche d'évaluation PDF ajoutée à la documenthèque du projet {project_id}")
+                except Exception as e:
+                    print(f"[ERREUR] Impossible d'ajouter la fiche PDF à la documenthèque: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                    # On ne bloque pas la validation même si l'ajout échoue
+
             else:
                 # retour en soumission pour révision
                 p.statut = "soumis"
