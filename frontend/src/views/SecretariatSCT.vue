@@ -249,9 +249,9 @@
                   ℹ️ Ce projet vous est assigné - Rendez-vous dans l'onglet "Mes évaluations" pour l'évaluer
                 </div>
 
-                <!-- Bouton Éditer fiche pour les projets évaluables (dossier_evaluable) -->
+                <!-- Bouton Éditer fiche UNIQUEMENT si le secrétariat s'est auto-assigné le projet -->
                 <button
-                  v-if="projet.evaluation_prealable === 'dossier_evaluable'"
+                  v-if="projet.evaluation_prealable === 'dossier_evaluable' && projet.evaluateur_nom === 'secretariatsct'"
                   @click="ouvrirModalEditionFiche(projet)"
                   class="btn-edit-fiche"
                   style="margin-bottom: 10px; width: 100%;"
