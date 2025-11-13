@@ -532,9 +532,57 @@
               </div>
               
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
-              
-              <!-- Actions pour assigner -->
-              <div class="assign-section">
+
+              <!-- Actions pour projets rejetés - Présentation contextuelle -->
+              <div v-if="projet.statut === 'rejeté'" class="project-actions rejected-actions">
+                <div class="rejected-info">
+                  <div class="alert alert-danger">
+                    <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par présidence -->
+                    <template v-if="projet.avis === 'dossier rejeté'">
+                      ❌ <strong>Projet rejeté</strong>
+                    </template>
+                    <template v-else-if="projet.avis_presidencesct === 'rejette'">
+                      ❌ <strong>Avis rejeté par la Présidence SCT</strong>
+                    </template>
+                    <template v-else>
+                      ❌ <strong>Avis rejeté par la Présidence du comité</strong>
+                    </template>
+                  </div>
+                  <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
+                  <p v-else-if="projet.commentaires"><strong>Motif de rejet:</strong> {{ projet.commentaires }}</p>
+                  <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
+                </div>
+
+                <!-- Actions de réassignation pour projets rejetés -->
+                <div class="reassign-rejected-section">
+                  <p class="info-text">
+                    <strong>🔄 Réassigner ce projet rejeté:</strong><br>
+                    Vous pouvez réassigner ce projet à un évaluateur pour une nouvelle évaluation.
+                    L'ancienne fiche d'évaluation sera archivée automatiquement.
+                  </p>
+                  <label>Réassigner à:</label>
+                  <select v-model="assignation[projet.id]">
+                    <option value="">--Choisir un évaluateur--</option>
+                    <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                    <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                      {{ evaluateur.display_name || evaluateur.username }}
+                    </option>
+                  </select>
+                  <label style="margin-top: 10px;">Motivation (facultatif):</label>
+                  <textarea
+                    v-model="motivations[projet.id]"
+                    rows="2"
+                    placeholder="Justification de cette réassignation (facultatif)"
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
+                  ></textarea>
+                  <button class="btn-warning" @click="reassignerRejete(projet.id)" style="width: 100%; margin-top: 10px;">
+                    🔄 Réassigner pour réévaluation
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions pour assigner (projets non rejetés) -->
+              <div v-if="projet.statut !== 'rejeté'" class="assign-section">
                 <label>{{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
