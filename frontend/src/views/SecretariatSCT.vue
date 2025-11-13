@@ -553,31 +553,69 @@
                   <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
                 </div>
 
-                <!-- Actions de réassignation pour projets rejetés -->
+                <!-- Actions disponibles pour tous les projets rejetés -->
                 <div class="reassign-rejected-section">
-                  <p class="info-text">
-                    <strong>🔄 Réassigner ce projet rejeté:</strong><br>
-                    Vous pouvez réassigner ce projet à un évaluateur pour une nouvelle évaluation.
-                    L'ancienne fiche d'évaluation sera archivée automatiquement.
-                  </p>
-                  <label>Réassigner à:</label>
-                  <select v-model="assignation[projet.id]">
-                    <option value="">--Choisir un évaluateur--</option>
-                    <option value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                    <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
-                      {{ evaluateur.display_name || evaluateur.username }}
-                    </option>
-                  </select>
-                  <label style="margin-top: 10px;">Motivation (facultatif):</label>
-                  <textarea
-                    v-model="motivations[projet.id]"
-                    rows="2"
-                    placeholder="Justification de cette réassignation (facultatif)"
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
-                  ></textarea>
-                  <button class="btn-warning" @click="assigner(projet.id)" style="width: 100%; margin-top: 10px;">
-                    🔄 Réassigner pour réévaluation
-                  </button>
+                  <h4>🔄 Options de traitement</h4>
+
+                  <div class="reassign-controls-vertical">
+                    <!-- Réassignation à un évaluateur -->
+                    <div class="action-group">
+                      <h5>Réassigner pour nouvelle évaluation</h5>
+                      <div class="reassign-select-container">
+                        <label>Réassigner à:</label>
+                        <select v-model="assignation[projet.id]" class="reassign-select">
+                          <option value="">--Choisir un évaluateur--</option>
+                          <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                          <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                            {{ evaluateur.display_name || evaluateur.username }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="reassign-select-container">
+                        <label>Motivation (facultatif):</label>
+                        <textarea
+                          v-model="motivations[projet.id]"
+                          rows="2"
+                          placeholder="Justification de cette réassignation (facultatif)"
+                          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
+                        ></textarea>
+                      </div>
+                      <div class="reassign-button-container">
+                        <button
+                          class="btn-warning btn-reassign"
+                          :disabled="!assignation[projet.id]"
+                          @click="assigner(projet.id)"
+                        >
+                          🔄 Réassigner pour nouvelle évaluation
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Soumission par voie hiérarchique -->
+                    <div class="action-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                      <h5>Soumettre de nouveau</h5>
+                      <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
+
+                      <label style="display: block; margin-top: 10px; margin-bottom: 5px; font-weight: 500;">
+                        Motivation de la resoumission (facultatif):
+                      </label>
+                      <textarea
+                        v-model="motivationsResoumission[projet.id]"
+                        rows="3"
+                        placeholder="Expliquez brièvement pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet..."
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;"
+                      ></textarea>
+
+                      <div class="reassign-button-container" style="margin-top: 10px;">
+                        <button
+                          class="btn-primary"
+                          @click="soumettreVoieHierarchique(projet.id)"
+                        >
+                          ⬆️ Soumettre à la Présidence SCT
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
