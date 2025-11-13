@@ -1363,11 +1363,11 @@ export default {
           throw new Error("Erreur lors de la soumission");
         }
 
-        alert("Projet soumis à la Présidence SCT par voie hiérarchique");
+        alert("Projet soumis à la Présidence SCT");
         this.loadProjects();
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de la soumission par voie hiérarchique");
+        alert("Erreur lors de la soumission");
       }
     },
     async validerRejet(id) {
