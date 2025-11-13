@@ -156,12 +156,14 @@
             </div>
           </div>
 
-          <!-- Section Fiche d'évaluation PDF - MASQUÉE (uniquement accessible via popup d'édition) -->
-          <!--
-          <div class="info-card" v-if="ficheEvaluation && !isSoumissionnaire() && peutVoirEvaluation()">
-            Cette section a été masquée car la fiche d'évaluation doit être consultée/modifiée uniquement via le popup
+          <!-- Section Fiche d'évaluation PDF -->
+          <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && !isSoumissionnaire() && peutVoirEvaluation()">
+            <h3>📄 Fiche d'évaluation</h3>
+            <p>La fiche d'évaluation a été générée.</p>
+            <button @click="ouvrirFichePDF" class="btn-primary" style="margin-top: 10px;">
+              📄 Voir la fiche d'évaluation (PDF)
+            </button>
           </div>
-          -->
 
           <!-- Section Historique - masquée pour les soumissionnaires -->
           <div class="info-card" v-if="!isSoumissionnaire()">
@@ -274,6 +276,11 @@ export default {
           currentProjectId: this.project?.id
         });
       }
+    },
+    ouvrirFichePDF() {
+      // Ouvrir le PDF de la fiche d'évaluation dans un nouvel onglet
+      const pdfUrl = `/api/projects/${this.project.id}/fiche-evaluation/pdf`;
+      window.open(pdfUrl, '_blank');
     },
     async rechargerFicheEtHistorique() {
       const id = this.$route.params.id;
