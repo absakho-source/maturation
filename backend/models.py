@@ -291,6 +291,7 @@ class DocumentProjet(db.Model):
     auteur_role = db.Column(db.String(50), nullable=False)  # Rôle de la personne qui a ajouté
     date_ajout = db.Column(db.DateTime, default=datetime.utcnow)
     taille_fichier = db.Column(db.Integer, nullable=True)  # Taille en octets
+    visible_pour_roles = db.Column(db.Text, nullable=True)  # JSON string des rôles autorisés à voir le document
 
     # Relation avec le projet
     project = db.relationship('Project', backref=db.backref('documents_supplementaires', lazy=True))
@@ -305,6 +306,15 @@ class DocumentProjet(db.Model):
         except Exception:
             pass  # Garder le username si erreur
 
+        # Parser les rôles autorisés depuis JSON
+        import json
+        visible_pour_roles = []
+        if self.visible_pour_roles:
+            try:
+                visible_pour_roles = json.loads(self.visible_pour_roles)
+            except Exception:
+                pass
+
         return {
             'id': self.id,
             'project_id': self.project_id,
@@ -316,7 +326,8 @@ class DocumentProjet(db.Model):
             'auteur_display_name': auteur_display_name,
             'auteur_role': self.auteur_role,
             'date_ajout': self.date_ajout.isoformat() if self.date_ajout else None,
-            'taille_fichier': self.taille_fichier
+            'taille_fichier': self.taille_fichier,
+            'visible_pour_roles': visible_pour_roles
         }
 
 class MessageProjet(db.Model):

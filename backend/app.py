@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import shutil
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
@@ -8,6 +9,7 @@ from models import Project, User, FicheEvaluation, Historique, DocumentProjet, M
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -154,6 +156,87 @@ def _save_files(files):
             file.save(filepath)
             filenames.append(filename)
     return filenames
+
+def _archiver_fiche_evaluation(fiche, project, auteur="system"):
+    """
+    Archive une fiche d'évaluation dans la documenthèque du projet.
+    La fiche archivée n'est PAS visible pour le soumissionnaire.
+
+    Args:
+        fiche: Instance FicheEvaluation à archiver
+        project: Instance Project associée
+        auteur: Nom de l'auteur de l'archivage
+
+    Returns:
+        bool: True si l'archivage a réussi, False sinon
+    """
+    if not fiche:
+        return False
+
+    try:
+        # Préparer les données pour générer le PDF
+        fiche_data = fiche.to_dict()
+        project_data = project.to_dict()
+
+        # Créer un répertoire temporaire pour générer le PDF
+        import tempfile
+        temp_dir = tempfile.mkdtemp()
+
+        try:
+            # Générer le PDF de la fiche d'évaluation
+            pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, temp_dir)
+
+            # Créer le nom du fichier archivé avec timestamp et évaluateur
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            evaluateur = fiche.evaluateur_nom or "inconnu"
+            nom_archive = f"Fiche_Evaluation_Archivee_{evaluateur}_{timestamp}.pdf"
+
+            # Copier le PDF vers le dossier des documents du projet
+            documents_folder = os.path.join(UPLOAD_FOLDER, "documents_projet")
+            os.makedirs(documents_folder, exist_ok=True)
+
+            dest_path = os.path.join(documents_folder, nom_archive)
+            shutil.copy2(pdf_path, dest_path)
+
+            # Obtenir la taille du fichier
+            taille_fichier = os.path.getsize(dest_path)
+
+            # Créer l'entrée dans la table documents_projet
+            # Rôles autorisés: tous sauf soumissionnaire
+            roles_autorises = ["secretariatsct", "presidencesct", "presidencecomite", "evaluateur1", "evaluateur2"]
+
+            document = DocumentProjet(
+                project_id=project.id,
+                nom_fichier=nom_archive,
+                nom_original=f"Fiche_Evaluation_{evaluateur}.pdf",
+                description=f"Fiche d'évaluation archivée lors de la réassignation (Score: {fiche.score_total}/100)",
+                type_document="fiche_evaluation_archivee",
+                auteur_nom=auteur,
+                auteur_role="system",
+                taille_fichier=taille_fichier,
+                visible_pour_roles=json.dumps(roles_autorises)
+            )
+
+            db.session.add(document)
+            db.session.flush()  # Pour obtenir l'ID du document
+
+            print(f"[ARCHIVAGE] Fiche d'évaluation archivée: {nom_archive} (Document ID: {document.id})")
+
+            return True
+
+        finally:
+            # Nettoyer le répertoire temporaire
+            import shutil as shutil_cleanup
+            try:
+                shutil_cleanup.rmtree(temp_dir)
+            except Exception:
+                pass
+
+    except Exception as e:
+        print(f"[ERREUR ARCHIVAGE] Échec de l'archivage de la fiche d'évaluation: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 # Routes
 @app.route("/api/projects", methods=["GET", "POST"])
@@ -450,9 +533,12 @@ def traiter_project(project_id):
 
             nouveau_evaluateur = data["evaluateur_nom"]
 
-            # Supprimer la fiche d'évaluation existante lors d'une réassignation
+            # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
             if fiche_existante:
+                # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
+                _archiver_fiche_evaluation(fiche_existante, p, username)
+                # Supprimer la fiche de la base de données
                 db.session.delete(fiche_existante)
 
             # Réinitialiser les champs d'évaluation lors de la réassignation
@@ -552,9 +638,12 @@ def traiter_project(project_id):
                 if not to:
                     return jsonify({"error": "evaluateur_nom requis pour la réassignation"}), 400
 
-                # Supprimer la fiche d'évaluation existante lors d'une réassignation
+                # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
                 if fiche_existante:
+                    # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
+                    _archiver_fiche_evaluation(fiche_existante, p, username)
+                    # Supprimer la fiche de la base de données
                     db.session.delete(fiche_existante)
 
                 # Réinitialiser pour permettre une nouvelle évaluation
