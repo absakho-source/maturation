@@ -169,20 +169,22 @@ def get_fiche_evaluation(project_id):
     except Exception as e:
         return jsonify({'error': f'Erreur lors de la récupération: {str(e)}'}), 500
 
-@evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['POST'])
+@evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['POST', 'PUT'])
 def create_or_update_fiche_evaluation(project_id):
     """Création ou mise à jour d'une fiche d'évaluation avec le nouveau format"""
     try:
         data = request.get_json()
-        
+
         # Vérifier que le projet existe
         project = Project.query.get(project_id)
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
-        
+
         # Récupérer ou créer la fiche d'évaluation
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-        
+
+        is_update = fiche is not None
+
         if not fiche:
             # Générer une référence automatique si absente
             ref = data.get('reference_fiche')
@@ -195,6 +197,10 @@ def create_or_update_fiche_evaluation(project_id):
                 reference_fiche=ref
             )
             db.session.add(fiche)
+        else:
+            # Pour une mise à jour, mettre à jour l'évaluateur si fourni
+            if data.get('evaluateur_nom'):
+                fiche.evaluateur_nom = data.get('evaluateur_nom')
         
         # Mise à jour des critères d'évaluation selon le nouveau format
         criteres = data.get('criteres', {})
@@ -288,14 +294,58 @@ def create_or_update_fiche_evaluation(project_id):
 
         # Ajouter l'entrée dans l'historique
         from models import Historique
+        if is_update:
+            action_text = f"Fiche d'évaluation modifiée - Score: {score_total}/100 - Proposition: {fiche.proposition}"
+        else:
+            action_text = f"Fiche d'évaluation soumise - Score: {score_total}/100 - Proposition: {fiche.proposition}"
+
         hist = Historique(
             project_id=project_id,
-            action=f"Fiche d'évaluation soumise - Score: {score_total}/100 - Proposition: {fiche.proposition}",
+            action=action_text,
             auteur=fiche.evaluateur_nom,
             role="evaluateur"
         )
         db.session.add(hist)
         db.session.commit()
+
+        # Régénérer le PDF après la mise à jour
+        if is_update:
+            try:
+                from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
+                import os
+
+                # Récupérer le display_name de l'évaluateur
+                from models import User
+                evaluateur_display_name = fiche.evaluateur_nom
+                if fiche.evaluateur_nom:
+                    evaluateur = User.query.filter_by(username=fiche.evaluateur_nom).first()
+                    if evaluateur and evaluateur.display_name:
+                        evaluateur_display_name = evaluateur.display_name
+
+                # Préparer les données pour le PDF
+                project_data = {
+                    'id': project.id,
+                    'numero_projet': project.numero_projet,
+                    'titre': project.titre,
+                    'poles': project.poles,
+                    'secteur': project.secteur,
+                    'cout_estimatif': project.cout_estimatif,
+                    'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None
+                }
+
+                fiche_data = fiche.to_dict()
+                fiche_data['evaluateur_nom'] = evaluateur_display_name
+
+                # Répertoire de sortie pour les PDFs
+                pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+
+                # Générer le PDF
+                pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
+                fiche.fichier_pdf = os.path.basename(pdf_path)
+                db.session.commit()
+            except Exception as e:
+                print(f"Erreur lors de la régénération du PDF: {str(e)}")
+                # Ne pas bloquer l'enregistrement si la génération PDF échoue
 
         return jsonify({
             'message': 'Fiche d\'évaluation enregistrée avec succès',
