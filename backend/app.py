@@ -128,7 +128,7 @@ def get_statut_soumissionnaire(projet):
     elif statut_reel == "compléments demandés":
         return "compléments demandés"
     elif statut_reel == "compléments fournis":
-        return "compléments soumis"
+        return "compléments fournis"
     else:
         # Tous les autres statuts internes = "en instruction"
         return "en instruction"
