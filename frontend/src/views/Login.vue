@@ -125,23 +125,35 @@ export default {
       };
       return labels[role] || role;
     },
-    handleLogin(username) {
+    async handleLogin(username) {
       const uname = username;
       if (!uname) return;
       const role = this.rolesByUsername[uname] || uname;
-      
+
       // Trouver le display_name depuis la liste des accounts
       const account = this.accounts.find(acc => acc.value === uname);
       const displayName = account ? account.displayName : uname;
-      
-      const user = { 
-        username: uname, 
-        nom: uname, 
-        role, 
-        display_name: displayName 
+
+      const user = {
+        username: uname,
+        nom: uname,
+        role,
+        display_name: displayName
       };
       localStorage.setItem("user", JSON.stringify(user));
-      
+
+      // Enregistrer la connexion
+      try {
+        await fetch('/api/connexion-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uname, role })
+        });
+      } catch (err) {
+        console.error('Erreur lors de l\'enregistrement de la connexion:', err);
+        // Ne pas bloquer la connexion si le log échoue
+      }
+
       // Redirection vers le dashboard approprié selon le rôle
       const normalizeRole = (r) => {
         if (!r) return r;

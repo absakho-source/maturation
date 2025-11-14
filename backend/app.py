@@ -565,10 +565,11 @@ def traiter_project(project_id):
             p.avis = None
             p.commentaires = None
 
-            # Réinitialiser l'évaluation préalable lors de la réassignation
-            p.evaluation_prealable = None
-            p.evaluation_prealable_date = None
-            p.evaluation_prealable_commentaire = None
+            # NE PAS réinitialiser l'évaluation préalable lors de la réassignation
+            # pour permettre à l'évaluateur de voir son travail précédent
+            # p.evaluation_prealable = None
+            # p.evaluation_prealable_date = None
+            # p.evaluation_prealable_commentaire = None
 
             p.evaluateur_nom = nouveau_evaluateur
             p.statut = "assigné"
@@ -1259,6 +1260,40 @@ def get_connexion_logs():
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/connexion-logs", methods=["POST"])
+def log_connexion():
+    """Enregistrer une connexion utilisateur"""
+    try:
+        data = request.get_json()
+
+        username = data.get('username', '').strip()
+        if not username:
+            return jsonify({"error": "Username requis"}), 400
+
+        # Récupérer les informations de l'utilisateur
+        user = User.query.filter_by(username=username).first()
+        display_name = user.display_name if user and user.display_name else username
+        role = data.get('role', user.role if user else '')
+
+        # Créer le log de connexion
+        log = ConnexionLog(
+            username=username,
+            display_name=display_name,
+            role=role,
+            adresse_ip=request.remote_addr,
+            user_agent=request.headers.get('User-Agent', ''),
+            statut='succes'
+        )
+
+        db.session.add(log)
+        db.session.commit()
+
+        return jsonify({"message": "Connexion enregistrée", "log_id": log.id}), 201
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 # ============ Routes de validation des comptes ============
 @app.route("/api/admin/users", methods=["GET"])
 def get_all_users_admin():
@@ -1943,15 +1978,16 @@ def get_stats_overview():
     """Statistiques générales accessibles selon le rôle"""
     role = request.args.get('role', '')
     username = request.args.get('username', '')
-    
-    # Tous les projets selon les permissions du rôle
+
+    # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
+    # decision_finale = 'confirme' signifie que le projet a été validé avec un avis favorable ou favorable sous réserve
     if role == 'admin':
-        projects = Project.query.all()
+        projects = Project.query.filter_by(decision_finale='confirme').all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-        projects = Project.query.all()  # Ces rôles voient tous les projets
+        projects = Project.query.filter_by(decision_finale='confirme').all()
     else:
-        # Autres rôles (évaluateurs, soumissionnaires) - limités
-        projects = Project.query.filter_by(auteur_nom=username).all()
+        # Autres rôles (évaluateurs, soumissionnaires) - limités à leurs projets validés
+        projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
     
     # Calculs statistiques
     total_projets = len(projects)
@@ -1994,14 +2030,14 @@ def get_stats_overview():
 def get_stats_secteurs():
     """Statistiques détaillées par secteur"""
     role = request.args.get('role', '')
-    
-    # Filtrer selon les permissions
+
+    # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
     if role == 'admin':
-        projects = Project.query.all()
+        projects = Project.query.filter_by(decision_finale='confirme').all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-        projects = Project.query.all()
+        projects = Project.query.filter_by(decision_finale='confirme').all()
     else:
-        projects = Project.query.filter_by(auteur_nom=request.args.get('username', '')).all()
+        projects = Project.query.filter_by(auteur_nom=request.args.get('username', ''), decision_finale='confirme').all()
     
     secteurs_stats = {}
     
@@ -2074,11 +2110,12 @@ def get_stats_workflow():
 def get_stats_financial():
     """Statistiques financières détaillées"""
     role = request.args.get('role', '')
-    
+
     if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
         return jsonify({'error': 'Accès non autorisé'}), 403
-    
-    projects = Project.query.all()
+
+    # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
+    projects = Project.query.filter_by(decision_finale='confirme').all()
     
     # Calculs financiers
     cout_total = sum(p.cout_estimatif or 0 for p in projects)
@@ -2161,48 +2198,77 @@ def stats_poles_territorial():
         username = request.args.get('username', '')
         status_filter = request.args.get('filter', '')  # 'approved' pour filtrer uniquement les projets approuvés
 
-        # Filtrer selon les permissions - Par défaut afficher tous les projets pour la carte territoriale
-        if role == 'admin' or not role:  # Si pas de rôle spécifié, afficher tous les projets
-            projects = Project.query.all()
+        # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
+        # Les statistiques ne doivent montrer que les projets avec decision_finale = 'confirme'
+        if role == 'admin' or not role:
+            projects = Project.query.filter_by(decision_finale='confirme').all()
         elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-            projects = Project.query.all()
+            projects = Project.query.filter_by(decision_finale='confirme').all()
         elif username:
-            projects = Project.query.filter_by(auteur_nom=username).all()
+            projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
         else:
-            projects = Project.query.all()
-
-        # Filtrer par statut si demandé
-        if status_filter == 'approved':
-            # Uniquement les projets avec décision finale confirmée par la présidence du comité
-            # Note: decision_finale peut avoir les valeurs 'confirme' ou 'infirme'
-            approved_decisions = ['confirme']
-            projects = [p for p in projects if p.decision_finale in approved_decisions]
+            projects = Project.query.filter_by(decision_finale='confirme').all()
 
         poles_stats = {}
 
         for project in projects:
-            # Convertir le pôle DB vers le pôle territorial standardisé
-            pole_db = project.poles or 'non défini'
-            pole_territorial = get_pole_territorial(pole_db)
+            # Extraire tous les pôles du projet (peut être plusieurs séparés par des virgules)
+            poles_raw = project.poles or 'non défini'
 
-            if pole_territorial not in poles_stats:
-                poles_stats[pole_territorial] = {
-                    'nombre_projets': 0,
-                    'cout_total': 0,
-                    'secteurs': {},
-                    'statuts': {}
-                }
-            
-            poles_stats[pole_territorial]['nombre_projets'] += 1
-            poles_stats[pole_territorial]['cout_total'] += project.cout_estimatif or 0
-            
-            # Répartition par secteur dans ce pôle
-            secteur = project.secteur or 'non défini'
-            poles_stats[pole_territorial]['secteurs'][secteur] = poles_stats[pole_territorial]['secteurs'].get(secteur, 0) + 1
-            
-            # Répartition par statut dans ce pôle
-            statut = project.statut or 'non défini'
-            poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
+            # Séparer les pôles multiples en respectant les parenthèses
+            # Ex: "Sud-Est (Tambacounda, Kédougou),Nord-Est (Matam)" -> ["Sud-Est (Tambacounda, Kédougou)", "Nord-Est (Matam)"]
+            pole_list = []
+            current_pole = ""
+            paren_depth = 0
+
+            for char in poles_raw:
+                if char == '(':
+                    paren_depth += 1
+                    current_pole += char
+                elif char == ')':
+                    paren_depth -= 1
+                    current_pole += char
+                elif char == ',' and paren_depth == 0:
+                    # Virgule en dehors des parenthèses = séparateur de pôles
+                    if current_pole.strip():
+                        pole_list.append(current_pole.strip())
+                    current_pole = ""
+                else:
+                    current_pole += char
+
+            # Ajouter le dernier pôle
+            if current_pole.strip():
+                pole_list.append(current_pole.strip())
+
+            # Nombre de pôles pour ce projet (pour division équitable du coût)
+            num_poles = len(pole_list)
+            cout_par_pole = (project.cout_estimatif or 0) / num_poles if num_poles > 0 else 0
+
+            # Traiter chaque pôle individuellement
+            for pole_db in pole_list:
+                # Convertir le pôle DB vers le pôle territorial standardisé
+                pole_territorial = get_pole_territorial(pole_db)
+
+                if pole_territorial not in poles_stats:
+                    poles_stats[pole_territorial] = {
+                        'nombre_projets': 0,
+                        'cout_total': 0,
+                        'secteurs': {},
+                        'statuts': {}
+                    }
+
+                # Compter le projet une fois par pôle
+                poles_stats[pole_territorial]['nombre_projets'] += 1
+                # Ajouter la part proportionnelle du coût
+                poles_stats[pole_territorial]['cout_total'] += cout_par_pole
+
+                # Répartition par secteur dans ce pôle
+                secteur = project.secteur or 'non défini'
+                poles_stats[pole_territorial]['secteurs'][secteur] = poles_stats[pole_territorial]['secteurs'].get(secteur, 0) + 1
+
+                # Répartition par statut dans ce pôle
+                statut = project.statut or 'non défini'
+                poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
 
         # Correction : toujours retourner un JSON valide
         return jsonify(poles_stats if poles_stats else {})

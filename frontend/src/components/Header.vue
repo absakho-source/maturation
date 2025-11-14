@@ -114,6 +114,22 @@ export default {
       this.dropdownOpen = false;
     },
     logout() {
+      // Enregistrer la déconnexion (on enregistre comme une "déconnexion" dans les logs)
+      // Note: on pourrait aussi créer un endpoint séparé pour logout, mais pour l'instant
+      // on utilise le même endpoint avec un champ "action"
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      if (user) {
+        // Log silencieux - ne pas bloquer la déconnexion
+        fetch('/api/connexion-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: user.username,
+            role: user.role
+          })
+        }).catch(err => console.error('Erreur log déconnexion:', err));
+      }
+
       localStorage.removeItem("user");
       this.$router.push("/");
     },

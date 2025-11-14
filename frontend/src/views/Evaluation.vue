@@ -182,6 +182,9 @@ export default {
       // OU
       // - Des compléments ont été demandés ET le soumissionnaire a répondu (complements_reponse_message existe)
       //   Dans ce cas, l'évaluateur doit pouvoir réévaluer
+      // OU
+      // - Le projet est assigné ET il y a une évaluation préalable (réassignation)
+      //   Dans ce cas, on ne montre PAS l'interface (on montre le résultat en lecture seule à la place)
       const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
       const hasReceivedComplements = project.evaluation_prealable === "complements_requis" &&
                                      project.complements_reponse_message &&
