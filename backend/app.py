@@ -948,14 +948,14 @@ def submit_complements(project_id):
             all_files = existing_files + filenames
             p.complements_reponse_pieces = ",".join(all_files)
 
-        # Si le projet a un évaluateur assigné, retour direct à l'évaluateur
-        # Sinon, retour au secrétariat pour ré-assignation
+        # Le statut reste "compléments fournis" pour que tous les acteurs
+        # (soumissionnaire, secrétariat, présidences, évaluateur) voient qu'il y a
+        # des compléments qui ont été fournis et attendent traitement
+        p.statut = "compléments fournis"
         if p.evaluateur_nom:
-            p.statut = "assigné"
-            action = f"Compléments soumis - réassigné à {p.evaluateur_nom} pour réévaluation"
+            action = f"Compléments fournis - en attente de traitement par {p.evaluateur_nom}"
         else:
-            p.statut = "compléments fournis"
-            action = "Compléments soumis - en attente de réassignation"
+            action = "Compléments fournis - en attente d'assignation"
 
         db.session.commit()
 
