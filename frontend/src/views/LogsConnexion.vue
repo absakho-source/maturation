@@ -248,7 +248,11 @@ export default {
   methods: {
     async loadLogs() {
       try {
-        const response = await fetch('/api/connexion-logs');
+        // Récupérer le rôle de l'utilisateur connecté
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const role = user.role || 'admin';
+
+        const response = await fetch(`/api/connexion-logs?role=${role}`);
         if (response.ok) {
           this.logs = await response.json();
         } else {
