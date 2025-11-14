@@ -48,7 +48,7 @@
       <div class="footer-container">
         <div class="footer-simple">
           <p>&copy; {{ currentYear}} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
-          <p>Plateforme de maturation • Version 1.0 • Développée par Abou Sakho</p>
+          <p>PLASMAP • Version 1.0 • Développée par Abou Sakho</p>
         </div>
       </div>
     </footer>

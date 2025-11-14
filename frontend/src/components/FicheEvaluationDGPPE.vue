@@ -7,7 +7,7 @@
           <h1 class="republic-title">RÉPUBLIQUE DU SÉNÉGAL</h1>
           <h2 class="ministry-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
           <h3 class="direction-title">Direction Générale de la Planification des Politiques Économiques</h3>
-          <h4 class="platform-title">Plateforme de Maturation des Projets et Programmes Publics</h4>
+          <h4 class="platform-title">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</h4>
         </div>
         <div class="header-logo">
           <img src="/logo-dgppe.png" alt="Logo DGPPE" class="logo-dgppe">

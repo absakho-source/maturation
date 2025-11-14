@@ -27,7 +27,7 @@
             </div>
             
             <div class="hero-text">
-              <h1 class="hero-title">Plateforme de Maturation des Projets Publics</h1>
+              <h1 class="hero-title">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</h1>
               <p class="hero-subtitle">
                 Solution numérique pour la préparation et les études des projets d'investissement publics
               </p>
@@ -107,7 +107,7 @@
       <div class="footer-container">
         <div class="footer-simple">
           <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
-          <p>Plateforme de maturation • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
+          <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
         </div>
       </div>
     </footer>

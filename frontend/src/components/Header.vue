@@ -6,7 +6,7 @@
         <div class="header-title">
           <span class="ministry-name">Ministère de l'Économie, du Plan et de la Coopération</span>
           <span class="direction-name">Direction Générale de la Planification des Politiques Économiques</span>
-          <span class="platform-name">Plateforme de Maturation des Projets Publics</span>
+          <span class="platform-name">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</span>
         </div>
       </div>
       <nav v-if="user" class="nav-section">
