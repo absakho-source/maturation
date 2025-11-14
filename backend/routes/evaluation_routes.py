@@ -7,7 +7,7 @@ import os
 import sys
 import json
 from datetime import datetime
-from models import db, Project, FicheEvaluation
+from models import db, Project, FicheEvaluation, DocumentProjet
 
 # Import pdf_generator DGPPE depuis le dossier parent
 try:
@@ -84,7 +84,6 @@ def get_fiche_evaluation(project_id):
 
         if not fiche:
             # Chercher une fiche archivée dans les documents du projet
-            from models import DocumentProjet
             fiche_archivee = DocumentProjet.query.filter_by(
                 project_id=project_id,
                 type_document='fiche_evaluation_archivee'
