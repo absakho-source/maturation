@@ -87,7 +87,7 @@ def get_fiche_evaluation(project_id):
             fiche_archivee = DocumentProjet.query.filter_by(
                 project_id=project_id,
                 type_document='fiche_evaluation_archivee'
-            ).order_by(DocumentProjet.date_upload.desc()).first()
+            ).order_by(DocumentProjet.date_ajout.desc()).first()
 
             if fiche_archivee:
                 # Retourner les infos de la fiche archivée (PDF uniquement)
@@ -96,7 +96,7 @@ def get_fiche_evaluation(project_id):
                     'document_id': fiche_archivee.id,
                     'nom_fichier': fiche_archivee.nom_fichier,
                     'description': fiche_archivee.description,
-                    'date_archivage': fiche_archivee.date_upload.isoformat(),
+                    'date_archivage': fiche_archivee.date_ajout.isoformat(),
                     'evaluateur_nom': fiche_archivee.description.split('(')[0].replace('Fiche d\'évaluation archivée lors de la réassignation', '').strip() if fiche_archivee.description else 'Inconnu'
                 }), 200
 
