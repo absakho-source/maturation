@@ -766,7 +766,7 @@ export default {
         'évalué': 'review',
         'validé par presidencesct': 'success',
         'compléments demandés': 'warning',
-        'compléments fournis': 'info'
+        'compléments soumis': 'info'
       };
       return classes[statut] || 'default';
     },
