@@ -55,9 +55,27 @@ CORS(app, resources={
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma"],
-        "supports_credentials": True
+        "supports_credentials": True,
+        "expose_headers": ["Content-Type", "Authorization"],
+        "max_age": 3600  # Cache preflight pour 1 heure
     }
 })
+
+# Handler supplémentaire pour les requêtes OPTIONS
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    allowed_origins = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "https://maturation-frontend.onrender.com"
+    ]
+    if origin in allowed_origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cache-Control, Pragma'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+    return response
 
 db.init_app(app)
 
