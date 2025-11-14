@@ -319,63 +319,62 @@ def create_or_update_fiche_evaluation(project_id):
         db.session.add(hist)
         db.session.commit()
 
-        # Régénérer le PDF après la mise à jour
-        if is_update:
+        # Générer le PDF à chaque création ou mise à jour
+        try:
+            from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
+            import os
+
+            # Récupérer le display_name de l'évaluateur
+            from models import User
+            evaluateur_display_name = fiche.evaluateur_nom
+            if fiche.evaluateur_nom:
+                evaluateur = User.query.filter_by(username=fiche.evaluateur_nom).first()
+                if evaluateur and evaluateur.display_name:
+                    evaluateur_display_name = evaluateur.display_name
+
+            # Préparer les données pour le PDF
+            import json
+
+            # Parser les champs JSON si nécessaire
+            origine_projet = {}
+            typologie_projet = {}
             try:
-                from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
-                import os
+                if project.origine_projet:
+                    origine_projet = json.loads(project.origine_projet) if isinstance(project.origine_projet, str) else project.origine_projet
+            except:
+                pass
 
-                # Récupérer le display_name de l'évaluateur
-                from models import User
-                evaluateur_display_name = fiche.evaluateur_nom
-                if fiche.evaluateur_nom:
-                    evaluateur = User.query.filter_by(username=fiche.evaluateur_nom).first()
-                    if evaluateur and evaluateur.display_name:
-                        evaluateur_display_name = evaluateur.display_name
+            try:
+                if project.typologie_projet:
+                    typologie_projet = json.loads(project.typologie_projet) if isinstance(project.typologie_projet, str) else project.typologie_projet
+            except:
+                pass
 
-                # Préparer les données pour le PDF
-                import json
+            project_data = {
+                'id': project.id,
+                'numero_projet': project.numero_projet,
+                'titre': project.titre,
+                'poles': project.poles,
+                'secteur': project.secteur,
+                'cout_estimatif': project.cout_estimatif,
+                'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
+                'origine_projet': origine_projet,
+                'typologie_projet': typologie_projet
+            }
 
-                # Parser les champs JSON si nécessaire
-                origine_projet = {}
-                typologie_projet = {}
-                try:
-                    if project.origine_projet:
-                        origine_projet = json.loads(project.origine_projet) if isinstance(project.origine_projet, str) else project.origine_projet
-                except:
-                    pass
+            fiche_data = fiche.to_dict()
+            fiche_data['evaluateur_nom'] = evaluateur_display_name
 
-                try:
-                    if project.typologie_projet:
-                        typologie_projet = json.loads(project.typologie_projet) if isinstance(project.typologie_projet, str) else project.typologie_projet
-                except:
-                    pass
+            # Répertoire de sortie pour les PDFs
+            pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
 
-                project_data = {
-                    'id': project.id,
-                    'numero_projet': project.numero_projet,
-                    'titre': project.titre,
-                    'poles': project.poles,
-                    'secteur': project.secteur,
-                    'cout_estimatif': project.cout_estimatif,
-                    'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
-                    'origine_projet': origine_projet,
-                    'typologie_projet': typologie_projet
-                }
-
-                fiche_data = fiche.to_dict()
-                fiche_data['evaluateur_nom'] = evaluateur_display_name
-
-                # Répertoire de sortie pour les PDFs
-                pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
-
-                # Générer le PDF
-                pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
-                fiche.fichier_pdf = os.path.basename(pdf_path)
-                db.session.commit()
-            except Exception as e:
-                print(f"Erreur lors de la régénération du PDF: {str(e)}")
-                # Ne pas bloquer l'enregistrement si la génération PDF échoue
+            # Générer le PDF
+            pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
+            fiche.fichier_pdf = os.path.basename(pdf_path)
+            db.session.commit()
+        except Exception as e:
+            print(f"Erreur lors de la génération du PDF: {str(e)}")
+            # Ne pas bloquer l'enregistrement si la génération PDF échoue
 
         return jsonify({
             'message': 'Fiche d\'évaluation enregistrée avec succès',
