@@ -5,7 +5,7 @@ import shutil
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
