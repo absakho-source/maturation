@@ -760,7 +760,7 @@ export default {
         'assigné': 'status-assigned',
         'évalué': 'status-evaluated',
         'compléments demandés': 'status-complement',
-        'compléments soumis': 'status-info',
+        'compléments fournis': 'status-info',
         'validé': 'status-validated'
       };
       return classes[statut] || 'status-default';

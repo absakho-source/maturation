@@ -46,8 +46,8 @@
           <div class="stat clickable" @click="filtrerParStatut('compléments demandés')" :class="{ active: filtreStatut === 'compléments demandés' }">
             <span>Compléments demandés</span><strong>{{ countByStatus('compléments demandés') }}</strong>
           </div>
-          <div class="stat clickable" @click="filtrerParStatut('compléments soumis')" :class="{ active: filtreStatut === 'compléments soumis' }">
-            <span>Compléments fournis</span><strong>{{ countByStatus('compléments soumis') }}</strong>
+          <div class="stat clickable" @click="filtrerParStatut('compléments fournis')" :class="{ active: filtreStatut === 'compléments fournis' }">
+            <span>Compléments fournis</span><strong>{{ countByStatus('compléments fournis') }}</strong>
           </div>
           <div class="stat success clickable" @click="filtrerParStatut('validé par secrétariat')" :class="{ active: filtreStatut === 'validé par secrétariat' }">
             <span>Validés secrétariat</span><strong>{{ countByStatus('validé par secrétariat') }}</strong>
@@ -417,8 +417,8 @@
                 </div>
               </div>
 
-              <!-- Actions pour compléments soumis -->
-              <div v-if="projet.statut === 'compléments soumis'" class="project-actions">
+              <!-- Actions pour compléments fournis -->
+              <div v-if="projet.statut === 'compléments fournis'" class="project-actions">
                 <div class="action-buttons">
                   <button class="btn-success" @click="validerComplements(projet.id)">
                     ✅ Valider les compléments
@@ -488,7 +488,7 @@
               </div>
               
               <!-- Compléments fournis -->
-              <div v-if="projet.statut === 'compléments soumis'" class="complements-info">
+              <div v-if="projet.statut === 'compléments fournis'" class="complements-info">
                 <p><strong>💡 Compléments soumis par l'auteur :</strong></p>
                 <div v-if="projet.complements_reponse_message" class="complements-message">
                   {{ projet.complements_reponse_message }}
@@ -1015,7 +1015,7 @@ export default {
       return this.allProjects.filter(p => p.statut === this.filtreStatut);
     },
     projectsToAssign() {
-      return this.allProjects.filter(p => ['soumis', 'compléments soumis', 'assigné', 'rejeté'].includes(p.statut));
+      return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné', 'rejeté'].includes(p.statut));
     },
     projectsToValidate() {
       // Inclure à la fois :
@@ -1069,7 +1069,7 @@ export default {
     
     averageEvaluationTime() {
       const evaluatedProjects = this.allProjects.filter(p => 
-        ['assigné', 'approuvé', 'rejeté', 'compléments demandés', 'compléments soumis'].includes(p.statut)
+        ['assigné', 'approuvé', 'rejeté', 'compléments demandés', 'compléments fournis'].includes(p.statut)
       );
       
       if (evaluatedProjects.length === 0) return "0 jours";
@@ -1094,13 +1094,13 @@ export default {
 
     countComplements() {
       return this.allProjects.filter(p => 
-        ['compléments demandés', 'compléments soumis'].includes(p.statut)
+        ['compléments demandés', 'compléments fournis'].includes(p.statut)
       ).length;
     },
 
     countInEvaluation() {
       return this.allProjects.filter(p => 
-        ['assigné', 'en instruction', 'évalué', 'compléments demandés', 'compléments soumis'].includes(p.statut)
+        ['assigné', 'en instruction', 'évalué', 'compléments demandés', 'compléments fournis'].includes(p.statut)
       ).length;
     },
     

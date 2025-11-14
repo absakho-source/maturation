@@ -127,7 +127,7 @@ def get_statut_soumissionnaire(projet):
         return "soumis"
     elif statut_reel == "compléments demandés":
         return "compléments demandés"
-    elif statut_reel == "compléments soumis":
+    elif statut_reel == "compléments fournis":
         return "compléments soumis"
     else:
         # Tous les autres statuts internes = "en instruction"
@@ -948,14 +948,14 @@ def submit_complements(project_id):
             all_files = existing_files + filenames
             p.complements_reponse_pieces = ",".join(all_files)
 
-        # Mettre le statut à "compléments soumis" pour que tous les acteurs
-        # (soumissionnaire, secrétariat, présidences, évaluateur) voient que
-        # des compléments ont été fournis et attendent traitement
-        p.statut = "compléments soumis"
+        # Si le projet a un évaluateur assigné, retour direct à l'évaluateur
+        # Sinon, retour au secrétariat pour ré-assignation
         if p.evaluateur_nom:
-            action = f"Compléments soumis - en attente de traitement par {p.evaluateur_nom}"
+            p.statut = "assigné"
+            action = f"Compléments soumis - réassigné à {p.evaluateur_nom} pour réévaluation"
         else:
-            action = "Compléments soumis - en attente d'assignation"
+            p.statut = "compléments fournis"
+            action = "Compléments soumis - en attente de réassignation"
 
         db.session.commit()
 
@@ -2041,7 +2041,7 @@ def get_stats_workflow():
         'en_attente_assignation': len([p for p in projects if p.statut == 'soumis']),
         'en_evaluation': len([p for p in projects if p.statut == 'assigné']),
         'complements_demandes': len([p for p in projects if p.statut == 'compléments demandés']),
-        'complements_soumis': len([p for p in projects if p.statut == 'compléments soumis']),
+        'complements_fournis': len([p for p in projects if p.statut == 'compléments fournis']),
         'en_attente_validation_sct': len([p for p in projects if p.statut == 'évalué']),
         'en_attente_decision_finale': len([p for p in projects if p.statut == 'validé par presidencesct']),
         'approuves': len([p for p in projects if p.statut == 'approuvé']),
@@ -2651,7 +2651,7 @@ def get_performance_metrics():
             complements_log = Historique.query.filter_by(
                 project_id=projet.id
             ).filter(
-                Historique.action.like('%compléments soumis%')
+                Historique.action.like('%compléments fournis%')
             ).order_by(Historique.date_action.desc()).first()
 
             if complements_log:
