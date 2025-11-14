@@ -508,16 +508,29 @@ def delete_project(project_id):
         role = request.args.get('role', '').lower()
         if role != 'admin':
             return jsonify({"error": "Accès non autorisé. Seuls les administrateurs peuvent supprimer des projets."}), 403
-        
+
         # Récupérer le projet
         project = Project.query.get_or_404(project_id)
         projet_titre = project.titre
         projet_numero = project.numero_projet
-        
-        # Supprimer le projet
+
+        # Supprimer tous les enregistrements liés AVANT de supprimer le projet
+        # 1. Supprimer les fiches d'évaluation
+        FicheEvaluation.query.filter_by(project_id=project_id).delete()
+
+        # 2. Supprimer les documents du projet
+        DocumentProjet.query.filter_by(project_id=project_id).delete()
+
+        # 3. Supprimer l'historique
+        Historique.query.filter_by(project_id=project_id).delete()
+
+        # 4. Supprimer les messages de discussion
+        Message.query.filter_by(project_id=project_id).delete()
+
+        # 5. Maintenant on peut supprimer le projet
         db.session.delete(project)
         db.session.commit()
-        
+
         print(f"[ADMIN] Projet supprimé: {projet_numero} - {projet_titre}")
         return jsonify({"message": "Projet supprimé avec succès"}), 200
 
