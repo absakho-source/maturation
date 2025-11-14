@@ -2167,23 +2167,27 @@ def get_pole_territorial(pole_db):
         'Centre (Fatick)': 'Centre',
         'Centre (Kaolack)': 'Centre',
         'Centre (Kaffrine)': 'Centre',
-        
+        'Centre (Kaolack, Fatick, Kaffrine)': 'Centre',  # Format combiné
+
         # Sud regroupe Ziguinchor, Sedhiou, Kolda
         'Sud (Ziguinchor)': 'Sud',
-        'Sud (Sedhiou)': 'Sud', 
+        'Sud (Sedhiou)': 'Sud',
         'Sud (Kolda)': 'Sud',
-        
+        'Sud (Ziguinchor, Sédhiou, Kolda)': 'Sud',  # Format combiné
+
         # Sud-Est regroupe Kedougou, Tambacounda
         'Sud-Est (Kedougou)': 'Sud-Est',
         'Sud-Est (Tambacounda)': 'Sud-Est',
-        
+        'Sud-Est (Tambacounda, Kédougou)': 'Sud-Est',  # Format combiné
+
         # Diourbel-Louga regroupe Diourbel, Louga
         'Diourbel-Louga (Diourbel)': 'Diourbel-Louga',
         'Diourbel-Louga (Louga)': 'Diourbel-Louga',
-        
+        'Diourbel-Louga': 'Diourbel-Louga',  # Format simple
+
         # Pôles mono-région
         'Dakar': 'Dakar',
-        'Thiès': 'Thiès', 
+        'Thiès': 'Thiès',
         'Nord (Saint-Louis)': 'Nord',
         'Nord-Est (Matam)': 'Nord-Est'
     }
