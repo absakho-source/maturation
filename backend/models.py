@@ -558,3 +558,30 @@ class Ministere(db.Model):
             'date_creation': self.date_creation.isoformat() if self.date_creation else None,
             'date_modification': self.date_modification.isoformat() if self.date_modification else None
         }
+
+class ConnexionLog(db.Model):
+    """Modèle pour tracer les connexions des utilisateurs"""
+    __tablename__ = "connexion_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, index=True)
+    display_name = db.Column(db.String(200), nullable=True)
+    role = db.Column(db.String(50), nullable=True)
+    date_connexion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    adresse_ip = db.Column(db.String(45), nullable=True)  # IPv6 peut faire jusqu'à 45 caractères
+    user_agent = db.Column(db.Text, nullable=True)
+    statut = db.Column(db.String(20), nullable=False)  # 'succes' ou 'echec'
+    raison_echec = db.Column(db.String(200), nullable=True)  # Motif si échec
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'display_name': self.display_name,
+            'role': self.role,
+            'date_connexion': self.date_connexion.isoformat() if self.date_connexion else None,
+            'adresse_ip': self.adresse_ip,
+            'user_agent': self.user_agent,
+            'statut': self.statut,
+            'raison_echec': self.raison_echec
+        }

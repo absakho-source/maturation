@@ -22,6 +22,7 @@ python init_demo_data.py
 echo "[MIGRATION] Exécution des migrations..."
 python add_visibility_column.py
 python add_motivation_column.py
+python add_connexion_log_table.py
 
 # Exécuter les migrations de données
 echo "[DATA MIGRATION] Correction des données existantes..."

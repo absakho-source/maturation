@@ -32,7 +32,9 @@
       "Bash(ssh root@164.92.255.58 \"cd /root/maturation && git pull origin main\")",
       "Bash(ssh root@164.92.255.58 \"cd /root/maturation && git pull origin main && pkill -f ''python.*app.py'' && pkill -f ''npm.*dev'' && cd backend && source venv/bin/activate && nohup python app.py > backend.log 2>&1 & cd ../frontend && nohup npm run dev > frontend.log 2>&1 & sleep 3 && ps aux | grep -E ''python.*app.py|npm.*dev'' | grep -v grep\")",
       "Bash(ssh -o ConnectTimeout=30 -o ServerAliveInterval=10 root@164.92.255.58 \"cd /root/maturation && git pull origin main && pkill -f ''python.*app.py'' && pkill -f ''npm.*dev'' && sleep 2 && cd backend && source venv/bin/activate && nohup python app.py > backend.log 2>&1 & cd ../frontend && nohup npm run dev > frontend.log 2>&1 & sleep 5 && ps aux | grep -E ''python.*app.py|npm.*dev'' | grep -v grep\")",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(ssh -o ConnectTimeout=30 root@164.92.255.58 \"cd /root/maturation && git pull origin main && cd backend && python3 fix_rejected_status.py\")",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "ask": []

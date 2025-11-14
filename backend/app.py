@@ -5,7 +5,7 @@ import shutil
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -1103,6 +1103,156 @@ def get_users():
             "display_name": u.display_name or u.username
         } for u in users]
         return jsonify(result), 200
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    """Endpoint de connexion avec validation des identifiants et logging"""
+    try:
+        data = request.json
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
+
+        # Récupérer l'adresse IP et le User-Agent
+        adresse_ip = request.remote_addr
+        user_agent = request.headers.get('User-Agent', '')
+
+        if not username or not password:
+            # Logger la tentative échouée
+            log_entry = ConnexionLog(
+                username=username or "unknown",
+                date_connexion=datetime.utcnow(),
+                adresse_ip=adresse_ip,
+                user_agent=user_agent,
+                statut='echec',
+                raison_echec='Identifiant ou mot de passe manquant'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            return jsonify({"error": "Identifiant et mot de passe requis"}), 400
+
+        # Vérifier les identifiants
+        user = User.query.filter_by(username=username).first()
+
+        if not user or user.password != password:
+            # Logger la tentative échouée
+            log_entry = ConnexionLog(
+                username=username,
+                display_name=user.display_name if user else None,
+                role=user.role if user else None,
+                date_connexion=datetime.utcnow(),
+                adresse_ip=adresse_ip,
+                user_agent=user_agent,
+                statut='echec',
+                raison_echec='Identifiant ou mot de passe incorrect'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            return jsonify({"error": "Identifiant ou mot de passe incorrect"}), 401
+
+        # Vérifier le statut du compte
+        if hasattr(user, 'statut_compte') and user.statut_compte == 'suspendu':
+            log_entry = ConnexionLog(
+                username=username,
+                display_name=user.display_name,
+                role=user.role,
+                date_connexion=datetime.utcnow(),
+                adresse_ip=adresse_ip,
+                user_agent=user_agent,
+                statut='echec',
+                raison_echec='Compte suspendu'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            return jsonify({"error": "Votre compte a été suspendu"}), 403
+
+        # Connexion réussie - Logger le succès
+        log_entry = ConnexionLog(
+            username=username,
+            display_name=user.display_name or username,
+            role=user.role,
+            date_connexion=datetime.utcnow(),
+            adresse_ip=adresse_ip,
+            user_agent=user_agent,
+            statut='succes'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+
+        print(f"[LOGIN SUCCESS] User {username} ({user.role}) logged in from {adresse_ip}")
+
+        # Retourner les informations de l'utilisateur
+        return jsonify({
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "display_name": user.display_name or user.username,
+            "nom": user.username,
+            "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'actif'
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/connexion-logs", methods=["GET"])
+def get_connexion_logs():
+    """Récupérer l'historique des connexions (réservé admin et secretariatsct)"""
+    try:
+        # Vérifier les permissions
+        role = request.args.get('role', '').lower()
+        if role not in ['admin', 'secretariatsct']:
+            return jsonify({"error": "Accès non autorisé. Cette fonctionnalité est réservée aux administrateurs et au secrétariat SCT."}), 403
+
+        # Paramètres de filtrage
+        limit = request.args.get('limit', 100, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        username_filter = request.args.get('username', '').strip()
+        statut_filter = request.args.get('statut', '').strip()  # 'succes' ou 'echec'
+        date_debut = request.args.get('date_debut', '').strip()
+        date_fin = request.args.get('date_fin', '').strip()
+
+        # Construire la requête
+        query = ConnexionLog.query
+
+        if username_filter:
+            query = query.filter(ConnexionLog.username.like(f'%{username_filter}%'))
+
+        if statut_filter:
+            query = query.filter_by(statut=statut_filter)
+
+        if date_debut:
+            try:
+                date_debut_obj = datetime.fromisoformat(date_debut)
+                query = query.filter(ConnexionLog.date_connexion >= date_debut_obj)
+            except ValueError:
+                pass
+
+        if date_fin:
+            try:
+                date_fin_obj = datetime.fromisoformat(date_fin)
+                query = query.filter(ConnexionLog.date_connexion <= date_fin_obj)
+            except ValueError:
+                pass
+
+        # Récupérer le total avant pagination
+        total = query.count()
+
+        # Appliquer la pagination et trier par date décroissante
+        logs = query.order_by(ConnexionLog.date_connexion.desc()).limit(limit).offset(offset).all()
+
+        result = {
+            'total': total,
+            'limit': limit,
+            'offset': offset,
+            'logs': [log.to_dict() for log in logs]
+        }
+
+        return jsonify(result), 200
+
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
