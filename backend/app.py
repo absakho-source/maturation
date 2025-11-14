@@ -502,8 +502,12 @@ def get_project(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/projects/<int:project_id>", methods=["DELETE"])
+@app.route("/api/projects/<int:project_id>", methods=["DELETE", "OPTIONS"])
 def delete_project(project_id):
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     try:
         role = request.args.get('role', '').lower()
         if role != 'admin':
