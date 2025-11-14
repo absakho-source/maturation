@@ -641,9 +641,16 @@ def traiter_project(project_id):
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
                 if fiche_existante:
-                    # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                    _archiver_fiche_evaluation(fiche_existante, p, username)
-                    # Supprimer la fiche de la base de données
+                    try:
+                        # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
+                        _archiver_fiche_evaluation(fiche_existante, p, username)
+                    except Exception as e:
+                        # En cas d'erreur d'archivage, logger l'erreur mais continuer la réassignation
+                        print(f"[WARNING] Erreur lors de l'archivage de la fiche d'évaluation: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                    # Supprimer la fiche de la base de données (même si l'archivage a échoué)
                     db.session.delete(fiche_existante)
 
                 # Réinitialiser pour permettre une nouvelle évaluation
