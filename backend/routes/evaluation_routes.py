@@ -169,9 +169,13 @@ def get_fiche_evaluation(project_id):
     except Exception as e:
         return jsonify({'error': f'Erreur lors de la récupération: {str(e)}'}), 500
 
-@evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['POST', 'PUT'])
+@evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['POST', 'PUT', 'OPTIONS'])
 def create_or_update_fiche_evaluation(project_id):
     """Création ou mise à jour d'une fiche d'évaluation avec le nouveau format"""
+    # Handler pour les requêtes preflight CORS
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     try:
         data = request.get_json()
 
