@@ -565,11 +565,11 @@ def traiter_project(project_id):
             p.avis = None
             p.commentaires = None
 
-            # NE PAS réinitialiser l'évaluation préalable lors de la réassignation
-            # pour permettre à l'évaluateur de voir son travail précédent
-            # p.evaluation_prealable = None
-            # p.evaluation_prealable_date = None
-            # p.evaluation_prealable_commentaire = None
+            # Réinitialiser l'évaluation préalable lors de la réassignation
+            # pour permettre au nouvel évaluateur de faire une nouvelle évaluation
+            p.evaluation_prealable = None
+            p.evaluation_prealable_date = None
+            p.evaluation_prealable_commentaire = None
 
             p.evaluateur_nom = nouveau_evaluateur
             p.statut = "assigné"
