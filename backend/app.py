@@ -223,7 +223,8 @@ def _archiver_fiche_evaluation(fiche, project, auteur="system"):
 
             # Créer l'entrée dans la table documents_projet
             # Rôles autorisés: tous sauf soumissionnaire
-            roles_autorises = ["secretariatsct", "presidencesct", "presidencecomite", "evaluateur1", "evaluateur2"]
+            # Inclure "evaluateur" pour couvrir tous les évaluateurs génériques, et "admin" pour gestion
+            roles_autorises = ["admin", "evaluateur", "evaluateur1", "evaluateur2", "secretariatsct", "presidencesct", "presidencecomite"]
 
             document = DocumentProjet(
                 project_id=project.id,
@@ -547,8 +548,14 @@ def traiter_project(project_id):
                         "error": "Ce projet ne peut pas être traité car le compte du soumissionnaire n'a pas encore été vérifié."
                     }), 403
 
+        # Détection de l'intention de réassignation explicite
+        is_reassignment = (
+            data.get("validation_secretariat") == "reassigne" or
+            (p.evaluateur_nom and "evaluateur_nom" in data and "avis" not in data)
+        )
+
         # Assignation (mais pas pour la réassignation de projets rejetés)
-        if ("evaluateur_nom" in data and "avis" not in data and "validation_secretariat" not in data
+        if ("evaluateur_nom" in data and "avis" not in data and data.get("validation_secretariat") != "reassigne"
             and data.get("statut_action") != "reassigner_rejete"):
 
             nouveau_evaluateur = data["evaluateur_nom"]
@@ -580,6 +587,31 @@ def traiter_project(project_id):
                 action = f"Projet assigné à {nouveau_evaluateur} - Motivation: {motivation}"
             else:
                 action = f"Projet assigné à {nouveau_evaluateur}"
+
+        # Réassignation explicite (via validation_secretariat: "reassigne")
+        elif data.get("validation_secretariat") == "reassigne":
+            nouveau_evaluateur = data["evaluateur_nom"]
+
+            # Archiver et supprimer la fiche d'évaluation existante
+            fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            if fiche_existante:
+                # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
+                _archiver_fiche_evaluation(fiche_existante, p, username)
+                # Supprimer la fiche de la base de données
+                db.session.delete(fiche_existante)
+
+            # Réinitialiser les champs d'évaluation
+            p.avis = None
+            p.commentaires = None
+
+            # Réinitialiser l'évaluation préalable pour permettre une nouvelle évaluation
+            p.evaluation_prealable = None
+            p.evaluation_prealable_date = None
+            p.evaluation_prealable_commentaire = None
+
+            p.evaluateur_nom = nouveau_evaluateur
+            p.statut = "assigné"
+            action = f"Projet réassigné à {nouveau_evaluateur}"
 
         # Avis (par évaluateur ou secrétariat)
         elif "avis" in data:
