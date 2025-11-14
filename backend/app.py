@@ -595,8 +595,13 @@ def traiter_project(project_id):
             # Archiver et supprimer la fiche d'évaluation existante
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
             if fiche_existante:
-                # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                _archiver_fiche_evaluation(fiche_existante, p, username)
+                try:
+                    # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
+                    _archiver_fiche_evaluation(fiche_existante, p, username)
+                except Exception as e:
+                    print(f"[ERREUR] Échec de l'archivage de la fiche: {e}")
+                    # Continuer même si l'archivage échoue
+
                 # Supprimer la fiche de la base de données
                 db.session.delete(fiche_existante)
 
