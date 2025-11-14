@@ -121,10 +121,12 @@ def get_statut_soumissionnaire(projet):
     # Si le projet est rejeté, il retourne vers le secrétariat → "en instruction"
     if statut_reel == "rejeté":
         return "en instruction"
-    
+
     # Statuts simplifiés selon les étapes du workflow
     if statut_reel == "soumis":
         return "soumis"
+    elif statut_reel == "assigné":
+        return "assigné"
     elif statut_reel == "compléments demandés":
         return "compléments demandés"
     elif statut_reel == "compléments fournis":
