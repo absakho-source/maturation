@@ -81,8 +81,26 @@ def get_fiche_evaluation(project_id):
     """Récupération de la fiche d'évaluation d'un projet"""
     try:
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-        
+
         if not fiche:
+            # Chercher une fiche archivée dans les documents du projet
+            from models import DocumentProjet
+            fiche_archivee = DocumentProjet.query.filter_by(
+                project_id=project_id,
+                type_document='fiche_evaluation_archivee'
+            ).order_by(DocumentProjet.date_upload.desc()).first()
+
+            if fiche_archivee:
+                # Retourner les infos de la fiche archivée (PDF uniquement)
+                return jsonify({
+                    'archived': True,
+                    'document_id': fiche_archivee.id,
+                    'nom_fichier': fiche_archivee.nom_fichier,
+                    'description': fiche_archivee.description,
+                    'date_archivage': fiche_archivee.date_upload.isoformat(),
+                    'evaluateur_nom': fiche_archivee.description.split('(')[0].replace('Fiche d\'évaluation archivée lors de la réassignation', '').strip() if fiche_archivee.description else 'Inconnu'
+                }), 200
+
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
         
         # Convertir en dictionnaire avec les nouveaux champs
