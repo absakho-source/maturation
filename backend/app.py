@@ -525,9 +525,12 @@ def delete_project(project_id):
         Historique.query.filter_by(project_id=project_id).delete()
 
         # 4. Supprimer les messages de discussion
-        Message.query.filter_by(project_id=project_id).delete()
+        MessageProjet.query.filter_by(project_id=project_id).delete()
 
-        # 5. Maintenant on peut supprimer le projet
+        # 5. Supprimer les logs
+        Log.query.filter_by(projet_id=project_id).delete()
+
+        # 6. Maintenant on peut supprimer le projet
         db.session.delete(project)
         db.session.commit()
 
