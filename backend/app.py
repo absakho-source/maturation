@@ -643,10 +643,14 @@ def traiter_project(project_id):
                 if fiche_existante:
                     try:
                         # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                        _archiver_fiche_evaluation(fiche_existante, p, username)
+                        success = _archiver_fiche_evaluation(fiche_existante, p, username)
+                        if success:
+                            print(f"[ARCHIVAGE] Fiche d'évaluation archivée avec succès pour le projet {project_id}")
+                        else:
+                            print(f"[WARNING] L'archivage de la fiche d'évaluation a échoué pour le projet {project_id}")
                     except Exception as e:
                         # En cas d'erreur d'archivage, logger l'erreur mais continuer la réassignation
-                        print(f"[WARNING] Erreur lors de l'archivage de la fiche d'évaluation: {e}")
+                        print(f"[WARNING] Erreur lors de l'archivage de la fiche d'évaluation pour le projet {project_id}: {e}")
                         import traceback
                         traceback.print_exc()
 
