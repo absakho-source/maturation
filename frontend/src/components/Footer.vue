@@ -4,7 +4,7 @@
     <div class="footer-content">
       <div class="footer-simple">
         <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
-        <p>PLASMAP • Version 1.0 • Développée par Abou Sakho</p>
+        <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
       </div>
     </div>
   </footer>
@@ -51,6 +51,17 @@ export default {
   font-size: 0.75rem;
   margin: 0;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-link {
+  color: white;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {
