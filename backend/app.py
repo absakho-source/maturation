@@ -141,26 +141,41 @@ def ensure_sqlite_columns():
     import sqlite3
     con = sqlite3.connect(app.config["DB_PATH"])
     cur = con.cursor()
-    # Si la table n'existe pas encore, on sort (create_all la créera juste après)
+
+    # Migration pour la table projects
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='projects'")
-    if not cur.fetchone():
-        con.close()
-        return
-    cur.execute("PRAGMA table_info(projects)")
-    cols = {r[1] for r in cur.fetchall()}
-    needed = {
-        "numero_projet": "TEXT",
-        "validation_secretariat": "TEXT",
-        "commentaires_finaux": "TEXT",
-        "complements_demande_message": "TEXT",
-        "complements_reponse_message": "TEXT",
-        "complements_reponse_pieces": "TEXT",
-        "auteur_nom": "TEXT",  # <-- Ajout ici
-    }
-    for c, cdef in needed.items():
-        if c not in cols:
-            print(f"[DB MIGRATION] Adding projects.{c}")
-            cur.execute(f"ALTER TABLE projects ADD COLUMN {c} {cdef}")
+    if cur.fetchone():
+        cur.execute("PRAGMA table_info(projects)")
+        cols = {r[1] for r in cur.fetchall()}
+        needed = {
+            "numero_projet": "TEXT",
+            "validation_secretariat": "TEXT",
+            "commentaires_finaux": "TEXT",
+            "complements_demande_message": "TEXT",
+            "complements_reponse_message": "TEXT",
+            "complements_reponse_pieces": "TEXT",
+            "auteur_nom": "TEXT",
+        }
+        for c, cdef in needed.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding projects.{c}")
+                cur.execute(f"ALTER TABLE projects ADD COLUMN {c} {cdef}")
+
+    # Migration pour la table connexion_log (geolocation columns)
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='connexion_log'")
+    if cur.fetchone():
+        cur.execute("PRAGMA table_info(connexion_log)")
+        cols = {r[1] for r in cur.fetchall()}
+        needed_geo = {
+            "pays": "VARCHAR(100)",
+            "ville": "VARCHAR(100)",
+            "region": "VARCHAR(100)"
+        }
+        for c, cdef in needed_geo.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding connexion_log.{c}")
+                cur.execute(f"ALTER TABLE connexion_log ADD COLUMN {c} {cdef}")
+
     con.commit()
     con.close()
 
