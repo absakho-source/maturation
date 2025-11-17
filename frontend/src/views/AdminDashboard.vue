@@ -685,8 +685,13 @@ export default {
       const map = {
         "soumis": "status-new",
         "assigné": "status-assigned",
+        "en évaluation": "status-assigned",
+        "en_evaluation": "status-assigned",
+        "évalué": "status-pending",
         "en attente validation presidencesct": "status-pending",
         "validé par presidencesct": "status-validated",
+        "valide_sct": "status-validated",
+        "approuvé": "status-confirmed",
         "compléments demandés": "status-complement",
         "décision finale confirmée": "status-confirmed",
         "évalué positivement": "status-favorable",
