@@ -100,6 +100,8 @@
               <th>Rôle</th>
               <th>Adresse IP</th>
               <th>Localisation</th>
+              <th>Navigateur/OS</th>
+              <th>Appareil</th>
             </tr>
           </thead>
           <tbody>
@@ -141,6 +143,23 @@
                   </span>
                 </div>
                 <span v-else class="location-na">N/A</span>
+              </td>
+              <td>
+                <div class="browser-cell">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <span class="browser-text">{{ getBrowserOS(log.user_agent) }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="device-cell">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" v-html="getDeviceIcon(log.user_agent)"></svg>
+                  <span class="device-badge" :class="`device-${getDeviceType(log.user_agent).toLowerCase()}`">
+                    {{ getDeviceType(log.user_agent) }}
+                  </span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -311,6 +330,82 @@ export default {
         period: 'all'
       };
       this.currentPage = 1;
+    },
+    parseUserAgent(userAgent) {
+      if (!userAgent) return { browser: 'N/A', os: 'N/A', device: 'N/A' };
+
+      // Détection du navigateur
+      let browser = 'Inconnu';
+      if (userAgent.includes('Firefox') && !userAgent.includes('Seamonkey')) {
+        browser = 'Firefox';
+      } else if (userAgent.includes('Seamonkey')) {
+        browser = 'Seamonkey';
+      } else if (userAgent.includes('Chrome') && !userAgent.includes('Chromium') && !userAgent.includes('Edg')) {
+        browser = 'Chrome';
+      } else if (userAgent.includes('Chromium')) {
+        browser = 'Chromium';
+      } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+        browser = 'Safari';
+      } else if (userAgent.includes('Edg')) {
+        browser = 'Edge';
+      } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+        browser = 'Opera';
+      } else if (userAgent.includes('Trident')) {
+        browser = 'IE';
+      }
+
+      // Détection de l'OS
+      let os = 'Inconnu';
+      if (userAgent.includes('Windows NT 10.0')) {
+        os = 'Windows 10/11';
+      } else if (userAgent.includes('Windows NT 6.3')) {
+        os = 'Windows 8.1';
+      } else if (userAgent.includes('Windows NT 6.2')) {
+        os = 'Windows 8';
+      } else if (userAgent.includes('Windows NT 6.1')) {
+        os = 'Windows 7';
+      } else if (userAgent.includes('Windows')) {
+        os = 'Windows';
+      } else if (userAgent.includes('Mac OS X')) {
+        const match = userAgent.match(/Mac OS X ([0-9_]+)/);
+        os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
+      } else if (userAgent.includes('Linux')) {
+        os = 'Linux';
+      } else if (userAgent.includes('Android')) {
+        os = 'Android';
+      } else if (userAgent.includes('iPhone')) {
+        os = 'iOS (iPhone)';
+      } else if (userAgent.includes('iPad')) {
+        os = 'iOS (iPad)';
+      }
+
+      // Détection du type d'appareil
+      let device = 'Desktop';
+      if (userAgent.includes('Mobile') || userAgent.includes('iPhone')) {
+        device = 'Mobile';
+      } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+        device = 'Tablet';
+      }
+
+      return { browser, os, device };
+    },
+    getBrowserOS(userAgent) {
+      const parsed = this.parseUserAgent(userAgent);
+      return `${parsed.browser} / ${parsed.os}`;
+    },
+    getDeviceType(userAgent) {
+      const parsed = this.parseUserAgent(userAgent);
+      return parsed.device;
+    },
+    getDeviceIcon(userAgent) {
+      const device = this.getDeviceType(userAgent);
+      if (device === 'Mobile') {
+        return '<path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2z"/><line x1="12" y1="18" x2="12" y2="18"/>';
+      } else if (device === 'Tablet') {
+        return '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12" y2="18"/>';
+      } else {
+        return '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>';
+      }
     }
   }
 };
@@ -565,6 +660,59 @@ export default {
   color: var(--dgppe-text-muted);
   font-style: italic;
   font-size: 0.875rem;
+}
+
+/* Browser/OS */
+.browser-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--dgppe-text-muted);
+}
+
+.browser-cell svg {
+  flex-shrink: 0;
+  color: var(--dgppe-primary);
+}
+
+.browser-text {
+  font-size: 0.875rem;
+  color: var(--dgppe-text);
+}
+
+/* Device */
+.device-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.device-cell svg {
+  flex-shrink: 0;
+  color: var(--dgppe-primary);
+}
+
+.device-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.device-badge.device-desktop {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.device-badge.device-mobile {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.device-badge.device-tablet {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 /* Pagination */
