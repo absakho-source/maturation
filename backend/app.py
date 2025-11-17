@@ -2091,14 +2091,17 @@ def get_stats_overview():
     role = request.args.get('role', '')
     username = request.args.get('username', '')
 
-    # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
-    # decision_finale = 'confirme' signifie que le projet a été validé avec un avis favorable ou favorable sous réserve
+    # Pour les rôles internes (admin, secrétariat, présidence): montrer uniquement les projets confirmés
+    # Pour les rôles externes (invite, soumissionnaire): montrer TOUS les projets qu'ils peuvent voir
     if role == 'admin':
         projects = Project.query.filter_by(decision_finale='confirme').all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
         projects = Project.query.filter_by(decision_finale='confirme').all()
+    elif role in ['invite', 'soumissionnaire']:
+        # Pour invite/soumissionnaire: montrer TOUS les projets (pas seulement ceux confirmés)
+        projects = Project.query.all()
     else:
-        # Autres rôles (évaluateurs, soumissionnaires) - limités à leurs projets validés
+        # Autres rôles (évaluateurs) - limités à leurs projets validés
         projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
     
     # Calculs statistiques
