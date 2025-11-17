@@ -904,15 +904,16 @@ def traiter_project(project_id):
             if data.get("commentaires"):
                 p.commentaires_finaux = data.get("commentaires")
 
-            # Statuts finaux clairs
+            # Statut unique pour toutes les décisions finales
+            p.statut = "décision finale confirmée"
+
+            # Action différente selon la décision
             if dec == "confirme":
-                p.statut = "approuvé"
-                action = "Projet approuvé par le Comité"
+                action = "Projet approuvé par le Comité (décision favorable)"
             else:
-                # Rejet par Présidence du Comité
-                p.statut = "rejeté"
+                # Décision défavorable par Présidence du Comité
                 p.evaluateur_nom = None
-                action = "Avis rejeté par Présidence du Comité"
+                action = "Avis rejeté par Présidence du Comité (décision défavorable)"
 
         db.session.commit()
         if action:
