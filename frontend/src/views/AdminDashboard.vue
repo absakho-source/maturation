@@ -682,15 +682,18 @@ export default {
     },
 
     getStatusClass(statut) {
-      const statusMap = {
-        'soumis': 'status-new',
-        'assigné': 'status-processing',
-        'évalué positivement': 'status-favorable',
-        'évalué négativement': 'status-defavorable',
-        'validé par presidencesct': 'status-validated',
-        'rejeté': 'status-rejected'
+      const map = {
+        "soumis": "status-new",
+        "assigné": "status-assigned",
+        "en attente validation presidencesct": "status-pending",
+        "validé par presidencesct": "status-validated",
+        "compléments demandés": "status-complement",
+        "décision finale confirmée": "status-confirmed",
+        "évalué positivement": "status-favorable",
+        "évalué négativement": "status-defavorable",
+        "rejeté": "status-rejected"
       };
-      return statusMap[statut] || 'status-default';
+      return map[statut] || "status-default";
     },
 
     formatCurrency(amount) {
@@ -757,18 +760,6 @@ export default {
     
     formatCFA(val) {
       return val ? parseInt(val).toLocaleString("fr-FR") + " F CFA" : "—";
-    },
-    
-    getStatusClass(statut) {
-      const classes = {
-        'soumis': 'new',
-        'assigné': 'progress',
-        'évalué': 'review',
-        'validé par presidencesct': 'success',
-        'compléments demandés': 'warning',
-        'compléments fournis': 'info'
-      };
-      return classes[statut] || 'default';
     },
 
     // ============ Métriques de performance ============
@@ -1296,13 +1287,16 @@ export default {
 }
 
 /* Status badges */
-.status-new { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.status-processing { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.status-favorable { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.status-defavorable { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.status-validated { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.status-rejected { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
-.status-default { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.status-new { background: #3b82f6; color: white; }
+.status-assigned { background: #f59e0b; color: white; }
+.status-pending { background: #8b5cf6; color: white; }
+.status-validated { background: #10b981; color: white; }
+.status-complement { background: #f97316; color: white; }
+.status-confirmed { background: #06b6d4; color: white; }
+.status-favorable { background: #10b981; color: white; }
+.status-defavorable { background: #ef4444; color: white; }
+.status-rejected { background: #dc2626; color: white; }
+.status-default { background: #6b7280; color: white; }
 
 /* Tableau des projets */
 .projects-table-container {
@@ -1353,19 +1347,13 @@ export default {
 
 .badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12px;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
-.status-new { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.status-progress { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.status-review { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-.status-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.status-warning { background: rgba(249, 115, 22, 0.1); color: #f97316; }
-.status-info { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
-.status-default { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
 
 /* Modal */
 .modal-overlay {
