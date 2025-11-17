@@ -326,8 +326,28 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 150px;
+  max-height: 200px;
   overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Scrollbar visible pour indiquer qu'il y a plus d'éléments */
+.stat-mini-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stat-mini-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.stat-mini-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.stat-mini-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .stat-mini-item {
