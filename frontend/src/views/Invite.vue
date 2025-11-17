@@ -189,12 +189,34 @@ export default {
     getStatutClass(statut) {
       if (!statut) return 'default';
       const s = statut.toLowerCase();
-      if (s.includes('soumis')) return 'soumis';
-      if (s.includes('assigne')) return 'assigne';
-      if (s.includes('evalue') || s.includes('évalué')) return 'evalue';
-      if (s.includes('valide') || s.includes('validé')) return 'valide';
-      if (s.includes('approuve') || s.includes('approuvé')) return 'approuve';
-      if (s.includes('rejete') || s.includes('rejeté')) return 'rejete';
+
+      // Nouveau
+      if (s === 'soumis' || s === 'nouveau') return 'new';
+
+      // Assigné
+      if (s === 'assigné' || s === 'assigne') return 'assigned';
+
+      // En attente / En évaluation
+      if (s === 'en attente' || s === 'en évaluation' || s === 'évalué' || s === 'evalue') return 'pending';
+
+      // Validé
+      if (s === 'validé' || s === 'valide') return 'validated';
+
+      // Complément d'information
+      if (s === 'complément d\'information' || s === 'complement d\'information') return 'complement';
+
+      // Décision finale confirmée
+      if (s === 'décision finale confirmée' || s === 'decision finale confirmee') return 'confirmed';
+
+      // Évalué favorablement
+      if (s === 'évalué favorablement' || s === 'evalue favorablement') return 'favorable';
+
+      // Évalué défavorablement
+      if (s === 'évalué défavorablement' || s === 'evalue defavorablement') return 'defavorable';
+
+      // Rejeté
+      if (s === 'rejeté' || s === 'rejete') return 'rejected';
+
       return 'default';
     }
   }
@@ -444,39 +466,55 @@ export default {
   font-weight: 500;
 }
 
-.statut-soumis {
-  background: #dbeafe;
-  color: #1e40af;
+/* Status badges - harmonisées avec AdminDashboard */
+.statut-new {
+  background: #3b82f6 !important;
+  color: white !important;
 }
 
-.statut-assigne {
-  background: #fef3c7;
-  color: #92400e;
+.statut-assigned {
+  background: #f59e0b !important;
+  color: white !important;
 }
 
-.statut-evalue {
-  background: #e0e7ff;
-  color: #4338ca;
+.statut-pending {
+  background: #8b5cf6 !important;
+  color: white !important;
 }
 
-.statut-valide {
-  background: #d1fae5;
-  color: #065f46;
+.statut-validated {
+  background: #10b981 !important;
+  color: white !important;
 }
 
-.statut-approuve {
-  background: #d1fae5;
-  color: #065f46;
+.statut-complement {
+  background: #f97316 !important;
+  color: white !important;
 }
 
-.statut-rejete {
-  background: #fee2e2;
-  color: #991b1b;
+.statut-confirmed {
+  background: #06b6d4 !important;
+  color: white !important;
+}
+
+.statut-favorable {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.statut-defavorable {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.statut-rejected {
+  background: #dc2626 !important;
+  color: white !important;
 }
 
 .statut-default {
-  background: #e2e8f0;
-  color: #4a5568;
+  background: #6b7280 !important;
+  color: white !important;
 }
 
 .td-date {
