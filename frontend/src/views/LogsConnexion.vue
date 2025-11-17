@@ -1,3 +1,4 @@
+<!-- Logs de connexion - v1.1 - Affichage date et IP corrigé -->
 <template>
   <PageWrapper>
     <div class="logs-connexion-page">
