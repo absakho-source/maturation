@@ -1336,20 +1336,29 @@ def get_connexion_logs():
 def get_geolocation(ip_address):
     """Récupère la géolocalisation d'une adresse IP via ipapi.co"""
     try:
-        # Ne pas géolocaliser les IPs locales
+        # Pour les IPs locales en développement, retourner des données de test
         if ip_address in ['127.0.0.1', 'localhost', '::1'] or ip_address.startswith('192.168.') or ip_address.startswith('10.'):
-            return None, None, None
+            print(f"[GEOLOC] IP locale détectée: {ip_address} - Données de test retournées")
+            return "Sénégal", "Dakar", "Dakar"
 
         # Appel à l'API ipapi.co (gratuit, 30k requêtes/mois)
-        response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=2)
+        print(f"[GEOLOC] Appel API ipapi.co pour {ip_address}")
+        response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=3)
+
         if response.status_code == 200:
             data = response.json()
             pays = data.get('country_name', None)
             ville = data.get('city', None)
             region = data.get('region', None)
+            print(f"[GEOLOC] Données reçues: pays={pays}, ville={ville}, region={region}")
             return pays, ville, region
+        else:
+            print(f"[GEOLOC] Erreur HTTP {response.status_code}: {response.text[:100]}")
+
     except Exception as e:
-        print(f"Erreur géolocalisation pour {ip_address}: {e}")
+        print(f"[GEOLOC] Exception lors de la géolocalisation pour {ip_address}: {e}")
+        import traceback
+        traceback.print_exc()
 
     return None, None, None
 
