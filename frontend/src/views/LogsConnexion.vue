@@ -108,7 +108,7 @@
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  {{ formatDate(log.timestamp) }}
+                  {{ formatDate(log.date_connexion) }}
                 </div>
               </td>
               <td>
@@ -126,7 +126,7 @@
                 </span>
               </td>
               <td>
-                <span class="ip-address">{{ log.ip_address || 'N/A' }}</span>
+                <span class="ip-address">{{ log.adresse_ip || 'N/A' }}</span>
               </td>
             </tr>
           </tbody>
