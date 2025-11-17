@@ -144,8 +144,8 @@
             </div>
           </div>
 
-          <!-- Section Évaluation Préalable (lecture seule) -->
-          <div class="info-card" v-if="project.evaluation_prealable">
+          <!-- Section Évaluation Préalable (lecture seule) - Masquée si la fiche d'évaluation est disponible -->
+          <div class="info-card" v-if="project.evaluation_prealable && !(ficheEvaluation && ficheEvaluation.fichier_pdf)">
             <h3>🔍 Évaluation Préalable</h3>
             <div class="evaluation-prealable-resultat">
               <div :class="['decision-badge',
