@@ -254,7 +254,8 @@ export default {
 
         const response = await fetch(`/api/connexion-logs?role=${role}`);
         if (response.ok) {
-          this.logs = await response.json();
+          const data = await response.json();
+          this.logs = data.logs || [];
         } else {
           console.error('Erreur lors du chargement des logs');
         }
