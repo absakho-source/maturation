@@ -272,7 +272,7 @@ export default {
     lastConnectionTime() {
       if (this.filteredLogs.length === 0) return 'N/A';
       const latest = this.filteredLogs[0];
-      return this.formatDate(latest.timestamp);
+      return this.formatDate(latest.date_connexion);
     }
   },
   mounted() {
