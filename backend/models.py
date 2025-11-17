@@ -569,6 +569,9 @@ class ConnexionLog(db.Model):
     role = db.Column(db.String(50), nullable=True)
     date_connexion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     adresse_ip = db.Column(db.String(45), nullable=True)  # IPv6 peut faire jusqu'à 45 caractères
+    pays = db.Column(db.String(100), nullable=True)  # Pays de connexion
+    ville = db.Column(db.String(100), nullable=True)  # Ville de connexion
+    region = db.Column(db.String(100), nullable=True)  # Région de connexion
     user_agent = db.Column(db.Text, nullable=True)
     statut = db.Column(db.String(20), nullable=False)  # 'succes' ou 'echec'
     raison_echec = db.Column(db.String(200), nullable=True)  # Motif si échec
@@ -581,6 +584,9 @@ class ConnexionLog(db.Model):
             'role': self.role,
             'date_connexion': self.date_connexion.isoformat() if self.date_connexion else None,
             'adresse_ip': self.adresse_ip,
+            'pays': self.pays,
+            'ville': self.ville,
+            'region': self.region,
             'user_agent': self.user_agent,
             'statut': self.statut,
             'raison_echec': self.raison_echec

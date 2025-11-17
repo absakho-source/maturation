@@ -99,6 +99,7 @@
               <th>Utilisateur</th>
               <th>Rôle</th>
               <th>Adresse IP</th>
+              <th>Localisation</th>
             </tr>
           </thead>
           <tbody>
@@ -128,6 +129,18 @@
               </td>
               <td>
                 <span class="ip-address">{{ log.adresse_ip || 'N/A' }}</span>
+              </td>
+              <td>
+                <div v-if="log.pays || log.ville" class="location-cell">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span class="location-text">
+                    {{ log.ville ? log.ville + ', ' : '' }}{{ log.pays || '' }}
+                  </span>
+                </div>
+                <span v-else class="location-na">N/A</span>
               </td>
             </tr>
           </tbody>
@@ -528,6 +541,30 @@ export default {
   font-family: 'Courier New', monospace;
   color: var(--dgppe-text-muted);
   font-size: 0.8rem;
+}
+
+/* Location */
+.location-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--dgppe-text-muted);
+}
+
+.location-cell svg {
+  flex-shrink: 0;
+  color: var(--dgppe-primary);
+}
+
+.location-text {
+  font-size: 0.875rem;
+  color: var(--dgppe-text);
+}
+
+.location-na {
+  color: var(--dgppe-text-muted);
+  font-style: italic;
+  font-size: 0.875rem;
 }
 
 /* Pagination */

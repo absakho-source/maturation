@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import shutil
+import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
@@ -1317,6 +1318,26 @@ def get_connexion_logs():
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+def get_geolocation(ip_address):
+    """Récupère la géolocalisation d'une adresse IP via ipapi.co"""
+    try:
+        # Ne pas géolocaliser les IPs locales
+        if ip_address in ['127.0.0.1', 'localhost', '::1'] or ip_address.startswith('192.168.') or ip_address.startswith('10.'):
+            return None, None, None
+
+        # Appel à l'API ipapi.co (gratuit, 30k requêtes/mois)
+        response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=2)
+        if response.status_code == 200:
+            data = response.json()
+            pays = data.get('country_name', None)
+            ville = data.get('city', None)
+            region = data.get('region', None)
+            return pays, ville, region
+    except Exception as e:
+        print(f"Erreur géolocalisation pour {ip_address}: {e}")
+
+    return None, None, None
+
 @app.route("/api/connexion-logs", methods=["POST"])
 def log_connexion():
     """Enregistrer une connexion utilisateur"""
@@ -1332,12 +1353,21 @@ def log_connexion():
         display_name = user.display_name if user and user.display_name else username
         role = data.get('role', user.role if user else '')
 
+        # Récupérer l'adresse IP
+        ip_address = request.remote_addr
+
+        # Obtenir la géolocalisation
+        pays, ville, region = get_geolocation(ip_address)
+
         # Créer le log de connexion
         log = ConnexionLog(
             username=username,
             display_name=display_name,
             role=role,
-            adresse_ip=request.remote_addr,
+            adresse_ip=ip_address,
+            pays=pays,
+            ville=ville,
+            region=region,
             user_agent=request.headers.get('User-Agent', ''),
             statut='succes'
         )
