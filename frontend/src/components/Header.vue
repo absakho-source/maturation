@@ -10,7 +10,7 @@
         </div>
       </div>
       <nav v-if="user" class="nav-section">
-        <div v-if="user.role === 'admin' || user.role === 'secretariatsct'" class="dropdown" ref="dropdown">
+        <div v-if="user.role === 'admin'" class="dropdown" ref="dropdown">
           <button @click="toggleDropdown" class="nav-link dropdown-toggle">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"/>
@@ -64,6 +64,51 @@
             </router-link>
           </div>
         </div>
+        <!-- Menu dropdown pour secretariatsct (sans logs de connexion) -->
+        <div v-if="user.role === 'secretariatsct'" class="dropdown" ref="dropdownSecretary">
+          <button @click="toggleDropdownSecretary" class="nav-link dropdown-toggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+            </svg>
+            Administration
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron" :class="{ 'chevron-open': dropdownSecretaryOpen }">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div v-if="dropdownSecretaryOpen" class="dropdown-menu">
+            <router-link to="/mon-profil" class="dropdown-item" @click="closeDropdownSecretary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Mon Profil
+            </router-link>
+            <router-link to="/gestion-comptes" class="dropdown-item" @click="closeDropdownSecretary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              Gestion des comptes
+            </router-link>
+            <router-link to="/formulaire-editor" class="dropdown-item" @click="closeDropdownSecretary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Éditeur de formulaire
+            </router-link>
+            <router-link to="/ministeres-editor" class="dropdown-item" @click="closeDropdownSecretary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              Gestion des ministères
+            </router-link>
+          </div>
+        </div>
         <router-link v-if="user.role !== 'admin' && user.role !== 'secretariatsct'" to="/mon-profil" class="nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -96,7 +141,8 @@ export default {
   name: "Header",
   data() {
     return {
-      dropdownOpen: false
+      dropdownOpen: false,
+      dropdownSecretaryOpen: false
     };
   },
   computed: {
@@ -123,6 +169,12 @@ export default {
     closeDropdown() {
       this.dropdownOpen = false;
     },
+    toggleDropdownSecretary() {
+      this.dropdownSecretaryOpen = !this.dropdownSecretaryOpen;
+    },
+    closeDropdownSecretary() {
+      this.dropdownSecretaryOpen = false;
+    },
     logout() {
       // Enregistrer la déconnexion (on enregistre comme une "déconnexion" dans les logs)
       // Note: on pourrait aussi créer un endpoint séparé pour logout, mais pour l'instant
@@ -146,6 +198,9 @@ export default {
     handleClickOutside(event) {
       if (this.$refs.dropdown && !this.$refs.dropdown.contains(event.target)) {
         this.dropdownOpen = false;
+      }
+      if (this.$refs.dropdownSecretary && !this.$refs.dropdownSecretary.contains(event.target)) {
+        this.dropdownSecretaryOpen = false;
       }
     }
   },
