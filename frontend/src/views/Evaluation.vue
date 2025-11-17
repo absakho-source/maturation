@@ -87,8 +87,8 @@
             </div>
           </div>
 
-          <!-- Résultat de l'évaluation préalable (lecture seule) -->
-          <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable">
+          <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
+          <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable === 'dossier_rejete'">
             <h4>🔍 Évaluation Préalable</h4>
             <p>
               <strong>Décision:</strong>
