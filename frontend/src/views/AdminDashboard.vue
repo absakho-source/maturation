@@ -1292,16 +1292,16 @@ export default {
 }
 
 /* Status badges */
-.status-new { background: #3b82f6; color: white; }
-.status-assigned { background: #f59e0b; color: white; }
-.status-pending { background: #8b5cf6; color: white; }
-.status-validated { background: #10b981; color: white; }
-.status-complement { background: #f97316; color: white; }
-.status-confirmed { background: #06b6d4; color: white; }
-.status-favorable { background: #10b981; color: white; }
-.status-defavorable { background: #ef4444; color: white; }
-.status-rejected { background: #dc2626; color: white; }
-.status-default { background: #6b7280; color: white; }
+.status-new { background: #3b82f6 !important; color: white !important; }
+.status-assigned { background: #f59e0b !important; color: white !important; }
+.status-pending { background: #8b5cf6 !important; color: white !important; }
+.status-validated { background: #10b981 !important; color: white !important; }
+.status-complement { background: #f97316 !important; color: white !important; }
+.status-confirmed { background: #06b6d4 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-rejected { background: #dc2626 !important; color: white !important; }
+.status-default { background: #6b7280 !important; color: white !important; }
 
 /* Tableau des projets */
 .projects-table-container {
