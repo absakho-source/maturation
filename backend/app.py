@@ -316,7 +316,7 @@ def projects():
             result = []
             for p in items:
                 try:
-                    if role == "soumissionnaire":
+                    if role == "soumissionnaire" or role == "invite":
                         statut_affiche = get_statut_soumissionnaire(p)
                     else:
                         statut_affiche = p.statut
