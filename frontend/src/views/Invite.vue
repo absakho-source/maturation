@@ -190,32 +190,30 @@ export default {
       if (!statut) return 'default';
       const s = statut.toLowerCase();
 
-      // Nouveau
-      if (s === 'soumis' || s === 'nouveau') return 'new';
+      // Statuts spécifiques pour invité/soumissionnaire
+      // Soumis
+      if (s === 'soumis') return 'new';
 
       // Assigné
       if (s === 'assigné' || s === 'assigne') return 'assigned';
 
-      // En attente / En évaluation
-      if (s === 'en attente' || s === 'en évaluation' || s === 'évalué' || s === 'evalue') return 'pending';
+      // En instruction (statut générique pour évaluation en cours)
+      if (s === 'en instruction') return 'pending';
 
-      // Validé
-      if (s === 'validé' || s === 'valide') return 'validated';
+      // Compléments demandés
+      if (s === 'compléments demandés' || s === 'complements demandes') return 'complement';
 
-      // Complément d'information
-      if (s === 'complément d\'information' || s === 'complement d\'information') return 'complement';
+      // Compléments fournis
+      if (s === 'compléments fournis' || s === 'complements fournis') return 'complement-provided';
 
-      // Décision finale confirmée
-      if (s === 'décision finale confirmée' || s === 'decision finale confirmee') return 'confirmed';
+      // Avis favorable (quand projet approuvé)
+      if (s === 'favorable' || s === 'avis favorable') return 'favorable';
 
-      // Évalué favorablement
-      if (s === 'évalué favorablement' || s === 'evalue favorablement') return 'favorable';
+      // Avis favorable sous conditions (quand projet approuvé)
+      if (s === 'favorable sous conditions' || s === 'avis favorable sous conditions') return 'favorable-conditions';
 
-      // Évalué défavorablement
-      if (s === 'évalué défavorablement' || s === 'evalue defavorablement') return 'defavorable';
-
-      // Rejeté
-      if (s === 'rejeté' || s === 'rejete') return 'rejected';
+      // Avis défavorable (quand projet approuvé)
+      if (s === 'défavorable' || s === 'defavorable' || s === 'avis défavorable' || s === 'avis defavorable') return 'defavorable';
 
       return 'default';
     }
@@ -492,6 +490,11 @@ export default {
   color: white !important;
 }
 
+.statut-complement-provided {
+  background: #06b6d4 !important;
+  color: white !important;
+}
+
 .statut-confirmed {
   background: #06b6d4 !important;
   color: white !important;
@@ -499,6 +502,11 @@ export default {
 
 .statut-favorable {
   background: #10b981 !important;
+  color: white !important;
+}
+
+.statut-favorable-conditions {
+  background: #eab308 !important;
   color: white !important;
 }
 
