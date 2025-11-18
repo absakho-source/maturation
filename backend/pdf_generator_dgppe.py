@@ -109,7 +109,7 @@ class FicheEvaluationDGPPEPDF:
         header_text = Paragraph(
             "<b>MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION</b><br/>"
             "<b>DIRECTION GÉNÉRALE DE LA PLANIFICATION ET DES POLITIQUES ÉCONOMIQUES</b><br/>"
-            "<b>PLATEFORME DE MATURATION DES PROJETS D'INVESTISSEMENT</b>",
+            "<b>PLATEFORME DE SUIVI DE LA MATURATION DES PROJETS</b>",
             self.styles['RepublicHeader']
         )
 

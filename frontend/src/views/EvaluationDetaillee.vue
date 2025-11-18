@@ -6,7 +6,7 @@
           <div class="ministere-info">
             <h2>MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION</h2>
             <h3>DIRECTION GÉNÉRALE DE LA PLANIFICATION ET DES POLITIQUES ÉCONOMIQUES</h3>
-            <h4>PLATEFORME DE MATURATION DES PROJETS D'INVESTISSEMENT</h4>
+            <h4>PLATEFORME DE SUIVI DE LA MATURATION DES PROJETS</h4>
           </div>
           <div class="logo-dgppe">
             <!-- Logo DGPPE ici -->

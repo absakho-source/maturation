@@ -168,7 +168,7 @@
           <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && !isSoumissionnaire() && peutVoirEvaluation()">
             <h3>📄 Fiche d'évaluation</h3>
             <p>La fiche d'évaluation a été générée.</p>
-            <button @click="ouvrirFichePDF" class="btn-primary" style="margin-top: 10px;">
+            <button @click="ouvrirFichePDF" class="btn-primary">
               📄 Voir la fiche d'évaluation (PDF)
             </button>
           </div>
@@ -515,6 +515,28 @@ export default {
 }
 .btn-back:hover {
   background: #4b5563;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
 }
 .badge {
   padding: 0.5rem 1rem;
