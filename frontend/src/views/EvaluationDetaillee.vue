@@ -74,20 +74,23 @@
           <div class="info-grid">
             <div class="info-item">
               <strong>ORIGINE DU PROJET:</strong>
-              <div class="checkbox-group">
-                <label><input type="checkbox" v-model="presentationData.origine_projet.maturation"> MATURATION</label>
-                <label><input type="checkbox" v-model="presentationData.origine_projet.offre_spontanee"> OFFRE SPONTANÉE</label>
-                <label><input type="checkbox" v-model="presentationData.origine_projet.autres"> AUTRES</label>
+              <div class="radio-group">
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="maturation"> MATURATION</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="offre_spontanee"> OFFRE SPONTANÉE</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="autres"> AUTRES</label>
+              </div>
+              <div v-if="presentationData.origine_projet_choix === 'autres'" class="autres-precisions">
+                <input type="text" v-model="presentationData.origine_projet_autres_precision" placeholder="Précisez l'origine du projet..." class="input-text">
               </div>
             </div>
 
             <div class="info-item">
               <strong>TYPOLOGIE DU PROJET:</strong>
-              <div class="checkbox-group">
-                <label><input type="checkbox" v-model="presentationData.typologie_projet.productif"> PRODUCTIF</label>
-                <label><input type="checkbox" v-model="presentationData.typologie_projet.appui_production"> APPUI À LA PRODUCTION</label>
-                <label><input type="checkbox" v-model="presentationData.typologie_projet.social"> SOCIAL</label>
-                <label><input type="checkbox" v-model="presentationData.typologie_projet.environnemental"> ENVIRONNEMENTAL</label>
+              <div class="radio-group">
+                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="productif"> PRODUCTIF</label>
+                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="appui_production"> APPUI À LA PRODUCTION</label>
+                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="social"> SOCIAL</label>
+                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="environnemental"> ENVIRONNEMENTAL</label>
               </div>
             </div>
           </div>
@@ -356,20 +359,40 @@ export default {
         if (response.ok) {
           this.presentationData = await response.json()
 
-          if (!this.presentationData.origine_projet) {
-            this.presentationData.origine_projet = {
-              maturation: false,
-              offre_spontanee: false,
-              autres: false
+          // Convertir l'ancien format (checkboxes multiples) vers le nouveau format (choix unique)
+          if (this.presentationData.origine_projet && typeof this.presentationData.origine_projet === 'object') {
+            // Ancien format avec checkboxes
+            if (this.presentationData.origine_projet.maturation) {
+              this.presentationData.origine_projet_choix = 'maturation'
+            } else if (this.presentationData.origine_projet.offre_spontanee) {
+              this.presentationData.origine_projet_choix = 'offre_spontanee'
+            } else if (this.presentationData.origine_projet.autres) {
+              this.presentationData.origine_projet_choix = 'autres'
             }
           }
-          if (!this.presentationData.typologie_projet) {
-            this.presentationData.typologie_projet = {
-              productif: false,
-              appui_production: false,
-              social: false,
-              environnemental: false
+
+          if (this.presentationData.typologie_projet && typeof this.presentationData.typologie_projet === 'object') {
+            // Ancien format avec checkboxes
+            if (this.presentationData.typologie_projet.productif) {
+              this.presentationData.typologie_projet_choix = 'productif'
+            } else if (this.presentationData.typologie_projet.appui_production) {
+              this.presentationData.typologie_projet_choix = 'appui_production'
+            } else if (this.presentationData.typologie_projet.social) {
+              this.presentationData.typologie_projet_choix = 'social'
+            } else if (this.presentationData.typologie_projet.environnemental) {
+              this.presentationData.typologie_projet_choix = 'environnemental'
             }
+          }
+
+          // Initialiser les valeurs par défaut si non définies
+          if (!this.presentationData.origine_projet_choix) {
+            this.presentationData.origine_projet_choix = ''
+          }
+          if (!this.presentationData.typologie_projet_choix) {
+            this.presentationData.typologie_projet_choix = ''
+          }
+          if (!this.presentationData.origine_projet_autres_precision) {
+            this.presentationData.origine_projet_autres_precision = ''
           }
           if (!this.presentationData.organisme_tutelle || this.presentationData.organisme_tutelle.trim() === '') {
             this.presentationData.organisme_tutelle = "MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION"
@@ -730,6 +753,38 @@ export default {
 
 .checkbox-group input[type="checkbox"] {
   margin: 0;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.radio-group label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.autres-precisions {
+  margin-top: 10px;
+}
+
+.autres-precisions .input-text {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
 }
 
 .criteria-table {
@@ -1108,6 +1163,15 @@ textarea {
 
 .readonly-mode .checkbox-group input[type="checkbox"] {
   pointer-events: none;
+}
+
+.readonly-mode .radio-group input[type="radio"] {
+  pointer-events: none;
+}
+
+.readonly-mode .autres-precisions .input-text {
+  pointer-events: none;
+  background-color: #f5f5f5;
 }
 
 .warning-readonly {
