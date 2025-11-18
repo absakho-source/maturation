@@ -446,6 +446,18 @@ def projects():
         # Générer le numéro de projet automatiquement
         numero_projet = generer_numero_projet()
 
+        # Capturer le lieu de soumission pour mesurer la territorialisation
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip_address and ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+
+        lieu_pays, lieu_ville, lieu_region = None, None, None
+        try:
+            lieu_pays, lieu_ville, lieu_region = get_geolocation(ip_address)
+            print(f"[SOUMISSION] Projet soumis depuis: {lieu_ville}, {lieu_region}, {lieu_pays} (IP: {ip_address})")
+        except Exception as e:
+            print(f"[SOUMISSION] Impossible de géolocaliser l'IP {ip_address}: {e}")
+
         project = Project(
             numero_projet=numero_projet,
             titre=titre,
@@ -455,7 +467,10 @@ def projects():
             cout_estimatif=float(cout_estimatif) if cout_estimatif else None,
             organisme_tutelle=organisme_tutelle,
             pieces_jointes=",".join(filenames) if filenames else None,
-            auteur_nom=auteur_nom  # <-- Ajout ici
+            auteur_nom=auteur_nom,
+            lieu_soumission_pays=lieu_pays,
+            lieu_soumission_ville=lieu_ville,
+            lieu_soumission_region=lieu_region
         )
         db.session.add(project)
         db.session.commit()
@@ -513,7 +528,10 @@ def get_project(project_id):
             "complements_reponse_message": p.complements_reponse_message,
             "complements_reponse_pieces": p.complements_reponse_pieces,
             "pieces_jointes": p.pieces_jointes.split(",") if p.pieces_jointes else [],
-            "date_soumission": p.date_soumission.isoformat() if p.date_soumission else None
+            "date_soumission": p.date_soumission.isoformat() if p.date_soumission else None,
+            "lieu_soumission_pays": p.lieu_soumission_pays,
+            "lieu_soumission_ville": p.lieu_soumission_ville,
+            "lieu_soumission_region": p.lieu_soumission_region
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()

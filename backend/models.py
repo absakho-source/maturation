@@ -53,7 +53,12 @@ class Project(db.Model):
     complements_reponse_message = db.Column(db.Text, nullable=True)
     complements_reponse_pieces = db.Column(db.Text, nullable=True)
     date_soumission = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
+    # Localisation de la soumission (pour mesurer la territorialisation)
+    lieu_soumission_pays = db.Column(db.String(100), nullable=True)
+    lieu_soumission_ville = db.Column(db.String(100), nullable=True)
+    lieu_soumission_region = db.Column(db.String(100), nullable=True)
+
     # Nouveaux champs ajoutés
     organisme_tutelle = db.Column(db.String(300), nullable=True)
     origine_projet = db.Column(db.Text, nullable=True)  # JSON: {maturation, offre_spontanee, autres}

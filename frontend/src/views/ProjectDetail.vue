@@ -46,6 +46,10 @@
               <span class="label">Date de soumission:</span>
               <span class="value">{{ formatDateTime(project.date_soumission) }}</span>
             </div>
+            <div class="info-row" v-if="project.lieu_soumission_ville || project.lieu_soumission_pays">
+              <span class="label">Lieu de soumission:</span>
+              <span class="value">{{ formatLieuSoumission() }}</span>
+            </div>
             <div class="info-row">
               <span class="label">Secteur de planification:</span>
               <span class="value">{{ project.secteur }}</span>
@@ -397,6 +401,16 @@ export default {
     },
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR').format(amount);
+    },
+    formatLieuSoumission() {
+      if (!this.project) return '';
+      const parts = [];
+      if (this.project.lieu_soumission_ville) parts.push(this.project.lieu_soumission_ville);
+      if (this.project.lieu_soumission_region && this.project.lieu_soumission_region !== this.project.lieu_soumission_ville) {
+        parts.push(this.project.lieu_soumission_region);
+      }
+      if (this.project.lieu_soumission_pays) parts.push(this.project.lieu_soumission_pays);
+      return parts.join(', ') || 'Non disponible';
     },
     getStatusClass(statut) {
       const map = {
