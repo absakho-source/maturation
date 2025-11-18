@@ -176,6 +176,21 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding connexion_log.{c}")
                 cur.execute(f"ALTER TABLE connexion_log ADD COLUMN {c} {cdef}")
 
+    # Migration pour la table project (lieu de soumission - territorialisation)
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project'")
+    if cur.fetchone():
+        cur.execute("PRAGMA table_info(project)")
+        cols = {r[1] for r in cur.fetchall()}
+        needed_lieu = {
+            "lieu_soumission_pays": "VARCHAR(100)",
+            "lieu_soumission_ville": "VARCHAR(100)",
+            "lieu_soumission_region": "VARCHAR(100)"
+        }
+        for c, cdef in needed_lieu.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding project.{c}")
+                cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
+
     con.commit()
     con.close()
 
