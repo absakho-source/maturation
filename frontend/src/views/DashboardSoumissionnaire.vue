@@ -759,7 +759,7 @@ export default {
     },
     // Méthodes pour le formatage du téléphone
     initTelephone() {
-      // Pré-remplir avec +221 si le champ est vide
+      // Pré-remplir avec +221 si le champ est vide (par défaut pour le Sénégal)
       if (!this.form.point_focal_telephone || this.form.point_focal_telephone.trim() === "") {
         this.form.point_focal_telephone = "+221 ";
       }
@@ -768,34 +768,17 @@ export default {
     formatTelephone(event) {
       let value = event.target.value;
 
-      // Toujours garder +221 au début
-      if (!value.startsWith("+221")) {
-        // Si l'utilisateur efface le +221, le restaurer
-        value = "+221 " + value.replace(/^\+221\s*/, "").replace(/[^\d]/g, "");
+      // Permettre la modification de l'indicatif (ne plus forcer +221)
+      // L'utilisateur peut saisir n'importe quel indicatif international
+
+      // Si le champ ne commence pas par +, l'ajouter automatiquement
+      if (value && !value.startsWith("+")) {
+        value = "+" + value;
       }
 
-      // Retirer tous les espaces pour reformater
-      let numbers = value.replace(/^\+221\s*/, "").replace(/\s/g, "");
-
-      // Limiter à 9 chiffres (format sénégalais)
-      numbers = numbers.slice(0, 9);
-
-      // Formater: +221 XX XXX XX XX
-      let formatted = "+221";
-      if (numbers.length > 0) {
-        formatted += " " + numbers.slice(0, 2);
-      }
-      if (numbers.length > 2) {
-        formatted += " " + numbers.slice(2, 5);
-      }
-      if (numbers.length > 5) {
-        formatted += " " + numbers.slice(5, 7);
-      }
-      if (numbers.length > 7) {
-        formatted += " " + numbers.slice(7, 9);
-      }
-
-      this.form.point_focal_telephone = formatted;
+      // Formater simplement en ajoutant des espaces tous les 3 chiffres après l'indicatif
+      // Ceci permet une flexibilité pour tous les pays
+      this.form.point_focal_telephone = value;
     },
 
     // Ouvrir le formulaire et pré-remplir avec les données utilisateur

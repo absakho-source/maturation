@@ -1749,6 +1749,11 @@ export default {
         'dossier_rejete': 'decision-rejete'
       };
       return map[decision] || '';
+    },
+
+    commencerEvaluation(projetId) {
+      // Basculer vers l'onglet "Mes évaluations"
+      this.activeTab = 'evaluation';
     }
   }
 };
