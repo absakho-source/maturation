@@ -107,12 +107,27 @@ def get_fiche_evaluation(project_id):
                 'id': None,
                 'project_id': project_id,
                 'evaluateur_nom': evaluateur_nom,
-                'criteres': {},
+                'date_evaluation': None,
+                'reference_fiche': None,
+                'criteres': {
+                    'pertinence': {'score': 0, 'max_score': 5, 'description': ''},
+                    'alignement': {'score': 0, 'max_score': 10, 'description': ''},
+                    'activites_couts': {'score': 0, 'max_score': 15, 'description': ''},
+                    'equite': {'score': 0, 'max_score': 15, 'description': ''},
+                    'viabilite': {'score': 0, 'max_score': 5, 'description': ''},
+                    'rentabilite': {'score': 0, 'max_score': 5, 'description': ''},
+                    'benefices_strategiques': {'score': 0, 'max_score': 10, 'description': ''},
+                    'perennite': {'score': 0, 'max_score': 5, 'description': ''},
+                    'avantages_intangibles': {'score': 0, 'max_score': 10, 'description': ''},
+                    'faisabilite': {'score': 0, 'max_score': 5, 'description': ''},
+                    'ppp': {'score': 0, 'max_score': 5, 'description': ''},
+                    'impact_environnemental': {'score': 0, 'max_score': 5, 'description': ''}
+                },
+                'impact_emploi_description': '',
+                'score_total': 0,
                 'proposition': '',
                 'recommandations': '',
-                'score_total': 0,
-                'appreciation_globale': '',
-                'date_evaluation': None
+                'fichier_pdf': None
             }), 200
         
         # Convertir en dictionnaire avec les nouveaux champs
