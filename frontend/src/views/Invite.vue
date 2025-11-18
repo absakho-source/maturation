@@ -71,6 +71,22 @@
               </div>
             </div>
           </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Par pole territorial</div>
+              <div class="stat-mini-list">
+                <div v-for="(count, pole) in statsOverview.poles" :key="pole" class="stat-mini-item">
+                  <span class="mini-badge">{{ pole }}</span>: {{ count }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -86,12 +102,54 @@
           En tant qu'invite, vous pouvez consulter uniquement la liste des projets sans acces aux details.
         </div>
 
-        <div v-if="projects.length === 0" class="empty-state">
+        <!-- Filtres -->
+        <div class="filters-section">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label class="filter-label">Statut</label>
+              <select v-model="filters.statut" @change="applyFilters" class="filter-select">
+                <option value="">Tous les statuts</option>
+                <option v-for="statut in availableStatuts" :key="statut" :value="statut">{{ statut }}</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Secteur</label>
+              <select v-model="filters.secteur" @change="applyFilters" class="filter-select">
+                <option value="">Tous les secteurs</option>
+                <option v-for="secteur in availableSecteurs" :key="secteur" :value="secteur">{{ secteur }}</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Pole territorial</label>
+              <select v-model="filters.pole" @change="applyFilters" class="filter-select">
+                <option value="">Tous les poles</option>
+                <option v-for="pole in availablePoles" :key="pole" :value="pole">{{ pole }}</option>
+              </select>
+            </div>
+
+            <button @click="resetFilters" class="btn-reset-filters">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M3 12h18M3 18h18"/>
+              </svg>
+              Réinitialiser
+            </button>
+          </div>
+
+          <div class="filter-summary">
+            <span class="filter-count">{{ filteredProjects.length }} projet(s) affiché(s)</span>
+            <span v-if="hasActiveFilters" class="filter-active-badge">Filtres actifs</span>
+          </div>
+        </div>
+
+        <div v-if="filteredProjects.length === 0" class="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M9 11l3 3L22 4"/>
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
-          <p>Aucun projet disponible pour le moment</p>
+          <p v-if="hasActiveFilters">Aucun projet ne correspond aux filtres sélectionnés</p>
+          <p v-else>Aucun projet disponible pour le moment</p>
         </div>
 
         <div v-else class="table-container">
@@ -107,7 +165,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="project in projects" :key="project.id">
+              <tr v-for="project in filteredProjects" :key="project.id">
                 <td class="td-numero">{{ project.numero_projet }}</td>
                 <td class="td-titre">{{ project.titre }}</td>
                 <td class="td-secteur">
@@ -145,8 +203,35 @@ export default {
         statuts: {},
         secteurs: {},
         poles: {}
+      },
+      filters: {
+        statut: '',
+        secteur: '',
+        pole: ''
       }
     };
+  },
+  computed: {
+    availableStatuts() {
+      return [...new Set(this.projects.map(p => p.statut).filter(Boolean))].sort();
+    },
+    availableSecteurs() {
+      return [...new Set(this.projects.map(p => p.secteur).filter(Boolean))].sort();
+    },
+    availablePoles() {
+      return [...new Set(this.projects.map(p => p.poles).filter(Boolean))].sort();
+    },
+    filteredProjects() {
+      return this.projects.filter(project => {
+        if (this.filters.statut && project.statut !== this.filters.statut) return false;
+        if (this.filters.secteur && project.secteur !== this.filters.secteur) return false;
+        if (this.filters.pole && project.poles !== this.filters.pole) return false;
+        return true;
+      });
+    },
+    hasActiveFilters() {
+      return this.filters.statut || this.filters.secteur || this.filters.pole;
+    }
   },
   mounted() {
     this.loadData();
@@ -216,6 +301,14 @@ export default {
       if (s === 'défavorable' || s === 'defavorable' || s === 'avis défavorable' || s === 'avis defavorable') return 'defavorable';
 
       return 'default';
+    },
+    applyFilters() {
+      // Les filtres sont appliqués automatiquement via computed property
+    },
+    resetFilters() {
+      this.filters.statut = '';
+      this.filters.secteur = '';
+      this.filters.pole = '';
     }
   }
 };
@@ -394,6 +487,105 @@ export default {
   margin-bottom: 1.5rem;
 }
 
+/* ==================== FILTERS SECTION ==================== */
+.filters-section {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.filter-select {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  background: white;
+  color: #2d3748;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-select:hover {
+  border-color: #004080;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #004080;
+  box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+}
+
+.btn-reset-filters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  color: #64748b;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.btn-reset-filters:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #475569;
+}
+
+.filter-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.filter-count {
+  font-size: 0.875rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.filter-active-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
@@ -567,6 +759,19 @@ export default {
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-reset-filters {
+    align-self: stretch;
+  }
+
+  .filter-summary {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .table-container {
