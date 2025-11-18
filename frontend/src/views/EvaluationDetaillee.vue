@@ -122,7 +122,7 @@
               </div>
               <div class="col-description">
                 <textarea
-                  v-if="critere.avec_description"
+                  v-if="critere.avec_description && evaluationData.criteres[critere.cle]"
                   v-model="evaluationData.criteres[critere.cle].description"
                   :placeholder="`Analyser ${critere.nom.toLowerCase()}...`"
                   rows="3">
@@ -131,6 +131,7 @@
               </div>
               <div class="col-score">
                 <input
+                  v-if="evaluationData.criteres[critere.cle]"
                   type="number"
                   v-model.number="evaluationData.criteres[critere.cle].score"
                   min="0"
@@ -140,7 +141,7 @@
               </div>
               <div class="col-recommendations">
                 <textarea
-                  v-if="critere.avec_recommandations"
+                  v-if="critere.avec_recommandations && evaluationData.criteres[critere.cle]"
                   v-model="evaluationData.criteres[critere.cle].recommandations"
                   placeholder="Recommandations..."
                   rows="2">
@@ -326,11 +327,19 @@ export default {
     initialiserCriteres() {
       // Créer dynamiquement la structure evaluationData.criteres basée sur les critères chargés
       const criteres = {}
-      this.criteresEvaluation.forEach(critere => {
-        criteres[critere.cle] = {
-          score: 0,
-          description: '',
-          recommandations: ''
+      const criteresEval = this.criteresEvaluation || []
+
+      if (criteresEval.length === 0) {
+        console.warn('[EvaluationDetaillee] Aucun critère trouvé dans la configuration')
+      }
+
+      criteresEval.forEach(critere => {
+        if (critere && critere.cle) {
+          criteres[critere.cle] = {
+            score: 0,
+            description: '',
+            recommandations: ''
+          }
         }
       })
       this.evaluationData.criteres = criteres
