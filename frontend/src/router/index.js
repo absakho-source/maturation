@@ -61,6 +61,10 @@ router.beforeEach((to, from, next) => {
   } else if (to.path === '/login' && user) {
     const role = normalizeRole(user.role);
     next(`/${role}`);
+  } else if (to.path.startsWith('/project/') && user && user.role === 'invite') {
+    // Les invités ne peuvent pas accéder aux détails des projets
+    console.warn('[Router] Accès refusé: Les invités ne peuvent pas voir les détails des projets');
+    next('/invite');
   } else {
     next();
   }

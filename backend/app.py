@@ -523,6 +523,14 @@ def projects():
 @app.route("/api/projects/<int:project_id>", methods=["GET"])
 def get_project(project_id):
     try:
+        # Vérifier le rôle de l'utilisateur (passé en query params ou headers)
+        role = request.args.get("role", "")
+        username = request.args.get("username", "")
+
+        # Les invités ne peuvent pas accéder aux détails des projets
+        if role == "invite":
+            return jsonify({"error": "Accès refusé: Les invités ne peuvent pas voir les détails des projets"}), 403
+
         p = Project.query.get_or_404(project_id)
 
         # Récupérer le display_name de l'évaluateur si applicable
