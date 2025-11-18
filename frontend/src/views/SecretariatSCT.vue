@@ -1025,12 +1025,10 @@ export default {
       return this.allProjects.filter(p => p.statut === 'en attente validation demande compléments');
     },
     myProjects() {
-      // Projets assignés au secrétariat SCT connecté qui ne sont pas encore évalués
-      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const username = user.username || '';
-
+      // Projets assignés à l'équipe secretariatsct (basé sur est_assigne_a_moi calculé par le backend)
+      // Tous les secretariatsct avec le même rôle voient les projets assignés à n'importe quel membre
       return this.allProjects.filter(p =>
-        p.evaluateur_nom === username &&
+        p.est_assigne_a_moi &&
         (p.statut === 'assigné' || p.statut === 'en évaluation')
       );
     },

@@ -350,12 +350,14 @@ def projects():
                         except Exception:
                             date_soumission = str(p.date_soumission)
 
-                    # Récupérer le display_name de l'évaluateur si applicable
+                    # Récupérer le display_name et le rôle de l'évaluateur si applicable
                     evaluateur_display_name = ""
+                    evaluateur_role = ""
                     if p.evaluateur_nom:
                         evaluateur = User.query.filter_by(username=p.evaluateur_nom).first()
                         if evaluateur:
                             evaluateur_display_name = evaluateur.display_name or evaluateur.username
+                            evaluateur_role = evaluateur.role or ""
 
                     # Conversion de evaluation_prealable_date
                     evaluation_prealable_date = None
@@ -365,11 +367,19 @@ def projects():
                         except Exception:
                             evaluation_prealable_date = str(p.evaluation_prealable_date)
 
-                    # Vérifier si le projet est assigné à l'évaluateur connecté
-                    # Inclure secretariatsct qui peut aussi s'auto-assigner pour évaluer
+                    # Vérifier si le projet est assigné à l'utilisateur connecté ou à son équipe (même rôle)
+                    # Pour secretariatsct: tous les membres de l'équipe voient les projets assignés à n'importe quel secretariatsct
+                    # Pour evaluateur: chaque évaluateur voit uniquement ses propres projets
                     est_assigne_a_moi = False
-                    if (role == "evaluateur" or role == "secretariatsct") and username:
-                        est_assigne_a_moi = (p.evaluateur_nom == username)
+                    if role and username and p.evaluateur_nom:
+                        if role == "secretariatsct":
+                            # Tous les secretariatsct voient les projets assignés à n'importe quel secretariatsct
+                            est_assigne_a_moi = (evaluateur_role == "secretariatsct")
+                        elif role == "evaluateur":
+                            # Les évaluateurs voient uniquement leurs propres projets
+                            est_assigne_a_moi = (p.evaluateur_nom == username)
+                        else:
+                            est_assigne_a_moi = (p.evaluateur_nom == username)
 
                     # Rôle invité: retourner SEULEMENT les champs de base (pas de données sensibles)
                     if role == "invite":
@@ -397,6 +407,7 @@ def projects():
                             "statut": str(statut_affiche) if statut_affiche else "",
                             "evaluateur_nom": str(p.evaluateur_nom) if p.evaluateur_nom else "",
                             "evaluateur_display_name": str(evaluateur_display_name),
+                            "evaluateur_role": str(evaluateur_role),
                             "est_assigne_a_moi": est_assigne_a_moi,
                             "avis": str(p.avis) if p.avis else "",
                             "commentaires": str(p.commentaires) if p.commentaires else "",
@@ -603,7 +614,14 @@ def traiter_project(project_id):
         p = Project.query.get_or_404(project_id)
         auteur = data.get("auteur", "")
         role = data.get("role", "")
+        username = data.get("username", auteur)
         action = ""
+
+        # Vérifier que l'utilisateur a le rôle nécessaire pour traiter le projet
+        # Seuls secretariatsct, presidencesct, presidencecomite, evaluateur et admin peuvent traiter
+        roles_autorises = ['secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'admin']
+        if role not in roles_autorises:
+            return jsonify({"error": "Vous n'avez pas les permissions pour traiter ce projet"}), 403
 
         # Vérifier le statut du soumissionnaire
         if p.auteur_nom:
