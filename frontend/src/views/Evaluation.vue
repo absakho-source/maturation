@@ -195,9 +195,10 @@ export default {
     peutAccederFicheEvaluation(project) {
       // Le bouton "Fiche d'évaluation détaillée" est visible si:
       // - L'évaluation préalable a été positive (dossier_evaluable)
-      // - Le statut est "en évaluation" uniquement (pas après évaluation)
+      // - Le statut est "en évaluation" OU "assigné" (permet l'accès même si le statut n'a pas été mis à jour)
+      // - Mais PAS après évaluation (évalué, approuvé, rejeté, etc.)
       return project.evaluation_prealable === "dossier_evaluable" &&
-             project.statut === "en évaluation";
+             (project.statut === "en évaluation" || project.statut === "assigné");
     },
     async soumettreEvaluationPrealable(projectId, decision) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
