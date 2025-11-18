@@ -73,6 +73,9 @@
                 <span v-if="doc.type_document === 'initial'" class="document-badge initial">
                   📎 Soumission initiale
                 </span>
+                <span v-if="doc.type_document === 'fiche_evaluation_archivee'" class="document-badge archivee">
+                  📋 Fiche d'évaluation archivée
+                </span>
               </div>
               <button
                 v-if="canDeleteDocument(doc)"
@@ -262,7 +265,11 @@ export default {
       if (!this.currentUser) return false;
       // Ne pas permettre la suppression des pièces jointes initiales
       if (doc.type_document === 'initial') return false;
-      // Admin ou auteur peut supprimer
+      // Les fiches d'évaluation archivées ne peuvent être supprimées que par un admin
+      if (doc.type_document === 'fiche_evaluation_archivee') {
+        return this.currentUser.role === 'admin';
+      }
+      // Admin ou auteur peut supprimer les autres documents
       return this.currentUser.role === 'admin' || this.currentUser.username === doc.auteur_nom;
     },
 
@@ -553,6 +560,11 @@ export default {
 .document-badge.initial {
   background: #fef3c7;
   color: #92400e;
+}
+
+.document-badge.archivee {
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
 .document-info-row {
