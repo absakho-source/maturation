@@ -173,29 +173,30 @@
             </button>
           </div>
 
-          <!-- Section Historique - masquée pour les soumissionnaires -->
-          <div class="info-card" v-if="!isSoumissionnaire()">
-            <h3>📋 Historique complet du projet</h3>
-            <div v-if="loadingHistorique" class="loading-state">
-              <p>Chargement de l'historique...</p>
-            </div>
-            <div v-else-if="historique.length === 0" class="empty-state">
-              <p>Aucun historique disponible</p>
-            </div>
-            <div v-else class="historique-timeline">
-              <div v-for="entry in historique" :key="entry.id" class="timeline-item">
-                <div class="timeline-date">{{ formatDateTime(entry.date) }}</div>
-                <div class="timeline-content">
-                  <div class="timeline-action">{{ entry.action }}</div>
-                  <div class="timeline-author">{{ entry.auteur }} ({{ getRoleLabel(entry.role) }})</div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Documenthèque du projet - Accessible à tous les membres -->
         <DocumenthequeProjet v-if="project" :projectId="project.id" />
+
+        <!-- Section Historique - masquée pour les soumissionnaires -->
+        <div class="info-card" v-if="!isSoumissionnaire()">
+          <h3>📋 Historique complet du projet</h3>
+          <div v-if="loadingHistorique" class="loading-state">
+            <p>Chargement de l'historique...</p>
+          </div>
+          <div v-else-if="historique.length === 0" class="empty-state">
+            <p>Aucun historique disponible</p>
+          </div>
+          <div v-else class="historique-timeline">
+            <div v-for="entry in historique" :key="entry.id" class="timeline-item">
+              <div class="timeline-date">{{ formatDateTime(entry.date) }}</div>
+              <div class="timeline-content">
+                <div class="timeline-action">{{ entry.action }}</div>
+                <div class="timeline-author">{{ entry.auteur }} ({{ getRoleLabel(entry.role) }})</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Discussion du projet - Espace d'échange entre soumissionnaire et comité -->
         <DiscussionProjet v-if="project" :projectId="project.id" />
