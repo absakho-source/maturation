@@ -100,7 +100,20 @@ def get_fiche_evaluation(project_id):
                     'evaluateur_nom': fiche_archivee.description.split('(')[0].replace('Fiche d\'évaluation archivée lors de la réassignation', '').strip() if fiche_archivee.description else 'Inconnu'
                 }), 200
 
-            return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
+            # Si aucune fiche, retourner une structure par défaut avec l'évaluateur affecté au projet
+            project = Project.query.get_or_404(project_id)
+            evaluateur_nom = project.evaluateur_nom or ''
+            return jsonify({
+                'id': None,
+                'project_id': project_id,
+                'evaluateur_nom': evaluateur_nom,
+                'criteres': {},
+                'proposition': '',
+                'recommandations': '',
+                'score_total': 0,
+                'appreciation_globale': '',
+                'date_evaluation': None
+            }), 200
         
         # Convertir en dictionnaire avec les nouveaux champs
         fiche_data = {
