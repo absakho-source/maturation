@@ -2937,4 +2937,25 @@ export default {
   color: #1e40af;
   font-size: 1.3rem;
 }
+
+/* Style pour le bouton Fiche d'évaluation détaillée */
+.btn-evaluation-detaillee {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-evaluation-detaillee:hover {
+  background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+}
 </style>

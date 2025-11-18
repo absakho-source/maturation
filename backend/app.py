@@ -351,8 +351,9 @@ def projects():
                             evaluation_prealable_date = str(p.evaluation_prealable_date)
 
                     # Vérifier si le projet est assigné à l'évaluateur connecté
+                    # Inclure secretariatsct qui peut aussi s'auto-assigner pour évaluer
                     est_assigne_a_moi = False
-                    if role == "evaluateur" and username:
+                    if (role == "evaluateur" or role == "secretariatsct") and username:
                         est_assigne_a_moi = (p.evaluateur_nom == username)
 
                     # Rôle invité: retourner SEULEMENT les champs de base (pas de données sensibles)
