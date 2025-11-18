@@ -850,18 +850,13 @@
                 </div>
               </div>
 
-              <!-- Section d'évaluation complète (uniquement si dossier évaluable) -->
+              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier évaluable) -->
               <div v-if="projet.evaluation_prealable === 'dossier_evaluable'" class="eval-section">
-                <label>Mon évaluation:</label>
-                <select v-model="avis[projet.id]">
-                  <option value="">--Choisir--</option>
-                  <option value="favorable">Favorable</option>
-                  <option value="favorable sous conditions">Favorable sous conditions</option>
-                  <option value="défavorable">Défavorable</option>
-                  <option value="compléments demandés">Compléments demandés</option>
-                </select>
-                <textarea v-model="commentaires[projet.id]" rows="2" placeholder="Commentaire obligatoire pour justifier votre décision"></textarea>
-                <button class="btn-primary" @click="soumettre(projet.id)">Soumettre mon avis</button>
+                <div class="eval-options">
+                  <button @click="$router.push(`/evaluation/${projet.id}`)" class="btn-evaluation-detaillee">
+                    📋 Fiche d'évaluation détaillée
+                  </button>
+                </div>
               </div>
             </div>
           </div>
