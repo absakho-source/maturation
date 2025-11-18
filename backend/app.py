@@ -2491,6 +2491,10 @@ def get_project_documents(project_id):
         user_role = request.args.get("role", "").lower()
         user_name = request.args.get("username", "")
 
+        # Les invités ne peuvent pas accéder aux documents des projets
+        if user_role == "invite":
+            return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux documents des projets"}), 403
+
         # Récupérer tous les documents du projet
         documents = DocumentProjet.query.filter_by(project_id=project_id).order_by(DocumentProjet.date_ajout.desc()).all()
 
@@ -2746,6 +2750,13 @@ def get_project_messages(project_id):
         # Vérifier que le projet existe
         project = Project.query.get_or_404(project_id)
 
+        # Récupérer le rôle de l'utilisateur depuis les paramètres
+        user_role = request.args.get("role", "").lower()
+
+        # Les invités ne peuvent pas accéder aux discussions des projets
+        if user_role == "invite":
+            return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux discussions des projets"}), 403
+
         # Récupérer tous les messages du projet, triés par date (plus anciens en premier)
         messages = MessageProjet.query.filter_by(project_id=project_id).order_by(MessageProjet.date_creation.asc()).all()
 
@@ -2777,6 +2788,10 @@ def add_project_message(project_id):
 
         if not auteur_nom or not auteur_role:
             return jsonify({"error": "L'auteur et le rôle sont requis"}), 400
+
+        # Les invités ne peuvent pas ajouter de messages
+        if auteur_role.lower() == "invite":
+            return jsonify({"error": "Accès refusé: Les invités ne peuvent pas ajouter de messages"}), 403
 
         # Vérifier qu'il y a au moins du contenu OU des fichiers
         files = request.files.getlist('files') if 'files' in request.files else []

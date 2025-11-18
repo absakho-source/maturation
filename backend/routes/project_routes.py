@@ -11,6 +11,13 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
     def get_project_presentation(project_id):
         """Récupère les données de présentation d'un projet pour pré-remplir la fiche d'évaluation"""
         try:
+            # Vérifier le rôle de l'utilisateur
+            role = request.args.get("role", "")
+
+            # Les invités ne peuvent pas accéder aux données de présentation
+            if role == "invite":
+                return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux données de projets"}), 403
+
             import json
             project = Project.query.get_or_404(project_id)
             
@@ -57,6 +64,13 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
     def get_fiche_evaluation(project_id):
         """Récupère une fiche d'évaluation existante"""
         try:
+            # Vérifier le rôle de l'utilisateur
+            role = request.args.get("role", "")
+
+            # Les invités ne peuvent pas accéder aux fiches d'évaluation
+            if role == "invite":
+                return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux fiches d'évaluation"}), 403
+
             fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
             if not fiche:
                 # Si aucune fiche, retourner l'évaluateur affecté au projet (si existant)
@@ -162,7 +176,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
         """Sauvegarde ou met à jour une fiche d'évaluation"""
         try:
             data = request.get_json()
-            
+
+            # Vérifier le rôle de l'utilisateur
+            role = data.get("role", "")
+
+            # Seuls certains rôles peuvent modifier les fiches d'évaluation
+            roles_autorises = ['evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'admin']
+            if role not in roles_autorises:
+                return jsonify({"error": "Accès refusé: Vous n'avez pas les permissions pour modifier les fiches d'évaluation"}), 403
+
             # Vérifier que le projet existe
             project = Project.query.get_or_404(project_id)
             

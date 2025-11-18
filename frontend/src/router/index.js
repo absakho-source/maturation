@@ -56,15 +56,46 @@ router.beforeEach((to, from, next) => {
     return r;
   };
 
+  // Définir les routes accessibles par rôle
+  const roleAccessMap = {
+    'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'mon-profil', 'project', 'evaluation'],
+    'soumissionnaire': ['soumissionnaire', 'mon-profil', 'project'],
+    'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
+    'secretariatsct': ['secretariatsct', 'mon-profil', 'project', 'evaluation'],
+    'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
+    'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
+    'invite': ['invite', 'mon-profil'] // Les invités n'ont accès qu'à leur dashboard et profil
+  };
+
+  // Vérifier si l'utilisateur peut accéder à la route
+  const canAccessRoute = (userRole, path) => {
+    if (!userRole || !roleAccessMap[userRole]) return false;
+    const allowedRoutes = roleAccessMap[userRole];
+
+    // Vérifier si le chemin commence par une des routes autorisées
+    return allowedRoutes.some(route => {
+      if (route === 'project') return path.startsWith('/project/');
+      if (route === 'evaluation') return path.startsWith('/evaluation/');
+      return path.startsWith(`/${route}`);
+    });
+  };
+
   if (to.meta.requiresAuth && !user) {
     next('/login');
   } else if (to.path === '/login' && user) {
     const role = normalizeRole(user.role);
     next(`/${role}`);
-  } else if (to.path.startsWith('/project/') && user && user.role === 'invite') {
-    // Les invités ne peuvent pas accéder aux détails des projets
-    console.warn('[Router] Accès refusé: Les invités ne peuvent pas voir les détails des projets');
-    next('/invite');
+  } else if (user && to.meta.requiresAuth && to.path !== '/mon-profil') {
+    // Vérifier l'accès basé sur le rôle pour toutes les routes protégées (sauf mon-profil accessible à tous)
+    const userRole = normalizeRole(user.role);
+
+    if (!canAccessRoute(userRole, to.path)) {
+      console.warn(`[Router] Accès refusé: L'utilisateur avec le rôle "${userRole}" ne peut pas accéder à "${to.path}"`);
+      // Rediriger vers la page d'accueil du rôle
+      next(`/${userRole}`);
+      return;
+    }
+    next();
   } else {
     next();
   }
