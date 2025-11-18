@@ -976,7 +976,10 @@ def evaluation_prealable(project_id):
         action = ""
         if decision == "dossier_evaluable":
             p.statut = "en évaluation"
-            action = "Évaluation préalable: dossier évaluable - passage à l'évaluation détaillée"
+            if commentaires:
+                action = f"Évaluation préalable: dossier évaluable - {commentaires}"
+            else:
+                action = "Évaluation préalable: dossier évaluable - passage à l'évaluation détaillée"
         elif decision == "complements_requis":
             p.statut = "compléments demandés"
             p.complements_demande_message = commentaires
