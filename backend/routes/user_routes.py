@@ -11,7 +11,7 @@ def get_user_profile_by_username(username):
         if not user:
             return jsonify({"error": "Utilisateur non trouvé"}), 404
 
-        return jsonify({
+        profile_data = {
             "username": user.username,
             "email": user.username,
             "telephone": user.telephone or "",
@@ -23,7 +23,16 @@ def get_user_profile_by_username(username):
             # Champs supplémentaires pour l'organisme de tutelle
             "type_structure": user.type_structure or "",
             "type_institution": user.type_institution or ""
-        }), 200
+        }
+
+        # DEBUG: Afficher les données retournées
+        print(f"[USER PROFILE] Profil retourné pour {username}:")
+        print(f"  - type_structure: {profile_data['type_structure']}")
+        print(f"  - type_institution: {profile_data['type_institution']}")
+        print(f"  - nom_structure: {profile_data['nom_structure']}")
+        print(f"  - direction_service: {profile_data['direction_service']}")
+
+        return jsonify(profile_data), 200
     except Exception as e:
         print(f"[USER PROFILE] Erreur lors de la récupération du profil: {str(e)}")
         return jsonify({"error": "Erreur lors de la récupération du profil"}), 500

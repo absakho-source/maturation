@@ -808,6 +808,9 @@ export default {
         if (response.ok) {
           const userData = await response.json();
 
+          // DEBUG: Afficher les données récupérées
+          console.log('[DASHBOARD] Données du profil utilisateur:', userData);
+
           // Stocker les données du profil pour la computed property isOrganismeTutelleFrozen
           this.userProfileData = userData;
 
@@ -815,29 +818,45 @@ export default {
           // Structure soumissionnaire: direction_service si disponible, sinon nom_structure (modifiable)
           if (userData.direction_service) {
             this.form.structure_soumissionnaire = userData.direction_service;
+            console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
           } else if (userData.nom_structure) {
             this.form.structure_soumissionnaire = userData.nom_structure;
+            console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec nom_structure:', userData.nom_structure);
           }
 
           // Si l'utilisateur a un profil complet (type_structure et type_institution renseignés),
           // pré-remplir l'organisme de tutelle et le figer
+          console.log('[DASHBOARD] Vérification profil complet - type_structure:', userData.type_structure, 'type_institution:', userData.type_institution);
+
           if (userData.type_structure && userData.type_institution) {
+            console.log('[DASHBOARD] Profil complet détecté - pré-remplissage de l\'organisme de tutelle');
+
             // Pré-remplir les champs d'organisme de tutelle
             this.typeOrganisme = userData.type_structure;
             this.typeInstitution = userData.type_institution;
 
+            console.log('[DASHBOARD] typeOrganisme défini à:', this.typeOrganisme);
+            console.log('[DASHBOARD] typeInstitution défini à:', this.typeInstitution);
+
             // Remplir le champ approprié selon le type d'institution
             if (userData.type_institution === 'ministere' && userData.nom_structure) {
               this.nomMinistere = userData.nom_structure;
+              console.log('[DASHBOARD] nomMinistere défini à:', this.nomMinistere);
             } else if (userData.type_institution === 'presidence') {
               this.nomInstitution = 'Présidence de la République';
+              console.log('[DASHBOARD] nomInstitution défini à: Présidence de la République');
             } else if (userData.type_institution === 'primature') {
               this.nomInstitution = 'Primature';
+              console.log('[DASHBOARD] nomInstitution défini à: Primature');
             } else if (userData.type_institution === 'autre_institution' && userData.nom_structure) {
               this.nomInstitution = userData.nom_structure;
+              console.log('[DASHBOARD] nomInstitution défini à:', this.nomInstitution);
             }
 
             // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
+            console.log('[DASHBOARD] isOrganismeTutelleFrozen:', this.isOrganismeTutelleFrozen);
+          } else {
+            console.log('[DASHBOARD] Profil incomplet - organisme de tutelle non pré-rempli');
           }
 
           // Pré-remplir les informations du point focal

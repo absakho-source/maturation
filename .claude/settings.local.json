@@ -36,7 +36,8 @@
       "Bash(ssh -o ConnectTimeout=30 root@164.92.255.58 \"cd /root/maturation && git pull origin main && cd backend && python3 fix_rejected_status.py\")",
       "Bash(ssh:*)",
       "Bash(find:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(ping:*)"
     ],
     "deny": [],
     "ask": []
