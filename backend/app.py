@@ -3442,6 +3442,22 @@ def fix_stale_decision_finale_endpoint():
 
 if __name__ == '__main__':
     import os
+
+    # Exécuter les migrations automatiquement au démarrage
+    print("[STARTUP] Vérification et exécution des migrations...")
+    try:
+        from migrate_render import migrate_database
+        db_path = app.config.get("DB_PATH", "maturation.db")
+        success = migrate_database(db_path)
+        if success:
+            print("[STARTUP] ✓ Migrations terminées avec succès")
+        else:
+            print("[STARTUP] ⚠️ Migrations échouées (voir logs ci-dessus)")
+    except Exception as e:
+        print(f"[STARTUP] ⚠️ Erreur lors de l'exécution des migrations: {e}")
+        import traceback
+        traceback.print_exc()
+
     port = int(os.environ.get('PORT', 5002))
     print(f"Starting Flask app on port {port}...")
     app.run(debug=True, host="0.0.0.0", port=port, use_reloader=False)
