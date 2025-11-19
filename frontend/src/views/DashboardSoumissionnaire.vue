@@ -85,13 +85,14 @@
           <div class="form-row">
             <div class="form-group full-width">
               <label>Type d'organisme de tutelle *</label>
-              <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
+              <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option value="institution">Institution</option>
                 <option value="collectivite">Collectivité territoriale</option>
                 <option value="agence">Agence / Établissement public</option>
                 <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
               </select>
+              <small v-if="isOrganismeTutelleFrozen" class="frozen-field-hint">⚠️ Ce champ est pré-rempli et non modifiable pour votre compte</small>
             </div>
           </div>
 
@@ -99,7 +100,7 @@
           <div v-if="typeOrganisme === 'institution'" class="form-row">
             <div class="form-group full-width">
               <label>Type d'institution *</label>
-              <select v-model="typeInstitution" @change="onTypeInstitutionChange" required>
+              <select v-model="typeInstitution" @change="onTypeInstitutionChange" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option value="presidence">Présidence de la République</option>
                 <option value="primature">Primature</option>
@@ -112,7 +113,7 @@
           <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere'" class="form-row">
             <div class="form-group full-width">
               <label>Ministère *</label>
-              <select v-model="nomMinistere" required>
+              <select v-model="nomMinistere" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="m in ministeresActifs" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
                 <option value="__autre__">Autre (à préciser)</option>
@@ -611,6 +612,12 @@ export default {
     canSubmitProject() {
       // L'utilisateur peut soumettre un projet seulement si son compte est vérifié
       return this.userAccountStatus === 'verifie';
+    },
+
+    isOrganismeTutelleFrozen() {
+      // Vérifier si l'utilisateur actuel est Abou Sakho
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      return user && user.username === 'abou.sakho@economie.gouv.sn';
     }
   },
   mounted() {
@@ -803,11 +810,24 @@ export default {
             this.form.structure_soumissionnaire = userData.nom_structure;
           }
 
-          // Pré-remplir l'organisme de tutelle si disponible
-          if (userData.nom_structure) {
-            // Mettre la même valeur que la structure par défaut
-            // L'utilisateur pourra la modifier si nécessaire
-            this.nomStructure = userData.nom_structure;
+          // Logique spéciale pour Abou Sakho (abou.sakho@economie.gouv.sn)
+          if (user.username === 'abou.sakho@economie.gouv.sn') {
+            // Structure soumissionnaire: DGPPE (pré-rempli mais modifiable)
+            this.form.structure_soumissionnaire = 'DGPPE';
+
+            // Organisme de tutelle: MEPC (pré-rempli et figé)
+            this.typeOrganisme = 'institution';
+            this.typeInstitution = 'ministere';
+            this.nomMinistere = 'Ministère de l\'Economie, du Plan et de la Coopération (MEPC)';
+
+            // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
+          } else {
+            // Pré-remplir l'organisme de tutelle si disponible (comportement par défaut)
+            if (userData.nom_structure) {
+              // Mettre la même valeur que la structure par défaut
+              // L'utilisateur pourra la modifier si nécessaire
+              this.nomStructure = userData.nom_structure;
+            }
           }
 
           // Pré-remplir les informations du point focal
@@ -1550,5 +1570,21 @@ export default {
   transform: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   background: #9ca3af;
+}
+
+/* Champs figés (frozen) */
+.frozen-field-hint {
+  display: block;
+  margin-top: 0.5rem;
+  color: #f59e0b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-style: italic;
+}
+
+select:disabled, input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 </style>
