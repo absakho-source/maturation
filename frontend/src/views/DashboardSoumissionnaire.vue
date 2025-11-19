@@ -80,36 +80,21 @@
             </div>
           </div>
 
-          <!-- Organisme de tutelle - Affichage simplifié si pré-rempli -->
+          <!-- Organisme de tutelle - Sélection hiérarchique -->
           <div class="form-section-title">Organisme de tutelle</div>
-
-          <!-- Affichage simplifié quand le profil est complet -->
-          <div v-if="isOrganismeTutelleFrozen" class="form-row">
+          <div class="form-row">
             <div class="form-group full-width">
-              <label>Organisme de tutelle</label>
-              <div class="readonly-field organisme-tutelle-display">
-                <div class="organisme-info">
-                  <span class="organisme-nom">{{ getOrganismeTutelleDisplay() }}</span>
-                  <small class="organisme-hint">📋 Pré-rempli depuis votre profil (non modifiable)</small>
-                </div>
-              </div>
+              <label>Type d'organisme de tutelle *</label>
+              <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required :disabled="isOrganismeTutelleFrozen">
+                <option value="">-- Sélectionnez --</option>
+                <option value="institution">Institution</option>
+                <option value="collectivite">Collectivité territoriale</option>
+                <option value="agence">Agence / Établissement public</option>
+                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+              </select>
+              <small v-if="isOrganismeTutelleFrozen" class="frozen-field-hint">⚠️ Ce champ est pré-rempli et non modifiable pour votre compte</small>
             </div>
           </div>
-
-          <!-- Sélection complète quand le profil n'est pas renseigné -->
-          <div v-if="!isOrganismeTutelleFrozen">
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label>Type d'organisme de tutelle *</label>
-                <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
-                  <option value="">-- Sélectionnez --</option>
-                  <option value="institution">Institution</option>
-                  <option value="collectivite">Collectivité territoriale</option>
-                  <option value="agence">Agence / Établissement public</option>
-                  <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
-                </select>
-              </div>
-            </div>
 
           <!-- Institution -->
           <div v-if="typeOrganisme === 'institution'" class="form-row">
@@ -139,14 +124,14 @@
           <div v-if="typeOrganisme === 'institution' && typeInstitution === 'ministere' && nomMinistere === '__autre__'" class="form-row">
             <div class="form-group full-width">
               <label>Préciser le ministère *</label>
-              <input v-model="nomMinistereLibre" type="text" required placeholder="Ex: Ministère de..." />
+              <input v-model="nomMinistereLibre" type="text" required placeholder="Ex: Ministère de..." :disabled="isOrganismeTutelleFrozen" />
             </div>
           </div>
 
           <div v-if="typeOrganisme === 'institution' && typeInstitution === 'autre_institution'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de l'institution *</label>
-              <input v-model="nomInstitution" type="text" required placeholder="Ex: Conseil économique, social et environnemental" />
+              <input v-model="nomInstitution" type="text" required placeholder="Ex: Conseil économique, social et environnemental" :disabled="isOrganismeTutelleFrozen" />
             </div>
           </div>
 
@@ -154,7 +139,7 @@
           <div v-if="typeOrganisme === 'collectivite'" class="form-row">
             <div class="form-group full-width">
               <label>Niveau de collectivité *</label>
-              <select v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required>
+              <select v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option value="region">Région</option>
                 <option value="departement">Département</option>
@@ -166,7 +151,7 @@
           <div v-if="typeOrganisme === 'collectivite' && niveauCollectivite === 'region'" class="form-row">
             <div class="form-group full-width">
               <label>Région *</label>
-              <select v-model="nomStructure" required>
+              <select v-model="nomStructure" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="r in regions" :key="r" :value="`Région de ${r}`">Région de {{ r }}</option>
               </select>
@@ -176,14 +161,14 @@
           <div v-if="typeOrganisme === 'collectivite' && niveauCollectivite === 'departement'" class="form-row">
             <div class="form-group">
               <label>Région parente *</label>
-              <select v-model="regionParente" required>
+              <select v-model="regionParente" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
               </select>
             </div>
             <div class="form-group">
               <label>Département *</label>
-              <select v-model="nomStructure" required :disabled="!regionParente">
+              <select v-model="nomStructure" required :disabled="isOrganismeTutelleFrozen || !regionParente">
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="d in departementsFiltered" :key="d" :value="`Département de ${d}`">Département de {{ d }}</option>
               </select>
@@ -194,14 +179,14 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Région *</label>
-                <select v-model="regionParente" required>
+                <select v-model="regionParente" required :disabled="isOrganismeTutelleFrozen">
                   <option value="">-- Sélectionnez --</option>
                   <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Département *</label>
-                <select v-model="departementParent" required :disabled="!regionParente">
+                <select v-model="departementParent" required :disabled="isOrganismeTutelleFrozen || !regionParente">
                   <option value="">-- Sélectionnez --</option>
                   <option v-for="d in departementsFiltered" :key="d" :value="d">{{ d }}</option>
                 </select>
@@ -210,7 +195,7 @@
             <div class="form-row">
               <div class="form-group full-width">
                 <label>Commune *</label>
-                <select v-model="nomStructure" required :disabled="!departementParent">
+                <select v-model="nomStructure" required :disabled="isOrganismeTutelleFrozen || !departementParent">
                   <option value="">-- Sélectionnez --</option>
                   <option v-for="c in communesFiltered" :key="c" :value="`Commune de ${c}`">Commune de {{ c }}</option>
                 </select>
@@ -222,14 +207,14 @@
           <div v-if="typeOrganisme === 'agence'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de l'agence / établissement *</label>
-              <input v-model="nomAgence" type="text" required placeholder="Ex: ADIE, APIX, ARTP..." />
+              <input v-model="nomAgence" type="text" required placeholder="Ex: ADIE, APIX, ARTP..." :disabled="isOrganismeTutelleFrozen" />
             </div>
           </div>
 
           <div v-if="typeOrganisme === 'agence'" class="form-row">
             <div class="form-group full-width">
               <label>Autorité de tutelle *</label>
-              <select v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
+              <select v-model="tutelleAgence" @change="onTutelleAgenceChange" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option value="presidence">Présidence de la République</option>
                 <option value="primature">Primature</option>
@@ -241,7 +226,7 @@
           <div v-if="typeOrganisme === 'agence' && tutelleAgence === '__ministere__'" class="form-row">
             <div class="form-group full-width">
               <label>Ministère de tutelle *</label>
-              <select v-model="tutelleAgenceLibre" required>
+              <select v-model="tutelleAgenceLibre" required :disabled="isOrganismeTutelleFrozen">
                 <option value="">-- Sélectionnez --</option>
                 <option v-for="m in ministeresActifs" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
                 <option value="__autre__">Autre (à préciser)</option>
@@ -252,7 +237,7 @@
           <div v-if="typeOrganisme === 'agence' && tutelleAgence === '__ministere__' && tutelleAgenceLibre === '__autre__'" class="form-row">
             <div class="form-group full-width">
               <label>Préciser le ministère de tutelle *</label>
-              <input v-model="tutelleAgenceAutre" type="text" required placeholder="Ex: Ministère de..." />
+              <input v-model="tutelleAgenceAutre" type="text" required placeholder="Ex: Ministère de..." :disabled="isOrganismeTutelleFrozen" />
             </div>
           </div>
 
@@ -260,11 +245,9 @@
           <div v-if="typeOrganisme === 'autre'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de la structure *</label>
-              <input v-model="nomStructure" type="text" required placeholder="Ex: ONG Caritas, Cabinet XYZ..." />
+              <input v-model="nomStructure" type="text" required placeholder="Ex: ONG Caritas, Cabinet XYZ..." :disabled="isOrganismeTutelleFrozen" />
             </div>
           </div>
-          </div>
-          <!-- Fin de la sélection complète quand profil non renseigné -->
 
           <!-- Point focal -->
           <div class="form-section-title">Point focal / Responsable du projet</div>
