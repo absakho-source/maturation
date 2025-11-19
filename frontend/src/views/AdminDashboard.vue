@@ -92,9 +92,6 @@
 
       <!-- Onglets -->
       <div class="tabs">
-        <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }" class="tab-btn">
-          👥 Gestion des utilisateurs
-        </button>
         <button @click="activeTab = 'projects'" :class="{ active: activeTab === 'projects' }" class="tab-btn">
           📋 Tous les projets
         </button>
@@ -103,6 +100,9 @@
         </button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
           🗺️ Carte des pôles territoriaux
+        </button>
+        <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }" class="tab-btn">
+          👥 Gestion des utilisateurs
         </button>
       </div>
 
