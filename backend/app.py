@@ -334,7 +334,17 @@ def projects():
                     if role == "soumissionnaire" or role == "invite":
                         statut_affiche = get_statut_soumissionnaire(p)
                     else:
-                        statut_affiche = p.statut
+                        # Pour les rôles internes (admin, secrétariat, présidence, évaluateur):
+                        # Si une décision finale existe, l'afficher en priorité
+                        if p.decision_finale:
+                            if p.decision_finale == 'confirme':
+                                statut_affiche = 'décision finale confirmée'
+                            elif p.decision_finale == 'infirme':
+                                statut_affiche = 'décision finale infirmée'
+                            else:
+                                statut_affiche = p.statut
+                        else:
+                            statut_affiche = p.statut
 
                     pieces_jointes = []
                     if p.pieces_jointes:
