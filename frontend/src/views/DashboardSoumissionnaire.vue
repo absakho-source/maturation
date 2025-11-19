@@ -617,15 +617,14 @@ export default {
 
     isOrganismeTutelleFrozen() {
       // L'organisme de tutelle est figé si l'utilisateur a un profil complet
-      // (type_structure et type_institution renseignés lors de l'inscription)
+      // (type_structure renseigné lors de l'inscription)
+      // Note: type_institution n'est requis que pour les institutions
       if (!this.userProfileData) return false;
 
       const hasTypeStructure = this.userProfileData.type_structure &&
                                this.userProfileData.type_structure.trim() !== '';
-      const hasTypeInstitution = this.userProfileData.type_institution &&
-                                 this.userProfileData.type_institution.trim() !== '';
 
-      return hasTypeStructure && hasTypeInstitution;
+      return hasTypeStructure;
     }
   },
   mounted() {
@@ -829,48 +828,64 @@ export default {
             console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec nom_structure:', userData.nom_structure);
           }
 
-          // Si l'utilisateur a un profil complet (type_structure et type_institution renseignés),
+          // Si l'utilisateur a un profil complet (type_structure renseigné),
           // pré-remplir l'organisme de tutelle et le figer
           console.log('[DASHBOARD] Vérification profil complet - type_structure:', userData.type_structure, 'type_institution:', userData.type_institution);
-          console.log('[DASHBOARD] Type de type_structure:', typeof userData.type_structure, 'Longueur:', userData.type_structure?.length);
-          console.log('[DASHBOARD] Type de type_institution:', typeof userData.type_institution, 'Longueur:', userData.type_institution?.length);
+          console.log('[DASHBOARD] nom_structure:', userData.nom_structure);
 
-          // Vérification robuste: s'assurer que ce ne sont pas des chaînes vides
+          // Vérification robuste: s'assurer que type_structure n'est pas une chaîne vide
           const hasTypeStructure = userData.type_structure && userData.type_structure.trim() !== '';
-          const hasTypeInstitution = userData.type_institution && userData.type_institution.trim() !== '';
 
-          console.log('[DASHBOARD] hasTypeStructure:', hasTypeStructure, 'hasTypeInstitution:', hasTypeInstitution);
+          console.log('[DASHBOARD] hasTypeStructure:', hasTypeStructure);
 
-          if (hasTypeStructure && hasTypeInstitution) {
+          if (hasTypeStructure) {
             console.log('[DASHBOARD] Profil complet détecté - pré-remplissage de l\'organisme de tutelle');
 
-            // Pré-remplir les champs d'organisme de tutelle
+            // Pré-remplir le type d'organisme
             this.typeOrganisme = userData.type_structure.trim();
-            this.typeInstitution = userData.type_institution.trim();
-
             console.log('[DASHBOARD] typeOrganisme défini à:', this.typeOrganisme);
-            console.log('[DASHBOARD] typeInstitution défini à:', this.typeInstitution);
 
-            // Remplir le champ approprié selon le type d'institution
-            if (userData.type_institution === 'ministere' && userData.nom_structure) {
-              this.nomMinistere = userData.nom_structure;
-              console.log('[DASHBOARD] nomMinistere défini à:', this.nomMinistere);
-            } else if (userData.type_institution === 'presidence') {
-              this.nomInstitution = 'Présidence de la République';
-              console.log('[DASHBOARD] nomInstitution défini à: Présidence de la République');
-            } else if (userData.type_institution === 'primature') {
-              this.nomInstitution = 'Primature';
-              console.log('[DASHBOARD] nomInstitution défini à: Primature');
-            } else if (userData.type_institution === 'autre_institution' && userData.nom_structure) {
-              this.nomInstitution = userData.nom_structure;
-              console.log('[DASHBOARD] nomInstitution défini à:', this.nomInstitution);
+            // Si c'est une institution, pré-remplir aussi type_institution
+            if (userData.type_structure === 'institution' && userData.type_institution) {
+              this.typeInstitution = userData.type_institution.trim();
+              console.log('[DASHBOARD] typeInstitution défini à:', this.typeInstitution);
+
+              // Remplir le champ approprié selon le type d'institution
+              if (userData.type_institution === 'ministere' && userData.nom_structure) {
+                this.nomMinistere = userData.nom_structure;
+                console.log('[DASHBOARD] nomMinistere défini à:', this.nomMinistere);
+              } else if (userData.type_institution === 'presidence') {
+                this.nomInstitution = 'Présidence de la République';
+                console.log('[DASHBOARD] nomInstitution défini à: Présidence de la République');
+              } else if (userData.type_institution === 'primature') {
+                this.nomInstitution = 'Primature';
+                console.log('[DASHBOARD] nomInstitution défini à: Primature');
+              } else if (userData.type_institution === 'autre_institution' && userData.nom_structure) {
+                this.nomInstitution = userData.nom_structure;
+                console.log('[DASHBOARD] nomInstitution défini à:', this.nomInstitution);
+              }
+            }
+            // Si c'est une collectivité, pré-remplir le nom de la collectivité
+            else if (userData.type_structure === 'collectivite' && userData.nom_structure) {
+              this.nomCollectivite = userData.nom_structure;
+              console.log('[DASHBOARD] nomCollectivite défini à:', this.nomCollectivite);
+            }
+            // Si c'est une agence, pré-remplir le nom de l'agence
+            else if (userData.type_structure === 'agence' && userData.nom_structure) {
+              this.nomAgence = userData.nom_structure;
+              console.log('[DASHBOARD] nomAgence défini à:', this.nomAgence);
+            }
+            // Si c'est "autre", pré-remplir le nom de la structure
+            else if (userData.type_structure === 'autre' && userData.nom_structure) {
+              this.nomAutreStructure = userData.nom_structure;
+              console.log('[DASHBOARD] nomAutreStructure défini à:', this.nomAutreStructure);
             }
 
             // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
             console.log('[DASHBOARD] isOrganismeTutelleFrozen:', this.isOrganismeTutelleFrozen);
           } else {
             console.log('[DASHBOARD] Profil incomplet - organisme de tutelle non pré-rempli');
-            console.log('[DASHBOARD] Raison: type_structure=' + (hasTypeStructure ? 'OK' : 'MANQUANT') + ', type_institution=' + (hasTypeInstitution ? 'OK' : 'MANQUANT'));
+            console.log('[DASHBOARD] Raison: type_structure MANQUANT');
           }
 
           // Pré-remplir les informations du point focal
