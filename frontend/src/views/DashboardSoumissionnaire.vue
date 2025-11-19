@@ -80,21 +80,36 @@
             </div>
           </div>
 
-          <!-- Organisme de tutelle - Sélection hiérarchique -->
+          <!-- Organisme de tutelle - Affichage simplifié si pré-rempli -->
           <div class="form-section-title">Organisme de tutelle</div>
-          <div class="form-row">
+
+          <!-- Affichage simplifié quand le profil est complet -->
+          <div v-if="isOrganismeTutelleFrozen" class="form-row">
             <div class="form-group full-width">
-              <label>Type d'organisme de tutelle *</label>
-              <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required :disabled="isOrganismeTutelleFrozen">
-                <option value="">-- Sélectionnez --</option>
-                <option value="institution">Institution</option>
-                <option value="collectivite">Collectivité territoriale</option>
-                <option value="agence">Agence / Établissement public</option>
-                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
-              </select>
-              <small v-if="isOrganismeTutelleFrozen" class="frozen-field-hint">⚠️ Ce champ est pré-rempli et non modifiable pour votre compte</small>
+              <label>Organisme de tutelle</label>
+              <div class="readonly-field organisme-tutelle-display">
+                <div class="organisme-info">
+                  <span class="organisme-nom">{{ getOrganismeTutelleDisplay() }}</span>
+                  <small class="organisme-hint">📋 Pré-rempli depuis votre profil (non modifiable)</small>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Sélection complète quand le profil n'est pas renseigné -->
+          <div v-if="!isOrganismeTutelleFrozen">
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>Type d'organisme de tutelle *</label>
+                <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
+                  <option value="">-- Sélectionnez --</option>
+                  <option value="institution">Institution</option>
+                  <option value="collectivite">Collectivité territoriale</option>
+                  <option value="agence">Agence / Établissement public</option>
+                  <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+                </select>
+              </div>
+            </div>
 
           <!-- Institution -->
           <div v-if="typeOrganisme === 'institution'" class="form-row">
@@ -248,6 +263,8 @@
               <input v-model="nomStructure" type="text" required placeholder="Ex: ONG Caritas, Cabinet XYZ..." />
             </div>
           </div>
+          </div>
+          <!-- Fin de la sélection complète quand profil non renseigné -->
 
           <!-- Point focal -->
           <div class="form-section-title">Point focal / Responsable du projet</div>
@@ -970,6 +987,18 @@ export default {
       }
     },
 
+    // Obtenir l'affichage de l'organisme de tutelle pour le mode simplifié
+    getOrganismeTutelleDisplay() {
+      if (!this.userProfileData) return '';
+
+      const typeStructure = this.userProfileData.type_structure;
+      const nomStructure = this.userProfileData.nom_structure;
+
+      // Retourner le nom complet de la structure
+      // qui devrait déjà être formaté (ex: "Commune de Dakar-Plateau", "Ministère de...")
+      return nomStructure || 'Non renseigné';
+    },
+
     // Méthodes pour le formatage du coût estimatif
     formatNumber(value) {
       if (!value && value !== 0) return "";
@@ -1680,6 +1709,32 @@ export default {
   color: #f59e0b;
   font-size: 0.85rem;
   font-weight: 500;
+  font-style: italic;
+}
+
+/* Affichage simplifié de l'organisme de tutelle */
+.organisme-tutelle-display {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.organisme-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.organisme-nom {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.organisme-hint {
+  color: #64748b;
+  font-size: 0.875rem;
   font-style: italic;
 }
 
