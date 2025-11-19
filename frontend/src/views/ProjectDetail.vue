@@ -304,16 +304,14 @@ export default {
             if (data.departement_parent && data.niveau_collectivite !== 'region') {
               hierarchy.push({ label: 'Département', value: data.departement_parent });
             }
-            if (data.nom_structure) {
-              hierarchy.push({ label: 'Collectivité', value: data.nom_structure });
-            }
+            // Note: On n'affiche pas le nom de la collectivité ici car il est déjà affiché
+            // dans le champ "Structure soumissionnaire" juste en dessous
           }
 
           // Agence
           if (data.type_organisme === 'agence') {
-            if (data.nom_agence) {
-              hierarchy.push({ label: 'Nom de l\'agence', value: data.nom_agence });
-            }
+            // Note: On n'affiche pas le nom de l'agence ici car il est déjà affiché
+            // dans le champ "Structure soumissionnaire" juste en dessous
             if (data.tutelle_agence) {
               let tutelle = '';
               if (data.tutelle_agence === 'presidence') {
@@ -334,8 +332,10 @@ export default {
           }
 
           // Autre
-          if (data.type_organisme === 'autre' && data.nom_structure) {
-            hierarchy.push({ label: 'Nom de la structure', value: data.nom_structure });
+          // Note: On n'affiche pas le nom de la structure ici car il est déjà affiché
+          // dans le champ "Structure soumissionnaire" juste en dessous
+          if (data.type_organisme === 'autre') {
+            // Pas de hiérarchie supplémentaire à afficher
           }
         }
 
