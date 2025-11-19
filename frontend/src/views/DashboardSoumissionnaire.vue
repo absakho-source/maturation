@@ -826,23 +826,34 @@ export default {
           // Stocker les données du profil pour la computed property isOrganismeTutelleFrozen
           this.userProfileData = userData;
 
-          // Logique de pré-remplissage pour tous les utilisateurs
-          // Structure soumissionnaire: direction_service si disponible, sinon nom_structure (modifiable)
-          if (userData.direction_service) {
-            this.form.structure_soumissionnaire = userData.direction_service;
-            console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
-          } else if (userData.nom_structure) {
-            this.form.structure_soumissionnaire = userData.nom_structure;
-            console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec nom_structure:', userData.nom_structure);
-          }
+          // Vérifier si l'utilisateur a un profil complet (type_structure renseigné)
+          console.log('[DASHBOARD] Vérification profil - type_structure:', userData.type_structure, 'type_institution:', userData.type_institution);
+          console.log('[DASHBOARD] nom_structure:', userData.nom_structure, 'direction_service:', userData.direction_service);
 
-          // Si l'utilisateur a un profil complet (type_structure renseigné),
-          // pré-remplir l'organisme de tutelle et le figer
-          console.log('[DASHBOARD] Vérification profil complet - type_structure:', userData.type_structure, 'type_institution:', userData.type_institution);
-          console.log('[DASHBOARD] nom_structure:', userData.nom_structure);
-
-          // Vérification robuste: s'assurer que type_structure n'est pas une chaîne vide
           const hasTypeStructure = userData.type_structure && userData.type_structure.trim() !== '';
+
+          // Logique de pré-remplissage de la structure soumissionnaire
+          if (hasTypeStructure) {
+            // Profil complet: la structure soumissionnaire = direction/service (modifiable)
+            // L'organisme de tutelle (institution/collectivité/agence) sera figé séparément
+            if (userData.direction_service) {
+              this.form.structure_soumissionnaire = userData.direction_service;
+              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
+            } else {
+              // Laisser vide pour que l'utilisateur remplisse sa direction/service
+              this.form.structure_soumissionnaire = '';
+              console.log('[DASHBOARD] Structure soumissionnaire laissée vide (à remplir par l\'utilisateur)');
+            }
+          } else {
+            // Ancien système ou profil incomplet: pré-remplir avec direction_service ou nom_structure
+            if (userData.direction_service) {
+              this.form.structure_soumissionnaire = userData.direction_service;
+              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
+            } else if (userData.nom_structure) {
+              this.form.structure_soumissionnaire = userData.nom_structure;
+              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec nom_structure:', userData.nom_structure);
+            }
+          }
 
           console.log('[DASHBOARD] hasTypeStructure:', hasTypeStructure);
 
