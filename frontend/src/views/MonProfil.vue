@@ -42,30 +42,31 @@
           />
         </div>
 
+        <!-- Structure d'appartenance - Affichage hiérarchique -->
         <div class="form-group">
-          <label for="structure">Structure d'appartenance</label>
-          <input
-            type="text"
-            id="structure"
-            v-model="profile.nom_structure"
-            placeholder="Votre structure d'appartenance"
-            disabled
-            class="readonly-input"
-          />
-          <small class="form-hint">Ce champ ne peut être modifié que par un administrateur</small>
-        </div>
-
-        <div class="form-group">
-          <label for="direction">Direction / Service</label>
-          <input
-            type="text"
-            id="direction"
-            v-model="profile.direction_service"
-            placeholder="Votre direction ou service"
-            disabled
-            class="readonly-input"
-          />
-          <small class="form-hint">Ce champ ne peut être modifié que par un administrateur</small>
+          <label>Structure d'appartenance</label>
+          <div class="structure-hierarchy readonly-field">
+            <div v-if="profile.type_structure" class="hierarchy-item">
+              <span class="hierarchy-label">Type de structure :</span>
+              <span class="hierarchy-value">{{ getTypeStructureLabel(profile.type_structure) }}</span>
+            </div>
+            <div v-if="profile.type_institution" class="hierarchy-item">
+              <span class="hierarchy-label">Type d'institution :</span>
+              <span class="hierarchy-value">{{ getTypeInstitutionLabel(profile.type_institution) }}</span>
+            </div>
+            <div v-if="profile.nom_structure" class="hierarchy-item">
+              <span class="hierarchy-label">Nom :</span>
+              <span class="hierarchy-value">{{ profile.nom_structure }}</span>
+            </div>
+            <div v-if="profile.direction_service" class="hierarchy-item">
+              <span class="hierarchy-label">Direction / Service :</span>
+              <span class="hierarchy-value">{{ profile.direction_service }}</span>
+            </div>
+            <div v-if="!profile.type_structure && !profile.nom_structure" class="hierarchy-item empty">
+              <span class="hierarchy-value">Non renseigné</span>
+            </div>
+          </div>
+          <small class="form-hint">Ces champs ne peuvent être modifiés que par un administrateur</small>
         </div>
 
         <div class="form-actions">
@@ -156,6 +157,8 @@ const profile = ref({
   email: '',
   telephone: '',
   fonction: '',
+  type_structure: '',
+  type_institution: '',
   nom_structure: '',
   direction_service: ''
 })
@@ -164,6 +167,8 @@ const originalProfile = ref({
   email: '',
   telephone: '',
   fonction: '',
+  type_structure: '',
+  type_institution: '',
   nom_structure: '',
   direction_service: ''
 })
@@ -195,12 +200,16 @@ onMounted(async () => {
       profile.value.email = data.email
       profile.value.telephone = data.telephone || ''
       profile.value.fonction = data.fonction || ''
+      profile.value.type_structure = data.type_structure || ''
+      profile.value.type_institution = data.type_institution || ''
       profile.value.nom_structure = data.nom_structure || ''
       profile.value.direction_service = data.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = data.email
       originalProfile.value.telephone = data.telephone || ''
       originalProfile.value.fonction = data.fonction || ''
+      originalProfile.value.type_structure = data.type_structure || ''
+      originalProfile.value.type_institution = data.type_institution || ''
       originalProfile.value.nom_structure = data.nom_structure || ''
       originalProfile.value.direction_service = data.direction_service || ''
     } else {
@@ -208,12 +217,16 @@ onMounted(async () => {
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
       profile.value.fonction = user.fonction || ''
+      profile.value.type_structure = user.type_structure || ''
+      profile.value.type_institution = user.type_institution || ''
       profile.value.nom_structure = user.nom_structure || ''
       profile.value.direction_service = user.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
       originalProfile.value.fonction = user.fonction || ''
+      originalProfile.value.type_structure = user.type_structure || ''
+      originalProfile.value.type_institution = user.type_institution || ''
       originalProfile.value.nom_structure = user.nom_structure || ''
       originalProfile.value.direction_service = user.direction_service || ''
     }
@@ -225,12 +238,16 @@ onMounted(async () => {
       profile.value.email = user.username
       profile.value.telephone = user.telephone || ''
       profile.value.fonction = user.fonction || ''
+      profile.value.type_structure = user.type_structure || ''
+      profile.value.type_institution = user.type_institution || ''
       profile.value.nom_structure = user.nom_structure || ''
       profile.value.direction_service = user.direction_service || ''
       // Sauvegarder les valeurs originales
       originalProfile.value.email = user.username
       originalProfile.value.telephone = user.telephone || ''
       originalProfile.value.fonction = user.fonction || ''
+      originalProfile.value.type_structure = user.type_structure || ''
+      originalProfile.value.type_institution = user.type_institution || ''
       originalProfile.value.nom_structure = user.nom_structure || ''
       originalProfile.value.direction_service = user.direction_service || ''
     }
@@ -309,6 +326,27 @@ function cancelPasswordChanges() {
   passwordForm.value.confirmPassword = ''
   successMessage.value = ''
   errorMessage.value = ''
+}
+
+// Fonctions helper pour les labels
+function getTypeStructureLabel(type) {
+  const labels = {
+    'institution': 'Institution',
+    'collectivite': 'Collectivité territoriale',
+    'agence': 'Agence / Établissement public',
+    'autre': 'Autre (ONG, Association, Cabinet, etc.)'
+  }
+  return labels[type] || type
+}
+
+function getTypeInstitutionLabel(type) {
+  const labels = {
+    'presidence': 'Présidence de la République',
+    'primature': 'Primature',
+    'ministere': 'Ministère',
+    'autre_institution': 'Autre Institution'
+  }
+  return labels[type] || type
 }
 
 // Retour à la page précédente
@@ -541,6 +579,48 @@ async function changePassword() {
   background-color: #c6f6d5;
   color: #22543d;
   border: 1px solid #9ae6b4;
+}
+
+/* Structure hiérarchique */
+.structure-hierarchy {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.readonly-field {
+  background: #f7fafc;
+  cursor: not-allowed;
+}
+
+.hierarchy-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.hierarchy-item:last-child {
+  border-bottom: none;
+}
+
+.hierarchy-item.empty {
+  justify-content: center;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.hierarchy-label {
+  font-weight: 600;
+  color: #4a5568;
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.hierarchy-value {
+  color: #2d3748;
+  flex: 1;
 }
 
 .alert-error {
