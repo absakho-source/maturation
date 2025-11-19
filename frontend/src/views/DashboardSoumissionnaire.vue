@@ -812,13 +812,33 @@ export default {
 
           // Logique spéciale pour Abou Sakho (abou.sakho@economie.gouv.sn)
           if (user.username === 'abou.sakho@economie.gouv.sn') {
-            // Structure soumissionnaire: DGPPE (pré-rempli mais modifiable)
-            this.form.structure_soumissionnaire = 'DGPPE';
+            // Structure soumissionnaire: pré-rempli avec direction_service si disponible, sinon nom_structure
+            // (modifiable par l'utilisateur)
+            if (userData.direction_service) {
+              this.form.structure_soumissionnaire = userData.direction_service;
+            } else if (userData.nom_structure) {
+              this.form.structure_soumissionnaire = userData.nom_structure;
+            }
 
-            // Organisme de tutelle: MEPC (pré-rempli et figé)
-            this.typeOrganisme = 'institution';
-            this.typeInstitution = 'ministere';
-            this.nomMinistere = 'Ministère de l\'Economie, du Plan et de la Coopération (MEPC)';
+            // Organisme de tutelle: pré-rempli avec les données du profil et figé
+            if (userData.type_structure) {
+              this.typeOrganisme = userData.type_structure;
+            }
+            if (userData.type_institution) {
+              this.typeInstitution = userData.type_institution;
+            }
+            if (userData.nom_structure) {
+              // Pour un ministère, mettre le nom dans nomMinistere
+              if (userData.type_institution === 'ministere') {
+                this.nomMinistere = userData.nom_structure;
+              } else if (userData.type_institution === 'presidence') {
+                this.nomInstitution = 'Présidence de la République';
+              } else if (userData.type_institution === 'primature') {
+                this.nomInstitution = 'Primature';
+              } else if (userData.type_institution === 'autre_institution') {
+                this.nomInstitution = userData.nom_structure;
+              }
+            }
 
             // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
           } else {

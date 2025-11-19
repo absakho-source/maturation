@@ -19,7 +19,10 @@ def get_user_profile_by_username(username):
             "nom_structure": user.nom_structure or "",
             "direction_service": user.direction_service or "",
             "display_name": user.display_name,
-            "role": user.role
+            "role": user.role,
+            # Champs supplémentaires pour l'organisme de tutelle
+            "type_structure": user.type_structure or "",
+            "type_institution": user.type_institution or ""
         }), 200
     except Exception as e:
         print(f"[USER PROFILE] Erreur lors de la récupération du profil: {str(e)}")
