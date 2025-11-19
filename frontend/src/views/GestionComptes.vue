@@ -222,20 +222,50 @@
                 placeholder="Fonction de l'utilisateur"
               />
             </div>
+
+            <!-- Structure d'appartenance - Formulaire hiérarchique -->
             <div class="form-group-modal">
-              <label>Nom de la structure :</label>
+              <label>Structure d'appartenance</label>
+              <small class="field-hint">Ces champs définissent l'organisme de tutelle qui sera pré-rempli lors de la soumission de projets</small>
+            </div>
+
+            <div class="form-group-modal">
+              <label>Type de structure :</label>
+              <select v-model="compteSelectionne.type_structure" @change="onTypeStructureChange">
+                <option value="">-- Sélectionner --</option>
+                <option value="institution">Institution</option>
+                <option value="collectivite">Collectivité territoriale</option>
+                <option value="agence">Agence / Établissement public</option>
+                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+              </select>
+            </div>
+
+            <div v-if="compteSelectionne.type_structure === 'institution'" class="form-group-modal">
+              <label>Type d'institution :</label>
+              <select v-model="compteSelectionne.type_institution" @change="onTypeInstitutionChange">
+                <option value="">-- Sélectionner --</option>
+                <option value="presidence">Présidence de la République</option>
+                <option value="primature">Primature</option>
+                <option value="ministere">Ministère</option>
+                <option value="autre_institution">Autre Institution</option>
+              </select>
+            </div>
+
+            <div v-if="showNomStructureField" class="form-group-modal">
+              <label>{{ getNomStructureLabel() }} :</label>
               <input
                 v-model="compteSelectionne.nom_structure"
                 type="text"
-                placeholder="Nom de la structure"
+                :placeholder="getNomStructurePlaceholder()"
               />
             </div>
-            <div class="form-group-modal">
+
+            <div v-if="showDirectionField" class="form-group-modal">
               <label>Direction / Service :</label>
               <input
                 v-model="compteSelectionne.direction_service"
                 type="text"
-                placeholder="Direction ou service"
+                placeholder="Ex: Direction générale de la Planification et des Politiques économiques"
               />
             </div>
 
@@ -304,6 +334,22 @@ const stats = computed(() => {
     verifie: comptes.value.filter(c => c.statut_compte === 'verifie').length,
     suspendu: comptes.value.filter(c => c.statut_compte === 'suspendu').length
   }
+})
+
+// Computed properties pour l'affichage conditionnel des champs de structure
+const showNomStructureField = computed(() => {
+  if (!compteSelectionne.value) return false
+  const type = compteSelectionne.value.type_structure
+  if (type === 'institution') {
+    const typeInst = compteSelectionne.value.type_institution
+    return typeInst === 'ministere' || typeInst === 'autre_institution'
+  }
+  return type === 'collectivite' || type === 'agence' || type === 'autre'
+})
+
+const showDirectionField = computed(() => {
+  if (!compteSelectionne.value) return false
+  return compteSelectionne.value.type_structure && compteSelectionne.value.nom_structure
 })
 
 // Charger les comptes au montage
@@ -474,6 +520,8 @@ async function sauvegarderModifications() {
       display_name: compteSelectionne.value.display_name,
       telephone: compteSelectionne.value.telephone,
       fonction: compteSelectionne.value.fonction,
+      type_structure: compteSelectionne.value.type_structure,
+      type_institution: compteSelectionne.value.type_institution,
       nom_structure: compteSelectionne.value.nom_structure,
       direction_service: compteSelectionne.value.direction_service,
       role: user?.role
@@ -523,6 +571,57 @@ function formatDate(dateStr) {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// Fonctions pour le formulaire hiérarchique de structure
+function getNomStructureLabel() {
+  if (!compteSelectionne.value) return 'Nom de la structure'
+  const type = compteSelectionne.value.type_structure
+  if (type === 'institution') {
+    const typeInst = compteSelectionne.value.type_institution
+    if (typeInst === 'ministere') return 'Nom du ministère'
+    if (typeInst === 'autre_institution') return 'Nom de l\'institution'
+  }
+  if (type === 'collectivite') return 'Nom de la collectivité'
+  if (type === 'agence') return 'Nom de l\'agence / établissement'
+  return 'Nom de la structure'
+}
+
+function getNomStructurePlaceholder() {
+  if (!compteSelectionne.value) return ''
+  const type = compteSelectionne.value.type_structure
+  if (type === 'institution') {
+    const typeInst = compteSelectionne.value.type_institution
+    if (typeInst === 'ministere') return 'Ex: Ministère de l\'Économie, du Plan et de la Coopération'
+    if (typeInst === 'autre_institution') return 'Ex: Conseil économique, social et environnemental'
+  }
+  if (type === 'collectivite') return 'Ex: Région de Dakar'
+  if (type === 'agence') return 'Ex: Agence de Développement Municipal'
+  return 'Nom de la structure'
+}
+
+function onTypeStructureChange() {
+  if (!compteSelectionne.value) return
+  // Réinitialiser les champs dépendants
+  compteSelectionne.value.type_institution = ''
+  compteSelectionne.value.nom_structure = ''
+  compteSelectionne.value.direction_service = ''
+}
+
+function onTypeInstitutionChange() {
+  if (!compteSelectionne.value) return
+  const typeInst = compteSelectionne.value.type_institution
+
+  // Auto-remplir pour présidence et primature
+  if (typeInst === 'presidence') {
+    compteSelectionne.value.nom_structure = 'Présidence de la République'
+  } else if (typeInst === 'primature') {
+    compteSelectionne.value.nom_structure = 'Primature'
+  } else {
+    // Réinitialiser pour les autres types
+    compteSelectionne.value.nom_structure = ''
+  }
+  compteSelectionne.value.direction_service = ''
 }
 
 function retourDashboard() {

@@ -1674,6 +1674,12 @@ def update_user_details(user_id):
         if 'fonction' in data and data['fonction'] is not None:
             user.fonction = data['fonction']
 
+        if 'type_structure' in data and data['type_structure'] is not None:
+            user.type_structure = data['type_structure']
+
+        if 'type_institution' in data and data['type_institution'] is not None:
+            user.type_institution = data['type_institution']
+
         if 'nom_structure' in data and data['nom_structure'] is not None:
             user.nom_structure = data['nom_structure']
 
@@ -1690,6 +1696,8 @@ def update_user_details(user_id):
                 "display_name": user.display_name,
                 "telephone": user.telephone,
                 "fonction": user.fonction,
+                "type_structure": user.type_structure,
+                "type_institution": user.type_institution,
                 "nom_structure": user.nom_structure,
                 "direction_service": user.direction_service
             }
