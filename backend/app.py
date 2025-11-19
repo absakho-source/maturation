@@ -1527,6 +1527,7 @@ def get_all_users_admin():
                 "telephone": u.telephone if hasattr(u, 'telephone') else None,
                 "fonction": u.fonction if hasattr(u, 'fonction') else None,
                 "type_structure": u.type_structure if hasattr(u, 'type_structure') else None,
+                "type_institution": u.type_institution if hasattr(u, 'type_institution') else None,
                 "nom_structure": u.nom_structure if hasattr(u, 'nom_structure') else None,
                 "direction_service": u.direction_service if hasattr(u, 'direction_service') else None,
                 "justificatif_path": u.justificatif_path if hasattr(u, 'justificatif_path') else None,

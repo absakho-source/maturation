@@ -94,8 +94,13 @@
             </td>
             <td>
               <div class="structure-info">
-                <div class="structure-nom">{{ compte.nom_structure || 'N/A' }}</div>
-                <div v-if="compte.direction_service" class="structure-direction">{{ compte.direction_service }}</div>
+                <div v-if="compte.type_structure || compte.nom_structure" class="structure-hierarchy-compact">
+                  <div v-if="compte.type_structure" class="structure-type">{{ getTypeStructureLabel(compte.type_structure) }}</div>
+                  <div v-if="compte.type_institution" class="structure-subtype">→ {{ getTypeInstitutionLabel(compte.type_institution) }}</div>
+                  <div v-if="compte.nom_structure" class="structure-nom">{{ compte.nom_structure }}</div>
+                  <div v-if="compte.direction_service" class="structure-direction">{{ compte.direction_service }}</div>
+                </div>
+                <div v-else class="structure-empty">N/A</div>
               </div>
             </td>
             <td>
@@ -531,6 +536,27 @@ function retourDashboard() {
   const route = roleRoutes[user?.role] || '/'
   router.push(route)
 }
+
+// Fonctions helper pour les labels de structure hiérarchique
+function getTypeStructureLabel(type) {
+  const labels = {
+    'institution': 'Institution',
+    'collectivite': 'Collectivité territoriale',
+    'agence': 'Agence / Établissement public',
+    'autre': 'Autre (ONG, Association, Cabinet, etc.)'
+  }
+  return labels[type] || type
+}
+
+function getTypeInstitutionLabel(type) {
+  const labels = {
+    'presidence': 'Présidence de la République',
+    'primature': 'Primature',
+    'ministere': 'Ministère',
+    'autre_institution': 'Autre Institution'
+  }
+  return labels[type] || type
+}
 </script>
 
 <style scoped>
@@ -755,6 +781,45 @@ function retourDashboard() {
 
 .structure-nom {
   color: #2d3748;
+}
+
+/* Affichage hiérarchique compact pour la structure */
+.structure-hierarchy-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.structure-hierarchy-compact .structure-type {
+  font-size: 0.75rem;
+  color: #4a5568;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.structure-hierarchy-compact .structure-subtype {
+  font-size: 0.8rem;
+  color: #718096;
+  padding-left: 0.5rem;
+}
+
+.structure-hierarchy-compact .structure-nom {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.structure-hierarchy-compact .structure-direction {
+  font-size: 0.8rem;
+  color: #4a5568;
+  font-style: italic;
+}
+
+.structure-empty {
+  color: #a0aec0;
+  font-style: italic;
+  font-size: 0.85rem;
 }
 
 .contact-info {
