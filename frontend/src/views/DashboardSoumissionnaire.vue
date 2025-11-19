@@ -833,26 +833,21 @@ export default {
           const hasTypeStructure = userData.type_structure && userData.type_structure.trim() !== '';
 
           // Logique de pré-remplissage de la structure soumissionnaire
-          if (hasTypeStructure) {
-            // Profil complet: la structure soumissionnaire = direction/service (modifiable)
-            // L'organisme de tutelle (institution/collectivité/agence) sera figé séparément
-            if (userData.direction_service) {
-              this.form.structure_soumissionnaire = userData.direction_service;
-              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
-            } else {
-              // Laisser vide pour que l'utilisateur remplisse sa direction/service
-              this.form.structure_soumissionnaire = '';
-              console.log('[DASHBOARD] Structure soumissionnaire laissée vide (à remplir par l\'utilisateur)');
-            }
+          // La structure soumissionnaire = niveau le plus bas dans la hiérarchie de l'utilisateur
+          // Cas 1: Direction/Service renseigné → c'est la structure soumissionnaire
+          // Cas 2: Pas de direction/service → l'organisme lui-même (commune, ONG, agence) est la structure
+          if (userData.direction_service) {
+            // Direction/service existe : c'est l'entité qui soumet
+            this.form.structure_soumissionnaire = userData.direction_service;
+            console.log('[DASHBOARD] Structure soumissionnaire = direction_service:', userData.direction_service);
+          } else if (userData.nom_structure) {
+            // Pas de direction/service : l'organisme principal soumet (commune, ONG, agence, institution)
+            this.form.structure_soumissionnaire = userData.nom_structure;
+            console.log('[DASHBOARD] Structure soumissionnaire = nom_structure (organisme):', userData.nom_structure);
           } else {
-            // Ancien système ou profil incomplet: pré-remplir avec direction_service ou nom_structure
-            if (userData.direction_service) {
-              this.form.structure_soumissionnaire = userData.direction_service;
-              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec direction_service:', userData.direction_service);
-            } else if (userData.nom_structure) {
-              this.form.structure_soumissionnaire = userData.nom_structure;
-              console.log('[DASHBOARD] Structure soumissionnaire pré-remplie avec nom_structure:', userData.nom_structure);
-            }
+            // Aucune information disponible
+            this.form.structure_soumissionnaire = '';
+            console.log('[DASHBOARD] Structure soumissionnaire vide (aucune donnée)');
           }
 
           console.log('[DASHBOARD] hasTypeStructure:', hasTypeStructure);
