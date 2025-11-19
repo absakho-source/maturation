@@ -61,6 +61,8 @@ class Project(db.Model):
 
     # Nouveaux champs ajoutés
     organisme_tutelle = db.Column(db.String(300), nullable=True)
+    organisme_tutelle_data = db.Column(db.Text, nullable=True)  # JSON: données structurées de la hiérarchie organisme
+    structure_soumissionnaire = db.Column(db.String(300), nullable=True)  # Structure soumissionnaire/maître d'ouvrage
     origine_projet = db.Column(db.Text, nullable=True)  # JSON: {maturation, offre_spontanee, autres}
     typologie_projet = db.Column(db.Text, nullable=True)  # JSON: {productif, appui_production, social, environnemental}
 

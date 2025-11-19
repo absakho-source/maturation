@@ -1152,6 +1152,24 @@ export default {
 
         // Utiliser l'organisme de tutelle construit
         formData.append("organisme_tutelle", organismeTutelle);
+
+        // Construire et envoyer les données structurées de l'organisme de tutelle
+        const organismeData = {
+          type_organisme: this.typeOrganisme,
+          type_institution: this.typeInstitution,
+          nom_structure: this.nomStructure,
+          nom_ministere: this.nomMinistere,
+          nom_ministere_libre: this.nomMinistereLibre,
+          nom_institution: this.nomInstitution,
+          niveau_collectivite: this.niveauCollectivite,
+          region_parente: this.regionParente,
+          departement_parent: this.departementParent,
+          nom_agence: this.nomAgence,
+          tutelle_agence: this.tutelleAgence,
+          tutelle_agence_libre: this.tutelleAgenceLibre,
+          tutelle_agence_autre: this.tutelleAgenceAutre
+        };
+        formData.append("organisme_tutelle_data", JSON.stringify(organismeData));
         formData.append("auteur_nom", user.username);
 
         // Ajouter tous les fichiers avec leurs catégories

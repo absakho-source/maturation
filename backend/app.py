@@ -468,6 +468,8 @@ def projects():
         poles = request.form.get("poles")  # CSV
         cout_estimatif = request.form.get("cout_estimatif")
         organisme_tutelle = request.form.get("organisme_tutelle")
+        organisme_tutelle_data = request.form.get("organisme_tutelle_data")  # JSON structuré
+        structure_soumissionnaire = request.form.get("structure_soumissionnaire")
 
         # Récupérer tous les fichiers catégorisés
         files = []
@@ -502,6 +504,8 @@ def projects():
             poles=poles,
             cout_estimatif=float(cout_estimatif) if cout_estimatif else None,
             organisme_tutelle=organisme_tutelle,
+            organisme_tutelle_data=organisme_tutelle_data,
+            structure_soumissionnaire=structure_soumissionnaire,
             pieces_jointes=",".join(filenames) if filenames else None,
             auteur_nom=auteur_nom,
             lieu_soumission_pays=lieu_pays,
@@ -575,7 +579,10 @@ def get_project(project_id):
             "date_soumission": p.date_soumission.isoformat() if p.date_soumission else None,
             "lieu_soumission_pays": p.lieu_soumission_pays,
             "lieu_soumission_ville": p.lieu_soumission_ville,
-            "lieu_soumission_region": p.lieu_soumission_region
+            "lieu_soumission_region": p.lieu_soumission_region,
+            "organisme_tutelle": p.organisme_tutelle,
+            "organisme_tutelle_data": p.organisme_tutelle_data,
+            "structure_soumissionnaire": p.structure_soumissionnaire
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()

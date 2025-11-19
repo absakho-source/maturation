@@ -34,10 +34,20 @@
               <span class="label">Téléphone:</span>
               <span class="value">{{ project.point_focal_telephone }}</span>
             </div>
-            <div class="info-row" v-if="project.organisme_tutelle">
+            <!-- Hiérarchie de l'organisme de tutelle -->
+            <div v-if="organismeHierarchie" class="organisme-hierarchie">
+              <div class="hierarchie-title">Organisme de tutelle</div>
+              <div class="hierarchie-item" v-for="(item, index) in organismeHierarchie" :key="index">
+                <span class="hierarchie-label">{{ item.label }}:</span>
+                <span class="hierarchie-value">{{ item.value }}</span>
+              </div>
+            </div>
+            <!-- Fallback pour anciens projets sans données structurées -->
+            <div class="info-row" v-else-if="project.organisme_tutelle">
               <span class="label">Organisme de tutelle:</span>
               <span class="value">{{ project.organisme_tutelle }}</span>
             </div>
+
             <div class="info-row" v-if="project.structure_soumissionnaire">
               <span class="label">Structure soumissionnaire:</span>
               <span class="value">{{ project.structure_soumissionnaire }}</span>
@@ -226,6 +236,115 @@ export default {
       loadingHistorique: true,
       currentUser: null
     };
+  },
+  computed: {
+    organismeHierarchie() {
+      // Parse les données structurées de l'organisme de tutelle et retourne un tableau de paires label/valeur
+      if (!this.project || !this.project.organisme_tutelle_data) {
+        return null;
+      }
+
+      try {
+        const data = JSON.parse(this.project.organisme_tutelle_data);
+        const hierarchy = [];
+
+        // Type d'organisme
+        if (data.type_organisme) {
+          const typeLabels = {
+            'institution': 'Institution',
+            'collectivite': 'Collectivité territoriale',
+            'agence': 'Agence / Établissement public',
+            'autre': 'Autre organisme'
+          };
+          hierarchy.push({
+            label: 'Type d\'organisme',
+            value: typeLabels[data.type_organisme] || data.type_organisme
+          });
+
+          // Institution
+          if (data.type_organisme === 'institution' && data.type_institution) {
+            const instLabels = {
+              'presidence': 'Présidence de la République',
+              'primature': 'Primature',
+              'ministere': 'Ministère',
+              'autre_institution': 'Autre institution'
+            };
+            hierarchy.push({
+              label: 'Type d\'institution',
+              value: instLabels[data.type_institution] || data.type_institution
+            });
+
+            if (data.type_institution === 'ministere') {
+              if (data.nom_ministere === '__autre__' && data.nom_ministere_libre) {
+                hierarchy.push({ label: 'Ministère', value: data.nom_ministere_libre });
+              } else if (data.nom_ministere) {
+                hierarchy.push({ label: 'Ministère', value: data.nom_ministere });
+              }
+            } else if (data.type_institution === 'autre_institution' && data.nom_institution) {
+              hierarchy.push({ label: 'Institution', value: data.nom_institution });
+            }
+          }
+
+          // Collectivité
+          if (data.type_organisme === 'collectivite') {
+            if (data.niveau_collectivite) {
+              const niveauLabels = {
+                'region': 'Région',
+                'departement': 'Département',
+                'commune': 'Commune'
+              };
+              hierarchy.push({
+                label: 'Niveau',
+                value: niveauLabels[data.niveau_collectivite] || data.niveau_collectivite
+              });
+            }
+            if (data.region_parente) {
+              hierarchy.push({ label: 'Région', value: data.region_parente });
+            }
+            if (data.departement_parent && data.niveau_collectivite !== 'region') {
+              hierarchy.push({ label: 'Département', value: data.departement_parent });
+            }
+            if (data.nom_structure) {
+              hierarchy.push({ label: 'Collectivité', value: data.nom_structure });
+            }
+          }
+
+          // Agence
+          if (data.type_organisme === 'agence') {
+            if (data.nom_agence) {
+              hierarchy.push({ label: 'Nom de l\'agence', value: data.nom_agence });
+            }
+            if (data.tutelle_agence) {
+              let tutelle = '';
+              if (data.tutelle_agence === 'presidence') {
+                tutelle = 'Présidence de la République';
+              } else if (data.tutelle_agence === 'primature') {
+                tutelle = 'Primature';
+              } else if (data.tutelle_agence === '__ministere__') {
+                if (data.tutelle_agence_libre === '__autre__' && data.tutelle_agence_autre) {
+                  tutelle = data.tutelle_agence_autre;
+                } else if (data.tutelle_agence_libre) {
+                  tutelle = data.tutelle_agence_libre;
+                }
+              }
+              if (tutelle) {
+                hierarchy.push({ label: 'Autorité de tutelle', value: tutelle });
+              }
+            }
+          }
+
+          // Autre
+          if (data.type_organisme === 'autre' && data.nom_structure) {
+            hierarchy.push({ label: 'Nom de la structure', value: data.nom_structure });
+          }
+        }
+
+        return hierarchy.length > 0 ? hierarchy : null;
+      } catch (e) {
+        console.error('[ProjectDetail] Erreur lors du parsing de organisme_tutelle_data:', e);
+        return null;
+      }
+    }
   },
   async mounted() {
     // Récupérer l'utilisateur connecté
@@ -610,6 +729,48 @@ export default {
 .value {
   color: #1f2937;
 }
+
+/* Styles pour la hiérarchie de l'organisme de tutelle */
+.organisme-hierarchie {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+}
+
+.hierarchie-title {
+  font-weight: 700;
+  color: #0c4a6e;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hierarchie-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #bae6fd;
+}
+
+.hierarchie-item:last-child {
+  border-bottom: none;
+}
+
+.hierarchie-label {
+  font-weight: 600;
+  color: #0369a1;
+  font-size: 0.9rem;
+}
+
+.hierarchie-value {
+  color: #0c4a6e;
+  font-weight: 500;
+}
+
 .description {
   color: #374151;
   line-height: 1.6;
