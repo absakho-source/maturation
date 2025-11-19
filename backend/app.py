@@ -82,11 +82,11 @@ db.init_app(app)
 
 # Fonction pour générer le numéro de projet automatiquement
 def generer_numero_projet():
-    """Génère un numéro de projet au format DGPPE-YYYY-NNN où NNN est un compteur séquentiel annuel"""
+    """Génère un numéro de projet au format DGPPE-YY-NNN où YY = 2 derniers chiffres de l'année et NNN = compteur séquentiel annuel"""
 
-    # Format année actuelle
+    # Format année actuelle sur 2 chiffres
     now = datetime.now()
-    year = now.strftime("%Y")  # Exemple: 2025
+    year = now.strftime("%y")  # Exemple: 25 pour 2025
     prefix = f"DGPPE-{year}-"
 
     # Trouver le dernier numéro pour cette année
