@@ -335,15 +335,15 @@ def projects():
                         statut_affiche = get_statut_soumissionnaire(p)
                     else:
                         # Pour les rôles internes (admin, secrétariat, présidence, évaluateur):
-                        # Si une décision finale existe, l'afficher en priorité
-                        if p.decision_finale:
-                            if p.decision_finale == 'confirme':
-                                statut_affiche = 'décision finale confirmée'
-                            elif p.decision_finale == 'infirme':
-                                statut_affiche = 'décision finale infirmée'
-                            else:
-                                statut_affiche = p.statut
+                        # Si une décision finale confirmée existe, afficher l'avis en priorité
+                        if p.decision_finale == 'confirme' and p.avis:
+                            # Afficher directement l'avis: favorable, favorable sous conditions, défavorable
+                            statut_affiche = p.avis
+                        elif p.decision_finale == 'infirme':
+                            # Décision infirmée par le Comité
+                            statut_affiche = 'rejeté par le Comité'
                         else:
+                            # Pas de décision finale ou décision non confirmée
                             statut_affiche = p.statut
 
                     pieces_jointes = []

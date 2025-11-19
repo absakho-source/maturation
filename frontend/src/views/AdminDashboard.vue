@@ -694,6 +694,12 @@ export default {
         "approuvé": "status-confirmed",
         "compléments demandés": "status-complement",
         "décision finale confirmée": "status-confirmed",
+        "décision finale infirmée": "status-rejected",
+        "rejeté par le Comité": "status-rejected",
+        // Avis finaux (affichés quand decision_finale = 'confirme')
+        "favorable": "status-favorable",
+        "favorable sous conditions": "status-favorable-conditions",
+        "défavorable": "status-defavorable",
         "évalué positivement": "status-favorable",
         "évalué négativement": "status-defavorable",
         "rejeté": "status-rejected"
