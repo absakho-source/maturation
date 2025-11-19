@@ -1842,10 +1842,10 @@ select:disabled, input:disabled {
 
 /* Organisme de tutelle summary box (when frozen) */
 .organisme-summary-box {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 2px solid #0ea5e9;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.25rem;
   margin: 1rem 0;
 }
 
@@ -1854,7 +1854,7 @@ select:disabled, input:disabled {
   grid-template-columns: 180px 1fr;
   gap: 0.75rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #bae6fd;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .summary-item:last-of-type {
@@ -1863,22 +1863,23 @@ select:disabled, input:disabled {
 
 .summary-label {
   font-weight: 600;
-  color: #0369a1;
-  font-size: 0.9rem;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .summary-value {
-  color: #0c4a6e;
+  color: #111827;
   font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .summary-note {
   margin-top: 1rem;
-  padding: 0.75rem;
-  background: #dbeafe;
-  border-left: 4px solid #0ea5e9;
-  color: #075985;
-  font-size: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  color: #92400e;
+  font-size: 0.8rem;
   border-radius: 4px;
 }
 </style>
