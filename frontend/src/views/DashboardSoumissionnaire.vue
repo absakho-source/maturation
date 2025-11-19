@@ -618,9 +618,14 @@ export default {
     isOrganismeTutelleFrozen() {
       // L'organisme de tutelle est figé si l'utilisateur a un profil complet
       // (type_structure et type_institution renseignés lors de l'inscription)
-      return this.userProfileData &&
-             this.userProfileData.type_structure &&
-             this.userProfileData.type_institution;
+      if (!this.userProfileData) return false;
+
+      const hasTypeStructure = this.userProfileData.type_structure &&
+                               this.userProfileData.type_structure.trim() !== '';
+      const hasTypeInstitution = this.userProfileData.type_institution &&
+                                 this.userProfileData.type_institution.trim() !== '';
+
+      return hasTypeStructure && hasTypeInstitution;
     }
   },
   mounted() {
@@ -827,13 +832,21 @@ export default {
           // Si l'utilisateur a un profil complet (type_structure et type_institution renseignés),
           // pré-remplir l'organisme de tutelle et le figer
           console.log('[DASHBOARD] Vérification profil complet - type_structure:', userData.type_structure, 'type_institution:', userData.type_institution);
+          console.log('[DASHBOARD] Type de type_structure:', typeof userData.type_structure, 'Longueur:', userData.type_structure?.length);
+          console.log('[DASHBOARD] Type de type_institution:', typeof userData.type_institution, 'Longueur:', userData.type_institution?.length);
 
-          if (userData.type_structure && userData.type_institution) {
+          // Vérification robuste: s'assurer que ce ne sont pas des chaînes vides
+          const hasTypeStructure = userData.type_structure && userData.type_structure.trim() !== '';
+          const hasTypeInstitution = userData.type_institution && userData.type_institution.trim() !== '';
+
+          console.log('[DASHBOARD] hasTypeStructure:', hasTypeStructure, 'hasTypeInstitution:', hasTypeInstitution);
+
+          if (hasTypeStructure && hasTypeInstitution) {
             console.log('[DASHBOARD] Profil complet détecté - pré-remplissage de l\'organisme de tutelle');
 
             // Pré-remplir les champs d'organisme de tutelle
-            this.typeOrganisme = userData.type_structure;
-            this.typeInstitution = userData.type_institution;
+            this.typeOrganisme = userData.type_structure.trim();
+            this.typeInstitution = userData.type_institution.trim();
 
             console.log('[DASHBOARD] typeOrganisme défini à:', this.typeOrganisme);
             console.log('[DASHBOARD] typeInstitution défini à:', this.typeInstitution);
@@ -857,6 +870,7 @@ export default {
             console.log('[DASHBOARD] isOrganismeTutelleFrozen:', this.isOrganismeTutelleFrozen);
           } else {
             console.log('[DASHBOARD] Profil incomplet - organisme de tutelle non pré-rempli');
+            console.log('[DASHBOARD] Raison: type_structure=' + (hasTypeStructure ? 'OK' : 'MANQUANT') + ', type_institution=' + (hasTypeInstitution ? 'OK' : 'MANQUANT'));
           }
 
           // Pré-remplir les informations du point focal
