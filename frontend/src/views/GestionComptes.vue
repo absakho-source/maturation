@@ -223,16 +223,16 @@
               />
             </div>
 
-            <!-- Structure d'appartenance - Formulaire hiérarchique -->
+            <!-- Structure d'appartenance - Formulaire hiérarchique identique à Register.vue -->
             <div class="form-group-modal">
               <label>Structure d'appartenance</label>
               <small class="field-hint">Ces champs définissent l'organisme de tutelle qui sera pré-rempli lors de la soumission de projets</small>
             </div>
 
             <div class="form-group-modal">
-              <label>Type de structure :</label>
-              <select v-model="compteSelectionne.type_structure" @change="onTypeStructureChange">
-                <option value="">-- Sélectionner --</option>
+              <label for="edit-type-structure">Type de structure *</label>
+              <select id="edit-type-structure" v-model="editTypeStructure" @change="onEditTypeStructureChange" required>
+                <option value="">-- Sélectionnez --</option>
                 <option value="institution">Institution</option>
                 <option value="collectivite">Collectivité territoriale</option>
                 <option value="agence">Agence / Établissement public</option>
@@ -240,32 +240,222 @@
               </select>
             </div>
 
-            <div v-if="compteSelectionne.type_structure === 'institution'" class="form-group-modal">
-              <label>Type d'institution :</label>
-              <select v-model="compteSelectionne.type_institution" @change="onTypeInstitutionChange">
-                <option value="">-- Sélectionner --</option>
-                <option value="presidence">Présidence de la République</option>
-                <option value="primature">Primature</option>
-                <option value="ministere">Ministère</option>
-                <option value="autre_institution">Autre Institution</option>
-              </select>
+            <!-- Institution - avec sous-catégories -->
+            <div v-if="editTypeStructure === 'institution'">
+              <div class="form-group-modal">
+                <label for="edit-type-institution">Type d'institution *</label>
+                <select id="edit-type-institution" v-model="editTypeInstitution" @change="onEditTypeInstitutionChange" required>
+                  <option value="">-- Sélectionnez --</option>
+                  <option value="presidence">Présidence de la République</option>
+                  <option value="primature">Primature</option>
+                  <option value="ministere">Ministère / Direction nationale</option>
+                  <option value="autre_institution">Autre Institution</option>
+                </select>
+              </div>
+
+              <!-- Champ pour préciser l'institution si "Autre Institution" -->
+              <div v-if="editTypeInstitution === 'autre_institution'" class="form-group-modal">
+                <label for="edit-nom-institution">Nom de l'institution *</label>
+                <input
+                  id="edit-nom-institution"
+                  v-model="editNomInstitution"
+                  placeholder="Ex: Assemblée nationale"
+                  required
+                />
+              </div>
+
+              <!-- Champ pour sélectionner le ministère -->
+              <div v-if="editTypeInstitution === 'ministere'" class="form-group-modal">
+                <label for="edit-nom-ministere">Nom du ministère / Direction nationale *</label>
+                <select
+                  id="edit-nom-ministere"
+                  v-model="editNomMinistere"
+                  @change="onEditMinistereChange"
+                  required
+                >
+                  <option value="">-- Sélectionnez un ministère --</option>
+                  <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                    {{ ministere.nom_complet }}
+                  </option>
+                  <option value="__autre__">Autre (non listé)</option>
+                </select>
+              </div>
+
+              <!-- Champ libre si "Autre" est sélectionné -->
+              <div v-if="editNomMinistere === '__autre__'" class="form-group-modal">
+                <label for="edit-nom-ministere-libre">Nom du ministère *</label>
+                <input
+                  id="edit-nom-ministere-libre"
+                  v-model="editNomMinistereLibre"
+                  placeholder="Ex: Autre ministère ou direction nationale"
+                  required
+                />
+              </div>
+
+              <!-- Direction/Service - commun à tous les types d'institution -->
+              <div class="form-group-modal">
+                <label for="edit-direction-service">Direction / Service *</label>
+                <input
+                  id="edit-direction-service"
+                  v-model="editDirectionService"
+                  placeholder="Ex: Direction Générale de la Planification des Politiques Économiques (DGPPE)"
+                  required
+                />
+              </div>
             </div>
 
-            <div v-if="showNomStructureField" class="form-group-modal">
-              <label>{{ getNomStructureLabel() }} :</label>
-              <input
-                v-model="compteSelectionne.nom_structure"
-                type="text"
-                :placeholder="getNomStructurePlaceholder()"
-              />
+            <!-- Collectivité territoriale - sélection en cascade -->
+            <div v-else-if="editTypeStructure === 'collectivite'">
+              <div class="form-group-modal">
+                <label for="edit-niveau-collectivite">Niveau *</label>
+                <select id="edit-niveau-collectivite" v-model="editNiveauCollectivite" @change="onEditNiveauCollectiviteChange" required>
+                  <option value="">-- Sélectionnez le niveau --</option>
+                  <option value="region">Région</option>
+                  <option value="departement">Département</option>
+                  <option value="commune">Commune</option>
+                </select>
+              </div>
+
+              <!-- Si région sélectionnée -->
+              <div v-if="editNiveauCollectivite === 'region'" class="form-group-modal">
+                <label for="edit-nom-structure-region">Région *</label>
+                <select id="edit-nom-structure-region" v-model="editNomStructure" required>
+                  <option value="">-- Sélectionnez une région --</option>
+                  <option v-for="region in regions" :key="region" :value="`Région de ${region}`">
+                    Région de {{ region }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Si département sélectionné -->
+              <div v-if="editNiveauCollectivite === 'departement'">
+                <div class="form-group-modal">
+                  <label for="edit-region-parent">Région *</label>
+                  <select id="edit-region-parent" v-model="editRegionParente" @change="onEditRegionChange" required>
+                    <option value="">-- Sélectionnez une région --</option>
+                    <option v-for="region in regions" :key="region" :value="region">
+                      {{ region }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group-modal">
+                  <label for="edit-nom-structure-dept">Département *</label>
+                  <select id="edit-nom-structure-dept" v-model="editNomStructure" :disabled="!editRegionParente" required>
+                    <option value="">-- Sélectionnez un département --</option>
+                    <option v-for="dept in editDepartementsFiltered" :key="dept" :value="`Département de ${dept}`">
+                      Département de {{ dept }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Si commune sélectionnée -->
+              <div v-if="editNiveauCollectivite === 'commune'">
+                <div class="form-group-modal">
+                  <label for="edit-region-parent-commune">Région *</label>
+                  <select id="edit-region-parent-commune" v-model="editRegionParente" @change="onEditRegionChangeCommunes" required>
+                    <option value="">-- Sélectionnez une région --</option>
+                    <option v-for="region in regions" :key="region" :value="region">
+                      {{ region }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group-modal">
+                  <label for="edit-departement-parent">Département *</label>
+                  <select id="edit-departement-parent" v-model="editDepartementParent" @change="onEditDepartementChangeCommunes" :disabled="!editRegionParente" required>
+                    <option value="">-- Sélectionnez un département --</option>
+                    <option v-for="dept in editDepartementsFiltered" :key="dept" :value="dept">
+                      {{ dept }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group-modal">
+                  <label for="edit-commune-select">Commune *</label>
+                  <select id="edit-commune-select" v-model="editCommuneSelectionnee" @change="onEditCommuneChange" :disabled="!editDepartementParent" required>
+                    <option value="">-- Sélectionnez une commune --</option>
+                    <option v-for="commune in editCommunesFiltered" :key="commune" :value="commune">
+                      {{ commune }}
+                    </option>
+                    <option value="__autre__">Autre commune (non listée)</option>
+                  </select>
+                </div>
+
+                <!-- Champ de saisie libre si "Autre commune" est sélectionnée -->
+                <div v-if="editCommuneSelectionnee === '__autre__'" class="form-group-modal">
+                  <label for="edit-nom-structure-commune">Nom de la commune *</label>
+                  <input
+                    id="edit-nom-structure-commune"
+                    v-model="editNomStructure"
+                    placeholder="Ex: Commune de Dar Salam"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
-            <div v-if="showDirectionField" class="form-group-modal">
-              <label>Direction / Service :</label>
+            <!-- Agence - champ libre + autorité de tutelle -->
+            <div v-else-if="editTypeStructure === 'agence'">
+              <div class="form-group-modal">
+                <label for="edit-nom-agence">Nom de l'agence / établissement *</label>
+                <input
+                  id="edit-nom-agence"
+                  v-model="editNomAgence"
+                  placeholder="Ex: APIX SA, SENELEC, etc."
+                  required
+                />
+              </div>
+
+              <div class="form-group-modal">
+                <label for="edit-tutelle-agence">Autorité de tutelle *</label>
+                <select id="edit-tutelle-agence" v-model="editTutelleAgence" @change="onEditTutelleAgenceChange" required>
+                  <option value="">-- Sélectionnez l'autorité de tutelle --</option>
+                  <option value="Primature">Primature</option>
+                  <option value="Présidence de la République">Présidence de la République</option>
+                  <option value="__ministere__">Ministère sectoriel</option>
+                </select>
+              </div>
+
+              <!-- Sélection du ministère de tutelle si ministère sélectionné -->
+              <div v-if="editTutelleAgence === '__ministere__'">
+                <div class="form-group-modal">
+                  <label for="edit-tutelle-ministere-select">Ministère de tutelle *</label>
+                  <select
+                    id="edit-tutelle-ministere-select"
+                    v-model="editTutelleAgenceLibre"
+                    @change="onEditTutelleMinistereChange"
+                    required
+                  >
+                    <option value="">-- Sélectionnez un ministère --</option>
+                    <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                      {{ ministere.nom_complet }}
+                    </option>
+                    <option value="__autre__">Autre (non listé)</option>
+                  </select>
+                </div>
+
+                <!-- Champ libre si "Autre" est sélectionné -->
+                <div v-if="editTutelleAgenceLibre === '__autre__'" class="form-group-modal">
+                  <label for="edit-tutelle-agence-autre">Nom du ministère de tutelle *</label>
+                  <input
+                    id="edit-tutelle-agence-autre"
+                    v-model="editTutelleAgenceAutre"
+                    placeholder="Ex: Autre ministère de tutelle"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Autre - champ libre -->
+            <div v-else-if="editTypeStructure === 'autre'" class="form-group-modal">
+              <label for="edit-nom-structure-autre">Nom de la structure *</label>
               <input
-                v-model="compteSelectionne.direction_service"
-                type="text"
-                placeholder="Ex: Direction générale de la Planification et des Politiques économiques"
+                id="edit-nom-structure-autre"
+                v-model="editNomStructure"
+                placeholder="Ex: ONG XYZ, Cabinet ABC, etc."
+                required
               />
             </div>
 
@@ -323,6 +513,29 @@ const actionEnCours = ref(null)
 const compteSelectionne = ref(null)
 const enregistrementEnCours = ref(false)
 
+// Listes de données pour le formulaire hiérarchique
+const regions = ref([])
+const departements = ref({}) // Format: { region: [dept1, dept2, ...] }
+const communes = ref({}) // Format: { departement: [commune1, commune2, ...] }
+const ministeresActifs = ref([]) // Liste des ministères actifs depuis la base de données
+
+// Variables d'édition pour le formulaire de structure (avec préfixe "edit")
+const editTypeStructure = ref('')
+const editTypeInstitution = ref('')
+const editNomMinistere = ref('')
+const editNomMinistereLibre = ref('')
+const editNomInstitution = ref('')
+const editDirectionService = ref('')
+const editNiveauCollectivite = ref('')
+const editRegionParente = ref('')
+const editDepartementParent = ref('')
+const editCommuneSelectionnee = ref('')
+const editNomStructure = ref('')
+const editNomAgence = ref('')
+const editTutelleAgence = ref('')
+const editTutelleAgenceLibre = ref('')
+const editTutelleAgenceAutre = ref('')
+
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
 const user = userStr ? JSON.parse(userStr) : null
@@ -336,7 +549,18 @@ const stats = computed(() => {
   }
 })
 
-// Computed properties pour l'affichage conditionnel des champs de structure
+// Computed properties pour le formulaire d'édition
+const editDepartementsFiltered = computed(() => {
+  if (!editRegionParente.value) return []
+  return departements.value[editRegionParente.value] || []
+})
+
+const editCommunesFiltered = computed(() => {
+  if (!editDepartementParent.value) return []
+  return communes.value[editDepartementParent.value] || []
+})
+
+// Computed properties pour l'affichage conditionnel des champs de structure (anciens - à supprimer)
 const showNomStructureField = computed(() => {
   if (!compteSelectionne.value) return false
   const type = compteSelectionne.value.type_structure
@@ -353,9 +577,35 @@ const showDirectionField = computed(() => {
 })
 
 // Charger les comptes au montage
-onMounted(() => {
+onMounted(async () => {
+  await loadDataLists()
   chargerComptes()
 })
+
+// Fonction pour charger les données des listes (régions, départements, communes, ministères)
+async function loadDataLists() {
+  try {
+    // Charger les régions
+    const resRegions = await axios.get('/api/data/regions')
+    regions.value = resRegions.data
+
+    // Charger les départements (format dictionnaire)
+    const resDept = await axios.get('/api/data/departements?format=dict')
+    departements.value = resDept.data
+
+    // Charger les communes (format dictionnaire par département)
+    const resCommunes = await axios.get('/api/data/communes?format=dict')
+    communes.value = resCommunes.data
+
+    // Charger les ministères actifs depuis la nouvelle API
+    const resMinisteres = await axios.get('/api/ministeres')
+    ministeresActifs.value = resMinisteres.data
+
+  } catch (err) {
+    console.error('Erreur lors du chargement des données:', err)
+    // Pas d'affichage d'erreur pour ne pas bloquer l'utilisateur
+  }
+}
 
 async function chargerComptes() {
   loading.value = true
@@ -498,6 +748,25 @@ function voirJustificatif(path) {
 function voirDetails(compte) {
   // Créer une copie pour éviter la modification directe
   compteSelectionne.value = { ...compte }
+
+  // Initialiser les variables d'édition avec les valeurs du compte
+  editTypeStructure.value = compte.type_structure || ''
+  editTypeInstitution.value = compte.type_institution || ''
+  editDirectionService.value = compte.direction_service || ''
+  editNomStructure.value = compte.nom_structure || ''
+
+  // Réinitialiser les autres variables d'édition
+  editNomMinistere.value = ''
+  editNomMinistereLibre.value = ''
+  editNomInstitution.value = ''
+  editNiveauCollectivite.value = ''
+  editRegionParente.value = ''
+  editDepartementParent.value = ''
+  editCommuneSelectionnee.value = ''
+  editNomAgence.value = ''
+  editTutelleAgence.value = ''
+  editTutelleAgenceLibre.value = ''
+  editTutelleAgenceAutre.value = ''
 }
 
 function fermerDetails() {
@@ -510,20 +779,143 @@ function initTelephone() {
   }
 }
 
+// Fonctions de gestion des changements du formulaire hiérarchique
+function onEditTypeStructureChange() {
+  // Réinitialiser tous les champs quand le type change
+  editTypeInstitution.value = ''
+  editNomInstitution.value = ''
+  editDirectionService.value = ''
+  editNomMinistere.value = ''
+  editNomMinistereLibre.value = ''
+  editNomAgence.value = ''
+  editTutelleAgence.value = ''
+  editTutelleAgenceLibre.value = ''
+  editTutelleAgenceAutre.value = ''
+  editNomStructure.value = ''
+  editNiveauCollectivite.value = ''
+  editRegionParente.value = ''
+  editDepartementParent.value = ''
+  editCommuneSelectionnee.value = ''
+}
+
+function onEditTypeInstitutionChange() {
+  // Réinitialiser les champs spécifiques quand le type d'institution change
+  editNomInstitution.value = ''
+  editNomMinistere.value = ''
+  editNomMinistereLibre.value = ''
+
+  // Auto-remplir pour présidence et primature
+  if (editTypeInstitution.value === 'presidence') {
+    editNomStructure.value = 'Présidence de la République'
+  } else if (editTypeInstitution.value === 'primature') {
+    editNomStructure.value = 'Primature'
+  } else {
+    editNomStructure.value = ''
+  }
+}
+
+function onEditMinistereChange() {
+  // Réinitialiser le champ libre si on change la sélection
+  if (editNomMinistere.value !== '__autre__') {
+    editNomMinistereLibre.value = ''
+  }
+}
+
+function onEditNiveauCollectiviteChange() {
+  // Réinitialiser le nom de structure et la région parente quand le niveau change
+  editNomStructure.value = ''
+  editRegionParente.value = ''
+  editDepartementParent.value = ''
+  editCommuneSelectionnee.value = ''
+}
+
+function onEditRegionChange() {
+  // Réinitialiser le département quand la région change (pour les départements)
+  editNomStructure.value = ''
+}
+
+function onEditRegionChangeCommunes() {
+  // Réinitialiser le département et la commune quand la région change (pour les communes)
+  editDepartementParent.value = ''
+  editCommuneSelectionnee.value = ''
+  editNomStructure.value = ''
+}
+
+function onEditDepartementChangeCommunes() {
+  // Réinitialiser la commune quand le département change
+  editNomStructure.value = ''
+  editCommuneSelectionnee.value = ''
+}
+
+function onEditCommuneChange() {
+  if (editCommuneSelectionnee.value !== '__autre__') {
+    editNomStructure.value = editCommuneSelectionnee.value
+  } else {
+    editNomStructure.value = ''
+  }
+}
+
+function onEditTutelleAgenceChange() {
+  // Réinitialiser les champs de tutelle si on change le type de tutelle
+  if (editTutelleAgence.value !== '__ministere__') {
+    editTutelleAgenceLibre.value = ''
+    editTutelleAgenceAutre.value = ''
+  }
+}
+
+function onEditTutelleMinistereChange() {
+  // Réinitialiser le champ libre si on change la sélection de ministère
+  if (editTutelleAgenceLibre.value !== '__autre__') {
+    editTutelleAgenceAutre.value = ''
+  }
+}
+
 async function sauvegarderModifications() {
   if (!compteSelectionne.value) return
 
   enregistrementEnCours.value = true
 
   try {
+    // Construction de la structure selon le nouveau système (comme dans Register.vue)
+    let structureFinal = editNomStructure.value
+    let typeInstitutionFinal = ''
+    let directionServiceFinal = ''
+
+    if (editTypeStructure.value === 'institution') {
+      typeInstitutionFinal = editTypeInstitution.value
+      directionServiceFinal = editDirectionService.value
+
+      // Déterminer le nom de la structure selon le type d'institution
+      if (editTypeInstitution.value === 'presidence') {
+        structureFinal = 'Présidence de la République'
+      } else if (editTypeInstitution.value === 'primature') {
+        structureFinal = 'Primature'
+      } else if (editTypeInstitution.value === 'ministere') {
+        // Utiliser le champ libre si "Autre" est sélectionné
+        structureFinal = editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
+      } else if (editTypeInstitution.value === 'autre_institution') {
+        structureFinal = editNomInstitution.value
+      }
+    }
+
+    // Pour les agences, combiner nom agence et tutelle
+    if (editTypeStructure.value === 'agence' && editNomAgence.value && editTutelleAgence.value) {
+      let tutelleFinal = editTutelleAgence.value
+      if (editTutelleAgence.value === '__ministere__') {
+        // Utiliser le champ libre si "Autre" est sélectionné pour le ministère de tutelle
+        tutelleFinal = editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
+      }
+      structureFinal = `${editNomAgence.value} - ${tutelleFinal}`
+    }
+
     const response = await axios.put(`/api/admin/users/${compteSelectionne.value.id}`, {
       display_name: compteSelectionne.value.display_name,
       telephone: compteSelectionne.value.telephone,
       fonction: compteSelectionne.value.fonction,
-      type_structure: compteSelectionne.value.type_structure,
-      type_institution: compteSelectionne.value.type_institution,
-      nom_structure: compteSelectionne.value.nom_structure,
-      direction_service: compteSelectionne.value.direction_service,
+      type_structure: editTypeStructure.value,
+      type_institution: typeInstitutionFinal,
+      nom_structure: structureFinal,
+      direction_service: directionServiceFinal,
       role: user?.role
     })
 
@@ -573,56 +965,6 @@ function formatDate(dateStr) {
   })
 }
 
-// Fonctions pour le formulaire hiérarchique de structure
-function getNomStructureLabel() {
-  if (!compteSelectionne.value) return 'Nom de la structure'
-  const type = compteSelectionne.value.type_structure
-  if (type === 'institution') {
-    const typeInst = compteSelectionne.value.type_institution
-    if (typeInst === 'ministere') return 'Nom du ministère'
-    if (typeInst === 'autre_institution') return 'Nom de l\'institution'
-  }
-  if (type === 'collectivite') return 'Nom de la collectivité'
-  if (type === 'agence') return 'Nom de l\'agence / établissement'
-  return 'Nom de la structure'
-}
-
-function getNomStructurePlaceholder() {
-  if (!compteSelectionne.value) return ''
-  const type = compteSelectionne.value.type_structure
-  if (type === 'institution') {
-    const typeInst = compteSelectionne.value.type_institution
-    if (typeInst === 'ministere') return 'Ex: Ministère de l\'Économie, du Plan et de la Coopération'
-    if (typeInst === 'autre_institution') return 'Ex: Conseil économique, social et environnemental'
-  }
-  if (type === 'collectivite') return 'Ex: Région de Dakar'
-  if (type === 'agence') return 'Ex: Agence de Développement Municipal'
-  return 'Nom de la structure'
-}
-
-function onTypeStructureChange() {
-  if (!compteSelectionne.value) return
-  // Réinitialiser les champs dépendants
-  compteSelectionne.value.type_institution = ''
-  compteSelectionne.value.nom_structure = ''
-  compteSelectionne.value.direction_service = ''
-}
-
-function onTypeInstitutionChange() {
-  if (!compteSelectionne.value) return
-  const typeInst = compteSelectionne.value.type_institution
-
-  // Auto-remplir pour présidence et primature
-  if (typeInst === 'presidence') {
-    compteSelectionne.value.nom_structure = 'Présidence de la République'
-  } else if (typeInst === 'primature') {
-    compteSelectionne.value.nom_structure = 'Primature'
-  } else {
-    // Réinitialiser pour les autres types
-    compteSelectionne.value.nom_structure = ''
-  }
-  compteSelectionne.value.direction_service = ''
-}
 
 function retourDashboard() {
   // Déterminer la route du dashboard selon le rôle
@@ -1125,18 +1467,28 @@ function getTypeInstitutionLabel(type) {
   font-size: 0.9rem;
 }
 
-.form-group-modal input {
+.form-group-modal input,
+.form-group-modal select {
   padding: 0.75rem;
   border: 1px solid #cbd5e0;
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.form-group-modal input:focus {
+.form-group-modal input:focus,
+.form-group-modal select:focus {
   outline: none;
   border-color: #4299e1;
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.form-group-modal select:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .readonly-field {
