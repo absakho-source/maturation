@@ -342,7 +342,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 'users', // 'users', 'projects' ou 'stats'
+      activeTab: 'projects', // 'users', 'projects', 'stats' ou 'carte'
 
       // Métriques de performance
       metrics: {
