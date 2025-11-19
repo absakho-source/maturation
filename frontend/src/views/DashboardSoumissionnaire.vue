@@ -82,6 +82,7 @@
 
           <!-- Organisme de tutelle - Sélection hiérarchique -->
           <div class="form-section-title">Organisme de tutelle</div>
+          <p v-if="isOrganismeTutelleFrozen" class="frozen-section-hint">⚠️ Ces champs sont pré-remplis et non modifiables pour votre compte</p>
           <div class="form-row">
             <div class="form-group full-width">
               <label>Type d'organisme de tutelle *</label>
@@ -92,7 +93,6 @@
                 <option value="agence">Agence / Établissement public</option>
                 <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
               </select>
-              <small v-if="isOrganismeTutelleFrozen" class="frozen-field-hint">⚠️ Ce champ est pré-rempli et non modifiable pour votre compte</small>
             </div>
           </div>
 
@@ -1710,6 +1710,18 @@ export default {
 }
 
 /* Champs figés (frozen) */
+.frozen-section-hint {
+  display: block;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0.75rem 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
 .frozen-field-hint {
   display: block;
   margin-top: 0.5rem;
