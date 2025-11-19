@@ -5,11 +5,11 @@
 
 ## Contexte
 
-La plateforme de soumission de projets de maturation de la DGPPE sera hébergée sur un **serveur Windows Server ANSD**, mais doit être accessible via l'URL :
+La plateforme de soumission de projets de maturation de la DGPPE sera hébergée sur un **serveur Ubuntu 22.04 LTS ANSD**, mais doit être accessible via l'URL :
 
 **`https://www.dgppe.sn/maturation`**
 
-Le domaine `www.dgppe.sn` étant géré par la SONATEL, il est nécessaire de configurer un **reverse proxy** depuis le serveur SONATEL vers le serveur Windows ANSD.
+Le domaine `www.dgppe.sn` étant géré par la SONATEL, il est nécessaire de configurer un **reverse proxy** depuis le serveur SONATEL vers le serveur Ubuntu ANSD.
 
 ---
 
@@ -20,11 +20,11 @@ Utilisateur
     ↓
 https://www.dgppe.sn/maturation
     ↓
-[Serveur SONATEL - www.dgppe.sn (Linux/Nginx)]
+[Serveur SONATEL - www.dgppe.sn (Nginx)]
     ↓ (reverse proxy HTTP)
-http://<IP_SERVEUR_WINDOWS_ANSD>
+http://<IP_SERVEUR_ANSD>
     ↓
-[Serveur Windows Server ANSD - IIS 10 - Plateforme Maturation]
+[Serveur Ubuntu ANSD - Nginx - Plateforme Maturation]
 ```
 
 **Flux de requêtes :**
