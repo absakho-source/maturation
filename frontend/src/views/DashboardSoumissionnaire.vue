@@ -688,16 +688,24 @@ export default {
         const resRegions = await fetch('/api/data/regions');
         if (resRegions.ok) {
           this.regions = await resRegions.json();
+          console.log('[DASHBOARD] Régions chargées:', this.regions.length, 'régions');
         }
 
         const resDept = await fetch('/api/data/departements?format=dict');
         if (resDept.ok) {
           this.departements = await resDept.json();
+          console.log('[DASHBOARD] Départements chargés:', Object.keys(this.departements).length, 'régions');
         }
 
         const resCommunes = await fetch('/api/data/communes?format=dict');
         if (resCommunes.ok) {
           this.communes = await resCommunes.json();
+          console.log('[DASHBOARD] Communes chargées:', Object.keys(this.communes).length, 'départements');
+
+          // DEBUG: Afficher un exemple de communes pour Dakar
+          if (this.communes['Dakar']) {
+            console.log('[DASHBOARD] Exemple - Communes de Dakar:', this.communes['Dakar'].slice(0, 3));
+          }
         }
       } catch (err) {
         console.error('Erreur lors du chargement des données territoriales:', err);
@@ -865,10 +873,45 @@ export default {
                 console.log('[DASHBOARD] nomInstitution défini à:', this.nomInstitution);
               }
             }
-            // Si c'est une collectivité, pré-remplir le nom de la collectivité
+            // Si c'est une collectivité, pré-remplir les champs de la collectivité
             else if (userData.type_structure === 'collectivite' && userData.nom_structure) {
-              this.nomCollectivite = userData.nom_structure;
-              console.log('[DASHBOARD] nomCollectivite défini à:', this.nomCollectivite);
+              const nomStructureValue = userData.nom_structure;
+              console.log('[DASHBOARD] Traitement collectivité - nom_structure:', nomStructureValue);
+
+              // Détecter le niveau et extraire le nom
+              if (nomStructureValue.startsWith('Région de ')) {
+                this.niveauCollectivite = 'region';
+                this.nomStructure = nomStructureValue; // Garder tel quel car le select ajoute "Région de"
+                console.log('[DASHBOARD] Niveau: région, nomStructure:', this.nomStructure);
+              } else if (nomStructureValue.startsWith('Département de ')) {
+                this.niveauCollectivite = 'departement';
+                this.nomStructure = nomStructureValue; // Garder tel quel car le select ajoute "Département de"
+                console.log('[DASHBOARD] Niveau: département, nomStructure:', this.nomStructure);
+              } else if (nomStructureValue.startsWith('Commune de ')) {
+                this.niveauCollectivite = 'commune';
+                // Extraire juste le nom sans le préfixe "Commune de"
+                // car le template du select ajoute déjà "Commune de" dans la value
+                const communeName = nomStructureValue.replace('Commune de ', '');
+
+                // Le select a :value="`Commune de ${c}`" donc on doit mettre la valeur complète
+                this.nomStructure = nomStructureValue; // Garder "Commune de Dakar-Plateau"
+
+                // Pour les communes, essayer de déduire région et département
+                // Par exemple "Dakar-Plateau" → région "Dakar", département "Dakar"
+                const parts = communeName.split('-');
+                if (parts.length > 0) {
+                  // Heuristique simple: le premier mot avant le tiret est souvent la région/département
+                  this.regionParente = parts[0];
+                  this.departementParent = parts[0];
+                  console.log('[DASHBOARD] Niveau: commune, nomStructure:', this.nomStructure);
+                  console.log('[DASHBOARD] Commune extraite:', communeName);
+                  console.log('[DASHBOARD] Région/Département déduits:', parts[0]);
+                }
+              } else {
+                // Cas par défaut: utiliser tel quel
+                this.nomStructure = nomStructureValue;
+                console.log('[DASHBOARD] Collectivité non reconnue, nomStructure:', this.nomStructure);
+              }
             }
             // Si c'est une agence, pré-remplir le nom de l'agence
             else if (userData.type_structure === 'agence' && userData.nom_structure) {
