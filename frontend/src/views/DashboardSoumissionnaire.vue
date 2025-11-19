@@ -542,6 +542,7 @@ export default {
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
       userAccountStatus: null, // Statut du compte utilisateur (verifie, non_verifie, suspendu)
+      userProfileData: null, // Données du profil utilisateur chargées depuis l'API
 
       ministeres: [], // Chargé dynamiquement depuis l'API (deprecated - use ministeresActifs)
       ministeresActifs: [], // Liste d'objets ministères actifs
@@ -615,9 +616,11 @@ export default {
     },
 
     isOrganismeTutelleFrozen() {
-      // Vérifier si l'utilisateur actuel est Abou Sakho
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      return user && user.username === 'abou.sakho@economie.gouv.sn';
+      // L'organisme de tutelle est figé si l'utilisateur a un profil complet
+      // (type_structure et type_institution renseignés lors de l'inscription)
+      return this.userProfileData &&
+             this.userProfileData.type_structure &&
+             this.userProfileData.type_institution;
     }
   },
   mounted() {
@@ -805,49 +808,36 @@ export default {
         if (response.ok) {
           const userData = await response.json();
 
-          // Pré-remplir la structure soumissionnaire
-          if (userData.nom_structure) {
+          // Stocker les données du profil pour la computed property isOrganismeTutelleFrozen
+          this.userProfileData = userData;
+
+          // Logique de pré-remplissage pour tous les utilisateurs
+          // Structure soumissionnaire: direction_service si disponible, sinon nom_structure (modifiable)
+          if (userData.direction_service) {
+            this.form.structure_soumissionnaire = userData.direction_service;
+          } else if (userData.nom_structure) {
             this.form.structure_soumissionnaire = userData.nom_structure;
           }
 
-          // Logique spéciale pour Abou Sakho (abou.sakho@economie.gouv.sn)
-          if (user.username === 'abou.sakho@economie.gouv.sn') {
-            // Structure soumissionnaire: pré-rempli avec direction_service si disponible, sinon nom_structure
-            // (modifiable par l'utilisateur)
-            if (userData.direction_service) {
-              this.form.structure_soumissionnaire = userData.direction_service;
-            } else if (userData.nom_structure) {
-              this.form.structure_soumissionnaire = userData.nom_structure;
-            }
+          // Si l'utilisateur a un profil complet (type_structure et type_institution renseignés),
+          // pré-remplir l'organisme de tutelle et le figer
+          if (userData.type_structure && userData.type_institution) {
+            // Pré-remplir les champs d'organisme de tutelle
+            this.typeOrganisme = userData.type_structure;
+            this.typeInstitution = userData.type_institution;
 
-            // Organisme de tutelle: pré-rempli avec les données du profil et figé
-            if (userData.type_structure) {
-              this.typeOrganisme = userData.type_structure;
-            }
-            if (userData.type_institution) {
-              this.typeInstitution = userData.type_institution;
-            }
-            if (userData.nom_structure) {
-              // Pour un ministère, mettre le nom dans nomMinistere
-              if (userData.type_institution === 'ministere') {
-                this.nomMinistere = userData.nom_structure;
-              } else if (userData.type_institution === 'presidence') {
-                this.nomInstitution = 'Présidence de la République';
-              } else if (userData.type_institution === 'primature') {
-                this.nomInstitution = 'Primature';
-              } else if (userData.type_institution === 'autre_institution') {
-                this.nomInstitution = userData.nom_structure;
-              }
+            // Remplir le champ approprié selon le type d'institution
+            if (userData.type_institution === 'ministere' && userData.nom_structure) {
+              this.nomMinistere = userData.nom_structure;
+            } else if (userData.type_institution === 'presidence') {
+              this.nomInstitution = 'Présidence de la République';
+            } else if (userData.type_institution === 'primature') {
+              this.nomInstitution = 'Primature';
+            } else if (userData.type_institution === 'autre_institution' && userData.nom_structure) {
+              this.nomInstitution = userData.nom_structure;
             }
 
             // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
-          } else {
-            // Pré-remplir l'organisme de tutelle si disponible (comportement par défaut)
-            if (userData.nom_structure) {
-              // Mettre la même valeur que la structure par défaut
-              // L'utilisateur pourra la modifier si nécessaire
-              this.nomStructure = userData.nom_structure;
-            }
           }
 
           // Pré-remplir les informations du point focal
