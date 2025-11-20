@@ -110,109 +110,6 @@ Reçu le {contact_message.date_creation.strftime('%d/%m/%Y à %H:%M')}
         return False
 
 
-def send_response_email(to_email, to_name, subject, original_message, response_text, responder_name):
-    """Envoyer la réponse par email au demandeur"""
-    try:
-        config = get_smtp_config()
-        smtp_host = config['host']
-        smtp_port = config['port']
-        smtp_user = config['user']
-        smtp_password = config['password']
-
-        if not smtp_user or not smtp_password:
-            print("[EMAIL] Configuration SMTP manquante")
-            return False
-
-        # Créer le message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"Réponse à votre demande: {subject}"
-        msg['From'] = f"PLASMAP - SCT <{smtp_user}>"
-        msg['To'] = to_email
-
-        # Version texte
-        text_content = f"""
-Bonjour {to_name},
-
-Nous avons bien reçu votre message concernant: {subject}
-
---- Votre message ---
-{original_message}
-
---- Notre réponse ---
-{response_text}
-
-Cordialement,
-{responder_name}
-Secrétariat du Comité de Technique
-PLASMAP - Plateforme de Soumission des Projets de Maturation
-"""
-
-        # Version HTML
-        html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: #1e3a8a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
-        .content {{ background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; }}
-        .message-box {{ background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #3b82f6; }}
-        .response-box {{ background: #ecfdf5; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #10b981; }}
-        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #64748b; }}
-        .label {{ font-weight: bold; color: #1e40af; margin-bottom: 5px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2 style="margin: 0;">PLASMAP</h2>
-            <p style="margin: 5px 0 0 0; font-size: 14px;">Plateforme de Soumission des Projets de Maturation</p>
-        </div>
-        <div class="content">
-            <p>Bonjour <strong>{to_name}</strong>,</p>
-            <p>Nous avons bien reçu votre message et y avons apporté une réponse.</p>
-
-            <div class="label">Objet: {subject}</div>
-
-            <div class="message-box">
-                <div class="label">Votre message:</div>
-                <p style="margin: 0; white-space: pre-wrap;">{original_message}</p>
-            </div>
-
-            <div class="response-box">
-                <div class="label">Notre réponse:</div>
-                <p style="margin: 0; white-space: pre-wrap;">{response_text}</p>
-            </div>
-
-            <p>Cordialement,<br><strong>{responder_name}</strong><br>Secrétariat du Comité Technique</p>
-        </div>
-        <div class="footer">
-            <p>DGPPE - Direction Générale de la Planification et des Politiques Économiques</p>
-            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre directement.</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-        msg.attach(MIMEText(text_content, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-
-        # Envoyer l'email
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.send_message(msg)
-
-        print(f"[EMAIL] Réponse envoyée à {to_email}")
-        return True
-
-    except Exception as e:
-        print(f"[EMAIL] Erreur envoi: {e}")
-        return False
-
-
 @contact_bp.route('/api/contact', methods=['POST'])
 def submit_contact():
     """Soumettre un message de contact"""
@@ -392,37 +289,9 @@ def update_contact_message(message_id):
 
         if 'statut' in data:
             message.statut = data['statut']
-        if 'traite_par' in data:
-            message.traite_par = data['traite_par']
-        if 'reponse' in data:
-            message.reponse = data['reponse']
-            message.date_reponse = datetime.utcnow()
-
-            # Envoyer la réponse par email
-            email_sent = send_response_email(
-                to_email=message.email,
-                to_name=message.nom,
-                subject=message.objet,
-                original_message=message.message,
-                response_text=data['reponse'],
-                responder_name=data.get('traite_par', 'Secrétariat SCT')
-            )
-
-            if not email_sent:
-                print(f"[CONTACT] Email non envoyé pour message {message_id} - config SMTP manquante")
-
-        if 'assigne_a' in data:
-            message.assigne_a = data['assigne_a']
-            message.date_assignation = datetime.utcnow()
 
         db.session.commit()
-
-        # Retourner un message approprié
-        response_msg = "Message mis à jour"
-        if 'reponse' in data:
-            response_msg = "Réponse enregistrée et envoyée par email" if email_sent else "Réponse enregistrée (email non envoyé - config SMTP manquante)"
-
-        return jsonify({"message": response_msg, "email_sent": email_sent if 'reponse' in data else None}), 200
+        return jsonify({"message": "Message mis à jour"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

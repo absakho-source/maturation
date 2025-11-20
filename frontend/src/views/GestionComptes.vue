@@ -253,10 +253,6 @@
               📎 {{ pj.split('/').pop() }}
             </a>
           </div>
-          <div v-if="msg.reponse" class="message-reponse">
-            <strong>Réponse ({{ msg.traite_par }}):</strong>
-            <p>{{ msg.reponse }}</p>
-          </div>
           <div class="message-actions">
             <button
               v-if="msg.statut === 'nouveau'"
@@ -265,50 +261,16 @@
             >
               ✓ Marquer lu
             </button>
-            <button
-              @click="ouvrirModalReponse(msg)"
+            <a
+              :href="`mailto:${msg.email}?subject=Re: ${msg.objet}`"
               class="btn-action btn-repondre"
             >
-              ✉️ Répondre
-            </button>
+              ✉️ Répondre par email
+            </a>
           </div>
         </div>
       </div>
     </div><!-- Fin onglet Messages -->
-
-    <!-- Modal réponse message -->
-    <div v-if="messageSelectionne" class="modal-overlay" @click.self="fermerModalMessage">
-      <div class="modal-content modal-message">
-        <div class="modal-header">
-          <h2>Répondre au message</h2>
-          <button @click="fermerModalMessage" class="btn-close">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="message-detail">
-            <p><strong>De:</strong> {{ messageSelectionne.nom }} ({{ messageSelectionne.email }})</p>
-            <p><strong>Objet:</strong> {{ messageSelectionne.objet }}</p>
-            <p><strong>Message:</strong></p>
-            <div class="message-original">{{ messageSelectionne.message }}</div>
-          </div>
-          <div class="form-group-modal">
-            <label>Votre réponse :</label>
-            <textarea
-              v-model="reponseMessage"
-              rows="6"
-              placeholder="Tapez votre réponse ici..."
-            ></textarea>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="fermerModalMessage" class="btn-modal-cancel">
-              Annuler
-            </button>
-            <button @click="envoyerReponse" class="btn-modal-save" :disabled="!reponseMessage.trim()">
-              Envoyer la réponse
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Modal édition des détails -->
     <div v-if="compteSelectionne" class="modal-overlay" @click.self="fermerDetails">
@@ -654,11 +616,6 @@ const messagesContact = ref([])
 const messagesFiltresData = ref([])
 const filtreStatutMessage = ref('')
 const loadingMessages = ref(false)
-const messageSelectionne = ref(null)
-const reponseMessage = ref('')
-const messageAAssigner = ref(null)
-const utilisateurAssigne = ref('')
-const utilisateursAssignables = ref([])
 
 // Listes de données pour le formulaire hiérarchique
 const regions = ref([])
@@ -1170,14 +1127,6 @@ async function chargerMessages() {
       params: { role: user?.role }
     })
     messagesContact.value = response.data
-
-    // Charger aussi les utilisateurs assignables (admin, secrétariat)
-    const usersResponse = await axios.get('/api/admin/users', {
-      params: { role: user?.role }
-    })
-    utilisateursAssignables.value = usersResponse.data.filter(u =>
-      ['admin', 'secretariatsct'].includes(u.role)
-    )
   } catch (err) {
     console.error('Erreur chargement messages:', err)
   } finally {
@@ -1209,74 +1158,6 @@ async function marquerLu(messageId) {
   } catch (err) {
     console.error('Erreur marquer lu:', err)
   }
-}
-
-function ouvrirModalReponse(msg) {
-  messageSelectionne.value = msg
-  reponseMessage.value = ''
-}
-
-async function envoyerReponse() {
-  if (!messageSelectionne.value || !reponseMessage.value.trim()) return
-
-  try {
-    await axios.put(`/api/contact/messages/${messageSelectionne.value.id}`, {
-      statut: 'traite',
-      reponse: reponseMessage.value,
-      traite_par: user?.username || user?.display_name
-    })
-
-    // Mettre à jour localement
-    const msg = messagesContact.value.find(m => m.id === messageSelectionne.value.id)
-    if (msg) {
-      msg.statut = 'traite'
-      msg.reponse = reponseMessage.value
-      msg.traite_par = user?.username || user?.display_name
-    }
-
-    fermerModalMessage()
-    alert('Réponse enregistrée avec succès')
-  } catch (err) {
-    console.error('Erreur envoi réponse:', err)
-    alert('Erreur lors de l\'envoi de la réponse')
-  }
-}
-
-function fermerModalMessage() {
-  messageSelectionne.value = null
-  reponseMessage.value = ''
-}
-
-function ouvrirModalAssigner(msg) {
-  messageAAssigner.value = msg
-  utilisateurAssigne.value = msg.assigne_a || ''
-}
-
-async function confirmerAssignation() {
-  if (!messageAAssigner.value || !utilisateurAssigne.value) return
-
-  try {
-    await axios.put(`/api/contact/messages/${messageAAssigner.value.id}`, {
-      assigne_a: utilisateurAssigne.value
-    })
-
-    // Mettre à jour localement
-    const msg = messagesContact.value.find(m => m.id === messageAAssigner.value.id)
-    if (msg) {
-      msg.assigne_a = utilisateurAssigne.value
-    }
-
-    fermerModalAssigner()
-    alert('Message assigné avec succès')
-  } catch (err) {
-    console.error('Erreur assignation:', err)
-    alert('Erreur lors de l\'assignation')
-  }
-}
-
-function fermerModalAssigner() {
-  messageAAssigner.value = null
-  utilisateurAssigne.value = ''
 }
 </script>
 
