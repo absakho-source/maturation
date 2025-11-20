@@ -24,11 +24,11 @@
       <div class="contact-container">
       <div class="contact-header">
         <div class="back-links">
-          <router-link to="/login" class="back-link">
+          <router-link :to="backRoute" class="back-link">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
-            Retour à la connexion
+            {{ backLabel }}
           </router-link>
         </div>
         <h1>Contactez-nous</h1>
@@ -189,6 +189,22 @@ export default {
       error: null,
       submitted: false
     };
+  },
+  computed: {
+    user() {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    },
+    backRoute() {
+      if (this.user) {
+        const role = this.user.role;
+        if (role && role.toLowerCase().startsWith('evaluateur')) return '/evaluateur';
+        return `/${role}`;
+      }
+      return '/login';
+    },
+    backLabel() {
+      return this.user ? 'Retour au tableau de bord' : 'Retour à la connexion';
+    }
   },
   created() {
     this.generateCaptcha();
