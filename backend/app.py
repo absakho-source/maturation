@@ -1406,7 +1406,9 @@ def get_users():
             "id": u.id,
             "username": u.username,
             "role": u.role,
-            "display_name": u.display_name or u.username
+            "display_name": u.display_name or u.username,
+            "email": u.email if hasattr(u, 'email') else None,
+            "telephone": u.telephone if hasattr(u, 'telephone') else None
         } for u in users]
         return jsonify(result), 200
     except Exception as e:
@@ -1496,6 +1498,8 @@ def login():
             "role": user.role,
             "display_name": user.display_name or user.username,
             "nom": user.username,
+            "email": getattr(user, 'email', None),
+            "telephone": user.telephone if hasattr(user, 'telephone') else None,
             "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'actif'
         }), 200
 

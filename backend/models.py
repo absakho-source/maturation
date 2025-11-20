@@ -11,6 +11,7 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(50))
     display_name = db.Column(db.String(100), nullable=True)
+    email = db.Column(db.String(150), nullable=True)  # Email de l'utilisateur
     nom_complet = db.Column(db.String(200), nullable=True)  # Nom complet de l'utilisateur
     fonction = db.Column(db.String(255), nullable=True)  # Fonction/Poste
     telephone = db.Column(db.String(20), nullable=True)

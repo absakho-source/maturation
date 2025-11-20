@@ -120,7 +120,10 @@ export default {
         this.accounts = users.map(u => ({
           value: u.username,
           displayName: u.display_name || u.username,
-          roleLabel: this.getRoleLabelByRole(u.role)
+          roleLabel: this.getRoleLabelByRole(u.role),
+          email: u.email || null,
+          telephone: u.telephone || null,
+          id: u.id
         }));
       } catch (e) {
         console.error("Erreur de chargement des comptes:", e);
@@ -162,15 +165,18 @@ export default {
       if (!uname) return;
       const role = this.rolesByUsername[uname] || uname;
 
-      // Trouver le display_name depuis la liste des accounts
+      // Trouver les infos depuis la liste des accounts
       const account = this.accounts.find(acc => acc.value === uname);
       const displayName = account ? account.displayName : uname;
 
       const user = {
+        id: account ? account.id : null,
         username: uname,
         nom: uname,
         role,
-        display_name: displayName
+        display_name: displayName,
+        email: account ? account.email : null,
+        telephone: account ? account.telephone : null
       };
       localStorage.setItem("user", JSON.stringify(user));
 
