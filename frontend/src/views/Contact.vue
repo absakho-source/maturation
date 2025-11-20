@@ -124,6 +124,7 @@
           <div class="header-info">
             <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
             <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
+            <p class="header-platform">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</p>
           </div>
         </div>
         <div class="header-right">
@@ -131,13 +132,6 @@
         </div>
       </div>
     </header>
-
-    <!-- Bandeau nom plateforme -->
-    <div class="platform-banner">
-      <span class="platform-name">PLASMAP</span>
-      <span class="platform-separator">•</span>
-      <span class="platform-desc">Plateforme de Suivi de la Maturation des Projets</span>
-    </div>
 
     <div class="contact-page">
       <div class="contact-container">
@@ -521,6 +515,13 @@ export default {
   color: var(--dgppe-text-muted, #6b7280);
   margin: 0;
   line-height: 1.2;
+}
+
+.header-platform {
+  font-size: 0.8rem;
+  color: var(--dgppe-primary, #2e6b6b);
+  margin: 0.25rem 0 0 0;
+  font-weight: 500;
 }
 
 .btn-outline {

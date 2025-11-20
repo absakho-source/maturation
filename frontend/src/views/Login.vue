@@ -1,10 +1,28 @@
 <template>
   <div class="login-page">
+    <!-- En-tête public -->
+    <header class="public-header">
+      <div class="header-container">
+        <div class="header-left">
+          <router-link to="/">
+            <img :src="logoUrl" alt="Logo DGPPE" class="header-logo" />
+          </router-link>
+        </div>
+        <div class="header-center">
+          <div class="header-info">
+            <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
+            <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
+            <p class="header-platform">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</p>
+          </div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </header>
+
     <main class="login-main">
       <div class="login-container">
-        <!-- Logo DGPPE officiel -->
+        <!-- Titre connexion -->
         <div class="login-header">
-          <img src="/src/assets/logo-dgppe.png" alt="Logo DGPPE" class="logo-image" @click="$router.push('/')" style="cursor: pointer;" />
           <h1 class="login-title">Connexion</h1>
           <p class="login-subtitle">Sélectionnez votre profil pour accéder à la plateforme</p>
         </div>
@@ -67,10 +85,13 @@
 </template>
 
 <script>
+import logoUrl from '../assets/logo-dgppe.png'
+
 export default {
   name: "Login",
   data() {
     return {
+      logoUrl,
       accounts: [],
       rolesByUsername: {}
     };
@@ -184,6 +205,93 @@ export default {
   background: #f8f9fa;
   display: flex;
   flex-direction: column;
+}
+
+/* ==================== EN-TÊTE PUBLIC ==================== */
+.public-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1rem 0;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 50px;
+  width: auto;
+  transition: opacity 0.2s ease;
+}
+
+.header-logo:hover {
+  opacity: 0.8;
+}
+
+.header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.header-info {
+  text-align: center;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2e6b6b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-platform {
+  font-size: 0.8rem;
+  color: #2e6b6b;
+  margin: 0.25rem 0 0 0;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .header-left {
+    justify-content: center;
+  }
+
+  .header-right {
+    display: none;
+  }
 }
 
 .login-main {
