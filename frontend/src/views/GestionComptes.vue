@@ -246,7 +246,7 @@
             <a
               v-for="(pj, idx) in msg.pieces_jointes"
               :key="idx"
-              :href="`${backendUrl}/${pj}`"
+              :href="`${backendUrl}/api/${pj}`"
               target="_blank"
               class="piece-link"
             >
