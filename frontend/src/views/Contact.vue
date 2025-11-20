@@ -10,8 +10,8 @@
         </div>
         <div class="header-center">
           <div class="header-info">
-            <h2 class="header-title">PLASMAP</h2>
-            <p class="header-subtitle">Plateforme de Suivi de la Maturation des Projets</p>
+            <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
+            <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
           </div>
         </div>
         <div class="header-right">
