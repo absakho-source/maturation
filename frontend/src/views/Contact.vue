@@ -20,6 +20,13 @@
       </div>
     </header>
 
+    <!-- Bandeau nom plateforme -->
+    <div class="platform-banner">
+      <span class="platform-name">PLASMAP</span>
+      <span class="platform-separator">•</span>
+      <span class="platform-desc">Plateforme de Suivi de la Maturation des Projets</span>
+    </div>
+
     <div class="contact-page">
       <div class="contact-container">
       <div class="contact-header">
@@ -162,6 +169,16 @@
       </div>
     </div>
   </div>
+
+    <!-- Footer -->
+    <footer class="public-footer">
+      <div class="footer-container">
+        <div class="footer-simple">
+          <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
+          <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -204,6 +221,9 @@ export default {
     },
     backLabel() {
       return this.user ? 'Retour au tableau de bord' : 'Retour à la connexion';
+    },
+    currentYear() {
+      return new Date().getFullYear();
     }
   },
   created() {
@@ -307,6 +327,28 @@ export default {
 
 .header-logo:hover {
   opacity: 0.8;
+}
+
+/* Bandeau nom plateforme */
+.platform-banner {
+  background: var(--dgppe-primary, #2e6b6b);
+  color: white;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.platform-name {
+  font-weight: 600;
+}
+
+.platform-separator {
+  margin: 0 0.5rem;
+  opacity: 0.7;
+}
+
+.platform-desc {
+  opacity: 0.9;
 }
 
 .header-center {
@@ -605,5 +647,46 @@ export default {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Footer */
+.public-footer {
+  background: linear-gradient(135deg, var(--dgppe-primary, #2e6b6b) 0%, #1e40af 100%);
+  color: white;
+  padding: 1rem 0;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer-simple {
+  text-align: center;
+}
+
+.footer-simple p:first-child {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.footer-simple p:last-child {
+  font-size: 0.75rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-link {
+  color: white;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.8;
 }
 </style>
