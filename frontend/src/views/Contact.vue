@@ -3,11 +3,15 @@
     <!-- En-tête public (même style que Home) -->
     <header class="public-header">
       <div class="header-container">
-        <div class="header-spacer"></div>
+        <div class="header-left">
+          <router-link to="/">
+            <img :src="logoUrl" alt="Logo DGPPE" class="header-logo" />
+          </router-link>
+        </div>
         <div class="header-center">
           <div class="header-info">
-            <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
-            <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
+            <h2 class="header-title">PLASMAP</h2>
+            <p class="header-subtitle">Plateforme de Suivi de la Maturation des Projets</p>
           </div>
         </div>
         <div class="header-right">
@@ -19,12 +23,14 @@
     <div class="contact-page">
       <div class="contact-container">
       <div class="contact-header">
-        <router-link to="/" class="back-link">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Retour à l'accueil
-        </router-link>
+        <div class="back-links">
+          <router-link to="/login" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour à la connexion
+          </router-link>
+        </div>
         <h1>Contactez-nous</h1>
         <p class="subtitle">Une question sur la plateforme PLASMAP ? Nous sommes là pour vous aider.</p>
       </div>
@@ -160,10 +166,13 @@
 </template>
 
 <script>
+import logoUrl from '../assets/logo-dgppe.png'
+
 export default {
   name: 'Contact',
   data() {
     return {
+      logoUrl,
       form: {
         nom: '',
         email: '',
@@ -269,6 +278,21 @@ export default {
   gap: 1rem;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 50px;
+  width: auto;
+  transition: opacity 0.2s ease;
+}
+
+.header-logo:hover {
+  opacity: 0.8;
+}
+
 .header-center {
   display: flex;
   justify-content: center;
@@ -333,13 +357,17 @@ export default {
     gap: 0.75rem;
   }
 
-  .header-spacer {
-    display: none;
+  .header-left {
+    justify-content: center;
   }
 
   .header-right {
     justify-content: center;
   }
+}
+
+.back-links {
+  margin-bottom: 1rem;
 }
 
 .contact-container {

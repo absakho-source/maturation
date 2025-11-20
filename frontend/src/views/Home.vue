@@ -40,6 +40,13 @@
                 </svg>
                 Accéder à la plateforme
               </button>
+              <button @click="$router.push('/contact')" class="btn btn-outline btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Nous contacter
+              </button>
             </div>
           </div>
         </div>
@@ -108,7 +115,6 @@
         <div class="footer-simple">
           <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
           <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
-          <p class="footer-contact"><router-link to="/contact">Nous contacter</router-link></p>
         </div>
       </div>
     </footer>
@@ -478,21 +484,6 @@ export default {
 
 .footer-link:hover {
   opacity: 0.8;
-}
-
-.footer-contact {
-  margin-top: var(--dgppe-spacing-2) !important;
-  font-size: 0.7rem !important;
-}
-
-.footer-contact a {
-  color: rgba(255, 255, 255, 0.6);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.footer-contact a:hover {
-  color: white;
 }
 
 @media (max-width: 768px) {
