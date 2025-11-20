@@ -1407,7 +1407,7 @@ def get_users():
             "username": u.username,
             "role": u.role,
             "display_name": u.display_name or u.username,
-            "email": u.email if hasattr(u, 'email') else None,
+            "email": (u.email if hasattr(u, 'email') and u.email else u.username) if '@' in u.username else None,
             "telephone": u.telephone if hasattr(u, 'telephone') else None
         } for u in users]
         return jsonify(result), 200
