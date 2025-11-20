@@ -37,7 +37,8 @@
       "Bash(ssh:*)",
       "Bash(find:*)",
       "Bash(pip install:*)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(timeout 5 python3:*)"
     ],
     "deny": [],
     "ask": []

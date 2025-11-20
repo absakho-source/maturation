@@ -6,7 +6,7 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -135,6 +135,48 @@ def get_statut_soumissionnaire(projet):
     else:
         # Tous les autres statuts internes = "en instruction"
         return "en instruction"
+
+# ============ FONCTIONS HELPERS POUR LES NOTIFICATIONS ============
+
+def create_notification_for_user(user_id, notif_type, titre, message, project_id=None, lien=None, priorite_email=False):
+    """Crée une notification pour un utilisateur"""
+    try:
+        notification = Notification(
+            user_id=user_id,
+            project_id=project_id,
+            type=notif_type,
+            titre=titre,
+            message=message,
+            lien=lien,
+            priorite_email=priorite_email
+        )
+        db.session.add(notification)
+        return notification
+    except Exception as e:
+        print(f"[NOTIFICATION] Erreur création: {e}")
+        return None
+
+def notify_user_by_username(username, notif_type, titre, message, project_id=None, lien=None, priorite_email=False):
+    """Crée une notification pour un utilisateur par son username"""
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return create_notification_for_user(user.id, notif_type, titre, message, project_id, lien, priorite_email)
+    return None
+
+def notify_users_by_role(role, notif_type, titre, message, project_id=None, lien=None, priorite_email=False):
+    """Crée des notifications pour tous les utilisateurs d'un rôle donné"""
+    users = User.query.filter_by(role=role).all()
+    for user in users:
+        create_notification_for_user(user.id, notif_type, titre, message, project_id, lien, priorite_email)
+
+def notify_project_owner(project, notif_type, titre, message, lien=None, priorite_email=False):
+    """Notifie le propriétaire d'un projet"""
+    if project and project.soumissionnaire_id:
+        return create_notification_for_user(
+            project.soumissionnaire_id, notif_type, titre, message,
+            project.id, lien, priorite_email
+        )
+    return None
 
 # Migration de base de données: ajout automatique des colonnes manquantes
 def ensure_sqlite_columns():
@@ -1016,6 +1058,94 @@ def traiter_project(project_id):
             hist = Historique(project_id=project_id, action=action, auteur=auteur, role=role)
             db.session.add(hist)
             db.session.commit()
+
+        # ============ NOTIFICATIONS ============
+        try:
+            projet_titre = p.titre[:50] + "..." if len(p.titre) > 50 else p.titre
+            lien_projet = f"/projet/{project_id}"
+
+            # Notification pour assignation d'évaluateur
+            if "evaluateur_nom" in data and p.evaluateur_nom:
+                notify_user_by_username(
+                    p.evaluateur_nom,
+                    "assignation",
+                    "Nouveau projet assigné",
+                    f"Le projet '{projet_titre}' vous a été assigné pour évaluation.",
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification pour compléments demandés au soumissionnaire
+            if p.statut == "compléments demandés":
+                notify_project_owner(
+                    p,
+                    "complement_requis",
+                    "Compléments demandés",
+                    f"Des compléments ont été demandés pour votre projet '{projet_titre}'.",
+                    lien_projet,
+                    priorite_email=True
+                )
+
+            # Notification pour avis émis (vers secrétariat)
+            if p.statut == "évalué":
+                notify_users_by_role(
+                    "secretariatsct",
+                    "avis_rendu",
+                    "Avis en attente de validation",
+                    f"Le projet '{projet_titre}' a reçu un avis et attend votre validation.",
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification pour validation présidence SCT
+            if p.statut == "en attente validation presidencesct":
+                notify_users_by_role(
+                    "presidencesct",
+                    "statut_change",
+                    "Projet à valider",
+                    f"Le projet '{projet_titre}' attend votre validation.",
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification pour validation par présidence SCT (vers comité)
+            if p.statut == "validé par presidencesct":
+                notify_users_by_role(
+                    "presidencecomite",
+                    "statut_change",
+                    "Projet à examiner",
+                    f"Le projet '{projet_titre}' a été validé par la Présidence SCT et attend votre décision.",
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification pour décision finale au soumissionnaire
+            if p.statut == "décision finale confirmée":
+                decision_text = "approuvé" if p.decision_finale == "confirme" else "non retenu"
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Décision finale rendue",
+                    f"Votre projet '{projet_titre}' a été {decision_text} par le Comité.",
+                    lien_projet,
+                    priorite_email=True
+                )
+
+            # Notification pour rejet
+            if p.statut == "rejeté" and "avis_presidencesct" in data:
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Projet non retenu",
+                    f"Votre projet '{projet_titre}' n'a pas été retenu par la Présidence SCT.",
+                    lien_projet,
+                    priorite_email=True
+                )
+
+            db.session.commit()
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur lors de la création des notifications: {notif_error}")
+            # Ne pas bloquer le traitement principal si les notifications échouent
 
         return jsonify({"message": "Traitement effectué"}), 200
 
@@ -2878,6 +3008,45 @@ def add_project_message(project_id):
         db.session.add(hist)
         db.session.commit()
 
+        # ============ NOTIFICATION POUR NOUVEAU MESSAGE ============
+        try:
+            projet_titre = project.titre[:40] + "..." if len(project.titre) > 40 else project.titre
+            lien_projet = f"/projet/{project_id}"
+
+            # Notifier selon l'auteur du message
+            if auteur_role == "soumissionnaire":
+                # Soumissionnaire envoie → notifier évaluateur et secrétariat
+                if project.evaluateur_nom:
+                    notify_user_by_username(
+                        project.evaluateur_nom,
+                        "nouveau_message",
+                        "Nouveau message",
+                        f"Nouveau message du soumissionnaire sur '{projet_titre}'.",
+                        project_id,
+                        lien_projet
+                    )
+                notify_users_by_role(
+                    "secretariatsct",
+                    "nouveau_message",
+                    "Nouveau message",
+                    f"Nouveau message du soumissionnaire sur '{projet_titre}'.",
+                    project_id,
+                    lien_projet
+                )
+            else:
+                # Personnel DGPPE envoie → notifier le soumissionnaire
+                notify_project_owner(
+                    project,
+                    "nouveau_message",
+                    "Nouveau message",
+                    f"Nouveau message sur votre projet '{projet_titre}'.",
+                    lien_projet
+                )
+
+            db.session.commit()
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur message: {notif_error}")
+
         return jsonify({
             "message": "Message ajouté avec succès",
             "data": message.to_dict()
@@ -3361,6 +3530,14 @@ try:
     print("Ministere routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import ministere routes: {e}")
+
+# Import and register notification routes
+try:
+    from routes.notification_routes import notification_bp
+    app.register_blueprint(notification_bp, url_prefix='')
+    print("Notification routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import notification routes: {e}")
 
 @app.route("/api/admin/run-migration", methods=["POST"])
 def run_migration():

@@ -116,6 +116,8 @@
           </svg>
           Mon Profil
         </router-link>
+        <!-- Notification Bell -->
+        <NotificationBell />
         <div class="user-info">
           <div class="user-details">
             <span class="user-display-name">{{ user.display_name || user.username }}</span>
@@ -137,8 +139,13 @@
 </template>
 
 <script>
+import NotificationBell from './NotificationBell.vue';
+
 export default {
   name: "Header",
+  components: {
+    NotificationBell
+  },
   data() {
     return {
       dropdownOpen: false,

@@ -598,3 +598,47 @@ class ConnexionLog(db.Model):
             'statut': self.statut,
             'raison_echec': self.raison_echec
         }
+
+
+class Notification(db.Model):
+    """Modèle pour les notifications in-app"""
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True, index=True)
+
+    # Type de notification pour filtrage et icônes
+    type = db.Column(db.String(50), nullable=False)  # 'statut_change', 'nouveau_message', 'complement_requis', 'avis_rendu', 'document_ajoute', 'assignation'
+
+    # Contenu
+    titre = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+
+    # Lien vers l'action (ex: /projects/123)
+    lien = db.Column(db.String(300), nullable=True)
+
+    # État
+    lu = db.Column(db.Boolean, default=False, index=True)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    date_lecture = db.Column(db.DateTime, nullable=True)
+
+    # Pour les emails - si cette notification doit déclencher un email
+    email_envoye = db.Column(db.Boolean, default=False)
+    priorite_email = db.Column(db.Boolean, default=False)  # True = envoyer email immédiat
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'project_id': self.project_id,
+            'type': self.type,
+            'titre': self.titre,
+            'message': self.message,
+            'lien': self.lien,
+            'lu': self.lu,
+            'date_creation': self.date_creation.isoformat() if self.date_creation else None,
+            'date_lecture': self.date_lecture.isoformat() if self.date_lecture else None,
+            'email_envoye': self.email_envoye,
+            'priorite_email': self.priorite_email
+        }
