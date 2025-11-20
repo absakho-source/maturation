@@ -233,6 +233,22 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding project.{c}")
                 cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
 
+    # Migration pour la table contact_messages
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
+    if cur.fetchone():
+        cur.execute("PRAGMA table_info(contact_messages)")
+        cols = {r[1] for r in cur.fetchall()}
+        needed_contact = {
+            "pieces_jointes": "TEXT",
+            "assigne_a": "VARCHAR(100)",
+            "date_assignation": "DATETIME",
+            "date_reponse": "DATETIME"
+        }
+        for c, cdef in needed_contact.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding contact_messages.{c}")
+                cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
+
     con.commit()
     con.close()
 
