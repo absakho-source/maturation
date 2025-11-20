@@ -673,6 +673,11 @@ class ContactMessage(db.Model):
     # Pièces jointes (JSON: liste de chemins de fichiers)
     pieces_jointes = db.Column(db.Text, nullable=True)
 
+    # Affectation à un utilisateur
+    assigne_a = db.Column(db.String(100), nullable=True)  # Username de la personne assignée
+    date_assignation = db.Column(db.DateTime, nullable=True)
+    date_reponse = db.Column(db.DateTime, nullable=True)
+
     def to_dict(self):
         import json
         return {
@@ -689,5 +694,8 @@ class ContactMessage(db.Model):
             'date_lecture': self.date_lecture.isoformat() if self.date_lecture else None,
             'traite_par': self.traite_par,
             'reponse': self.reponse,
-            'pieces_jointes': json.loads(self.pieces_jointes) if self.pieces_jointes else []
+            'pieces_jointes': json.loads(self.pieces_jointes) if self.pieces_jointes else [],
+            'assigne_a': self.assigne_a,
+            'date_assignation': self.date_assignation.isoformat() if self.date_assignation else None,
+            'date_reponse': self.date_reponse.isoformat() if self.date_reponse else None
         }

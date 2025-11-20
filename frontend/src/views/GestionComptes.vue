@@ -10,11 +10,32 @@
             Retour au tableau de bord
           </button>
           <div class="header-content">
-            <h1>Gestion des comptes soumissionnaires</h1>
-            <p class="subtitle">Validation et gestion des comptes utilisateurs</p>
+            <h1>Gestion des comptes et messages</h1>
+            <p class="subtitle">Validation des comptes et traitement des demandes</p>
           </div>
         </div>
+
+        <!-- Onglets -->
+        <div class="tabs-container">
+          <button
+            :class="['tab-btn', { active: activeTab === 'comptes' }]"
+            @click="activeTab = 'comptes'"
+          >
+            Comptes soumissionnaires
+            <span v-if="stats.non_verifie > 0" class="tab-badge">{{ stats.non_verifie }}</span>
+          </button>
+          <button
+            :class="['tab-btn', { active: activeTab === 'messages' }]"
+            @click="activeTab = 'messages'; chargerMessages()"
+          >
+            Messages de contact
+            <span v-if="messagesNonLus > 0" class="tab-badge">{{ messagesNonLus }}</span>
+          </button>
+        </div>
       </div>
+
+    <!-- Contenu onglet Comptes -->
+    <div v-if="activeTab === 'comptes'">
 
     <!-- Filtres -->
     <div class="filters-section">
@@ -175,6 +196,156 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    </div><!-- Fin onglet Comptes -->
+
+    <!-- Contenu onglet Messages de contact -->
+    <div v-if="activeTab === 'messages'" class="messages-section">
+      <div class="messages-filters">
+        <div class="filter-group">
+          <label>Filtrer par statut :</label>
+          <select v-model="filtreStatutMessage" @change="filtrerMessages">
+            <option value="">Tous les messages</option>
+            <option value="nouveau">Non lus</option>
+            <option value="lu">Lus</option>
+            <option value="traite">Traités</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="loadingMessages" class="loading">Chargement des messages...</div>
+      <div v-else-if="messagesContact.length === 0" class="no-data">
+        Aucun message de contact
+      </div>
+
+      <div v-else class="messages-list">
+        <div
+          v-for="msg in messagesFiltres"
+          :key="msg.id"
+          :class="['message-card', { 'non-lu': msg.statut === 'nouveau' }]"
+        >
+          <div class="message-header">
+            <div class="message-info">
+              <span class="message-nom">{{ msg.nom }}</span>
+              <span class="message-email">{{ msg.email }}</span>
+              <span v-if="msg.telephone" class="message-tel">{{ msg.telephone }}</span>
+            </div>
+            <div class="message-meta">
+              <span :class="['message-statut', msg.statut]">{{ formatStatutMessage(msg.statut) }}</span>
+              <span class="message-date">{{ formatDate(msg.date_creation) }}</span>
+            </div>
+          </div>
+          <div class="message-objet">
+            <strong>{{ msg.objet }}</strong>
+          </div>
+          <div class="message-contenu">
+            {{ msg.message }}
+          </div>
+          <div v-if="msg.pieces_jointes && msg.pieces_jointes.length > 0" class="message-pieces">
+            <span class="pieces-label">Pièces jointes:</span>
+            <a
+              v-for="(pj, idx) in msg.pieces_jointes"
+              :key="idx"
+              :href="'/' + pj"
+              target="_blank"
+              class="piece-link"
+            >
+              📎 {{ pj.split('/').pop() }}
+            </a>
+          </div>
+          <div v-if="msg.assigne_a" class="message-assignation">
+            Assigné à: <strong>{{ msg.assigne_a }}</strong>
+          </div>
+          <div v-if="msg.reponse" class="message-reponse">
+            <strong>Réponse ({{ msg.traite_par }}):</strong>
+            <p>{{ msg.reponse }}</p>
+          </div>
+          <div class="message-actions">
+            <button
+              v-if="msg.statut === 'nouveau'"
+              @click="marquerLu(msg.id)"
+              class="btn-action btn-lu"
+            >
+              ✓ Marquer lu
+            </button>
+            <button
+              @click="ouvrirModalReponse(msg)"
+              class="btn-action btn-repondre"
+            >
+              ✉️ Répondre
+            </button>
+            <button
+              @click="ouvrirModalAssigner(msg)"
+              class="btn-action btn-assigner"
+            >
+              👤 Assigner
+            </button>
+          </div>
+        </div>
+      </div>
+    </div><!-- Fin onglet Messages -->
+
+    <!-- Modal réponse message -->
+    <div v-if="messageSelectionne" class="modal-overlay" @click.self="fermerModalMessage">
+      <div class="modal-content modal-message">
+        <div class="modal-header">
+          <h2>Répondre au message</h2>
+          <button @click="fermerModalMessage" class="btn-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="message-detail">
+            <p><strong>De:</strong> {{ messageSelectionne.nom }} ({{ messageSelectionne.email }})</p>
+            <p><strong>Objet:</strong> {{ messageSelectionne.objet }}</p>
+            <p><strong>Message:</strong></p>
+            <div class="message-original">{{ messageSelectionne.message }}</div>
+          </div>
+          <div class="form-group-modal">
+            <label>Votre réponse :</label>
+            <textarea
+              v-model="reponseMessage"
+              rows="6"
+              placeholder="Tapez votre réponse ici..."
+            ></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" @click="fermerModalMessage" class="btn-modal-cancel">
+              Annuler
+            </button>
+            <button @click="envoyerReponse" class="btn-modal-save" :disabled="!reponseMessage.trim()">
+              Envoyer la réponse
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal assignation -->
+    <div v-if="messageAAssigner" class="modal-overlay" @click.self="fermerModalAssigner">
+      <div class="modal-content modal-assigner">
+        <div class="modal-header">
+          <h2>Assigner le message</h2>
+          <button @click="fermerModalAssigner" class="btn-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group-modal">
+            <label>Assigner à :</label>
+            <select v-model="utilisateurAssigne">
+              <option value="">-- Sélectionnez un utilisateur --</option>
+              <option v-for="u in utilisateursAssignables" :key="u.username" :value="u.username">
+                {{ u.display_name || u.username }} ({{ u.role }})
+              </option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" @click="fermerModalAssigner" class="btn-modal-cancel">
+              Annuler
+            </button>
+            <button @click="confirmerAssignation" class="btn-modal-save" :disabled="!utilisateurAssigne">
+              Assigner
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Modal édition des détails -->
@@ -513,6 +684,20 @@ const actionEnCours = ref(null)
 const compteSelectionne = ref(null)
 const enregistrementEnCours = ref(false)
 
+// État onglets
+const activeTab = ref('comptes')
+
+// État messages de contact
+const messagesContact = ref([])
+const messagesFiltresData = ref([])
+const filtreStatutMessage = ref('')
+const loadingMessages = ref(false)
+const messageSelectionne = ref(null)
+const reponseMessage = ref('')
+const messageAAssigner = ref(null)
+const utilisateurAssigne = ref('')
+const utilisateursAssignables = ref([])
+
 // Listes de données pour le formulaire hiérarchique
 const regions = ref([])
 const departements = ref({}) // Format: { region: [dept1, dept2, ...] }
@@ -547,6 +732,18 @@ const stats = computed(() => {
     verifie: comptes.value.filter(c => c.statut_compte === 'verifie').length,
     suspendu: comptes.value.filter(c => c.statut_compte === 'suspendu').length
   }
+})
+
+// Computed pour messages
+const messagesNonLus = computed(() => {
+  return messagesContact.value.filter(m => m.statut === 'nouveau').length
+})
+
+const messagesFiltres = computed(() => {
+  if (!filtreStatutMessage.value) {
+    return messagesContact.value
+  }
+  return messagesContact.value.filter(m => m.statut === filtreStatutMessage.value)
 })
 
 // Computed properties pour le formulaire d'édition
@@ -997,6 +1194,127 @@ function getTypeInstitutionLabel(type) {
     'autre_institution': 'Autre Institution'
   }
   return labels[type] || type
+}
+
+// ===== Fonctions pour les messages de contact =====
+
+async function chargerMessages() {
+  loadingMessages.value = true
+  try {
+    const response = await axios.get('/api/contact/messages', {
+      params: { role: user?.role }
+    })
+    messagesContact.value = response.data.map(m => ({
+      ...m,
+      pieces_jointes: m.pieces_jointes ? JSON.parse(m.pieces_jointes) : []
+    }))
+
+    // Charger aussi les utilisateurs assignables (admin, secrétariat)
+    const usersResponse = await axios.get('/api/admin/users', {
+      params: { role: user?.role }
+    })
+    utilisateursAssignables.value = usersResponse.data.filter(u =>
+      ['admin', 'secretariatsct'].includes(u.role)
+    )
+  } catch (err) {
+    console.error('Erreur chargement messages:', err)
+  } finally {
+    loadingMessages.value = false
+  }
+}
+
+function filtrerMessages() {
+  // Le filtrage est géré par le computed messagesFiltres
+}
+
+function formatStatutMessage(statut) {
+  const labels = {
+    'nouveau': 'Non lu',
+    'lu': 'Lu',
+    'traite': 'Traité'
+  }
+  return labels[statut] || statut
+}
+
+async function marquerLu(messageId) {
+  try {
+    await axios.get(`/api/contact/messages/${messageId}`)
+    // Mettre à jour localement
+    const msg = messagesContact.value.find(m => m.id === messageId)
+    if (msg) {
+      msg.statut = 'lu'
+    }
+  } catch (err) {
+    console.error('Erreur marquer lu:', err)
+  }
+}
+
+function ouvrirModalReponse(msg) {
+  messageSelectionne.value = msg
+  reponseMessage.value = ''
+}
+
+async function envoyerReponse() {
+  if (!messageSelectionne.value || !reponseMessage.value.trim()) return
+
+  try {
+    await axios.put(`/api/contact/messages/${messageSelectionne.value.id}`, {
+      statut: 'traite',
+      reponse: reponseMessage.value,
+      traite_par: user?.username || user?.display_name
+    })
+
+    // Mettre à jour localement
+    const msg = messagesContact.value.find(m => m.id === messageSelectionne.value.id)
+    if (msg) {
+      msg.statut = 'traite'
+      msg.reponse = reponseMessage.value
+      msg.traite_par = user?.username || user?.display_name
+    }
+
+    fermerModalMessage()
+    alert('Réponse enregistrée avec succès')
+  } catch (err) {
+    console.error('Erreur envoi réponse:', err)
+    alert('Erreur lors de l\'envoi de la réponse')
+  }
+}
+
+function fermerModalMessage() {
+  messageSelectionne.value = null
+  reponseMessage.value = ''
+}
+
+function ouvrirModalAssigner(msg) {
+  messageAAssigner.value = msg
+  utilisateurAssigne.value = msg.assigne_a || ''
+}
+
+async function confirmerAssignation() {
+  if (!messageAAssigner.value || !utilisateurAssigne.value) return
+
+  try {
+    await axios.put(`/api/contact/messages/${messageAAssigner.value.id}`, {
+      assigne_a: utilisateurAssigne.value
+    })
+
+    // Mettre à jour localement
+    const msg = messagesContact.value.find(m => m.id === messageAAssigner.value.id)
+    if (msg) {
+      msg.assigne_a = utilisateurAssigne.value
+    }
+
+    fermerModalAssigner()
+    alert('Message assigné avec succès')
+  } catch (err) {
+    console.error('Erreur assignation:', err)
+    alert('Erreur lors de l\'assignation')
+  }
+}
+
+function fermerModalAssigner() {
+  messageAAssigner.value = null
+  utilisateurAssigne.value = ''
 }
 </script>
 
@@ -1613,5 +1931,285 @@ function getTypeInstitutionLabel(type) {
   .stats-section {
     grid-template-columns: 1fr;
   }
+}
+
+/* Onglets */
+.tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tab-btn:hover {
+  color: #4a5568;
+}
+
+.tab-btn.active {
+  color: var(--dgppe-primary, #1e40af);
+  border-bottom-color: var(--dgppe-primary, #1e40af);
+}
+
+.tab-badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Section messages */
+.messages-section {
+  margin-top: 1.5rem;
+}
+
+.messages-filters {
+  margin-bottom: 1.5rem;
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #cbd5e0;
+}
+
+.message-card.non-lu {
+  border-left-color: #3182ce;
+  background: #f0f7ff;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.message-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.message-nom {
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.message-email {
+  font-size: 0.9rem;
+  color: #3182ce;
+}
+
+.message-tel {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.message-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.message-statut {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.message-statut.nouveau {
+  background: #bee3f8;
+  color: #2a4365;
+}
+
+.message-statut.lu {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.message-statut.traite {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.message-date {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.message-objet {
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.message-contenu {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+}
+
+.message-pieces {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.pieces-label {
+  font-weight: 600;
+  color: #4a5568;
+  margin-right: 0.5rem;
+}
+
+.piece-link {
+  display: inline-block;
+  margin: 0.25rem 0.5rem;
+  color: #3182ce;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.piece-link:hover {
+  text-decoration: underline;
+}
+
+.message-assignation {
+  font-size: 0.9rem;
+  color: #553c9a;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: #faf5ff;
+  border-radius: 6px;
+}
+
+.message-reponse {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f0fff4;
+  border-radius: 8px;
+  border-left: 3px solid #38a169;
+}
+
+.message-reponse strong {
+  color: #22543d;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.message-reponse p {
+  margin: 0;
+  color: #2d3748;
+  white-space: pre-wrap;
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-lu {
+  background: #4299e1;
+  color: white;
+}
+
+.btn-lu:hover {
+  background: #3182ce;
+}
+
+.btn-repondre {
+  background: #38a169;
+  color: white;
+}
+
+.btn-repondre:hover {
+  background: #2f855a;
+}
+
+.btn-assigner {
+  background: #805ad5;
+  color: white;
+}
+
+.btn-assigner:hover {
+  background: #6b46c1;
+}
+
+/* Modal messages */
+.modal-message,
+.modal-assigner {
+  max-width: 700px;
+}
+
+.message-detail {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.message-detail p {
+  margin: 0.5rem 0;
+}
+
+.message-original {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.form-group-modal textarea {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group-modal textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 </style>

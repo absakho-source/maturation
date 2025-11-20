@@ -185,6 +185,10 @@ def update_contact_message(message_id):
             message.traite_par = data['traite_par']
         if 'reponse' in data:
             message.reponse = data['reponse']
+            message.date_reponse = datetime.utcnow()
+        if 'assigne_a' in data:
+            message.assigne_a = data['assigne_a']
+            message.date_assignation = datetime.utcnow()
 
         db.session.commit()
         return jsonify({"message": "Message mis à jour"}), 200
