@@ -25,32 +25,35 @@
         </div>
 
         <form v-else @submit.prevent="submitForm" class="contact-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="nom">Nom complet <span class="required">*</span></label>
-              <input type="text" id="nom" v-model="form.nom" required placeholder="Votre nom et prénom" />
+          <!-- Info utilisateur en lecture seule -->
+          <div class="user-info-readonly">
+            <p class="info-note">Ces informations proviennent de votre profil</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nom complet</label>
+                <div class="readonly-value">{{ form.nom || 'Non renseigné' }}</div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <div class="readonly-value">{{ form.email || 'Non renseigné' }}</div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="email">Email <span class="required">*</span></label>
-              <input type="email" id="email" v-model="form.email" required placeholder="votre@email.com" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="telephone">Téléphone</label>
-              <input type="tel" id="telephone" v-model="form.telephone" placeholder="+221 XX XXX XX XX" />
-            </div>
-            <div class="form-group">
-              <label for="objet">Objet <span class="required">*</span></label>
-              <select id="objet" v-model="form.objet" required>
-                <option value="">Sélectionnez un objet</option>
-                <option value="Demande d'information">Demande d'information</option>
-                <option value="Problème technique">Problème technique</option>
-                <option value="Question sur la soumission">Question sur la soumission</option>
-                <option value="Demande de compte">Demande de compte</option>
-                <option value="Autre">Autre</option>
-              </select>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Téléphone</label>
+                <div class="readonly-value">{{ form.telephone || 'Non renseigné' }}</div>
+              </div>
+              <div class="form-group">
+                <label for="objet">Objet <span class="required">*</span></label>
+                <select id="objet" v-model="form.objet" required>
+                  <option value="">Sélectionnez un objet</option>
+                  <option value="Demande d'information">Demande d'information</option>
+                  <option value="Problème technique">Problème technique</option>
+                  <option value="Question sur la soumission">Question sur la soumission</option>
+                  <option value="Demande de compte">Demande de compte</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -751,6 +754,31 @@ export default {
 .captcha-input {
   width: 80px;
   text-align: center;
+}
+
+/* User info readonly styles */
+.user-info-readonly {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.info-note {
+  font-size: 0.8rem;
+  color: #0369a1;
+  margin: 0 0 0.75rem 0;
+  font-style: italic;
+}
+
+.readonly-value {
+  background: white;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 0.95rem;
 }
 
 /* File upload styles */
