@@ -107,11 +107,8 @@
       <div class="footer-container">
         <div class="footer-simple">
           <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
-          <p>
-            PLASMAP • Version 1.0 •
-            <router-link to="/contact" class="footer-link">Nous contacter</router-link> •
-            Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a>
-          </p>
+          <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
+          <p class="footer-contact"><router-link to="/contact">Nous contacter</router-link></p>
         </div>
       </div>
     </footer>
@@ -481,6 +478,21 @@ export default {
 
 .footer-link:hover {
   opacity: 0.8;
+}
+
+.footer-contact {
+  margin-top: var(--dgppe-spacing-2) !important;
+  font-size: 0.7rem !important;
+}
+
+.footer-contact a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-contact a:hover {
+  color: white;
 }
 
 @media (max-width: 768px) {
