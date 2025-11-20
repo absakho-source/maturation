@@ -1,5 +1,21 @@
 <template>
-  <PageWrapper>
+  <div class="contact-wrapper">
+    <!-- En-tête public (même style que Home) -->
+    <header class="public-header">
+      <div class="header-container">
+        <div class="header-spacer"></div>
+        <div class="header-center">
+          <div class="header-info">
+            <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
+            <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <button @click="$router.push('/login')" class="btn btn-outline">Connexion</button>
+        </div>
+      </div>
+    </header>
+
     <div class="contact-page">
       <div class="contact-container">
       <div class="contact-header">
@@ -7,7 +23,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          Retour
+          Retour à l'accueil
         </router-link>
         <h1>Contactez-nous</h1>
         <p class="subtitle">Une question sur la plateforme PLASMAP ? Nous sommes là pour vous aider.</p>
@@ -140,17 +156,12 @@
       </div>
     </div>
   </div>
-  </PageWrapper>
+  </div>
 </template>
 
 <script>
-import PageWrapper from '../components/PageWrapper.vue';
-
 export default {
   name: 'Contact',
-  components: {
-    PageWrapper
-  },
   data() {
     return {
       form: {
@@ -235,13 +246,100 @@ export default {
 </script>
 
 <style scoped>
-.contact-page {
+/* ==================== EN-TÊTE PUBLIC ==================== */
+.contact-wrapper {
   min-height: 100vh;
+  background: var(--dgppe-gray-50, #f8fafc);
+}
+
+.public-header {
+  background: var(--dgppe-white, white);
+  border-bottom: 1px solid var(--dgppe-gray-200, #e5e7eb);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1rem 0;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.header-info {
+  text-align: center;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--dgppe-primary, #2e6b6b);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: var(--dgppe-text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--dgppe-primary, #2e6b6b);
+  color: var(--dgppe-primary, #2e6b6b);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: var(--dgppe-primary, #2e6b6b);
+  color: white;
+}
+
+/* ==================== CONTACT PAGE ==================== */
+.contact-page {
+  min-height: calc(100vh - 80px);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .header-spacer {
+    display: none;
+  }
+
+  .header-right {
+    justify-content: center;
+  }
 }
 
 .contact-container {
