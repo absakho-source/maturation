@@ -246,15 +246,12 @@
             <a
               v-for="(pj, idx) in msg.pieces_jointes"
               :key="idx"
-              :href="'/' + pj"
+              :href="`${$axios.defaults.baseURL}/${pj}`"
               target="_blank"
               class="piece-link"
             >
               📎 {{ pj.split('/').pop() }}
             </a>
-          </div>
-          <div v-if="msg.assigne_a" class="message-assignation">
-            Assigné à: <strong>{{ msg.assigne_a }}</strong>
           </div>
           <div v-if="msg.reponse" class="message-reponse">
             <strong>Réponse ({{ msg.traite_par }}):</strong>
@@ -273,12 +270,6 @@
               class="btn-action btn-repondre"
             >
               ✉️ Répondre
-            </button>
-            <button
-              @click="ouvrirModalAssigner(msg)"
-              class="btn-action btn-assigner"
-            >
-              👤 Assigner
             </button>
           </div>
         </div>
@@ -313,35 +304,6 @@
             </button>
             <button @click="envoyerReponse" class="btn-modal-save" :disabled="!reponseMessage.trim()">
               Envoyer la réponse
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal assignation -->
-    <div v-if="messageAAssigner" class="modal-overlay" @click.self="fermerModalAssigner">
-      <div class="modal-content modal-assigner">
-        <div class="modal-header">
-          <h2>Assigner le message</h2>
-          <button @click="fermerModalAssigner" class="btn-close">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group-modal">
-            <label>Assigner à :</label>
-            <select v-model="utilisateurAssigne">
-              <option value="">-- Sélectionnez un utilisateur --</option>
-              <option v-for="u in utilisateursAssignables" :key="u.username" :value="u.username">
-                {{ u.display_name || u.username }} ({{ u.role }})
-              </option>
-            </select>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="fermerModalAssigner" class="btn-modal-cancel">
-              Annuler
-            </button>
-            <button @click="confirmerAssignation" class="btn-modal-save" :disabled="!utilisateurAssigne">
-              Assigner
             </button>
           </div>
         </div>
