@@ -1204,10 +1204,7 @@ async function chargerMessages() {
     const response = await axios.get('/api/contact/messages', {
       params: { role: user?.role }
     })
-    messagesContact.value = response.data.map(m => ({
-      ...m,
-      pieces_jointes: m.pieces_jointes ? JSON.parse(m.pieces_jointes) : []
-    }))
+    messagesContact.value = response.data
 
     // Charger aussi les utilisateurs assignables (admin, secrétariat)
     const usersResponse = await axios.get('/api/admin/users', {
