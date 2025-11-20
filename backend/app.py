@@ -6,7 +6,7 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -3538,6 +3538,14 @@ try:
     print("Notification routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import notification routes: {e}")
+
+# Import and register contact routes
+try:
+    from routes.contact_routes import contact_bp
+    app.register_blueprint(contact_bp, url_prefix='')
+    print("Contact routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import contact routes: {e}")
 
 @app.route("/api/admin/run-migration", methods=["POST"])
 def run_migration():

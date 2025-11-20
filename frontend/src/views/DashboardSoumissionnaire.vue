@@ -777,12 +777,6 @@ export default {
         const resCommunes = await fetch('/api/data/communes?format=dict');
         if (resCommunes.ok) {
           this.communes = await resCommunes.json();
-          console.log('[DASHBOARD] Communes chargées:', Object.keys(this.communes).length, 'départements');
-
-          // DEBUG: Afficher un exemple de communes pour Dakar
-          if (this.communes['Dakar']) {
-            console.log('[DASHBOARD] Exemple - Communes de Dakar:', this.communes['Dakar'].slice(0, 3));
-          }
         }
       } catch (err) {
         console.error('Erreur lors du chargement des données territoriales:', err);

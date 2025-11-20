@@ -40,6 +40,17 @@
             Créer un compte soumissionnaire
           </router-link>
         </div>
+
+        <!-- Lien de contact -->
+        <div class="contact-section">
+          <router-link to="/contact" class="contact-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Besoin d'aide ? Contactez-nous
+          </router-link>
+        </div>
       </div>
     </main>
 
@@ -411,6 +422,30 @@ export default {
   background: linear-gradient(135deg, var(--dgppe-primary-light) 0%, var(--dgppe-primary) 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 51, 102, 0.2);
+}
+
+/* ==================== SECTION CONTACT ==================== */
+.contact-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.contact-link:hover {
+  color: var(--dgppe-primary);
+}
+
+.contact-link svg {
+  opacity: 0.7;
 }
 
 /* ==================== RESPONSIVE ==================== */

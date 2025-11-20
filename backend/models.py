@@ -642,3 +642,46 @@ class Notification(db.Model):
             'email_envoye': self.email_envoye,
             'priorite_email': self.priorite_email
         }
+
+
+class ContactMessage(db.Model):
+    """Modèle pour les messages de contact"""
+    __tablename__ = "contact_messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    telephone = db.Column(db.String(30), nullable=True)
+    objet = db.Column(db.String(100), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+
+    # Info utilisateur connecté (si applicable)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    username = db.Column(db.String(80), nullable=True)
+
+    # Statut et traitement
+    statut = db.Column(db.String(30), default='nouveau')  # nouveau, lu, traite, archive
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    date_lecture = db.Column(db.DateTime, nullable=True)
+    traite_par = db.Column(db.String(80), nullable=True)
+    reponse = db.Column(db.Text, nullable=True)
+
+    # IP pour anti-spam
+    ip_address = db.Column(db.String(50), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nom': self.nom,
+            'email': self.email,
+            'telephone': self.telephone,
+            'objet': self.objet,
+            'message': self.message,
+            'user_id': self.user_id,
+            'username': self.username,
+            'statut': self.statut,
+            'date_creation': self.date_creation.isoformat() if self.date_creation else None,
+            'date_lecture': self.date_lecture.isoformat() if self.date_lecture else None,
+            'traite_par': self.traite_par,
+            'reponse': self.reponse
+        }

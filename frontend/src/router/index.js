@@ -17,11 +17,13 @@ import MinisteresEditor from '../views/MinisteresEditor.vue';
 import MonProfil from '../views/MonProfil.vue';
 import EditionFichePopup from '../views/EditionFichePopup.vue';
 import LogsConnexion from '../views/LogsConnexion.vue';
+import Contact from '../views/Contact.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
+  { path: '/contact', name: 'Contact', component: Contact },
   { path: '/mon-profil', name: 'MonProfil', component: MonProfil, meta: { requiresAuth: true } },
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },
   { path: '/evaluateur', name: 'Evaluateur', component: Evaluation, meta: { requiresAuth: true } },
