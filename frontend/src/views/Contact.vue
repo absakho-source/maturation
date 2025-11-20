@@ -15,7 +15,11 @@
           </div>
         </div>
         <div class="header-right">
-          <button @click="$router.push('/login')" class="btn btn-outline">Connexion</button>
+          <template v-if="user">
+            <span class="user-name">{{ user.display_name || user.username }}</span>
+            <button @click="logout" class="btn btn-outline">Déconnexion</button>
+          </template>
+          <button v-else @click="$router.push('/login')" class="btn btn-outline">Connexion</button>
         </div>
       </div>
     </header>
@@ -243,6 +247,10 @@ export default {
         this.form.telephone = user.telephone || '';
       }
     },
+    logout() {
+      localStorage.removeItem('user');
+      this.$router.push('/login');
+    },
     async submitForm() {
       this.error = null;
 
@@ -361,6 +369,13 @@ export default {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  color: var(--dgppe-text, #374151);
+  font-weight: 500;
 }
 
 .header-info {
