@@ -47,19 +47,31 @@ def submit_contact():
         db.session.add(contact)
         db.session.commit()
 
-        # Notifier le secrétariat SCT
+        # Notifier selon l'objet du message
         try:
-            secretariats = User.query.filter_by(role='secretariatsct').all()
-            for user in secretariats:
-                notification = Notification(
-                    user_id=user.id,
-                    type='nouveau_message',
-                    titre='Nouveau message de contact',
-                    message=f"Message de {nom} - Objet: {objet}",
-                    lien='/admin/contacts',
-                    priorite_email=True
-                )
-                db.session.add(notification)
+            # Déterminer les destinataires selon l'objet
+            if objet == "Problème technique":
+                # Problème technique → admin + secrétariat
+                roles_to_notify = ['admin', 'secretariatsct']
+            elif objet == "Autre":
+                # Autre → admin + secrétariat
+                roles_to_notify = ['admin', 'secretariatsct']
+            else:
+                # Demande d'information, Question sur la soumission, Demande de compte → secrétariat
+                roles_to_notify = ['secretariatsct']
+
+            for role in roles_to_notify:
+                users = User.query.filter_by(role=role).all()
+                for user in users:
+                    notification = Notification(
+                        user_id=user.id,
+                        type='nouveau_message',
+                        titre='Nouveau message de contact',
+                        message=f"Message de {nom} - Objet: {objet}",
+                        lien='/gestion-comptes',  # Page accessible aux admin/secrétariat
+                        priorite_email=True
+                    )
+                    db.session.add(notification)
             db.session.commit()
         except Exception as e:
             print(f"[CONTACT] Erreur notification: {e}")

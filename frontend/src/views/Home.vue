@@ -107,7 +107,11 @@
       <div class="footer-container">
         <div class="footer-simple">
           <p>&copy; {{ currentYear }} Direction Générale de la Planification des Politiques Économiques (DGPPE)</p>
-          <p>PLASMAP • Version 1.0 • Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a></p>
+          <p>
+            PLASMAP • Version 1.0 •
+            <router-link to="/contact" class="footer-link">Nous contacter</router-link> •
+            Développée par <a href="https://www.linkedin.com/in/dr-aboubekrine-sakho-4851981b0/" target="_blank" rel="noopener noreferrer" class="footer-link">Abou Sakho</a>
+          </p>
         </div>
       </div>
     </footer>

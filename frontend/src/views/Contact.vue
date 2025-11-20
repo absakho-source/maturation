@@ -1,6 +1,7 @@
 <template>
-  <div class="contact-page">
-    <div class="contact-container">
+  <PageWrapper>
+    <div class="contact-page">
+      <div class="contact-container">
       <div class="contact-header">
         <router-link to="/" class="back-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -139,11 +140,17 @@
       </div>
     </div>
   </div>
+  </PageWrapper>
 </template>
 
 <script>
+import PageWrapper from '../components/PageWrapper.vue';
+
 export default {
   name: 'Contact',
+  components: {
+    PageWrapper
+  },
   data() {
     return {
       form: {
