@@ -1,5 +1,117 @@
 <template>
-  <div class="contact-wrapper">
+  <!-- Version authentifiée avec PageWrapper -->
+  <PageWrapper v-if="user">
+    <div class="contact-page-auth">
+      <div class="contact-container">
+        <div class="contact-header">
+          <router-link :to="backRoute" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            {{ backLabel }}
+          </router-link>
+          <h1>Contactez-nous</h1>
+          <p class="subtitle">Une question sur la plateforme PLASMAP ? Nous sommes là pour vous aider.</p>
+        </div>
+
+        <div v-if="submitted" class="success-message">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <h2>Message envoyé !</h2>
+          <p>Nous vous répondrons dans les plus brefs délais à l'adresse {{ form.email }}.</p>
+          <router-link :to="backRoute" class="btn btn-primary">{{ backLabel }}</router-link>
+        </div>
+
+        <form v-else @submit.prevent="submitForm" class="contact-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">Nom complet <span class="required">*</span></label>
+              <input type="text" id="nom" v-model="form.nom" required placeholder="Votre nom et prénom" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email <span class="required">*</span></label>
+              <input type="email" id="email" v-model="form.email" required placeholder="votre@email.com" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telephone">Téléphone</label>
+              <input type="tel" id="telephone" v-model="form.telephone" placeholder="+221 XX XXX XX XX" />
+            </div>
+            <div class="form-group">
+              <label for="objet">Objet <span class="required">*</span></label>
+              <select id="objet" v-model="form.objet" required>
+                <option value="">Sélectionnez un objet</option>
+                <option value="Demande d'information">Demande d'information</option>
+                <option value="Problème technique">Problème technique</option>
+                <option value="Question sur la soumission">Question sur la soumission</option>
+                <option value="Demande de compte">Demande de compte</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea id="message" v-model="form.message" required rows="6" placeholder="Décrivez votre demande en détail..."></textarea>
+          </div>
+
+          <div class="form-group captcha-group">
+            <label>Vérification <span class="required">*</span></label>
+            <div class="captcha-question">
+              <span>{{ captcha.num1 }} + {{ captcha.num2 }} = </span>
+              <input type="number" v-model.number="captchaAnswer" required placeholder="?" class="captcha-input" />
+            </div>
+          </div>
+
+          <div v-if="error" class="error-message">{{ error }}</div>
+
+          <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
+            <span v-if="loading">Envoi en cours...</span>
+            <span v-else>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Envoyer le message
+            </span>
+          </button>
+        </form>
+
+        <div class="contact-info">
+          <h3>Autres moyens de contact</h3>
+          <div class="info-items">
+            <div class="info-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>contact@dgppe.sn</span>
+            </div>
+            <div class="info-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <span>+221 33 XXX XX XX</span>
+            </div>
+            <div class="info-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>DGPPE, Dakar, Sénégal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </PageWrapper>
+
+  <!-- Version publique sans authentification -->
+  <div v-else class="contact-wrapper">
     <!-- En-tête public (même style que Home) -->
     <header class="public-header">
       <div class="header-container">
@@ -15,11 +127,7 @@
           </div>
         </div>
         <div class="header-right">
-          <template v-if="user">
-            <span class="user-name">{{ user.display_name || user.username }}</span>
-            <button @click="logout" class="btn btn-outline">Déconnexion</button>
-          </template>
-          <button v-else @click="$router.push('/login')" class="btn btn-outline">Connexion</button>
+          <button @click="$router.push('/login')" class="btn btn-outline">Connexion</button>
         </div>
       </div>
     </header>
@@ -188,9 +296,13 @@
 
 <script>
 import logoUrl from '../assets/logo-dgppe.png'
+import PageWrapper from '../components/PageWrapper.vue'
 
 export default {
   name: 'Contact',
+  components: {
+    PageWrapper
+  },
   data() {
     return {
       logoUrl,
@@ -247,10 +359,6 @@ export default {
         this.form.telephone = user.telephone || '';
       }
     },
-    logout() {
-      localStorage.removeItem('user');
-      this.$router.push('/login');
-    },
     async submitForm() {
       this.error = null;
 
@@ -299,10 +407,28 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== VERSION AUTHENTIFIÉE ==================== */
+.contact-page-auth {
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.contact-page-auth .contact-container {
+  max-width: 700px;
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+}
+
 /* ==================== EN-TÊTE PUBLIC ==================== */
 .contact-wrapper {
   min-height: 100vh;
   background: var(--dgppe-gray-50, #f8fafc);
+  display: flex;
+  flex-direction: column;
 }
 
 .public-header {
