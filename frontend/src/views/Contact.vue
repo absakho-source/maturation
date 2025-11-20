@@ -59,6 +59,27 @@
             <textarea id="message" v-model="form.message" required rows="6" placeholder="Décrivez votre demande en détail..."></textarea>
           </div>
 
+          <div class="form-group">
+            <label for="pieces_jointes">Pièces jointes</label>
+            <div class="file-upload-area">
+              <input
+                type="file"
+                id="pieces_jointes"
+                ref="fileInput"
+                @change="handleFileChange"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              />
+              <div v-if="pieces_jointes.length > 0" class="uploaded-files">
+                <div v-for="(file, index) in pieces_jointes" :key="index" class="file-item">
+                  <span class="file-name">{{ file.name }}</span>
+                  <button type="button" @click="removeFile(index)" class="remove-file-btn">&times;</button>
+                </div>
+              </div>
+              <p class="file-hint">Formats acceptés: PDF, Word, Excel, Images (max 5 Mo par fichier)</p>
+            </div>
+          </div>
+
           <div class="form-group captcha-group">
             <label>Vérification <span class="required">*</span></label>
             <div class="captcha-question">
@@ -218,6 +239,27 @@
           ></textarea>
         </div>
 
+        <div class="form-group">
+          <label for="pieces_jointes_public">Pièces jointes</label>
+          <div class="file-upload-area">
+            <input
+              type="file"
+              id="pieces_jointes_public"
+              ref="fileInputPublic"
+              @change="handleFileChange"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+            />
+            <div v-if="pieces_jointes.length > 0" class="uploaded-files">
+              <div v-for="(file, index) in pieces_jointes" :key="index" class="file-item">
+                <span class="file-name">{{ file.name }}</span>
+                <button type="button" @click="removeFile(index)" class="remove-file-btn">&times;</button>
+              </div>
+            </div>
+            <p class="file-hint">Formats acceptés: PDF, Word, Excel, Images (max 5 Mo par fichier)</p>
+          </div>
+        </div>
+
         <div class="form-group captcha-group">
           <label>Vérification <span class="required">*</span></label>
           <div class="captcha-question">
@@ -303,10 +345,11 @@ export default {
       form: {
         nom: '',
         email: '',
-        telephone: '',
+        telephone: '+221 ',
         objet: '',
         message: ''
       },
+      pieces_jointes: [],
       captcha: {
         num1: 0,
         num2: 0
@@ -350,8 +393,26 @@ export default {
       if (user) {
         this.form.nom = user.display_name || user.username || '';
         this.form.email = user.email || '';
-        this.form.telephone = user.telephone || '';
+        this.form.telephone = user.telephone || '+221 ';
       }
+    },
+    handleFileChange(event) {
+      const files = Array.from(event.target.files);
+      const maxSize = 5 * 1024 * 1024; // 5 Mo
+
+      for (const file of files) {
+        if (file.size > maxSize) {
+          this.error = `Le fichier "${file.name}" dépasse la taille maximale de 5 Mo`;
+          return;
+        }
+        this.pieces_jointes.push(file);
+      }
+
+      // Reset input pour permettre de sélectionner le même fichier
+      event.target.value = '';
+    },
+    removeFile(index) {
+      this.pieces_jointes.splice(index, 1);
     },
     async submitForm() {
       this.error = null;
@@ -369,16 +430,25 @@ export default {
       try {
         const user = JSON.parse(localStorage.getItem('user') || 'null');
 
+        const formData = new FormData();
+        formData.append('nom', this.form.nom);
+        formData.append('email', this.form.email);
+        formData.append('telephone', this.form.telephone);
+        formData.append('objet', this.form.objet);
+        formData.append('message', this.form.message);
+        formData.append('user_id', user?.id || '');
+        formData.append('username', user?.username || '');
+        formData.append('captcha_reponse', this.captchaAnswer);
+        formData.append('captcha_attendu', this.captcha.num1 + this.captcha.num2);
+
+        // Ajouter les pièces jointes
+        for (const file of this.pieces_jointes) {
+          formData.append('pieces_jointes', file);
+        }
+
         const response = await fetch('/api/contact', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...this.form,
-            user_id: user?.id || null,
-            username: user?.username || null,
-            captcha_reponse: this.captchaAnswer,
-            captcha_attendu: this.captcha.num1 + this.captcha.num2
-          })
+          body: formData
         });
 
         const data = await response.json();
@@ -681,6 +751,72 @@ export default {
 .captcha-input {
   width: 80px;
   text-align: center;
+}
+
+/* File upload styles */
+.file-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9fafb;
+}
+
+.file-upload-area input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+}
+
+.uploaded-files {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.remove-file-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-file-btn:hover {
+  background: #dc2626;
+}
+
+.file-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0 0;
 }
 
 .error-message {

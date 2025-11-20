@@ -3,6 +3,9 @@ from models import ContactMessage, User, Notification
 from db import db
 from datetime import datetime
 import re
+import os
+import json
+from werkzeug.utils import secure_filename
 
 contact_bp = Blueprint('contact', __name__)
 
@@ -11,7 +14,11 @@ contact_bp = Blueprint('contact', __name__)
 def submit_contact():
     """Soumettre un message de contact"""
     try:
-        data = request.json or {}
+        # Gérer FormData ou JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            data = request.form.to_dict()
+        else:
+            data = request.json or {}
 
         # Validation des champs requis
         nom = (data.get('nom') or '').strip()
@@ -29,19 +36,57 @@ def submit_contact():
         # Validation captcha simple (somme)
         captcha_reponse = data.get('captcha_reponse')
         captcha_attendu = data.get('captcha_attendu')
+
+        # Convertir en entiers pour comparaison
+        try:
+            captcha_reponse = int(captcha_reponse) if captcha_reponse else None
+            captcha_attendu = int(captcha_attendu) if captcha_attendu else None
+        except (ValueError, TypeError):
+            return jsonify({"error": "Réponse au captcha invalide"}), 400
+
         if captcha_reponse != captcha_attendu:
             return jsonify({"error": "Réponse au captcha incorrecte"}), 400
 
+        # Gérer les pièces jointes
+        pieces_jointes_paths = []
+        if 'pieces_jointes' in request.files:
+            files = request.files.getlist('pieces_jointes')
+
+            # Créer le dossier uploads/contact s'il n'existe pas
+            upload_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'contact')
+            os.makedirs(upload_folder, exist_ok=True)
+
+            for file in files:
+                if file and file.filename:
+                    # Sécuriser le nom de fichier
+                    filename = secure_filename(file.filename)
+                    # Ajouter timestamp pour unicité
+                    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                    unique_filename = f"{timestamp}_{filename}"
+                    filepath = os.path.join(upload_folder, unique_filename)
+                    file.save(filepath)
+                    pieces_jointes_paths.append(f"uploads/contact/{unique_filename}")
+
         # Créer le message de contact
+        user_id = data.get('user_id')
+        if user_id == '' or user_id == 'null':
+            user_id = None
+        else:
+            try:
+                user_id = int(user_id) if user_id else None
+            except (ValueError, TypeError):
+                user_id = None
+
         contact = ContactMessage(
             nom=nom,
             email=email,
             telephone=(data.get('telephone') or '').strip() or None,
             objet=objet,
             message=message,
-            user_id=data.get('user_id'),
-            username=data.get('username'),
-            ip_address=request.remote_addr
+            user_id=user_id,
+            username=data.get('username') if data.get('username') else None,
+            ip_address=request.remote_addr,
+            pieces_jointes=json.dumps(pieces_jointes_paths) if pieces_jointes_paths else None
         )
 
         db.session.add(contact)

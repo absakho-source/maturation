@@ -669,7 +669,11 @@ class ContactMessage(db.Model):
     # IP pour anti-spam
     ip_address = db.Column(db.String(50), nullable=True)
 
+    # Pièces jointes (JSON: liste de chemins de fichiers)
+    pieces_jointes = db.Column(db.Text, nullable=True)
+
     def to_dict(self):
+        import json
         return {
             'id': self.id,
             'nom': self.nom,
@@ -683,5 +687,6 @@ class ContactMessage(db.Model):
             'date_creation': self.date_creation.isoformat() if self.date_creation else None,
             'date_lecture': self.date_lecture.isoformat() if self.date_lecture else None,
             'traite_par': self.traite_par,
-            'reponse': self.reponse
+            'reponse': self.reponse,
+            'pieces_jointes': json.loads(self.pieces_jointes) if self.pieces_jointes else []
         }
