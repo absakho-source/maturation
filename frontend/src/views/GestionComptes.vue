@@ -688,7 +688,7 @@ const userStr = localStorage.getItem('user')
 const user = userStr ? JSON.parse(userStr) : null
 
 // URL de base du backend
-const backendUrl = axios.defaults.baseURL || ''
+const backendUrl = import.meta.env.VITE_API_URL || ''
 
 // Statistiques
 const stats = computed(() => {
