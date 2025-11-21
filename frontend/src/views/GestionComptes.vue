@@ -463,6 +463,43 @@
               />
             </div>
 
+            <!-- Section Point Focal -->
+            <div class="form-group-modal point-focal-section">
+              <label class="section-label">Point Focal</label>
+              <small class="field-hint">Un point focal peut voir tous les projets soumis par les organismes sous sa tutelle</small>
+
+              <div class="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="edit-is-point-focal"
+                  v-model="editIsPointFocal"
+                  @change="onPointFocalChange"
+                />
+                <label for="edit-is-point-focal">Cet utilisateur est un Point Focal</label>
+              </div>
+
+              <div v-if="editIsPointFocal" class="form-group-modal">
+                <label for="edit-point-focal-organisme">Organisme coordonné *</label>
+                <select
+                  id="edit-point-focal-organisme"
+                  v-model="editPointFocalOrganisme"
+                  required
+                >
+                  <option value="">-- Sélectionnez l'organisme --</option>
+                  <optgroup label="Institutions">
+                    <option value="Présidence de la République">Présidence de la République</option>
+                    <option value="Primature">Primature</option>
+                  </optgroup>
+                  <optgroup label="Ministères">
+                    <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                      {{ ministere.nom_complet }}
+                    </option>
+                  </optgroup>
+                </select>
+                <small class="field-hint">Ce point focal verra les projets des agences sous la tutelle de cet organisme</small>
+              </div>
+            </div>
+
             <div class="detail-row readonly-section">
               <span class="detail-label">Statut du compte :</span>
               <span :class="['badge-statut', compteSelectionne.statut_compte || 'non_verifie']">
@@ -539,6 +576,10 @@ const editNomAgence = ref('')
 const editTutelleAgence = ref('')
 const editTutelleAgenceLibre = ref('')
 const editTutelleAgenceAutre = ref('')
+
+// Variables d'édition pour le Point Focal
+const editIsPointFocal = ref(false)
+const editPointFocalOrganisme = ref('')
 
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
@@ -774,10 +815,21 @@ function voirDetails(compte) {
   editTutelleAgence.value = ''
   editTutelleAgenceLibre.value = ''
   editTutelleAgenceAutre.value = ''
+
+  // Initialiser les champs Point Focal
+  editIsPointFocal.value = compte.is_point_focal || false
+  editPointFocalOrganisme.value = compte.point_focal_organisme || ''
 }
 
 function fermerDetails() {
   compteSelectionne.value = null
+}
+
+function onPointFocalChange() {
+  // Réinitialiser l'organisme si on décoche le point focal
+  if (!editIsPointFocal.value) {
+    editPointFocalOrganisme.value = ''
+  }
 }
 
 function initTelephone() {
@@ -923,6 +975,8 @@ async function sauvegarderModifications() {
       type_institution: typeInstitutionFinal,
       nom_structure: structureFinal,
       direction_service: directionServiceFinal,
+      is_point_focal: editIsPointFocal.value,
+      point_focal_organisme: editIsPointFocal.value ? editPointFocalOrganisme.value : null,
       role: user?.role
     })
 
@@ -1508,6 +1562,41 @@ function getTypeInstitutionLabel(type) {
   font-size: 0.8rem;
   color: #718096;
   font-style: italic;
+}
+
+/* Styles Point Focal */
+.point-focal-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border: 1px solid #d0e8ff;
+}
+
+.point-focal-section .section-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c5282;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
 }
 
 .readonly-section {

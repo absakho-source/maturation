@@ -576,15 +576,22 @@ def projects():
         hist = Historique(
             project_id=project.id,
             action=f"Projet '{titre}' soumis avec le numéro {numero_projet}",
-            auteur=auteur_nom, 
+            auteur=auteur_nom,
             role="soumissionnaire"
         )
         db.session.add(hist)
         db.session.commit()
 
+        # Notifier les points focaux si le projet a un organisme de tutelle
+        try:
+            from routes.point_focal_routes import notifier_point_focal_nouveau_projet
+            notifier_point_focal_nouveau_projet(project)
+        except Exception as notif_err:
+            print(f"Erreur notification point focal: {notif_err}")
+
         return jsonify({
-            "message": "Projet soumis avec succès", 
-            "id": project.id, 
+            "message": "Projet soumis avec succès",
+            "id": project.id,
             "numero_projet": numero_projet
         }), 201
 
@@ -1424,7 +1431,12 @@ def get_users():
             "role": u.role,
             "display_name": u.display_name or u.username,
             "email": (u.email if hasattr(u, 'email') and u.email else u.username) if '@' in u.username else None,
-            "telephone": u.telephone if hasattr(u, 'telephone') else None
+            "telephone": u.telephone if hasattr(u, 'telephone') else None,
+            "is_point_focal": u.is_point_focal if hasattr(u, 'is_point_focal') else False,
+            "point_focal_organisme": u.point_focal_organisme if hasattr(u, 'point_focal_organisme') else None,
+            "nom_structure": u.nom_structure if hasattr(u, 'nom_structure') else None,
+            "type_structure": u.type_structure if hasattr(u, 'type_structure') else None,
+            "statut_compte": u.statut_compte if hasattr(u, 'statut_compte') else 'non_verifie'
         } for u in users]
         return jsonify(result), 200
     except Exception as e:
@@ -1516,7 +1528,9 @@ def login():
             "nom": user.username,
             "email": getattr(user, 'email', None),
             "telephone": user.telephone if hasattr(user, 'telephone') else None,
-            "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'actif'
+            "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'actif',
+            "is_point_focal": user.is_point_focal if hasattr(user, 'is_point_focal') else False,
+            "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None
         }), 200
 
     except Exception as e:
@@ -1843,6 +1857,13 @@ def update_user_details(user_id):
         if 'direction_service' in data and data['direction_service'] is not None:
             user.direction_service = data['direction_service']
 
+        # Champs Point Focal
+        if 'is_point_focal' in data:
+            user.is_point_focal = data['is_point_focal']
+
+        if 'point_focal_organisme' in data:
+            user.point_focal_organisme = data['point_focal_organisme']
+
         db.session.commit()
 
         return jsonify({
@@ -1856,7 +1877,9 @@ def update_user_details(user_id):
                 "type_structure": user.type_structure,
                 "type_institution": user.type_institution,
                 "nom_structure": user.nom_structure,
-                "direction_service": user.direction_service
+                "direction_service": user.direction_service,
+                "is_point_focal": user.is_point_focal if hasattr(user, 'is_point_focal') else False,
+                "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None
             }
         }), 200
 
@@ -3534,6 +3557,14 @@ try:
     print("User routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import user routes: {e}")
+
+# Import and register point focal routes
+try:
+    from routes.point_focal_routes import point_focal_bp
+    app.register_blueprint(point_focal_bp, url_prefix='')
+    print("Point focal routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import point focal routes: {e}")
 
 # Import and register formulaire config routes
 try:

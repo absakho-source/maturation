@@ -29,6 +29,10 @@ class User(db.Model):
     verifie_par = db.Column(db.String(100), nullable=True)  # Username du validateur
     date_creation = db.Column(db.DateTime, nullable=True)  # Date de création du compte
 
+    # Champs pour le système de Point Focal
+    is_point_focal = db.Column(db.Boolean, default=False)  # Est-ce un point focal ?
+    point_focal_organisme = db.Column(db.String(300), nullable=True)  # Organisme dont il est point focal (ministère, institution)
+
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_projet = db.Column(db.String(20), unique=True, nullable=True)  # Format: YYYYMMDD

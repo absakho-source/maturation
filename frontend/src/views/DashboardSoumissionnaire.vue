@@ -482,6 +482,21 @@
         </div>
       </div>
 
+      <!-- Section Point Focal -->
+      <div v-if="isPointFocal" class="section point-focal-banner">
+        <div class="point-focal-content">
+          <div class="point-focal-icon">🏛️</div>
+          <div class="point-focal-info">
+            <h3>Espace Point Focal</h3>
+            <p>Vous êtes point focal pour : <strong>{{ pointFocalOrganisme }}</strong></p>
+            <p class="point-focal-desc">Accédez à tous les projets soumis par les structures sous votre tutelle.</p>
+          </div>
+          <router-link to="/projets-tutelle" class="btn-point-focal">
+            📊 Voir les projets sous tutelle
+          </router-link>
+        </div>
+      </div>
+
       <div class="section">
         <h3>📂 Mes projets</h3>
 
@@ -651,6 +666,18 @@ export default {
     canSubmitProject() {
       // L'utilisateur peut soumettre un projet seulement si son compte est vérifié
       return this.userAccountStatus === 'verifie';
+    },
+
+    isPointFocal() {
+      // Vérifie si l'utilisateur est un point focal
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      return user && user.is_point_focal === true;
+    },
+
+    pointFocalOrganisme() {
+      // Retourne l'organisme dont l'utilisateur est point focal
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      return user ? user.point_focal_organisme : null;
     },
 
     isOrganismeTutelleFrozen() {
@@ -1875,5 +1902,80 @@ select:disabled, input:disabled {
   color: #92400e;
   font-size: 0.8rem;
   border-radius: 4px;
+}
+
+/* Styles Point Focal */
+.point-focal-banner {
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.point-focal-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.point-focal-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.point-focal-info {
+  flex: 1;
+}
+
+.point-focal-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1e40af;
+  font-size: 1.25rem;
+}
+
+.point-focal-info p {
+  margin: 0.25rem 0;
+  color: #1e3a8a;
+}
+
+.point-focal-info .point-focal-desc {
+  font-size: 0.875rem;
+  color: #3730a3;
+  opacity: 0.9;
+}
+
+.btn-point-focal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-point-focal:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+@media (max-width: 768px) {
+  .point-focal-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .btn-point-focal {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
