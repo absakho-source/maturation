@@ -464,40 +464,28 @@
             </div>
 
             <!-- Section Point Focal -->
-            <div class="form-group-modal point-focal-section">
+            <div class="form-group-modal point-focal-section" v-if="getOrganismeTutelle(compteSelectionne)">
               <label class="section-label">Point Focal</label>
-              <small class="field-hint">Un point focal peut voir tous les projets soumis par les organismes sous sa tutelle</small>
+              <small class="field-hint">Un point focal peut voir tous les projets soumis par les structures sous la tutelle de son organisme</small>
 
               <div class="checkbox-group">
                 <input
                   type="checkbox"
                   id="edit-is-point-focal"
                   v-model="editIsPointFocal"
-                  @change="onPointFocalChange"
                 />
                 <label for="edit-is-point-focal">Cet utilisateur est un Point Focal</label>
               </div>
 
-              <div v-if="editIsPointFocal" class="form-group-modal">
-                <label for="edit-point-focal-organisme">Organisme coordonné *</label>
-                <select
-                  id="edit-point-focal-organisme"
-                  v-model="editPointFocalOrganisme"
-                  required
-                >
-                  <option value="">-- Sélectionnez l'organisme --</option>
-                  <optgroup label="Institutions">
-                    <option value="Présidence de la République">Présidence de la République</option>
-                    <option value="Primature">Primature</option>
-                  </optgroup>
-                  <optgroup label="Ministères">
-                    <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
-                      {{ ministere.nom_complet }}
-                    </option>
-                  </optgroup>
-                </select>
-                <small class="field-hint">Ce point focal verra les projets des agences sous la tutelle de cet organisme</small>
+              <div v-if="editIsPointFocal" class="point-focal-organisme-info">
+                <strong>Organisme de tutelle :</strong> {{ getOrganismeTutelle(compteSelectionne) }}
+                <small class="field-hint">L'organisme est automatiquement celui de l'utilisateur</small>
               </div>
+            </div>
+
+            <div v-else class="form-group-modal point-focal-section point-focal-disabled">
+              <label class="section-label">Point Focal</label>
+              <small class="field-hint warning-text">Cet utilisateur n'a pas d'organisme de tutelle défini dans son profil. Il ne peut pas être désigné comme point focal.</small>
             </div>
 
             <div class="detail-row readonly-section">
@@ -579,7 +567,6 @@ const editTutelleAgenceAutre = ref('')
 
 // Variables d'édition pour le Point Focal
 const editIsPointFocal = ref(false)
-const editPointFocalOrganisme = ref('')
 
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
@@ -818,18 +805,32 @@ function voirDetails(compte) {
 
   // Initialiser les champs Point Focal
   editIsPointFocal.value = compte.is_point_focal || false
-  editPointFocalOrganisme.value = compte.point_focal_organisme || ''
 }
 
 function fermerDetails() {
   compteSelectionne.value = null
 }
 
-function onPointFocalChange() {
-  // Réinitialiser l'organisme si on décoche le point focal
-  if (!editIsPointFocal.value) {
-    editPointFocalOrganisme.value = ''
+function getOrganismeTutelle(compte) {
+  // Retourne l'organisme de tutelle de l'utilisateur selon son type de structure
+  if (!compte) return null
+
+  const typeStructure = compte.type_structure
+
+  if (typeStructure === 'institution') {
+    // Pour les institutions (Présidence, Primature, Ministère)
+    if (compte.type_institution === 'presidence') return 'Présidence de la République'
+    if (compte.type_institution === 'primature') return 'Primature'
+    if (compte.type_institution === 'ministere') {
+      return compte.nom_ministere || null
+    }
+  } else if (typeStructure === 'agence') {
+    // Pour les agences, la tutelle est le ministère de rattachement
+    return compte.tutelle_agence || null
   }
+
+  // Les collectivités et autres structures ne peuvent pas être point focal
+  return null
 }
 
 function initTelephone() {
@@ -976,7 +977,7 @@ async function sauvegarderModifications() {
       nom_structure: structureFinal,
       direction_service: directionServiceFinal,
       is_point_focal: editIsPointFocal.value,
-      point_focal_organisme: editIsPointFocal.value ? editPointFocalOrganisme.value : null,
+      point_focal_organisme: editIsPointFocal.value ? getOrganismeTutelle(compteSelectionne.value) : null,
       role: user?.role
     })
 
@@ -1597,6 +1598,32 @@ function getTypeInstitutionLabel(type) {
   font-weight: 500;
   cursor: pointer;
   margin: 0;
+}
+
+.point-focal-organisme-info {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #e0f2fe;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.point-focal-organisme-info strong {
+  color: #0369a1;
+}
+
+.point-focal-organisme-info .field-hint {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.point-focal-disabled {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.warning-text {
+  color: #dc2626;
 }
 
 .readonly-section {
