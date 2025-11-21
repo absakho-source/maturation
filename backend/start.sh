@@ -23,6 +23,7 @@ echo "[MIGRATION] Exécution des migrations..."
 python add_visibility_column.py
 [ -f add_motivation_column.py ] && python add_motivation_column.py || echo "[SKIP] add_motivation_column.py non trouvé"
 [ -f add_connexion_log_table.py ] && python add_connexion_log_table.py || echo "[SKIP] add_connexion_log_table.py non trouvé"
+[ -f add_point_focal_columns.py ] && python add_point_focal_columns.py || echo "[SKIP] add_point_focal_columns.py non trouvé"
 
 # Exécuter les migrations de données
 echo "[DATA MIGRATION] Correction des données existantes..."
