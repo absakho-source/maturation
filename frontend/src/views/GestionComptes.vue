@@ -571,7 +571,6 @@ const editIsPointFocal = ref(false)
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
 const user = userStr ? JSON.parse(userStr) : null
-console.log('GestionComptes - user from localStorage:', user)
 
 // URL de base du backend
 const backendUrl = import.meta.env.VITE_API_URL || ''
@@ -689,12 +688,10 @@ async function verifierCompte(compteId) {
   actionEnCours.value = compteId
 
   try {
-    const payload = {
+    await axios.post(`/api/admin/users/${compteId}/verify`, {
       role: user?.role,
       validateur_username: user?.username
-    }
-    console.log('verifierCompte - sending payload:', payload)
-    await axios.post(`/api/admin/users/${compteId}/verify`, payload)
+    })
 
     // Recharger les comptes
     await chargerComptes()
@@ -832,22 +829,24 @@ function getOrganismeTutelle(compte) {
     if (typeInst === 'presidence') return 'Présidence de la République'
     if (typeInst === 'primature') return 'Primature'
     if (typeInst === 'ministere') {
-      // Utiliser la valeur éditée si disponible
-      if (editNomMinistere.value) {
+      // Utiliser la valeur éditée si disponible (vérifier !== '' car '' est falsy)
+      if (editNomMinistere.value && editNomMinistere.value !== '') {
         return editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
       }
-      return compte.nom_ministere || null
+      // Fallback: utiliser nom_ministere, nom_structure, ou point_focal_organisme existant
+      return compte.nom_ministere || compte.nom_structure || compte.point_focal_organisme || null
     }
   } else if (typeStructure === 'agence') {
     // Pour les agences, la tutelle est le ministère de rattachement
     // Utiliser la valeur éditée si disponible
-    if (editTutelleAgence.value) {
+    if (editTutelleAgence.value && editTutelleAgence.value !== '') {
       if (editTutelleAgence.value === '__ministere__') {
         return editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
       }
       return editTutelleAgence.value
     }
-    return compte.tutelle_agence || null
+    // Fallback: utiliser tutelle_agence ou point_focal_organisme existant
+    return compte.tutelle_agence || compte.point_focal_organisme || null
   }
 
   // Les collectivités et autres structures ne peuvent pas être point focal
