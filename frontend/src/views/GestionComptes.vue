@@ -571,6 +571,7 @@ const editIsPointFocal = ref(false)
 // Récupérer l'utilisateur connecté
 const userStr = localStorage.getItem('user')
 const user = userStr ? JSON.parse(userStr) : null
+console.log('GestionComptes - user from localStorage:', user)
 
 // URL de base du backend
 const backendUrl = import.meta.env.VITE_API_URL || ''
@@ -688,10 +689,12 @@ async function verifierCompte(compteId) {
   actionEnCours.value = compteId
 
   try {
-    await axios.post(`/api/admin/users/${compteId}/verify`, {
+    const payload = {
       role: user?.role,
       validateur_username: user?.username
-    })
+    }
+    console.log('verifierCompte - sending payload:', payload)
+    await axios.post(`/api/admin/users/${compteId}/verify`, payload)
 
     // Recharger les comptes
     await chargerComptes()
