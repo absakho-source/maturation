@@ -791,7 +791,12 @@ function voirDetails(compte) {
   editNomStructure.value = compte.nom_structure || ''
 
   // Initialiser avec les valeurs du compte
-  editNomMinistere.value = compte.nom_ministere || ''
+  // Pour les comptes existants où nom_ministere est vide mais nom_structure contient le ministère
+  if (compte.type_institution === 'ministere' && !compte.nom_ministere && compte.nom_structure) {
+    editNomMinistere.value = compte.nom_structure
+  } else {
+    editNomMinistere.value = compte.nom_ministere || ''
+  }
   editNomMinistereLibre.value = ''
   editNomInstitution.value = ''
   editNiveauCollectivite.value = ''
