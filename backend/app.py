@@ -2218,6 +2218,12 @@ def create_user():
         type_institution = data.get("type_institution", "").strip()
         nom_structure = data.get("nom_structure", "").strip()
         direction_service = data.get("direction_service", "").strip()
+        nom_ministere = data.get("nom_ministere") or ""
+        tutelle_agence = data.get("tutelle_agence") or ""
+        if nom_ministere:
+            nom_ministere = nom_ministere.strip()
+        if tutelle_agence:
+            tutelle_agence = tutelle_agence.strip()
 
         if not username or not password or not role:
             return jsonify({"error": "Username, password et rôle sont requis"}), 400
@@ -2240,6 +2246,8 @@ def create_user():
             type_institution=type_institution,
             nom_structure=nom_structure,
             direction_service=direction_service,
+            nom_ministere=nom_ministere if nom_ministere else None,
+            tutelle_agence=tutelle_agence if tutelle_agence else None,
             statut_compte='non_verifie',
             date_creation=datetime.utcnow()
         )

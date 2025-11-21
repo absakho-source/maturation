@@ -558,6 +558,22 @@ async function register() {
       structureFinal = `${nomAgence.value} - ${tutelleFinal}`
     }
 
+    // Calculer nom_ministere
+    let nomMinistereFinal = null
+    if (typeStructure.value === 'institution' && typeInstitution.value === 'ministere') {
+      nomMinistereFinal = nomMinistere.value === '__autre__' ? nomMinistereLibre.value : nomMinistere.value
+    }
+
+    // Calculer tutelle_agence
+    let tutelleAgenceFinal = null
+    if (typeStructure.value === 'agence') {
+      if (tutelleAgence.value === '__ministere__') {
+        tutelleAgenceFinal = tutelleAgenceLibre.value === '__autre__' ? tutelleAgenceAutre.value : tutelleAgenceLibre.value
+      } else {
+        tutelleAgenceFinal = tutelleAgence.value
+      }
+    }
+
     const userData = {
       username: username.value,
       password: password.value,
@@ -569,7 +585,9 @@ async function register() {
       type_structure: typeStructure.value,
       type_institution: typeInstitutionFinal,
       nom_structure: structureFinal,
-      direction_service: directionServiceFinal
+      direction_service: directionServiceFinal,
+      nom_ministere: nomMinistereFinal,
+      tutelle_agence: tutelleAgenceFinal
     }
 
     const response = await axios.post('/api/users', userData)
