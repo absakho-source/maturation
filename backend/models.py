@@ -21,6 +21,8 @@ class User(db.Model):
     type_institution = db.Column(db.String(50), nullable=True)  # Sous-type: presidence, primature, ministere, autre_institution
     nom_structure = db.Column(db.String(255), nullable=True)  # Nom de la structure/institution
     direction_service = db.Column(db.String(255), nullable=True)  # Direction/Service au sein de l'institution
+    nom_ministere = db.Column(db.String(300), nullable=True)  # Nom du ministère (pour type_institution=ministere)
+    tutelle_agence = db.Column(db.String(300), nullable=True)  # Ministère de tutelle (pour type_structure=agence)
 
     # Champs pour le système de validation des comptes
     justificatif_path = db.Column(db.String(500), nullable=True)  # Chemin vers le justificatif (facultatif)

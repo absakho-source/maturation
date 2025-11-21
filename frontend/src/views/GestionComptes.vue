@@ -790,8 +790,8 @@ function voirDetails(compte) {
   editDirectionService.value = compte.direction_service || ''
   editNomStructure.value = compte.nom_structure || ''
 
-  // Réinitialiser les autres variables d'édition
-  editNomMinistere.value = ''
+  // Initialiser avec les valeurs du compte
+  editNomMinistere.value = compte.nom_ministere || ''
   editNomMinistereLibre.value = ''
   editNomInstitution.value = ''
   editNiveauCollectivite.value = ''
@@ -799,7 +799,7 @@ function voirDetails(compte) {
   editDepartementParent.value = ''
   editCommuneSelectionnee.value = ''
   editNomAgence.value = ''
-  editTutelleAgence.value = ''
+  editTutelleAgence.value = compte.tutelle_agence || ''
   editTutelleAgenceLibre.value = ''
   editTutelleAgenceAutre.value = ''
 
@@ -813,19 +813,32 @@ function fermerDetails() {
 
 function getOrganismeTutelle(compte) {
   // Retourne l'organisme de tutelle de l'utilisateur selon son type de structure
+  // Utilise les valeurs éditées si disponibles, sinon les valeurs du compte
   if (!compte) return null
 
-  const typeStructure = compte.type_structure
+  const typeStructure = editTypeStructure.value || compte.type_structure
 
   if (typeStructure === 'institution') {
     // Pour les institutions (Présidence, Primature, Ministère)
-    if (compte.type_institution === 'presidence') return 'Présidence de la République'
-    if (compte.type_institution === 'primature') return 'Primature'
-    if (compte.type_institution === 'ministere') {
+    const typeInst = editTypeInstitution.value || compte.type_institution
+    if (typeInst === 'presidence') return 'Présidence de la République'
+    if (typeInst === 'primature') return 'Primature'
+    if (typeInst === 'ministere') {
+      // Utiliser la valeur éditée si disponible
+      if (editNomMinistere.value) {
+        return editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
+      }
       return compte.nom_ministere || null
     }
   } else if (typeStructure === 'agence') {
     // Pour les agences, la tutelle est le ministère de rattachement
+    // Utiliser la valeur éditée si disponible
+    if (editTutelleAgence.value) {
+      if (editTutelleAgence.value === '__ministere__') {
+        return editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
+      }
+      return editTutelleAgence.value
+    }
     return compte.tutelle_agence || null
   }
 
@@ -968,6 +981,22 @@ async function sauvegarderModifications() {
       structureFinal = `${editNomAgence.value} - ${tutelleFinal}`
     }
 
+    // Calculer nom_ministere
+    let nomMinistereFinal = null
+    if (editTypeStructure.value === 'institution' && editTypeInstitution.value === 'ministere') {
+      nomMinistereFinal = editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
+    }
+
+    // Calculer tutelle_agence
+    let tutelleAgenceFinal = null
+    if (editTypeStructure.value === 'agence') {
+      if (editTutelleAgence.value === '__ministere__') {
+        tutelleAgenceFinal = editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
+      } else {
+        tutelleAgenceFinal = editTutelleAgence.value
+      }
+    }
+
     const response = await axios.put(`/api/admin/users/${compteSelectionne.value.id}`, {
       display_name: compteSelectionne.value.display_name,
       telephone: compteSelectionne.value.telephone,
@@ -976,6 +1005,8 @@ async function sauvegarderModifications() {
       type_institution: typeInstitutionFinal,
       nom_structure: structureFinal,
       direction_service: directionServiceFinal,
+      nom_ministere: nomMinistereFinal,
+      tutelle_agence: tutelleAgenceFinal,
       is_point_focal: editIsPointFocal.value,
       point_focal_organisme: editIsPointFocal.value ? getOrganismeTutelle(compteSelectionne.value) : null,
       role: user?.role

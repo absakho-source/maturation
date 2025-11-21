@@ -249,16 +249,18 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding contact_messages.{c}")
                 cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
 
-    # Migration pour la table users (Point Focal)
+    # Migration pour la table users (Point Focal + ministère/tutelle)
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user'")
     if cur.fetchone():
         cur.execute("PRAGMA table_info(user)")
         cols = {r[1] for r in cur.fetchall()}
-        needed_point_focal = {
+        needed_user_cols = {
             "is_point_focal": "BOOLEAN DEFAULT 0",
-            "point_focal_organisme": "VARCHAR(300)"
+            "point_focal_organisme": "VARCHAR(300)",
+            "nom_ministere": "VARCHAR(300)",
+            "tutelle_agence": "VARCHAR(300)"
         }
-        for c, cdef in needed_point_focal.items():
+        for c, cdef in needed_user_cols.items():
             if c not in cols:
                 print(f"[DB MIGRATION] Adding user.{c}")
                 cur.execute(f"ALTER TABLE user ADD COLUMN {c} {cdef}")
@@ -1715,6 +1717,10 @@ def get_all_users_admin():
                 "type_institution": u.type_institution if hasattr(u, 'type_institution') else None,
                 "nom_structure": u.nom_structure if hasattr(u, 'nom_structure') else None,
                 "direction_service": u.direction_service if hasattr(u, 'direction_service') else None,
+                "nom_ministere": u.nom_ministere if hasattr(u, 'nom_ministere') else None,
+                "tutelle_agence": u.tutelle_agence if hasattr(u, 'tutelle_agence') else None,
+                "is_point_focal": u.is_point_focal if hasattr(u, 'is_point_focal') else False,
+                "point_focal_organisme": u.point_focal_organisme if hasattr(u, 'point_focal_organisme') else None,
                 "justificatif_path": u.justificatif_path if hasattr(u, 'justificatif_path') else None,
                 "statut_compte": u.statut_compte if hasattr(u, 'statut_compte') else 'non_verifie',
                 "date_verification": u.date_verification.isoformat() if hasattr(u, 'date_verification') and u.date_verification else None,
@@ -1870,6 +1876,13 @@ def update_user_details(user_id):
 
         if 'direction_service' in data and data['direction_service'] is not None:
             user.direction_service = data['direction_service']
+
+        # Champs ministère et tutelle agence
+        if 'nom_ministere' in data:
+            user.nom_ministere = data['nom_ministere']
+
+        if 'tutelle_agence' in data:
+            user.tutelle_agence = data['tutelle_agence']
 
         # Champs Point Focal
         if 'is_point_focal' in data:
