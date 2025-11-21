@@ -21,8 +21,8 @@ python init_demo_data.py
 # Exécuter les migrations de base de données
 echo "[MIGRATION] Exécution des migrations..."
 python add_visibility_column.py
-python add_motivation_column.py
-python add_connexion_log_table.py
+[ -f add_motivation_column.py ] && python add_motivation_column.py || echo "[SKIP] add_motivation_column.py non trouvé"
+[ -f add_connexion_log_table.py ] && python add_connexion_log_table.py || echo "[SKIP] add_connexion_log_table.py non trouvé"
 
 # Exécuter les migrations de données
 echo "[DATA MIGRATION] Correction des données existantes..."
