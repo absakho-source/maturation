@@ -1740,7 +1740,7 @@ def verify_user_account(user_id):
         # Vérifier les permissions
         data = request.json or {}
         role = data.get('role', '').lower()
-        validateur_username = data.get('validateur_username', '')
+        validateur_username = data.get('validateur_username', '') or role  # Utiliser le rôle si username vide
 
         print(f"DEBUG verify_user: role={role}, validateur_username='{validateur_username}', data={data}")
 
