@@ -1742,6 +1742,8 @@ def verify_user_account(user_id):
         role = data.get('role', '').lower()
         validateur_username = data.get('validateur_username', '')
 
+        print(f"DEBUG verify_user: role={role}, validateur_username='{validateur_username}', data={data}")
+
         if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
             return jsonify({"error": "Accès non autorisé"}), 403
 
