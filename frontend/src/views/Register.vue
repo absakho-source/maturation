@@ -286,7 +286,8 @@
         <div class="form-section">
           <h3>Identifiants de connexion</h3>
           <input v-model="username" placeholder="Adresse email *" type="email" required />
-          <input v-model="password" placeholder="Mot de passe *" type="password" required minlength="6" />
+          <input v-model="password" placeholder="Mot de passe (min. 6 caractères) *" type="password" required minlength="6" />
+          <input v-model="passwordConfirm" placeholder="Confirmer le mot de passe *" type="password" required minlength="6" />
         </div>
 
         <button type="submit" :disabled="loading">
@@ -347,6 +348,7 @@ const communeSelectionnee = ref('') // Track commune dropdown selection
 const justificatifFiles = ref([]) // Changé en tableau pour multi-fichiers
 const username = ref('')
 const password = ref('')
+const passwordConfirm = ref('')
 const loading = ref(false)
 const message = ref('')
 const error = ref('')
@@ -510,6 +512,13 @@ function removeFile(index) {
 async function register() {
   message.value = ''
   error.value = ''
+
+  // Vérifier que les mots de passe correspondent
+  if (password.value !== passwordConfirm.value) {
+    error.value = 'Les mots de passe ne correspondent pas'
+    return
+  }
+
   loading.value = true
 
   try {
@@ -610,6 +619,7 @@ async function register() {
     justificatifFiles.value = []
     username.value = ''
     password.value = ''
+    passwordConfirm.value = ''
 
   } catch (err) {
     console.error('Erreur lors de la création du compte:', err)
