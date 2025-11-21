@@ -849,8 +849,9 @@ function getOrganismeTutelle(compte) {
     return compte.tutelle_agence || compte.point_focal_organisme || null
   }
 
-  // Les collectivités et autres structures ne peuvent pas être point focal
-  return null
+  // Fallback ultime: utiliser point_focal_organisme existant ou nom_structure
+  // Cela permet de conserver la valeur même si le type de structure n'est pas défini
+  return compte.point_focal_organisme || compte.nom_structure || null
 }
 
 function initTelephone() {
@@ -1004,6 +1005,9 @@ async function sauvegarderModifications() {
       }
     }
 
+    const organisme = editIsPointFocal.value ? getOrganismeTutelle(compteSelectionne.value) : null
+    console.log('DEBUG sauvegarder - is_point_focal:', editIsPointFocal.value, 'organisme:', organisme, 'compte:', compteSelectionne.value)
+
     const response = await axios.put(`/api/admin/users/${compteSelectionne.value.id}`, {
       display_name: compteSelectionne.value.display_name,
       telephone: compteSelectionne.value.telephone,
@@ -1015,7 +1019,7 @@ async function sauvegarderModifications() {
       nom_ministere: nomMinistereFinal,
       tutelle_agence: tutelleAgenceFinal,
       is_point_focal: editIsPointFocal.value,
-      point_focal_organisme: editIsPointFocal.value ? getOrganismeTutelle(compteSelectionne.value) : null,
+      point_focal_organisme: organisme,
       role: user?.role
     })
 
