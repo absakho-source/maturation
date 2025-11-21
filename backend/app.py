@@ -249,6 +249,20 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding contact_messages.{c}")
                 cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
 
+    # Migration pour la table users (Point Focal)
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user'")
+    if cur.fetchone():
+        cur.execute("PRAGMA table_info(user)")
+        cols = {r[1] for r in cur.fetchall()}
+        needed_point_focal = {
+            "is_point_focal": "BOOLEAN DEFAULT 0",
+            "point_focal_organisme": "VARCHAR(300)"
+        }
+        for c, cdef in needed_point_focal.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding user.{c}")
+                cur.execute(f"ALTER TABLE user ADD COLUMN {c} {cdef}")
+
     con.commit()
     con.close()
 
