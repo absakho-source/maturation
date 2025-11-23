@@ -63,7 +63,7 @@ router.beforeEach((to, from, next) => {
   // Définir les routes accessibles par rôle
   const roleAccessMap = {
     'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'mon-profil', 'project', 'evaluation'],
-    'soumissionnaire': ['soumissionnaire', 'mon-profil', 'project'],
+    'soumissionnaire': ['soumissionnaire', 'projets-tutelle', 'mon-profil', 'project'],
     'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
     'secretariatsct': ['secretariatsct', 'gestion-comptes', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
