@@ -198,6 +198,24 @@
             </div>
           </div>
         </div>
+        <div v-if="getPoleStats(selectedPole)?.projets?.length" class="stat-item stat-item-full projets-list-section">
+          <span class="stat-label">Liste des Projets</span>
+          <div class="projets-list">
+            <div
+              v-for="projet in getPoleStats(selectedPole)?.projets"
+              :key="projet.id"
+              class="projet-item"
+              @click="goToProject(projet.id)"
+            >
+              <div class="projet-numero">{{ projet.numero_projet }}</div>
+              <div class="projet-titre">{{ projet.titre }}</div>
+              <div class="projet-meta-row">
+                <span class="projet-cout">{{ formatAmount(projet.cout_estimatif || 0) }}</span>
+                <span :class="['projet-statut', projet.statut]">{{ projet.statut }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -490,7 +508,11 @@ export default {
 
     
     getPoleStats(poleName) {
-      return this.statsParPole[poleName] || { nombre_projets: 0, cout_total: 0, statuts: {} }
+      return this.statsParPole[poleName] || { nombre_projets: 0, cout_total: 0, statuts: {}, projets: [] }
+    },
+
+    goToProject(projectId) {
+      this.$router.push(`/project/${projectId}`)
     },
     
     showTooltip(event, pole) {
@@ -873,15 +895,94 @@ export default {
   margin-top: 5px;
 }
 
+/* Liste des projets */
+.projets-list-section {
+  margin-top: 10px;
+}
+
+.projets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.projet-item {
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #0ea5e9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.projet-item:hover {
+  background: #e2e8f0;
+  transform: translateX(3px);
+}
+
+.projet-numero {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.projet-titre {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1e293b;
+  margin: 4px 0;
+  line-height: 1.3;
+}
+
+.projet-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.projet-cout {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+.projet-statut {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.projet-statut.soumis {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.projet-statut.assigné,
+.projet-statut.en_evaluation {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.projet-statut.évalué,
+.projet-statut.approuvé {
+  background: #d1fae5;
+  color: #065f46;
+}
+
 @media (max-width: 768px) {
   .carte-wrapper {
     flex-direction: column;
   }
-  
+
   .legende-investissement {
     flex: none;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

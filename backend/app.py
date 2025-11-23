@@ -2738,13 +2738,26 @@ def stats_poles_territorial():
                         'nombre_projets': 0,
                         'cout_total': 0,
                         'secteurs': {},
-                        'statuts': {}
+                        'statuts': {},
+                        'projets': []
                     }
 
                 # Compter le projet une fois par pôle
                 poles_stats[pole_territorial]['nombre_projets'] += 1
                 # Ajouter la part proportionnelle du coût
                 poles_stats[pole_territorial]['cout_total'] += cout_par_pole
+
+                # Ajouter le projet à la liste (éviter les doublons si projet sur plusieurs pôles)
+                projet_ids = [p['id'] for p in poles_stats[pole_territorial]['projets']]
+                if project.id not in projet_ids:
+                    poles_stats[pole_territorial]['projets'].append({
+                        'id': project.id,
+                        'numero_projet': project.numero_projet,
+                        'titre': project.titre,
+                        'cout_estimatif': project.cout_estimatif,
+                        'statut': project.statut,
+                        'secteur': project.secteur
+                    })
 
                 # Répartition par secteur dans ce pôle
                 secteur = project.secteur or 'non défini'
