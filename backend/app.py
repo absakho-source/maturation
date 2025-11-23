@@ -2885,7 +2885,16 @@ def get_project_documents(project_id):
 
             # Réappliquer le filtrage après rechargement
             if user_role == "soumissionnaire":
-                if project.auteur_nom == user_name or project.auteur == user_name:
+                is_author = project.auteur_nom == user_name
+
+                # Vérifier si l'utilisateur est Point Focal pour ce projet
+                is_point_focal_for_project = False
+                if user_name:
+                    user = User.query.filter_by(username=user_name).first()
+                    if user and user.is_point_focal and user.point_focal_organisme:
+                        is_point_focal_for_project = project.organisme_tutelle == user.point_focal_organisme
+
+                if is_author or is_point_focal_for_project:
                     documents = [doc for doc in documents
                                if doc.auteur_role == "soumissionnaire" and is_visible_for_role(doc, "soumissionnaire")]
                 else:
