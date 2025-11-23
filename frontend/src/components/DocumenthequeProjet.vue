@@ -257,7 +257,12 @@ export default {
     },
 
     ouvrirDocument(doc) {
-      const url = `/api/uploads/${doc.nom_fichier}`;
+      // En production sur Render, utiliser l'URL backend complète
+      const isProduction = window.location.hostname.includes('render.com');
+      const backendUrl = isProduction
+        ? 'https://maturation-backend.onrender.com'
+        : '';
+      const url = `${backendUrl}/api/uploads/${doc.nom_fichier}`;
       window.open(url, '_blank');
     },
 
