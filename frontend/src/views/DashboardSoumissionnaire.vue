@@ -669,13 +669,21 @@ export default {
     },
 
     isPointFocal() {
-      // Vérifie si l'utilisateur est un point focal
+      // Vérifie si l'utilisateur est un point focal (utilise les données fraîches du profil)
+      if (this.userProfileData) {
+        return this.userProfileData.is_point_focal === true;
+      }
+      // Fallback sur localStorage si le profil n'est pas encore chargé
       const user = JSON.parse(localStorage.getItem('user') || 'null');
       return user && user.is_point_focal === true;
     },
 
     pointFocalOrganisme() {
       // Retourne l'organisme dont l'utilisateur est point focal
+      if (this.userProfileData) {
+        return this.userProfileData.point_focal_organisme;
+      }
+      // Fallback sur localStorage si le profil n'est pas encore chargé
       const user = JSON.parse(localStorage.getItem('user') || 'null');
       return user ? user.point_focal_organisme : null;
     },

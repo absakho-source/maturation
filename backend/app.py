@@ -2047,6 +2047,37 @@ def upload_justificatifs():
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/users/<username>/profile", methods=["GET"])
+def get_user_profile(username):
+    """Récupérer les informations complètes du profil utilisateur"""
+    try:
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "Utilisateur non trouvé"}), 404
+
+        return jsonify({
+            "id": user.id,
+            "username": user.username,
+            "display_name": user.display_name,
+            "email": user.username if '@' in user.username else None,
+            "telephone": user.telephone if hasattr(user, 'telephone') else None,
+            "fonction": user.fonction if hasattr(user, 'fonction') else None,
+            "type_structure": user.type_structure if hasattr(user, 'type_structure') else None,
+            "type_institution": user.type_institution if hasattr(user, 'type_institution') else None,
+            "nom_structure": user.nom_structure if hasattr(user, 'nom_structure') else None,
+            "direction_service": user.direction_service if hasattr(user, 'direction_service') else None,
+            "nom_ministere": user.nom_ministere if hasattr(user, 'nom_ministere') else None,
+            "tutelle_agence": user.tutelle_agence if hasattr(user, 'tutelle_agence') else None,
+            "is_point_focal": user.is_point_focal if hasattr(user, 'is_point_focal') else False,
+            "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None,
+            "point_focal_nomme_par": user.point_focal_nomme_par if hasattr(user, 'point_focal_nomme_par') else None,
+            "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'non_verifie'
+        }), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/users/<username>/profile", methods=["PUT"])
 def update_user_profile(username):
     """Mettre à jour les informations du profil utilisateur (téléphone, email)"""
