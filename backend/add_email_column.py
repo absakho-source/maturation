@@ -3,45 +3,51 @@
 Script de migration pour ajouter la colonne email à la table users
 """
 
-import sqlite3
+import sys
 import os
 
-# Chemin vers la base de données
-DB_PATH = os.path.join(os.path.dirname(__file__), 'instance', 'maturation.db')
+# Ajouter le chemin du backend au PYTHONPATH
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-def migrate():
-    """Ajoute la colonne email à la table users"""
+from db import db
+from app import app
+from sqlalchemy import text
 
-    if not os.path.exists(DB_PATH):
-        print(f"Base de données non trouvée: {DB_PATH}")
-        return False
+def add_email_column():
+    """Ajoute la colonne email à la table users si elle n'existe pas"""
+    with app.app_context():
+        try:
+            # Vérifier si la colonne existe déjà
+            result = db.session.execute(text("PRAGMA table_info(users)"))
+            columns = [row[1] for row in result.fetchall()]
 
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+            if 'email' in columns:
+                print("✓ La colonne 'email' existe déjà.")
+                return True
 
-    try:
-        # Vérifier les colonnes existantes
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [col[1] for col in cursor.fetchall()]
+            # Ajouter la colonne
+            print("Ajout de la colonne 'email'...")
+            db.session.execute(text(
+                "ALTER TABLE users ADD COLUMN email VARCHAR(150)"
+            ))
+            db.session.commit()
+            print("✓ Colonne 'email' ajoutée avec succès!")
+            return True
 
-        # Ajouter email si elle n'existe pas
-        if 'email' not in columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN email VARCHAR(150)")
-            print("✓ Colonne 'email' ajoutée")
-        else:
-            print("• Colonne 'email' existe déjà")
+        except Exception as e:
+            print(f"✗ Erreur lors de l'ajout de la colonne: {e}")
+            db.session.rollback()
+            return False
 
-        conn.commit()
-        print("\n✅ Migration email terminée avec succès!")
-        return True
+if __name__ == "__main__":
+    print("=" * 60)
+    print("Migration: Ajout de la colonne email")
+    print("=" * 60)
 
-    except Exception as e:
-        print(f"❌ Erreur lors de la migration: {e}")
-        conn.rollback()
-        return False
+    success = add_email_column()
 
-    finally:
-        conn.close()
-
-if __name__ == '__main__':
-    migrate()
+    if success:
+        print("\n✓ Migration terminée avec succès!")
+    else:
+        print("\n✗ Migration échouée!")
+        sys.exit(1)
