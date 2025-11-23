@@ -34,6 +34,7 @@ class User(db.Model):
     # Champs pour le système de Point Focal
     is_point_focal = db.Column(db.Boolean, default=False)  # Est-ce un point focal ?
     point_focal_organisme = db.Column(db.String(300), nullable=True)  # Organisme dont il est point focal (ministère, institution)
+    point_focal_nomme_par = db.Column(db.String(100), nullable=True)  # Username de celui qui a nommé le point focal
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)

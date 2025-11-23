@@ -40,6 +40,7 @@ def add_missing_columns():
                 ('date_creation', 'DATETIME'),
                 ('is_point_focal', 'BOOLEAN DEFAULT 0'),
                 ('point_focal_organisme', 'VARCHAR(300)'),
+                ('point_focal_nomme_par', 'VARCHAR(100)'),
             ]
 
             added_count = 0

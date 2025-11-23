@@ -481,6 +481,9 @@
                 <strong>Organisme de tutelle :</strong> {{ getOrganismeTutelle(compteSelectionne) }}
                 <small class="field-hint">L'organisme est automatiquement celui de l'utilisateur</small>
               </div>
+              <div v-if="compteSelectionne?.is_point_focal && compteSelectionne?.point_focal_nomme_par" class="point-focal-designe-par">
+                <small>Désigné par : {{ compteSelectionne.point_focal_nomme_par }}</small>
+              </div>
             </div>
 
             <div v-else class="form-group-modal point-focal-section point-focal-disabled">
@@ -1020,7 +1023,8 @@ async function sauvegarderModifications() {
       tutelle_agence: tutelleAgenceFinal,
       is_point_focal: editIsPointFocal.value,
       point_focal_organisme: organisme,
-      role: user?.role
+      role: user?.role,
+      admin_username: user?.username
     })
 
     if (response.status === 200) {
@@ -1657,6 +1661,12 @@ function getTypeInstitutionLabel(type) {
 .point-focal-organisme-info .field-hint {
   display: block;
   margin-top: 0.25rem;
+}
+
+.point-focal-designe-par {
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .point-focal-disabled {

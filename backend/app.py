@@ -1721,6 +1721,7 @@ def get_all_users_admin():
                 "tutelle_agence": u.tutelle_agence if hasattr(u, 'tutelle_agence') else None,
                 "is_point_focal": u.is_point_focal if hasattr(u, 'is_point_focal') else False,
                 "point_focal_organisme": u.point_focal_organisme if hasattr(u, 'point_focal_organisme') else None,
+                "point_focal_nomme_par": u.point_focal_nomme_par if hasattr(u, 'point_focal_nomme_par') else None,
                 "justificatif_path": u.justificatif_path if hasattr(u, 'justificatif_path') else None,
                 "statut_compte": u.statut_compte if hasattr(u, 'statut_compte') else 'non_verifie',
                 "date_verification": u.date_verification.isoformat() if hasattr(u, 'date_verification') and u.date_verification else None,
@@ -1892,7 +1893,12 @@ def update_user_details(user_id):
 
         # Champs Point Focal
         if 'is_point_focal' in data:
+            old_is_point_focal = user.is_point_focal if hasattr(user, 'is_point_focal') else False
             user.is_point_focal = data['is_point_focal']
+            # Si on vient de cocher Point Focal, enregistrer qui l'a fait
+            if data['is_point_focal'] and not old_is_point_focal:
+                admin_username = data.get('admin_username', 'admin')
+                user.point_focal_nomme_par = admin_username
 
         if 'point_focal_organisme' in data:
             user.point_focal_organisme = data['point_focal_organisme']
@@ -1912,7 +1918,8 @@ def update_user_details(user_id):
                 "nom_structure": user.nom_structure,
                 "direction_service": user.direction_service,
                 "is_point_focal": user.is_point_focal if hasattr(user, 'is_point_focal') else False,
-                "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None
+                "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None,
+                "point_focal_nomme_par": user.point_focal_nomme_par if hasattr(user, 'point_focal_nomme_par') else None
             }
         }), 200
 
