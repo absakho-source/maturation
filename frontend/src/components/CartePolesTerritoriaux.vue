@@ -211,7 +211,7 @@
               <div class="projet-titre">{{ projet.titre }}</div>
               <div class="projet-meta-row">
                 <span class="projet-cout">{{ formatAmount(projet.cout_estimatif || 0) }}</span>
-                <span :class="['projet-statut', projet.statut]">{{ projet.statut }}</span>
+                <span :class="['projet-statut', projet.statut]">{{ formatStatut(projet.statut) }}</span>
               </div>
             </div>
           </div>
@@ -612,6 +612,23 @@ export default {
         return `${(amount / 1000000).toFixed(0)} M FCFA`
       }
       return `${amount.toLocaleString()} FCFA`
+    },
+
+    formatStatut(statut) {
+      const labels = {
+        'soumis': 'Soumis',
+        'assigné': 'Assigné',
+        'en_evaluation': 'En évaluation',
+        'évalué': 'Évalué',
+        'validé': 'Validé',
+        'validé par secrétariat': 'Validé par secrétariat',
+        'validé par presidencesct': 'Validé par SCT',
+        'approuvé': 'Approuvé',
+        'rejeté': 'Rejeté',
+        'compléments_requis': 'Compléments requis',
+        'compléments fournis': 'Compléments fournis'
+      }
+      return labels[statut] || statut
     },
 
     shouldShowPoleLabel(pole) {
