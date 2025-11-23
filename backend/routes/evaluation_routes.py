@@ -323,7 +323,31 @@ def create_or_update_fiche_evaluation(project_id):
         # Conclusion
         fiche.proposition = data.get('proposition', '')
         fiche.recommandations = data.get('recommandations', '')
-        
+
+        # Sauvegarder origine_projet et typologie_projet depuis le frontend
+        import json
+
+        # Convertir origine_projet_choix en format objet
+        origine_choix = data.get('origine_projet_choix', '')
+        if origine_choix:
+            origine_obj = {
+                'maturation': origine_choix == 'maturation',
+                'offre_spontanee': origine_choix == 'offre_spontanee',
+                'autres': origine_choix == 'autres'
+            }
+            project.origine_projet = json.dumps(origine_obj)
+
+        # Convertir typologie_projet_choix en format objet
+        typologie_choix = data.get('typologie_projet_choix', '')
+        if typologie_choix:
+            typologie_obj = {
+                'productif': typologie_choix == 'productif',
+                'appui_production': typologie_choix == 'appui_production',
+                'social': typologie_choix == 'social',
+                'environnemental': typologie_choix == 'environnemental'
+            }
+            project.typologie_projet = json.dumps(typologie_obj)
+
         # Calcul automatique du score total
         score_total = fiche.calculer_score_total()
         

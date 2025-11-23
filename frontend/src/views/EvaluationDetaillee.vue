@@ -471,12 +471,19 @@ export default {
 
       this.loading = true
       try {
+        // Inclure les données de présentation (origine et typologie du projet)
+        const dataToSend = {
+          ...this.evaluationData,
+          origine_projet_choix: this.presentationData?.origine_projet_choix || '',
+          typologie_projet_choix: this.presentationData?.typologie_projet_choix || ''
+        }
+
         const response = await fetch(`/api/projects/${this.projectId}/fiche-evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(this.evaluationData)
+          body: JSON.stringify(dataToSend)
         })
 
         if (response.ok) {
