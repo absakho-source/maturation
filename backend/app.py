@@ -1851,9 +1851,6 @@ def update_user_details(user_id):
         data = request.json or {}
         role = data.get('role', '').lower()
 
-        # DEBUG: Log des données reçues pour Point Focal
-        print(f"DEBUG update_user: user_id={user_id}, is_point_focal={data.get('is_point_focal')}, point_focal_organisme={data.get('point_focal_organisme')}, nom_ministere={data.get('nom_ministere')}")
-
         if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
             return jsonify({"error": "Accès non autorisé"}), 403
 

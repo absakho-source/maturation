@@ -1006,7 +1006,6 @@ async function sauvegarderModifications() {
     }
 
     const organisme = editIsPointFocal.value ? getOrganismeTutelle(compteSelectionne.value) : null
-    console.log('DEBUG sauvegarder - is_point_focal:', editIsPointFocal.value, 'organisme:', organisme, 'compte:', compteSelectionne.value)
 
     const response = await axios.put(`/api/admin/users/${compteSelectionne.value.id}`, {
       display_name: compteSelectionne.value.display_name,
