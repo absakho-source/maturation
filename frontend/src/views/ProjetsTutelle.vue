@@ -143,9 +143,12 @@ const error = ref('')
 const filtreStatut = ref('')
 const rechercheTexte = ref('')
 
-// Récupérer l'utilisateur connecté
+// Récupérer l'utilisateur connecté depuis localStorage
 const userStr = localStorage.getItem('user')
 const user = userStr ? JSON.parse(userStr) : null
+
+// Données du profil utilisateur (chargées depuis l'API)
+const userProfile = ref(null)
 
 // Projets filtrés
 const projetsFiltres = computed(() => {
@@ -169,10 +172,26 @@ const projetsFiltres = computed(() => {
 })
 
 onMounted(async () => {
-  if (!user?.is_point_focal) {
-    error.value = 'Vous n\'êtes pas un point focal'
+  if (!user) {
+    error.value = 'Utilisateur non connecté'
     return
   }
+
+  // Charger le profil depuis l'API pour avoir is_point_focal à jour
+  try {
+    const response = await axios.get(`/api/users/${user.username}/profile`)
+    userProfile.value = response.data
+
+    if (!userProfile.value?.is_point_focal) {
+      error.value = 'Vous n\'êtes pas un point focal'
+      return
+    }
+  } catch (err) {
+    console.error('Erreur chargement profil:', err)
+    error.value = 'Erreur lors du chargement du profil'
+    return
+  }
+
   await chargerProjets()
   await chargerStats()
 })
