@@ -1932,21 +1932,22 @@ select:disabled, input:disabled {
 
 /* Styles Point Focal */
 .point-focal-banner {
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-  border: 2px solid #3b82f6;
+  background: white;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  border-left: 4px solid #0ea5e9;
 }
 
 .point-focal-content {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
 }
 
 .point-focal-icon {
-  font-size: 3rem;
+  font-size: 2.5rem;
   flex-shrink: 0;
 }
 
@@ -1956,41 +1957,42 @@ select:disabled, input:disabled {
 
 .point-focal-info h3 {
   margin: 0 0 0.5rem 0;
-  color: #1e40af;
-  font-size: 1.25rem;
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .point-focal-info p {
   margin: 0.25rem 0;
-  color: #1e3a8a;
+  color: #334155;
+  font-size: 0.95rem;
 }
 
 .point-focal-info .point-focal-desc {
-  font-size: 0.875rem;
-  color: #3730a3;
-  opacity: 0.9;
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
 .btn-point-focal {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  background: #2563eb;
+  padding: 0.75rem 1.25rem;
+  background: #0ea5e9;
   color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .btn-point-focal:hover {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background: #0284c7;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
 }
 
 @media (max-width: 768px) {
