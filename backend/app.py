@@ -1101,7 +1101,7 @@ def traiter_project(project_id):
         # ============ NOTIFICATIONS ============
         try:
             projet_titre = p.titre[:50] + "..." if len(p.titre) > 50 else p.titre
-            lien_projet = f"/projet/{project_id}"
+            lien_projet = f"/project/{project_id}"
 
             # Notification pour assignation d'évaluateur
             if "evaluateur_nom" in data and p.evaluateur_nom:
@@ -3174,7 +3174,7 @@ def add_project_message(project_id):
         # ============ NOTIFICATION POUR NOUVEAU MESSAGE ============
         try:
             projet_titre = project.titre[:40] + "..." if len(project.titre) > 40 else project.titre
-            lien_projet = f"/projet/{project_id}"
+            lien_projet = f"/project/{project_id}"
 
             # Notifier selon l'auteur du message
             if auteur_role == "soumissionnaire":
