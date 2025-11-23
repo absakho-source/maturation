@@ -463,7 +463,12 @@
             </div>
           </div>
 
-          <div v-if="submitError" class="error-message">{{ submitError }}</div>
+          <div v-if="submitErrors.length > 0" class="error-message">
+            <strong>Veuillez corriger les erreurs suivantes :</strong>
+            <ul class="error-list">
+              <li v-for="(error, index) in submitErrors" :key="index">{{ error }}</li>
+            </ul>
+          </div>
 
           <button type="submit" class="btn-submit" :disabled="submitting">
             <span v-if="!submitting">✓ Soumettre le projet</span>
@@ -590,7 +595,7 @@ export default {
       projects: [],
       loading: false,
       submitting: false,
-      submitError: "",
+      submitErrors: [],
       submitSuccess: "",
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
@@ -1228,38 +1233,47 @@ export default {
       this.complements[id].files = arr;
     },
     async handleSubmit() {
-      this.submitError = ""; this.submitSuccess = ""; this.submitting = true;
+      this.submitErrors = []; this.submitSuccess = ""; this.submitting = true;
 
-      // Validation: vérifier la certification
-      if (!this.form.certification) {
-        this.submitError = "Veuillez certifier que les informations fournies sont exactes avant de soumettre le projet";
-        this.submitting = false;
-        alert("Veuillez certifier que les informations fournies sont exactes avant de soumettre le projet");
-        return;
-      }
+      // Collecter toutes les erreurs de validation
+      const errors = [];
 
-      // Validation: vérifier que les 3 documents requis sont fournis
-      if (this.form.lettre_soumission.length === 0) {
-        this.submitError = "La lettre de soumission signée est requise";
-        this.submitting = false;
-        return;
-      }
-      if (this.form.note_conceptuelle.length === 0) {
-        this.submitError = "La note conceptuelle du projet est requise";
-        this.submitting = false;
-        return;
-      }
-      if (this.form.etudes_plans.length === 0) {
-        this.submitError = "Les études ou plans techniques sont requis";
-        this.submitting = false;
-        return;
+      // Vérifier les champs obligatoires du formulaire
+      if (!this.form.titre || this.form.titre.trim() === '') {
+        errors.push("L'intitulé du projet est requis");
       }
 
       // Construire et valider l'organisme de tutelle
       const organismeTutelle = this.construireOrganismeTutelle();
       if (!organismeTutelle || organismeTutelle.trim() === '') {
-        this.submitError = "Veuillez sélectionner un organisme de tutelle avant de soumettre le projet.";
+        errors.push("Veuillez sélectionner un organisme de tutelle");
+      }
+
+      // Vérifier que les 3 documents requis sont fournis
+      if (this.form.lettre_soumission.length === 0) {
+        errors.push("La lettre de soumission signée est requise");
+      }
+      if (this.form.note_conceptuelle.length === 0) {
+        errors.push("La note conceptuelle du projet est requise");
+      }
+      if (this.form.etudes_plans.length === 0) {
+        errors.push("Les études ou plans techniques sont requis");
+      }
+
+      // Vérifier la certification
+      if (!this.form.certification) {
+        errors.push("Veuillez certifier que les informations fournies sont exactes");
+      }
+
+      // Si des erreurs, les afficher toutes et arrêter
+      if (errors.length > 0) {
+        this.submitErrors = errors;
         this.submitting = false;
+        // Scroller vers les erreurs
+        this.$nextTick(() => {
+          const errorDiv = document.querySelector('.error-message');
+          if (errorDiv) errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
         return;
       }
 
@@ -1356,7 +1370,7 @@ export default {
         this.showSubmissionForm = false; // Fermer le formulaire après soumission réussie
         this.loadProjects();
       } catch (e) {
-        this.submitError = typeof e === "string" ? e : e.message;
+        this.submitErrors = [typeof e === "string" ? e : e.message];
       } finally { this.submitting = false; }
     },
     async submitComplements(id) {
@@ -1446,7 +1460,7 @@ export default {
 
       this.coutFormate = "";
       this.files = [];
-      this.submitError = "";
+      this.submitErrors = [];
       this.submitSuccess = "";
     },
     closeSuccessPopup() {
@@ -1476,6 +1490,8 @@ export default {
 .file-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .4rem .6rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: .4rem; }
 .btn-link { background: transparent; border: none; color: #2563eb; cursor: pointer; padding: 0; }
 .error-message { padding: .75rem; background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; color:#b91c1c; }
+.error-list { margin: 0.5rem 0 0; padding-left: 1.5rem; }
+.error-list li { margin-bottom: 0.25rem; }
 .success-message { padding: .75rem; background:#d1fae5; border:1px solid #6ee7b7; border-radius:8px; color:#065f46; }
 .btn-submit, .btn-primary, .btn-secondary, .btn-view { padding: .75rem 1.25rem; border:none; border-radius:8px; color:white; cursor:pointer; transition: all 0.3s; }
 .btn-submit { background:#059669; }
