@@ -1413,7 +1413,12 @@ export default {
 
     ouvrirFichier(projectId, fileName) {
       // Ouvrir le fichier dans un nouvel onglet
-      const url = `/api/uploads/${fileName}`;
+      // En production sur Render, utiliser l'URL backend complète
+      const isProduction = window.location.hostname.includes('render.com');
+      const backendUrl = isProduction
+        ? 'https://maturation-backend.onrender.com'
+        : '';
+      const url = `${backendUrl}/api/uploads/${fileName}`;
       window.open(url, '_blank');
     },
     async reassigner(id) {
