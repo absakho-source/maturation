@@ -2677,16 +2677,21 @@ def stats_poles_territorial():
         username = request.args.get('username', '')
         status_filter = request.args.get('filter', '')  # 'approved' pour filtrer uniquement les projets approuvés
 
-        # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
-        # Les statistiques ne doivent montrer que les projets avec decision_finale = 'confirme'
-        if role == 'admin' or not role:
-            projects = Project.query.filter_by(decision_finale='confirme').all()
-        elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-            projects = Project.query.filter_by(decision_finale='confirme').all()
-        elif username:
-            projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
+        # Filtrer les projets selon le paramètre filter
+        # - 'approved' : uniquement les projets avec decision_finale = 'confirme'
+        # - 'all' ou vide : tous les projets soumis
+        if status_filter == 'approved':
+            # Carte des projets validés
+            if username:
+                projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
+            else:
+                projects = Project.query.filter_by(decision_finale='confirme').all()
         else:
-            projects = Project.query.filter_by(decision_finale='confirme').all()
+            # Carte de tous les projets soumis
+            if username:
+                projects = Project.query.filter_by(auteur_nom=username).all()
+            else:
+                projects = Project.query.all()
 
         poles_stats = {}
 
