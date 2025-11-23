@@ -488,7 +488,7 @@ export default {
 
           alert('Évaluation finalisée avec succès!')
 
-          this.$router.push('/evaluation')
+          this.$router.push('/evaluateur')
         } else {
           const error = await response.json()
           alert(`Erreur: ${error.error}`)

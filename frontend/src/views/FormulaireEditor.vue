@@ -192,7 +192,7 @@ export default {
     // Vérifier les permissions
     if (this.role !== 'admin' && this.role !== 'secretariatsct') {
       alert('Accès non autorisé')
-      this.$router.push('/dashboard')
+      this.$router.push('/')
       return
     }
 
