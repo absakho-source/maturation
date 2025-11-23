@@ -1780,6 +1780,7 @@ def suspend_user_account(user_id):
         # Vérifier les permissions
         data = request.json or {}
         role = data.get('role', '').lower()
+        suspendeur_username = data.get('username', 'admin')
 
         if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
             return jsonify({"error": "Accès non autorisé"}), 403
@@ -1787,8 +1788,10 @@ def suspend_user_account(user_id):
         # Récupérer l'utilisateur
         user = User.query.get_or_404(user_id)
 
-        # Mettre à jour le statut
+        # Mettre à jour le statut et enregistrer qui a suspendu
         user.statut_compte = 'suspendu'
+        user.verifie_par = suspendeur_username
+        user.date_verification = datetime.utcnow()
 
         db.session.commit()
 
@@ -1797,7 +1800,8 @@ def suspend_user_account(user_id):
             "user": {
                 "id": user.id,
                 "username": user.username,
-                "statut_compte": user.statut_compte
+                "statut_compte": user.statut_compte,
+                "verifie_par": user.verifie_par
             }
         }), 200
 
