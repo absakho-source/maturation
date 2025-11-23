@@ -29,7 +29,7 @@
             <div class="hero-text">
               <h1 class="hero-title">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</h1>
               <p class="hero-subtitle">
-                Solution numérique pour la préparation et les études des projets d'investissement publics
+                Soumission, évaluation et suivi de la maturation des projets d'investissement public
               </p>
             </div>
             
@@ -72,7 +72,7 @@
                   </svg>
                 </div>
                 <h3>Soumission de projets</h3>
-                <p>Interface simplifiée pour soumettre vos projets avec tous les documents requis.</p>
+                <p>Interface simplifiée pour la soumission de vos projets avec tous les documents requis.</p>
               </div>
             </div>
             
@@ -84,8 +84,8 @@
                     <circle cx="12" cy="12" r="10"/>
                   </svg>
                 </div>
-                <h3>Évaluation structurée</h3>
-                <p>Processus d'évaluation multi-niveaux avec traçabilité complète.</p>
+                <h3>Suivi en temps réel</h3>
+                <p>Tableau de bord pour le suivi de l'avancement de vos projets à chaque étape.</p>
               </div>
             </div>
             
@@ -93,14 +93,11 @@
               <div class="card-body">
                 <div class="feature-icon">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M3 3v5h5"/>
-                    <path d="M3 8s2-4 8-4 8 4 8 4"/>
-                    <path d="M21 21v-5h-5"/>
-                    <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                   </svg>
                 </div>
-                <h3>Suivi et reporting</h3>
-                <p>Tableaux de bord pour le suivi en temps réel de l'avancement des projets.</p>
+                <h3>Communication intégrée</h3>
+                <p>Échanges directs avec les évaluateurs et réponses aux demandes de compléments.</p>
               </div>
             </div>
           </div>
