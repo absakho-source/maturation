@@ -226,7 +226,7 @@ async function chargerStats() {
 }
 
 function voirProjet(projetId) {
-  router.push(`/projets/${projetId}`)
+  router.push(`/project/${projetId}`)
 }
 
 function retourDashboard() {
