@@ -2299,6 +2299,26 @@ def create_user():
         db.session.add(new_user)
         db.session.commit()
 
+        # Envoyer des notifications aux admins et secrétariat SCT pour les comptes à vérifier
+        try:
+            # Récupérer les admins et secrétariat SCT
+            admins_and_secretariat = User.query.filter(
+                User.role.in_(['admin', 'secretariatsct'])
+            ).all()
+
+            for admin_user in admins_and_secretariat:
+                create_notification_for_user(
+                    user_id=admin_user.id,
+                    notif_type='nouveau_compte',
+                    titre='Nouveau compte à vérifier',
+                    message=f"L'utilisateur {nom_complet or username} a créé un compte ({role}). Veuillez vérifier ce compte.",
+                    lien='/gestion-comptes',
+                    priorite_email=True
+                )
+        except Exception as notif_error:
+            print(f"Erreur lors de l'envoi des notifications: {notif_error}")
+            # On ne bloque pas la création du compte si les notifications échouent
+
         return jsonify({
             "id": new_user.id,
             "username": new_user.username,

@@ -408,6 +408,7 @@ export default {
 .notif-icon.type-avis_rendu { background: #d1fae5; color: #059669; }
 .notif-icon.type-document_ajoute { background: #e0e7ff; color: #4f46e5; }
 .notif-icon.type-assignation { background: #f3e8ff; color: #7c3aed; }
+.notif-icon.type-nouveau_compte { background: #fef3c7; color: #b45309; }
 
 .notif-content {
   flex: 1;
