@@ -702,6 +702,7 @@ export default {
   },
   mounted() {
     this.loadUserAccountStatus();
+    this.loadUserProfile(); // Charger le profil pour l'encart Point Focal
     this.loadProjects();
     this.loadMinisteres();
     this.loadDataLists();
@@ -727,6 +728,23 @@ export default {
       } catch (error) {
         console.error('Erreur lors du chargement du statut du compte:', error);
         this.userAccountStatus = 'verifie'; // Par défaut vérifié en cas d'erreur
+      }
+    },
+
+    async loadUserProfile() {
+      // Charger les données complètes du profil utilisateur pour l'encart Point Focal
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (!user) return;
+
+        const response = await fetch(`/api/users/${user.username}/profile`);
+        if (response.ok) {
+          this.userProfileData = await response.json();
+          console.log('[DASHBOARD] Profil utilisateur chargé:', this.userProfileData);
+          console.log('[DASHBOARD] is_point_focal:', this.userProfileData.is_point_focal);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil:', error);
       }
     },
 
