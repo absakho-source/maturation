@@ -72,9 +72,9 @@
                 </svg>
                 Temps moyen de traitement
               </div>
-              <div class="metric-value">{{ averageProcessingTime }}</div>
+              <div class="metric-value">{{ metrics.averageProcessingTime }}</div>
             </div>
-            
+
             <div class="metric-card">
               <div class="metric-header">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,9 +82,9 @@
                 </svg>
                 Taux de validation
               </div>
-              <div class="metric-value">{{ validationRate }}%</div>
+              <div class="metric-value">{{ metrics.validationRate }}%</div>
             </div>
-            
+
             <div class="metric-card">
               <div class="metric-header">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -93,7 +93,7 @@
                 </svg>
                 Délai moyen d'évaluation
               </div>
-              <div class="metric-value">{{ averageEvaluationTime }}</div>
+              <div class="metric-value">{{ metrics.averageEvaluationTime }}</div>
             </div>
           </div>
         </div>
@@ -971,6 +971,12 @@ export default {
         totalApproved: 0,
         countApproved: 0
       },
+      // Métriques de performance (depuis l'API)
+      metrics: {
+        averageProcessingTime: '0 jours',
+        validationRate: 0,
+        averageEvaluationTime: '0 jours'
+      },
       // Évaluation préalable
       evaluationPrealableCommentaires: {},
       envoiEvaluationPrealable: {},
@@ -1031,53 +1037,6 @@ export default {
         p.est_assigne_a_moi &&
         (p.statut === 'assigné' || p.statut === 'en évaluation')
       );
-    },
-    
-    // Nouvelles métriques pour le tableau de bord
-    averageProcessingTime() {
-      const processedProjects = this.allProjects.filter(p => 
-        ['approuvé', 'validé par presidencesct', 'rejeté'].includes(p.statut)
-      );
-      
-      if (processedProjects.length === 0) return "0 jours";
-      
-      // Calcul réaliste basé sur les projets traités
-      // Estimation : 3 jours de base + 2 jours par projet traité
-      const baseDays = 3;
-      const processingDays = processedProjects.length * 2;
-      const complementsDays = this.countComplements * 5; // +5 jours par projet avec compléments
-      
-      const totalDays = baseDays + processingDays + complementsDays;
-      return `${totalDays} jours`;
-    },
-    
-    validationRate() {
-      const totalEvaluated = this.allProjects.filter(p => 
-        ['approuvé', 'rejeté', 'validé par presidencesct'].includes(p.statut)
-      ).length;
-      const approved = this.allProjects.filter(p => 
-        ['approuvé', 'validé par presidencesct'].includes(p.statut)
-      ).length;
-      
-      if (totalEvaluated === 0) return 0;
-      return Math.round((approved / totalEvaluated) * 100);
-    },
-    
-    averageEvaluationTime() {
-      const evaluatedProjects = this.allProjects.filter(p => 
-        ['assigné', 'approuvé', 'rejeté', 'compléments demandés', 'compléments fournis'].includes(p.statut)
-      );
-      
-      if (evaluatedProjects.length === 0) return "0 jours";
-      
-      // Calcul basé sur le nombre réel de projets en évaluation
-      // 2 jours de base + 1 jour par projet + temps supplémentaire pour compléments
-      const baseDays = 2;
-      const evaluationDays = evaluatedProjects.length * 1;
-      const complementsDays = this.countComplements * 3; // +3 jours par projet avec compléments
-      
-      const totalDays = baseDays + evaluationDays + complementsDays;
-      return `${totalDays} jours`;
     },
 
     countApproved() {
@@ -1141,6 +1100,7 @@ export default {
   mounted() {
     this.loadProjects();
     this.loadEvaluateurs();
+    this.loadMetrics();
   },
   beforeUnmount() {
     if (this.refreshInterval) {
@@ -1148,6 +1108,21 @@ export default {
     }
   },
   methods: {
+    async loadMetrics() {
+      try {
+        const response = await fetch('/api/performance-metrics');
+        if (response.ok) {
+          const data = await response.json();
+          this.metrics = {
+            averageProcessingTime: data.averageProcessingTime || '0 jours',
+            validationRate: data.validationRate || 0,
+            averageEvaluationTime: data.averageEvaluationTime || '0 jours'
+          };
+        }
+      } catch (error) {
+        console.error('Erreur chargement métriques:', error);
+      }
+    },
     async loadEvaluateurs() {
       try {
         const res = await fetch('/api/users');
