@@ -711,7 +711,8 @@ async function suspendreCompte(compteId) {
 
   try {
     await axios.post(`/api/admin/users/${compteId}/suspend`, {
-      role: user?.role
+      role: user?.role,
+      username: user?.username
     })
 
     // Recharger les comptes
