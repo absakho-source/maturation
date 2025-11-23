@@ -255,24 +255,24 @@ class FicheEvaluationDGPPEPDF:
         origine_data = self.project.get('origine_projet', {})
         typologie_data = self.project.get('typologie_projet', {})
 
-        # Construire les textes avec cases cochées
+        # Construire les textes avec cases cochées (utiliser [X] et [ ] pour compatibilité)
         origine_items = []
-        if origine_data.get('maturation'): origine_items.append('☑ MATURATION')
-        else: origine_items.append('☐ MATURATION')
-        if origine_data.get('offre_spontanee'): origine_items.append('☑ OFFRE SPONTANÉE')
-        else: origine_items.append('☐ OFFRE SPONTANÉE')
-        if origine_data.get('autres'): origine_items.append('☑ AUTRES')
-        else: origine_items.append('☐ AUTRES')
+        if origine_data.get('maturation'): origine_items.append('<b>[X]</b> MATURATION')
+        else: origine_items.append('[ ] MATURATION')
+        if origine_data.get('offre_spontanee'): origine_items.append('<b>[X]</b> OFFRE SPONTANÉE')
+        else: origine_items.append('[ ] OFFRE SPONTANÉE')
+        if origine_data.get('autres'): origine_items.append('<b>[X]</b> AUTRES')
+        else: origine_items.append('[ ] AUTRES')
 
         typologie_items = []
-        if typologie_data.get('productif'): typologie_items.append('☑ PRODUCTIF')
-        else: typologie_items.append('☐ PRODUCTIF')
-        if typologie_data.get('appui_production'): typologie_items.append('☑ APPUI À LA PRODUCTION')
-        else: typologie_items.append('☐ APPUI À LA PRODUCTION')
-        if typologie_data.get('social'): typologie_items.append('☑ SOCIAL')
-        else: typologie_items.append('☐ SOCIAL')
-        if typologie_data.get('environnemental'): typologie_items.append('☑ ENVIRONNEMENTAL')
-        else: typologie_items.append('☐ ENVIRONNEMENTAL')
+        if typologie_data.get('productif'): typologie_items.append('<b>[X]</b> PRODUCTIF')
+        else: typologie_items.append('[ ] PRODUCTIF')
+        if typologie_data.get('appui_production'): typologie_items.append('<b>[X]</b> APPUI À LA PRODUCTION')
+        else: typologie_items.append('[ ] APPUI À LA PRODUCTION')
+        if typologie_data.get('social'): typologie_items.append('<b>[X]</b> SOCIAL')
+        else: typologie_items.append('[ ] SOCIAL')
+        if typologie_data.get('environnemental'): typologie_items.append('<b>[X]</b> ENVIRONNEMENTAL')
+        else: typologie_items.append('[ ] ENVIRONNEMENTAL')
 
         data = [
             [
