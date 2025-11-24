@@ -851,7 +851,7 @@ async function voirDetails(compte) {
   if (compte.role === 'soumissionnaire') {
     chargementProjets.value = true
     try {
-      const response = await axios.get(`/api/users/${compte.username}/projects`)
+      const response = await axios.get('/api/user-projects', { params: { username: compte.username } })
       projetsUtilisateur.value = response.data || []
     } catch (err) {
       console.error('Erreur chargement projets utilisateur:', err)
