@@ -2078,10 +2078,14 @@ def get_user_profile(username):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/users/<username>/projects", methods=["GET"])
+@app.route("/api/users/<path:username>/projects", methods=["GET"])
 def get_user_projects(username):
     """Récupérer les projets soumis par un utilisateur"""
     try:
+        # Décoder le username (peut contenir des caractères spéciaux comme @)
+        from urllib.parse import unquote
+        username = unquote(username)
+
         # Récupérer les projets de l'utilisateur
         projects = Project.query.filter_by(auteur=username).order_by(Project.date_soumission.desc()).all()
 
