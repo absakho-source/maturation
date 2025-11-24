@@ -2087,7 +2087,7 @@ def get_user_projects():
             return jsonify({"error": "Username requis"}), 400
 
         # Récupérer les projets de l'utilisateur
-        projects = Project.query.filter_by(auteur=username).order_by(Project.date_soumission.desc()).all()
+        projects = Project.query.filter_by(auteur_nom=username).order_by(Project.date_soumission.desc()).all()
 
         result = []
         for p in projects:
