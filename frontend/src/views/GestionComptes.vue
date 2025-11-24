@@ -531,7 +531,7 @@
                   </div>
                   <div class="projet-meta">
                     <span :class="['badge-statut-projet', projet.statut]">{{ projet.statut }}</span>
-                    <button @click="allerVersProjet(projet.id)" class="btn-voir-projet">
+                    <button type="button" @click="allerVersProjet(projet.id)" class="btn-voir-projet">
                       Voir
                     </button>
                   </div>
