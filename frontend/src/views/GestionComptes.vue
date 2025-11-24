@@ -82,7 +82,6 @@
             <th>Contact</th>
             <th>Date création</th>
             <th>Statut</th>
-            <th>Justificatif</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -123,16 +122,6 @@
               <div v-if="compte.verifie_par" class="verif-info">
                 Par {{ compte.verifie_par }}
               </div>
-            </td>
-            <td>
-              <button
-                v-if="compte.justificatif_path"
-                @click="voirJustificatif(compte.justificatif_path)"
-                class="btn-voir-justificatif"
-              >
-                📄 Voir
-              </button>
-              <span v-else class="no-justificatif">Non fourni</span>
             </td>
             <td>
               <div class="actions-buttons">
@@ -510,6 +499,46 @@
               <span class="detail-value">{{ formatDate(compteSelectionne.date_creation) }}</span>
             </div>
 
+            <!-- Justificatif -->
+            <div class="detail-row readonly-section">
+              <span class="detail-label">Justificatif :</span>
+              <span class="detail-value">
+                <button
+                  v-if="compteSelectionne.justificatif_path"
+                  @click="voirJustificatif(compteSelectionne.justificatif_path)"
+                  class="btn-voir-justificatif"
+                >
+                  📄 Voir le justificatif
+                </button>
+                <span v-else class="no-justificatif">Non fourni</span>
+              </span>
+            </div>
+
+            <!-- Projets soumis par l'utilisateur -->
+            <div v-if="compteSelectionne.role === 'soumissionnaire'" class="projets-utilisateur-section">
+              <h3>Projets soumis ({{ projetsUtilisateur.length }})</h3>
+              <div v-if="chargementProjets" class="loading-projets">
+                Chargement des projets...
+              </div>
+              <div v-else-if="projetsUtilisateur.length === 0" class="no-projets">
+                Aucun projet soumis par cet utilisateur
+              </div>
+              <div v-else class="projets-liste">
+                <div v-for="projet in projetsUtilisateur" :key="projet.id" class="projet-item">
+                  <div class="projet-info">
+                    <span class="projet-numero">{{ projet.numero_projet }}</span>
+                    <span class="projet-titre">{{ projet.titre }}</span>
+                  </div>
+                  <div class="projet-meta">
+                    <span :class="['badge-statut-projet', projet.statut]">{{ projet.statut }}</span>
+                    <button @click="allerVersProjet(projet.id)" class="btn-voir-projet">
+                      Voir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="modal-actions">
               <button type="button" @click="fermerDetails" class="btn-modal-cancel">
                 Annuler
@@ -544,6 +573,8 @@ const error = ref('')
 const actionEnCours = ref(null)
 const compteSelectionne = ref(null)
 const enregistrementEnCours = ref(false)
+const projetsUtilisateur = ref([])
+const chargementProjets = ref(false)
 
 // Listes de données pour le formulaire hiérarchique
 const regions = ref([])
@@ -784,7 +815,7 @@ function voirJustificatif(path) {
   })
 }
 
-function voirDetails(compte) {
+async function voirDetails(compte) {
   // Créer une copie pour éviter la modification directe
   compteSelectionne.value = { ...compte }
 
@@ -814,10 +845,28 @@ function voirDetails(compte) {
 
   // Initialiser les champs Point Focal
   editIsPointFocal.value = compte.is_point_focal || false
+
+  // Charger les projets de l'utilisateur
+  projetsUtilisateur.value = []
+  if (compte.role === 'soumissionnaire') {
+    chargementProjets.value = true
+    try {
+      const response = await axios.get(`/api/users/${compte.username}/projects`)
+      projetsUtilisateur.value = response.data || []
+    } catch (err) {
+      console.error('Erreur chargement projets utilisateur:', err)
+    } finally {
+      chargementProjets.value = false
+    }
+  }
 }
 
 function fermerDetails() {
   compteSelectionne.value = null
+}
+
+function allerVersProjet(projetId) {
+  router.push(`/project/${projetId}`)
 }
 
 function getOrganismeTutelle(compte) {
@@ -1788,5 +1837,97 @@ function getTypeInstitutionLabel(type) {
   .stats-section {
     grid-template-columns: 1fr;
   }
+}
+
+/* Styles pour les projets de l'utilisateur */
+.projets-utilisateur-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.projets-utilisateur-section h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #1a202c;
+}
+
+.loading-projets,
+.no-projets {
+  text-align: center;
+  padding: 1rem;
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.projets-liste {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.projet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.projet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.projet-numero {
+  font-size: 0.75rem;
+  color: #718096;
+  font-family: monospace;
+}
+
+.projet-titre {
+  font-size: 0.875rem;
+  color: #1a202c;
+}
+
+.projet-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-statut-projet {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-statut-projet.soumis { background: #bee3f8; color: #2c5282; }
+.badge-statut-projet.assigné,
+.badge-statut-projet.en_evaluation { background: #feebc8; color: #c05621; }
+.badge-statut-projet.évalué { background: #c6f6d5; color: #276749; }
+.badge-statut-projet.validé { background: #c6f6d5; color: #276749; }
+.badge-statut-projet.rejeté { background: #fed7d7; color: #c53030; }
+
+.btn-voir-projet {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--dgppe-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-voir-projet:hover {
+  background: var(--dgppe-primary-light);
+}
+
+.no-justificatif {
+  color: #a0aec0;
+  font-style: italic;
 }
 </style>

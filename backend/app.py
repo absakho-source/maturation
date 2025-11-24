@@ -2078,6 +2078,28 @@ def get_user_profile(username):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/users/<username>/projects", methods=["GET"])
+def get_user_projects(username):
+    """Récupérer les projets soumis par un utilisateur"""
+    try:
+        # Récupérer les projets de l'utilisateur
+        projects = Project.query.filter_by(auteur=username).order_by(Project.date_soumission.desc()).all()
+
+        result = []
+        for p in projects:
+            result.append({
+                "id": p.id,
+                "numero_projet": p.numero_projet,
+                "titre": p.titre,
+                "statut": p.statut,
+                "date_soumission": p.date_soumission.isoformat() if p.date_soumission else None
+            })
+
+        return jsonify(result), 200
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/users/<username>/profile", methods=["PUT"])
 def update_user_profile(username):
     """Mettre à jour les informations du profil utilisateur (téléphone, email)"""
