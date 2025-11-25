@@ -3450,19 +3450,31 @@ def generer_rapport_statistiques():
             func.sum(Project.cout_estimatif).label('total_cout')
         ).group_by(Project.secteur).all()
 
-        # Statistiques par pôle
-        stats_poles = db.session.query(
-            Project.poles,
-            func.count(Project.id).label('count'),
-            func.sum(Project.cout_estimatif).label('total_cout')
-        ).group_by(Project.poles).all()
+        # Statistiques par pôle (répartition équitable pour projets multi-pôles)
+        stats_poles_dict = {}
+        all_projects = Project.query.all()
 
-        # Statistiques utilisateurs
-        total_users = User.query.count()
-        users_by_role = db.session.query(
-            User.role,
-            func.count(User.id).label('count')
-        ).group_by(User.role).all()
+        for project in all_projects:
+            poles_str = project.poles or 'Non spécifié'
+            # Séparer les pôles s'il y en a plusieurs
+            poles_list = [p.strip() for p in poles_str.split(',') if p.strip()]
+
+            if not poles_list:
+                poles_list = ['Non spécifié']
+
+            # Répartir équitablement le coût entre les pôles
+            nb_poles = len(poles_list)
+            cout_par_pole = (project.cout_estimatif or 0) / nb_poles
+
+            for pole in poles_list:
+                if pole not in stats_poles_dict:
+                    stats_poles_dict[pole] = {'count': 0, 'cout': 0}
+                stats_poles_dict[pole]['count'] += 1 / nb_poles
+                stats_poles_dict[pole]['cout'] += cout_par_pole
+
+        # Convertir en liste pour le PDF
+        stats_poles = [(pole, data['count'], data['cout'])
+                       for pole, data in stats_poles_dict.items()]
 
         # Créer le PDF
         buffer = BytesIO()
@@ -3622,7 +3634,9 @@ def generer_rapport_statistiques():
         data_poles = [['Pôle Territorial', 'Nombre de projets', 'Coût estimatif (FCFA)']]
         for pole, count, cout in stats_poles:
             cout_str = f'{int(cout):,}' if cout else '0'
-            data_poles.append([pole or 'Non spécifié', str(count), cout_str])
+            # Afficher le nombre avec 1 décimale si fractionnaire
+            count_str = f'{count:.1f}' if count != int(count) else str(int(count))
+            data_poles.append([pole or 'Non spécifié', count_str, cout_str])
 
         table_poles = Table(data_poles, colWidths=[7*cm, 4*cm, 5*cm])
         table_poles.setStyle(TableStyle([
@@ -3637,42 +3651,6 @@ def generer_rapport_statistiques():
             ('GRID', (0, 0), (-1, -1), 1, colors.black)
         ]))
         elements.append(table_poles)
-        elements.append(Spacer(1, 1*cm))
-
-        # 4. Statistiques utilisateurs
-        elements.append(Paragraph("4. STATISTIQUES UTILISATEURS", subtitle_style))
-
-        role_names = {
-            'admin': 'Administrateur',
-            'soumissionnaire': 'Soumissionnaire',
-            'evaluateur': 'Évaluateur',
-            'secretariatsct': 'Secrétariat SCT',
-            'presidencesct': 'Présidence SCT',
-            'presidencecomite': 'Présidence Comité'
-        }
-
-        data_users = [['Rôle', 'Nombre d\'utilisateurs']]
-        for role, count in users_by_role:
-            role_display = role_names.get(role, role)
-            data_users.append([role_display, str(count)])
-        data_users.append(['Total utilisateurs', str(total_users)])
-
-        table_users = Table(data_users, colWidths=[10*cm, 4*cm])
-        table_users.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e74c3c')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -2), colors.lightcoral),
-            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#c0392b')),
-            ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
-            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        elements.append(table_users)
         elements.append(Spacer(1, 1*cm))
 
         # Pied de page
