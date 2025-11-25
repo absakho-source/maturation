@@ -3451,6 +3451,31 @@ def generer_rapport_statistiques():
         ).group_by(Project.secteur).all()
 
         # Statistiques par pôle (répartition équitable pour projets multi-pôles)
+        # Mapping des pôles détaillés vers pôles territoriaux
+        def normaliser_pole(pole_str):
+            """Normalise un pôle vers son nom territorial court"""
+            pole_mapping = {
+                'Dakar': 'Dakar',
+                'Thiès': 'Thiès',
+                'Centre (Fatick, Kaolack, Kaffrine)': 'Centre',
+                'Centre (Fatick)': 'Centre',
+                'Centre (Kaolack)': 'Centre',
+                'Centre (Kaffrine)': 'Centre',
+                'Sud (Ziguinchor, Sédhiou, Kolda)': 'Sud',
+                'Sud (Ziguinchor)': 'Sud',
+                'Sud (Sédhiou)': 'Sud',
+                'Sud (Kolda)': 'Sud',
+                'Sud-Est (Tambacounda, Kédougou)': 'Sud-Est',
+                'Sud-Est (Tambacounda)': 'Sud-Est',
+                'Sud-Est (Kédougou)': 'Sud-Est',
+                'Diourbel-Louga (Diourbel, Louga)': 'Diourbel-Louga',
+                'Diourbel-Louga (Diourbel)': 'Diourbel-Louga',
+                'Diourbel-Louga (Louga)': 'Diourbel-Louga',
+                'Nord (Saint-Louis)': 'Nord',
+                'Nord-Est (Matam)': 'Nord-Est'
+            }
+            return pole_mapping.get(pole_str, pole_str)
+
         stats_poles_dict = {}
         all_projects = Project.query.all()
 
@@ -3462,11 +3487,14 @@ def generer_rapport_statistiques():
             if not poles_list:
                 poles_list = ['Non spécifié']
 
+            # Normaliser les pôles
+            poles_normalises = [normaliser_pole(p) for p in poles_list]
+
             # Répartir équitablement le coût entre les pôles
-            nb_poles = len(poles_list)
+            nb_poles = len(poles_normalises)
             cout_par_pole = (project.cout_estimatif or 0) / nb_poles
 
-            for pole in poles_list:
+            for pole in poles_normalises:
                 if pole not in stats_poles_dict:
                     stats_poles_dict[pole] = {'count': 0, 'cout': 0}
                 stats_poles_dict[pole]['count'] += 1 / nb_poles
