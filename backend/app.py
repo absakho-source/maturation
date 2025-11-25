@@ -3452,13 +3452,26 @@ def generer_rapport_statistiques():
 
         # Statistiques par pôle (répartition équitable pour projets multi-pôles)
         # Séparer les pôles multiples et répartir équitablement
+        import re
         stats_poles_dict = {}
         all_projects = Project.query.all()
 
         for project in all_projects:
             poles_str = project.poles or 'Non spécifié'
-            # Séparer les pôles par virgule
-            poles_list = [p.strip() for p in poles_str.split(',') if p.strip()]
+
+            # Séparer les pôles en utilisant une regex qui split sur "),nom"
+            # Cela évite de splitter les virgules à l'intérieur des parenthèses
+            # Ex: "Sud (Zig, Sed),Nord (SL)" -> ["Sud (Zig, Sed)", "Nord (SL)"]
+            if '),' in poles_str:
+                # Utiliser regex pour splitter sur "),
+                poles_list = re.split(r'\),\s*', poles_str)
+                # Ajouter la parenthèse fermante manquante (sauf pour le dernier)
+                poles_list = [p + ')' if not p.endswith(')') else p for p in poles_list]
+            else:
+                # Pas de multi-pôles, garder tel quel
+                poles_list = [poles_str]
+
+            poles_list = [p.strip() for p in poles_list if p.strip()]
 
             if not poles_list:
                 poles_list = ['Non spécifié']
