@@ -3451,21 +3451,29 @@ def generer_rapport_statistiques():
         ).group_by(Project.secteur).all()
 
         # Statistiques par pôle (répartition équitable pour projets multi-pôles)
-        # Ne PAS désagréger les pôles, garder le nom complet
+        # Séparer les pôles multiples et répartir équitablement
         stats_poles_dict = {}
         all_projects = Project.query.all()
 
         for project in all_projects:
             poles_str = project.poles or 'Non spécifié'
-            # Garder le pôle tel quel (ne pas séparer par virgule)
-            pole = poles_str.strip() if poles_str else 'Non spécifié'
+            # Séparer les pôles par virgule
+            poles_list = [p.strip() for p in poles_str.split(',') if p.strip()]
 
-            if pole not in stats_poles_dict:
-                stats_poles_dict[pole] = {'count': 0, 'cout': 0}
+            if not poles_list:
+                poles_list = ['Non spécifié']
 
-            # Un projet = 1 (pas de division)
-            stats_poles_dict[pole]['count'] += 1
-            stats_poles_dict[pole]['cout'] += (project.cout_estimatif or 0)
+            # Répartir équitablement entre les pôles
+            nb_poles = len(poles_list)
+            cout_par_pole = (project.cout_estimatif or 0) / nb_poles
+
+            for pole in poles_list:
+                if pole not in stats_poles_dict:
+                    stats_poles_dict[pole] = {'count': 0, 'cout': 0}
+
+                # Compter la fraction du projet
+                stats_poles_dict[pole]['count'] += 1 / nb_poles
+                stats_poles_dict[pole]['cout'] += cout_par_pole
 
         # Convertir en liste pour le PDF
         stats_poles = [(pole, data['count'], data['cout'])
