@@ -11,14 +11,26 @@
           </svg>
           Tableau de bord - Administrateur
         </h2>
-        <button @click="telechargerRapport" class="btn-download-rapport">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Télécharger Rapport PDF
-        </button>
+        <div class="header-buttons">
+          <button @click="telechargerRapport" class="btn-download-rapport">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Télécharger Rapport
+          </button>
+          <button @click="telechargerRapportElabore" class="btn-download-rapport elabore">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            Générer Rapport Élaboré
+          </button>
+        </div>
       </div>
 
       <!-- Métriques de performance -->
@@ -817,6 +829,34 @@ export default {
         console.error('Erreur téléchargement rapport:', error);
         alert('Erreur lors du téléchargement du rapport PDF');
       }
+    },
+
+    async telechargerRapportElabore() {
+      try {
+        const response = await fetch('/api/admin/rapport-elabore');
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la génération du rapport élaboré');
+        }
+
+        // Récupérer le blob du PDF
+        const blob = await response.blob();
+
+        // Créer un lien de téléchargement temporaire
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `rapport_elabore_dgppe_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+
+        // Nettoyer
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Erreur téléchargement rapport élaboré:', error);
+        alert('Erreur lors du téléchargement du rapport élaboré');
+      }
     }
   },
 };
@@ -835,6 +875,11 @@ export default {
   margin-bottom: 24px;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
 .btn-download-rapport {
   display: flex;
   align-items: center;
@@ -851,10 +896,18 @@ export default {
   white-space: nowrap;
 }
 
+.btn-download-rapport.elabore {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 .btn-download-rapport:hover {
   background: var(--dgppe-secondary);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-download-rapport.elabore:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 .btn-download-rapport svg {
