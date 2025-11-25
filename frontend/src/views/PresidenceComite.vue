@@ -13,14 +13,22 @@
             </svg>
             Tableau de bord - Présidence Comité
           </h2>
-          <button @click="telechargerRapport" class="btn-download-rapport">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Télécharger Rapport PDF
-          </button>
+          <div class="header-buttons">
+            <button @click="telechargerRapport" class="btn-download-rapport">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger Rapport
+            </button>
+            <button @click="telechargerRapportElabore" class="btn-download-rapport elabore">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Rapport Élaboré
+            </button>
+          </div>
         </div>
 
       <!-- Statistiques principales -->
@@ -412,6 +420,26 @@ export default {
         console.error('Erreur téléchargement rapport:', error);
         alert('Erreur lors du téléchargement du rapport PDF');
       }
+    },
+    async telechargerRapportElabore() {
+      try {
+        const response = await fetch('/api/admin/rapport-elabore');
+        if (!response.ok) {
+          throw new Error('Erreur lors de la génération du rapport élaboré');
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `rapport_elabore_dgppe_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Erreur téléchargement rapport élaboré:', error);
+        alert('Erreur lors du téléchargement du rapport élaboré');
+      }
     }
   }
 };
@@ -425,6 +453,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
 }
 
 .btn-download-rapport {
@@ -447,6 +480,15 @@ export default {
   background: var(--dgppe-secondary);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-download-rapport.elabore {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+}
+
+.btn-download-rapport.elabore:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
 
 .btn-download-rapport svg {
