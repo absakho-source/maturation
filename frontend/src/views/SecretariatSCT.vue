@@ -180,7 +180,6 @@
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous</button>
         <button @click="activeTab = 'assignation'" :class="{ active: activeTab === 'assignation' }" class="tab-btn">✅ Assignation / Réassignation</button>
         <button @click="activeTab = 'validation'" :class="{ active: activeTab === 'validation' }" class="tab-btn">🔎 Validation d'avis</button>
-        <button @click="activeTab = 'complements'" :class="{ active: activeTab === 'complements' }" class="tab-btn">📝 Demandes compléments</button>
         <button @click="activeTab = 'evaluation'" :class="{ active: activeTab === 'evaluation' }" class="tab-btn">✍️ Mes évaluations</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
@@ -790,46 +789,6 @@
       </div>
 
       <!-- Validation des demandes de compléments -->
-      <div v-if="activeTab === 'complements'" class="tab-content">
-        <h2>Demandes de compléments en attente de validation</h2>
-        <div v-if="demandesComplementsEnAttente.length === 0" class="empty-state">
-          <p>Aucune demande de compléments en attente</p>
-        </div>
-        <div v-else class="projects-grid">
-          <div v-for="projet in demandesComplementsEnAttente" :key="projet.id" class="project-card">
-            <div class="card-header">
-              <div class="card-title-section">
-                <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
-                <h3>{{ projet.titre }}</h3>
-              </div>
-              <span class="badge status-pending">En attente validation</span>
-            </div>
-            <div class="card-body">
-              <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
-              <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(projet.evaluateur_nom) }}</p>
-              
-              <!-- Demande de compléments -->
-              <div class="complement-request">
-                <p><strong>🔍 Demande de compléments :</strong></p>
-                <div class="complement-message">{{ projet.complements_demande_message || "Aucun message" }}</div>
-              </div>
-              
-              <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
-              
-              <!-- Actions de validation -->
-              <div class="validation-actions">
-                <button @click="validerDemandeComplements(projet.id)" class="btn-success">
-                  ✓ Approuver et transmettre
-                </button>
-                <button @click="rejeterDemandeComplements(projet.id)" class="btn-danger">
-                  ✗ Rejeter et réassigner
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Mes évaluations -->
       <div v-if="activeTab === 'evaluation'" class="tab-content">
         <h2>Mes évaluations</h2>
