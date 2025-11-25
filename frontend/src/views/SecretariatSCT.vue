@@ -188,13 +188,83 @@
 
       <!-- Tous -->
       <div v-if="activeTab === 'all'" class="tab-content">
-        <h2>Vue d'ensemble</h2>
-        <div v-if="filtreStatut" class="filtre-actif">
-          <span>Filtre actif: <strong>{{ filtreStatut }}</strong></span>
-          <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
+        <div class="projects-section">
+          <div class="section-header">
+            <h2>📋 Tous les projets</h2>
+            <div class="project-stats">
+              <span class="stat-item">Total: <strong>{{ allProjects.length }}</strong></span>
+              <span class="stat-item">En cours: <strong>{{ countInEvaluation }}</strong></span>
+            </div>
+          </div>
+
+          <!-- Filtres -->
+          <div class="filters-container">
+            <div class="filter-group">
+              <label>Statut:</label>
+              <select v-model="filtreStatut" @change="applyFiltersAll">
+                <option value="">Tous les statuts</option>
+                <option value="soumis">Soumis</option>
+                <option value="assigné">Assigné</option>
+                <option value="évalué">Évalué</option>
+                <option value="validé par secrétariat">Validé par secrétariat</option>
+                <option value="validé par presidencesct">Validé par présidence SCT</option>
+                <option value="approuvé">Approuvé</option>
+                <option value="rejeté">Rejeté</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Recherche:</label>
+              <input type="text" v-model="searchQuery" @input="applyFiltersAll" placeholder="Titre, auteur, numéro..." />
+            </div>
+            <button @click="resetFiltersAll" class="btn-reset">Réinitialiser</button>
+          </div>
+
+          <!-- Tableau des projets -->
+          <div class="projects-table-container">
+            <table class="projects-table">
+              <thead>
+                <tr>
+                  <th>N° Projet</th>
+                  <th>Titre</th>
+                  <th>Auteur</th>
+                  <th>Secteur</th>
+                  <th>Statut</th>
+                  <th>Évaluateur</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="projetsFiltres.length === 0">
+                  <td colspan="8" class="empty-state">Aucun projet trouvé</td>
+                </tr>
+                <tr v-for="projet in projetsFiltres" :key="projet.id">
+                  <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
+                  <td class="project-title">{{ projet.titre }}</td>
+                  <td>{{ projet.auteur_nom || 'N/A' }}</td>
+                  <td>{{ projet.secteur || 'N/A' }}</td>
+                  <td>
+                    <span class="badge" :class="'status-' + (projet.statut || '').replace(/ /g, '-')">{{ projet.statut }}</span>
+                    <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
+                          class="badge status-rejected" style="margin-left: 4px;">⚠️</span>
+                  </td>
+                  <td>{{ getEvaluateurLabel(projet.evaluateur_nom) || '-' }}</td>
+                  <td>{{ formatDate(projet.date_soumission) }}</td>
+                  <td>
+                    <button @click="$router.push(`/project/${projet.id}`)" class="btn-view-small">👁️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      <!-- Contenu des autres onglets maintenu tel quel -->
+      <div v-if="activeTab === 'assignation'" class="tab-content">
+        <h2>Assignation / Réassignation</h2>
         <div v-if="projetsFiltres.length === 0" class="empty-state">
-          <p>Aucun projet trouvé{{ filtreStatut ? ' pour ce filtre' : '' }}</p>
+          <p>Aucun projet trouvé</p>
         </div>
         <div v-else class="projects-grid">
           <div v-for="projet in projetsFiltres" :key="projet.id" class="project-card">
@@ -965,6 +1035,7 @@ export default {
       activeTab: 'all',
       refreshInterval: null,
       filtreStatut: null,
+      searchQuery: '',
       financingStats: {
         totalSubmitted: 0,
         countSubmitted: 0,
@@ -1010,10 +1081,24 @@ export default {
   },
   computed: {
     projetsFiltres() {
-      if (this.filtreStatut === null) {
-        return this.allProjects;
+      let projets = this.allProjects;
+
+      // Filtre par statut
+      if (this.filtreStatut) {
+        projets = projets.filter(p => p.statut === this.filtreStatut);
       }
-      return this.allProjects.filter(p => p.statut === this.filtreStatut);
+
+      // Filtre par recherche
+      if (this.searchQuery && this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        projets = projets.filter(p =>
+          (p.titre && p.titre.toLowerCase().includes(query)) ||
+          (p.auteur_nom && p.auteur_nom.toLowerCase().includes(query)) ||
+          (p.numero_projet && p.numero_projet.toLowerCase().includes(query))
+        );
+      }
+
+      return projets;
     },
     projectsToAssign() {
       return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné', 'rejeté'].includes(p.statut));
@@ -1581,6 +1666,17 @@ export default {
     // Nouvelles méthodes pour le tableau de bord
     formatTime(date) {
       return new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    },
+    formatDate(date) {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleDateString('fr-FR');
+    },
+    applyFiltersAll() {
+      // Les filtres sont appliqués via le computed projetsFiltres
+    },
+    resetFiltersAll() {
+      this.filtreStatut = null;
+      this.searchQuery = '';
     },
     calculateFinancingStats() {
       // Tous les projets soumis
@@ -2938,5 +3034,135 @@ export default {
   background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+}
+
+/* Styles pour vue tableau */
+.projects-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.project-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  font-size: 14px;
+  color: #666;
+}
+
+.stat-item strong {
+  color: var(--dgppe-primary);
+  font-size: 16px;
+}
+
+.filters-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.btn-reset {
+  padding: 8px 16px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-reset:hover {
+  background: #d0d0d0;
+}
+
+.projects-table-container {
+  overflow-x: auto;
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.projects-table thead {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.projects-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.projects-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.projects-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.project-number-table {
+  color: var(--dgppe-accent);
+  font-weight: 700;
+}
+
+.project-title {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-view-small {
+  padding: 6px 12px;
+  background: var(--dgppe-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-view-small:hover {
+  background: var(--dgppe-secondary);
+  transform: scale(1.1);
 }
 </style>
