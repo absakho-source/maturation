@@ -66,8 +66,11 @@
         <form v-if="showSubmissionForm" @submit.prevent="handleSubmit" class="submit-form">
           <!-- Intitulé du projet -->
           <div class="form-row">
-            <div class="form-group full-width">
-              <label>Intitulé du projet *</label>
+            <div class="form-group full-width" :class="{ 'has-error': fieldErrors.titre }">
+              <label>
+                Intitulé du projet *
+                <span v-if="fieldErrors.titre" class="error-indicator" title="Ce champ est requis">⚠️</span>
+              </label>
               <input v-model="form.titre" type="text" required placeholder="Ex: Construction d'un centre de santé" />
             </div>
           </div>
@@ -81,7 +84,10 @@
           </div>
 
           <!-- Organisme de tutelle - Sélection hiérarchique -->
-          <div class="form-section-title">Organisme de tutelle</div>
+          <div class="form-section-title" :class="{ 'has-error': fieldErrors.organisme_tutelle }">
+            Organisme de tutelle
+            <span v-if="fieldErrors.organisme_tutelle" class="error-indicator" title="Veuillez sélectionner un organisme de tutelle">⚠️</span>
+          </div>
 
           <!-- Si frozen: afficher un résumé visuel au lieu des champs -->
           <div v-if="isOrganismeTutelleFrozen" class="organisme-summary-box">
@@ -378,8 +384,11 @@
           <p class="file-info">📎 Formats autorisés : .pdf, .docx, .xlsx, .pptx, .jpg, .png — Taille max. 10 Mo / fichier</p>
 
           <div class="form-row">
-            <div class="form-group">
-              <label>Lettre de soumission signée *</label>
+            <div class="form-group" :class="{ 'has-error': fieldErrors.lettre_soumission }">
+              <label>
+                Lettre de soumission signée *
+                <span v-if="fieldErrors.lettre_soumission" class="error-indicator" title="Ce fichier est requis">⚠️</span>
+              </label>
               <input
                 type="file"
                 @change="handleLettreFile"
@@ -395,8 +404,11 @@
               </ul>
             </div>
 
-            <div class="form-group">
-              <label>Note conceptuelle du projet *</label>
+            <div class="form-group" :class="{ 'has-error': fieldErrors.note_conceptuelle }">
+              <label>
+                Note conceptuelle du projet *
+                <span v-if="fieldErrors.note_conceptuelle" class="error-indicator" title="Ce fichier est requis">⚠️</span>
+              </label>
               <input
                 type="file"
                 @change="handleNoteFile"
@@ -414,8 +426,11 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group">
-              <label>Études ou plans techniques *</label>
+            <div class="form-group" :class="{ 'has-error': fieldErrors.etudes_plans }">
+              <label>
+                Études ou plans techniques *
+                <span v-if="fieldErrors.etudes_plans" class="error-indicator" title="Ce fichier est requis">⚠️</span>
+              </label>
               <input
                 type="file"
                 multiple
@@ -455,10 +470,13 @@
 
           <!-- Certification -->
           <div class="form-row">
-            <div class="form-group full-width">
+            <div class="form-group full-width" :class="{ 'has-error': fieldErrors.certification }">
               <label class="checkbox-label certification">
                 <input type="checkbox" v-model="form.certification" required />
-                <span>✅ Je certifie que les informations fournies sont exactes et conformes aux documents joints, et que le projet a été validé par ma hiérarchie.</span>
+                <span>
+                  ✅ Je certifie que les informations fournies sont exactes et conformes aux documents joints, et que le projet a été validé par ma hiérarchie.
+                  <span v-if="fieldErrors.certification" class="error-indicator" title="Vous devez certifier ces informations">⚠️</span>
+                </span>
               </label>
             </div>
           </div>
@@ -597,6 +615,7 @@ export default {
       submitting: false,
       submitErrors: [],
       submitSuccess: "",
+      fieldErrors: {}, // Pour marquer visuellement les champs avec erreur
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
       userAccountStatus: null, // Statut du compte utilisateur (verifie, non_verifie, suspendu)
@@ -1233,7 +1252,7 @@ export default {
       this.complements[id].files = arr;
     },
     async handleSubmit() {
-      this.submitErrors = []; this.submitSuccess = ""; this.submitting = true;
+      this.submitErrors = []; this.submitSuccess = ""; this.submitting = true; this.fieldErrors = {};
 
       // Collecter toutes les erreurs de validation
       const errors = [];
@@ -1241,28 +1260,34 @@ export default {
       // Vérifier les champs obligatoires du formulaire
       if (!this.form.titre || this.form.titre.trim() === '') {
         errors.push("L'intitulé du projet est requis");
+        this.fieldErrors.titre = true;
       }
 
       // Construire et valider l'organisme de tutelle
       const organismeTutelle = this.construireOrganismeTutelle();
       if (!organismeTutelle || organismeTutelle.trim() === '') {
         errors.push("Veuillez sélectionner un organisme de tutelle");
+        this.fieldErrors.organisme_tutelle = true;
       }
 
       // Vérifier que les 3 documents requis sont fournis
       if (this.form.lettre_soumission.length === 0) {
         errors.push("La lettre de soumission signée est requise");
+        this.fieldErrors.lettre_soumission = true;
       }
       if (this.form.note_conceptuelle.length === 0) {
         errors.push("La note conceptuelle du projet est requise");
+        this.fieldErrors.note_conceptuelle = true;
       }
       if (this.form.etudes_plans.length === 0) {
         errors.push("Les études ou plans techniques sont requis");
+        this.fieldErrors.etudes_plans = true;
       }
 
       // Vérifier la certification
       if (!this.form.certification) {
         errors.push("Veuillez certifier que les informations fournies sont exactes");
+        this.fieldErrors.certification = true;
       }
 
       // Si des erreurs, les afficher toutes et arrêter
@@ -1492,6 +1517,40 @@ export default {
 .error-message { padding: .75rem; background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; color:#b91c1c; }
 .error-list { margin: 0.5rem 0 0; padding-left: 1.5rem; }
 .error-list li { margin-bottom: 0.25rem; }
+
+/* Indicateurs d'erreur sur les champs */
+.error-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border-radius: 4px;
+  animation: pulse-warning 2s ease-in-out infinite;
+  cursor: help;
+}
+
+.form-group.has-error label, .form-section-title.has-error {
+  color: #dc2626;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 152, 0, 0);
+  }
+}
 .success-message { padding: .75rem; background:#d1fae5; border:1px solid #6ee7b7; border-radius:8px; color:#065f46; }
 .btn-submit, .btn-primary, .btn-secondary, .btn-view { padding: .75rem 1.25rem; border:none; border-radius:8px; color:white; cursor:pointer; transition: all 0.3s; }
 .btn-submit { background:#059669; }
