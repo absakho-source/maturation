@@ -157,6 +157,7 @@ def get_pole_territorial(pole_db):
 def get_stats_poles():
     """Statistiques détaillées par pôle territorial (regroupées selon la carte)"""
     from models import Project
+    import re
 
     role = request.args.get('role', '')
 
@@ -170,13 +171,24 @@ def get_stats_poles():
         projects = Project.query.all()
     else:
         projects = Project.query.filter_by().all()
-    
+
     poles_stats = {}
-    
+
     for project in projects:
-        # Un projet peut concerner plusieurs pôles (CSV)
+        # Un projet peut concerner plusieurs pôles
         poles_db = project.poles or 'non défini'
-        poles_list = [p.strip() for p in poles_db.split(',') if p.strip()]
+
+        # Séparer les pôles en utilisant regex pour éviter de splitter les virgules internes
+        # Ex: "Sud (Zig, Sed),Nord (SL)" -> ["Sud (Zig, Sed)", "Nord (SL)"]
+        if '),' in poles_db:
+            poles_list = re.split(r'\),\s*', poles_db)
+            # Ajouter la parenthèse fermante manquante (sauf pour le dernier)
+            poles_list = [p + ')' if not p.endswith(')') else p for p in poles_list]
+        else:
+            # Pas de multi-pôles, garder tel quel
+            poles_list = [poles_db]
+
+        poles_list = [p.strip() for p in poles_list if p.strip()]
 
         if not poles_list:
             poles_list = ['non défini']
@@ -208,7 +220,7 @@ def get_stats_poles():
             # Répartition par statut dans ce pôle (fraction)
             statut = project.statut or 'non défini'
             poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1 / nb_poles
-    
+
     return jsonify(poles_stats)
 
 @stats_bp.route('/api/stats/workflow', methods=['GET'])
