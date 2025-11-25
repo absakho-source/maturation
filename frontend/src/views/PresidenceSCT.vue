@@ -231,7 +231,7 @@ export default {
   data() {
     return {
       allProjects: [],
-      activeTab: 'validation',
+      activeTab: 'all',
       commentaires: {},
       filtreStatut: null,
       metrics: {
