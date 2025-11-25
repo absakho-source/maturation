@@ -558,17 +558,26 @@ def projects():
         # Générer le numéro de projet automatiquement
         numero_projet = generer_numero_projet()
 
-        # Capturer le lieu de soumission pour mesurer la territorialisation
-        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-        if ip_address and ',' in ip_address:
-            ip_address = ip_address.split(',')[0].strip()
+        # Capturer le lieu de soumission depuis le formulaire (priorité) ou via géolocalisation (fallback)
+        lieu_pays = request.form.get("lieu_soumission_pays")
+        lieu_ville = request.form.get("lieu_soumission_ville")
+        lieu_region = request.form.get("lieu_soumission_region")
 
-        lieu_pays, lieu_ville, lieu_region = None, None, None
-        try:
-            lieu_pays, lieu_ville, lieu_region = get_geolocation(ip_address)
-            print(f"[SOUMISSION] Projet soumis depuis: {lieu_ville}, {lieu_region}, {lieu_pays} (IP: {ip_address})")
-        except Exception as e:
-            print(f"[SOUMISSION] Impossible de géolocaliser l'IP {ip_address}: {e}")
+        # Si les champs ne sont pas fournis, essayer la géolocalisation IP (fallback)
+        if not lieu_pays or not lieu_ville or not lieu_region:
+            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if ip_address and ',' in ip_address:
+                ip_address = ip_address.split(',')[0].strip()
+            try:
+                geo_pays, geo_ville, geo_region = get_geolocation(ip_address)
+                lieu_pays = lieu_pays or geo_pays
+                lieu_ville = lieu_ville or geo_ville
+                lieu_region = lieu_region or geo_region
+                print(f"[SOUMISSION] Géolocalisation IP utilisée: {geo_ville}, {geo_region}, {geo_pays} (IP: {ip_address})")
+            except Exception as e:
+                print(f"[SOUMISSION] Impossible de géolocaliser l'IP {ip_address}: {e}")
+        else:
+            print(f"[SOUMISSION] Projet soumis depuis (formulaire): {lieu_ville}, {lieu_region}, {lieu_pays}")
 
         project = Project(
             numero_projet=numero_projet,
