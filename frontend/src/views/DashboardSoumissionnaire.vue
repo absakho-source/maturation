@@ -488,10 +488,12 @@
             </ul>
           </div>
 
-          <button type="submit" class="btn-submit" :disabled="submitting">
-            <span v-if="!submitting">✓ Soumettre le projet</span>
-            <span v-else>⏳ Envoi en cours...</span>
-          </button>
+          <div class="submit-button-wrapper">
+            <button type="submit" class="btn-submit" :disabled="submitting">
+              <span v-if="!submitting">✓ Soumettre le projet</span>
+              <span v-else>⏳ Envoi en cours...</span>
+            </button>
+          </div>
         </form>
       </div>
 
@@ -1552,8 +1554,33 @@ export default {
   }
 }
 .success-message { padding: .75rem; background:#d1fae5; border:1px solid #6ee7b7; border-radius:8px; color:#065f46; }
+
+/* Wrapper pour centrer le bouton de soumission */
+.submit-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
 .btn-submit, .btn-primary, .btn-secondary, .btn-view { padding: .75rem 1.25rem; border:none; border-radius:8px; color:white; cursor:pointer; transition: all 0.3s; }
-.btn-submit { background:#059669; }
+.btn-submit {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  padding: 1rem 3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  min-width: 280px;
+}
+.btn-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+}
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .btn-primary { background:#2563eb; }
 .btn-primary:hover { background:#1d4ed8; }
 .btn-secondary { background:#6b7280; }
