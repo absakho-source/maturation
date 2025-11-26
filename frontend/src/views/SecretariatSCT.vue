@@ -2126,8 +2126,26 @@ export default {
   color: #1e293b;
   line-height: 1.4;
 }
-.badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; }
-.status-new{background:#3b82f6;color:#fff}.status-assigned{background:#f59e0b;color:#fff}.status-info{background:#06b6d4;color:#fff}.status-complement{background:#f97316;color:#fff}.status-evaluated{background:#8b5cf6;color:#fff}.status-default{background:#6b7280;color:#fff}
+.badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; display: inline-block; }
+
+/* Statuts principaux */
+.status-soumis { background: #3b82f6; color: #fff; }
+.status-assigné { background: #f59e0b; color: #fff; }
+.status-évalué { background: #8b5cf6; color: #fff; }
+.status-validé-par-secrétariat { background: #06b6d4; color: #fff; }
+.status-validé-par-presidencesct { background: #10b981; color: #fff; }
+.status-approuvé { background: #10b981; color: #fff; }
+.status-rejeté { background: #ef4444; color: #fff; }
+.status-compléments-demandés { background: #f97316; color: #fff; }
+.status-compléments-fournis { background: #0ea5e9; color: #fff; }
+
+/* Anciens status pour compatibilité */
+.status-new{background:#3b82f6;color:#fff}
+.status-assigned{background:#f59e0b;color:#fff}
+.status-info{background:#06b6d4;color:#fff}
+.status-complement{background:#f97316;color:#fff}
+.status-evaluated{background:#8b5cf6;color:#fff}
+.status-default{background:#6b7280;color:#fff}
 .card-body { padding: 1rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
 .btn-primary{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
