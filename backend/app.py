@@ -573,9 +573,15 @@ def projects():
 
         # Si les champs ne sont pas fournis, essayer la géolocalisation IP (fallback)
         if not lieu_pays or not lieu_ville or not lieu_region:
-            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-            if ip_address and ',' in ip_address:
-                ip_address = ip_address.split(',')[0].strip()
+            # Récupérer l'adresse IP réelle (en tenant compte des proxies)
+            ip_address = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+            if not ip_address:
+                ip_address = request.headers.get('X-Real-IP', '').strip()
+            if not ip_address:
+                ip_address = request.remote_addr
+
+            print(f"[SOUMISSION] IP détectée pour géolocalisation: {ip_address}")
+
             try:
                 geo_pays, geo_ville, geo_region = get_geolocation(ip_address)
                 lieu_pays = lieu_pays or geo_pays
@@ -1674,8 +1680,15 @@ def log_connexion():
         display_name = user.display_name if user and user.display_name else username
         role = data.get('role', user.role if user else '')
 
-        # Récupérer l'adresse IP
-        ip_address = request.remote_addr
+        # Récupérer l'adresse IP réelle (en tenant compte des proxies)
+        # Priorité : X-Forwarded-For > X-Real-IP > remote_addr
+        ip_address = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+        if not ip_address:
+            ip_address = request.headers.get('X-Real-IP', '').strip()
+        if not ip_address:
+            ip_address = request.remote_addr
+
+        print(f"[CONNEXION] IP détectée: {ip_address}")
 
         # Obtenir la géolocalisation
         pays, ville, region = get_geolocation(ip_address)
