@@ -3341,6 +3341,7 @@ def delete_project_message(project_id, message_id):
 
 # ============ Route des métriques de performance ============
 @app.route('/api/metrics', methods=['GET'])
+@app.route('/api/performance-metrics', methods=['GET'])  # Alias pour compatibilité frontend
 def get_performance_metrics():
     """
     Calcule les métriques de performance basées sur les logs réels:
