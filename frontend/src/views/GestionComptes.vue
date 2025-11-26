@@ -303,7 +303,6 @@
                 <label for="edit-niveau-collectivite">Niveau *</label>
                 <select id="edit-niveau-collectivite" v-model="editNiveauCollectivite" @change="onEditNiveauCollectiviteChange" required>
                   <option value="">-- Sélectionnez le niveau --</option>
-                  <option value="region">Région</option>
                   <option value="departement">Département</option>
                   <option value="commune">Commune</option>
                 </select>
