@@ -185,19 +185,8 @@
               <label>Niveau de collectivité *</label>
               <select v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required>
                 <option value="">-- Sélectionnez --</option>
-                <option value="region">Région</option>
                 <option value="departement">Département</option>
                 <option value="commune">Commune</option>
-              </select>
-            </div>
-          </div>
-
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'collectivite' && niveauCollectivite === 'region'" class="form-row">
-            <div class="form-group full-width">
-              <label>Région *</label>
-              <select v-model="nomStructure" required>
-                <option value="">-- Sélectionnez --</option>
-                <option v-for="r in regions" :key="r" :value="`Région de ${r}`">Région de {{ r }}</option>
               </select>
             </div>
           </div>

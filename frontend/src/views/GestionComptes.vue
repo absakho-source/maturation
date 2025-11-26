@@ -303,20 +303,8 @@
                 <label for="edit-niveau-collectivite">Niveau *</label>
                 <select id="edit-niveau-collectivite" v-model="editNiveauCollectivite" @change="onEditNiveauCollectiviteChange" required>
                   <option value="">-- Sélectionnez le niveau --</option>
-                  <option value="region">Région</option>
                   <option value="departement">Département</option>
                   <option value="commune">Commune</option>
-                </select>
-              </div>
-
-              <!-- Si région sélectionnée -->
-              <div v-if="editNiveauCollectivite === 'region'" class="form-group-modal">
-                <label for="edit-nom-structure-region">Région *</label>
-                <select id="edit-nom-structure-region" v-model="editNomStructure" required>
-                  <option value="">-- Sélectionnez une région --</option>
-                  <option v-for="region in regions" :key="region" :value="`Région de ${region}`">
-                    Région de {{ region }}
-                  </option>
                 </select>
               </div>
 

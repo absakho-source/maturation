@@ -116,21 +116,9 @@
             <label for="niveau-collectivite">Niveau *</label>
             <select id="niveau-collectivite" v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required>
               <option value="">-- Sélectionnez le niveau --</option>
-              <option value="region">Région</option>
               <option value="departement">Département</option>
               <option value="commune">Commune</option>
             </select>
-
-            <!-- Si région sélectionnée -->
-            <div v-if="niveauCollectivite === 'region'">
-              <label for="nom-structure">Région *</label>
-              <select id="nom-structure" v-model="nomStructure" required>
-                <option value="">-- Sélectionnez une région --</option>
-                <option v-for="region in regions" :key="region" :value="`Région de ${region}`">
-                  Région de {{ region }}
-                </option>
-              </select>
-            </div>
 
             <!-- Si département sélectionné -->
             <div v-if="niveauCollectivite === 'departement'">
