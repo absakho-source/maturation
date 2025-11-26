@@ -983,6 +983,11 @@ def traiter_project(project_id):
                 # Retirer l'assignation de l'évaluateur pour que le projet sorte de son panier
                 p.evaluateur_nom = None
 
+                # Synchroniser l'avis du projet avec la fiche d'évaluation (si elle existe)
+                fiche_eval = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                if fiche_eval and fiche_eval.proposition:
+                    p.avis = fiche_eval.proposition
+
                 # Vérifier si c'est une resoumission après rejet (par Présidence SCT ou Comité)
                 if data.get("statut_action") == "resoumission_apres_rejet":
                     # Enregistrer la motivation de resoumission si fournie (compatible avec anciennes BDD)
