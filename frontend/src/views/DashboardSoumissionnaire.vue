@@ -185,6 +185,7 @@
               <label>Niveau de collectivité *</label>
               <select v-model="niveauCollectivite" @change="onNiveauCollectiviteChange" required>
                 <option value="">-- Sélectionnez --</option>
+                <option value="region">Région</option>
                 <option value="departement">Département</option>
                 <option value="commune">Commune</option>
               </select>
