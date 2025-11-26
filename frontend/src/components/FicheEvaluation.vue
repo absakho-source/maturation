@@ -487,7 +487,7 @@ export default {
     avisAutomatique() {
       // Calcul automatique de l'avis selon les seuils définis
       // Score 0-69: Avis défavorable
-      // Score 70-79: Avis favorable sous réserves
+      // Score 70-79: Avis favorable sous conditions
       // Score 80-105: Avis favorable
       if (this.scoreTotal >= 80) return 'favorable'
       if (this.scoreTotal >= 70) return 'favorable_sous_conditions'

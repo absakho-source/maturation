@@ -39,7 +39,8 @@
       "Bash(pip install:*)",
       "Bash(ping:*)",
       "Bash(timeout 5 python3:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

@@ -29,7 +29,7 @@
         <label>Avis global:</label>
         <select v-model="ficheEdition.proposition" class="form-control">
           <option value="favorable">Favorable</option>
-          <option value="favorable sous réserve">Favorable sous réserve</option>
+          <option value="favorable sous conditions">Favorable sous conditions</option>
           <option value="défavorable">Défavorable</option>
         </select>
       </div>

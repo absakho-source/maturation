@@ -596,7 +596,7 @@ export default {
     getPropositionClass(proposition) {
       const map = {
         "favorable": "proposition-favorable",
-        "favorable sous réserve": "proposition-reserve",
+        "favorable sous conditions": "proposition-reserve",
         "défavorable": "proposition-defavorable"
       };
       return map[proposition] || "";

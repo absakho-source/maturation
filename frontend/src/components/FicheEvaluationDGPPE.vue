@@ -416,7 +416,7 @@ export default {
         if (newScore >= 80) {
           this.fiche.avis_final = 'favorable';
         } else if (newScore >= 70) {
-          this.fiche.avis_final = 'favorable_sous_reserves';
+          this.fiche.avis_final = 'favorable_sous_conditions';
         } else {
           this.fiche.avis_final = 'defavorable';
         }

@@ -3352,7 +3352,7 @@ def get_performance_metrics():
         # 1. TEMPS MOYEN DE TRAITEMENT
         # Projets avec décision finale
         projects_with_decision = Project.query.filter(
-            Project.decision_finale.in_(['favorable', 'favorable sous réserve', 'défavorable', 'confirme', 'infirme'])
+            Project.decision_finale.in_(['confirme', 'infirme'])
         ).all()
 
         total_processing_days = 0
@@ -3395,11 +3395,11 @@ def get_performance_metrics():
         # 2. TAUX DE VALIDATION
         # Projets avec évaluation finale
         projects_evaluated = Project.query.filter(
-            Project.decision_finale.in_(['favorable', 'favorable sous réserve', 'défavorable', 'confirme', 'infirme'])
+            Project.decision_finale.in_(['confirme', 'infirme'])
         ).all()
 
         favorable_count = sum(1 for p in projects_evaluated
-                             if p.decision_finale in ['favorable', 'favorable sous réserve', 'confirme'])
+                             if p.decision_finale == 'confirme')
         total_evaluated = len(projects_evaluated)
 
         validation_rate = round((favorable_count / total_evaluated) * 100) if total_evaluated > 0 else 0
