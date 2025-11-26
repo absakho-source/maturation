@@ -3906,6 +3906,49 @@ def generer_rapport_elabore():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/admin/sync-project-avis", methods=["POST"])
+def sync_project_avis():
+    """
+    Synchronise l'avis de tous les projets avec leurs fiches d'évaluation
+    Route d'administration pour corriger les désynchronisations
+    """
+    try:
+        # Sécurité : vérifier que c'est un admin (optionnel)
+        # Pour l'instant, on permet l'exécution sans authentification car c'est temporaire
+
+        synced_count = 0
+        errors = []
+
+        # Récupérer tous les projets qui ont une fiche d'évaluation
+        projects = Project.query.all()
+
+        for project in projects:
+            fiche = FicheEvaluation.query.filter_by(project_id=project.id).first()
+
+            if fiche and fiche.proposition:
+                # Si l'avis du projet diffère de la proposition de la fiche
+                if project.avis != fiche.proposition:
+                    old_avis = project.avis
+                    project.avis = fiche.proposition
+                    synced_count += 1
+
+                    print(f"[SYNC] Projet {project.numero_projet}: {old_avis} → {fiche.proposition}")
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"{synced_count} projet(s) synchronisé(s)",
+            "synced_count": synced_count
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 # Import and register evaluation routes
 try:
     from routes.evaluation_routes import evaluation_bp
