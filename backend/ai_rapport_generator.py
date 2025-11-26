@@ -1,11 +1,24 @@
 """
 Générateur de rapports élaborés avec analyse IA
 Génère des insights, analyses de tendances et résumés exécutifs
+
+Version hybride:
+- Si ENABLE_AI=true et ANTHROPIC_API_KEY définie: utilise Claude API
+- Sinon: utilise l'analyse statistique classique
 """
 
 from models import Project, User
 from sqlalchemy import func
 from datetime import datetime, timedelta
+
+# Import conditionnel de l'IA
+try:
+    from ai_config import is_ai_available
+    from ai_service import generer_rapport_avec_ia
+    AI_INTEGRATION_AVAILABLE = True
+except ImportError:
+    AI_INTEGRATION_AVAILABLE = False
+    print("[RAPPORT] Modules IA non disponibles, utilisation version classique uniquement")
 
 def generer_resume_executif(projects):
     """Génère un résumé exécutif en langage naturel"""
@@ -251,3 +264,92 @@ def format_montant(montant):
         return f"{round(montant / 1_000_000, 2)} M"
     else:
         return f"{montant:,}"
+
+
+def generer_rapport_complet_avec_ia_si_disponible(projects):
+    """
+    Fonction principale: génère un rapport élaboré
+
+    - Si IA activée et configurée: utilise Claude API pour analyse avancée
+    - Sinon: utilise les fonctions statistiques classiques
+
+    Returns:
+        dict avec toutes les sections du rapport
+    """
+
+    # Préparer les statistiques de base (toujours nécessaires)
+    stats_base = _preparer_statistiques_base(projects)
+
+    # Tentative d'utilisation de l'IA si disponible
+    if AI_INTEGRATION_AVAILABLE and is_ai_available():
+        print("[RAPPORT] 🤖 Génération avec IA (Claude API)...")
+        rapport_ia = generer_rapport_avec_ia(stats_base)
+
+        if rapport_ia:
+            # Succès: retourner le rapport IA
+            print("[RAPPORT] ✅ Rapport IA généré avec succès")
+            return {
+                'source': 'ia',
+                'model': 'Claude API',
+                'resume_executif': rapport_ia.get('resume_executif', ''),
+                'analyse_tendances': rapport_ia.get('analyse_tendances', ''),
+                'insights': rapport_ia.get('insights', []),
+                'recommandations': rapport_ia.get('recommandations', []),
+                'alertes': rapport_ia.get('alertes', []),
+                'statistiques': stats_base
+            }
+
+    # Fallback: utiliser la version classique
+    print("[RAPPORT] 📊 Génération avec analyse statistique classique...")
+    return {
+        'source': 'statistique',
+        'model': 'Algorithmes déterministes',
+        'resume_executif': generer_resume_executif(projects),
+        'analyse_tendances': analyser_tendances(projects),
+        'insights': generer_insights(projects),
+        'analyse_financiere': analyser_finances(projects),
+        'statistiques': stats_base
+    }
+
+
+def _preparer_statistiques_base(projects):
+    """Prépare les statistiques agrégées pour l'IA ou l'affichage"""
+
+    total = len(projects)
+
+    # Répartition par statut
+    statuts = {}
+    for p in projects:
+        statut = p.statut or 'non défini'
+        statuts[statut] = statuts.get(statut, 0) + 1
+
+    # Répartition par secteur
+    secteurs = {}
+    cout_par_secteur = {}
+    for p in projects:
+        secteur = p.secteur or 'non défini'
+        secteurs[secteur] = secteurs.get(secteur, 0) + 1
+        cout_par_secteur[secteur] = cout_par_secteur.get(secteur, 0) + (p.cout_estimatif or 0)
+
+    # Répartition par pôle
+    poles = {}
+    cout_par_pole = {}
+    for p in projects:
+        pole = p.poles or 'non défini'
+        poles[pole] = poles.get(pole, 0) + 1
+        cout_par_pole[pole] = cout_par_pole.get(pole, 0) + (p.cout_estimatif or 0)
+
+    # Calculs financiers
+    cout_total = sum([p.cout_estimatif or 0 for p in projects])
+    cout_moyen = cout_total / total if total > 0 else 0
+
+    return {
+        'total_projets': total,
+        'cout_total': cout_total,
+        'cout_moyen': cout_moyen,
+        'statuts': statuts,
+        'secteurs': secteurs,
+        'poles': poles,
+        'cout_par_secteur': cout_par_secteur,
+        'cout_par_pole': cout_par_pole
+    }
