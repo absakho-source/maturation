@@ -114,16 +114,24 @@ def generer_numero_projet():
 def get_statut_soumissionnaire(projet):
     """Convertit les statuts internes en statuts simplifiés pour le soumissionnaire"""
     statut_reel = projet.statut
-    
-    # Si le projet est approuvé par le comité, on affiche l'avis de l'évaluateur
+
+    # PRIORITÉ 1: Décision finale du Comité (trump tous les autres statuts)
+    if projet.decision_finale == 'confirme' and projet.avis:
+        # Décision confirmée par le Comité = avis final
+        return projet.avis  # "favorable", "favorable sous conditions", "défavorable"
+    elif projet.decision_finale == 'infirme':
+        # Décision infirmée par le Comité = rejet définitif
+        return "dossier rejeté"
+
+    # PRIORITÉ 2: Si le projet est approuvé (sans passer par le comité), afficher l'avis
     if statut_reel == "approuvé" and projet.avis:
         return projet.avis  # "favorable", "favorable sous conditions", "défavorable"
-    
-    # Si le projet est rejeté, il retourne vers le secrétariat → "en instruction"
+
+    # PRIORITÉ 3: Si le projet est rejeté avant comité, il retourne vers le secrétariat → "en instruction"
     if statut_reel == "rejeté":
         return "en instruction"
 
-    # Statuts simplifiés selon les étapes du workflow
+    # PRIORITÉ 4: Statuts simplifiés selon les étapes du workflow
     if statut_reel == "soumis":
         return "soumis"
     elif statut_reel == "assigné":
