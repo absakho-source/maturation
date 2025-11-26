@@ -370,8 +370,11 @@
                     <template v-else-if="projet.avis_presidencesct === 'rejette'">
                       ❌ <strong>Avis rejeté par la Présidence SCT</strong>
                     </template>
+                    <template v-else-if="projet.decision_finale === 'infirme'">
+                      ❌ <strong>Avis rejeté par la Présidence du Comité</strong>
+                    </template>
                     <template v-else>
-                      ❌ <strong>Avis rejeté par la Présidence du comité</strong>
+                      ❌ <strong>Projet rejeté</strong>
                     </template>
                   </div>
                   <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
@@ -625,8 +628,11 @@
                     <template v-else-if="projet.avis_presidencesct === 'rejette'">
                       ❌ <strong>Avis rejeté par la Présidence SCT</strong>
                     </template>
+                    <template v-else-if="projet.decision_finale === 'infirme'">
+                      ❌ <strong>Avis rejeté par la Présidence du Comité</strong>
+                    </template>
                     <template v-else>
-                      ❌ <strong>Avis rejeté par la Présidence du comité</strong>
+                      ❌ <strong>Projet rejeté</strong>
                     </template>
                   </div>
                   <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
