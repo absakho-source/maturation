@@ -324,27 +324,17 @@
             </div>
           </div>
 
-          <!-- Lieu de soumission -->
-          <div class="form-section-title">Lieu de soumission</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Pays *</label>
-              <input v-model="form.lieu_soumission_pays" type="text" required readonly />
-            </div>
-            <div class="form-group">
-              <label>Région *</label>
-              <select v-model="form.lieu_soumission_region" required>
-                <option value="">-- Sélectionner --</option>
-                <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
-              </select>
-            </div>
+          <!-- Lieu de soumission - Détecté automatiquement via géolocalisation IP -->
+          <div class="form-section-title">
+            📍 Lieu de soumission
+            <span style="font-size: 0.85rem; color: #6b7280; font-weight: normal; margin-left: 8px;">
+              (Détecté automatiquement)
+            </span>
           </div>
-
-          <div class="form-row">
-            <div class="form-group full-width">
-              <label>Ville / Localité *</label>
-              <input v-model="form.lieu_soumission_ville" type="text" required placeholder="Ex: Dakar, Thiès, Ziguinchor..." />
-            </div>
+          <div class="info-box" style="margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #475569; font-size: 0.9rem;">
+              ℹ️ Votre localisation est automatiquement détectée lors de la soumission pour les besoins de territorialisation des politiques publiques.
+            </p>
           </div>
 
           <!-- Pôles et Secteur -->
@@ -627,9 +617,7 @@ export default {
         point_focal_fonction: "",
         point_focal_telephone: "",
         point_focal_email: "",
-        lieu_soumission_pays: "Sénégal",
-        lieu_soumission_ville: "",
-        lieu_soumission_region: "",
+        // lieu_soumission_* : Géolocalisation automatique côté backend (pas de champs manuels)
         certification: false,
         lettre_soumission: [],
         note_conceptuelle: [],
@@ -1346,9 +1334,7 @@ export default {
         formData.append("point_focal_fonction", this.form.point_focal_fonction || "");
         formData.append("point_focal_telephone", this.form.point_focal_telephone || "");
         formData.append("point_focal_email", this.form.point_focal_email || "");
-        formData.append("lieu_soumission_pays", this.form.lieu_soumission_pays || "");
-        formData.append("lieu_soumission_ville", this.form.lieu_soumission_ville || "");
-        formData.append("lieu_soumission_region", this.form.lieu_soumission_region || "");
+        // lieu_soumission_* : Géolocalisation automatique côté backend
 
         // Utiliser l'organisme de tutelle construit
         formData.append("organisme_tutelle", organismeTutelle);
@@ -1400,9 +1386,7 @@ export default {
           point_focal_fonction: "",
           point_focal_telephone: "",
           point_focal_email: "",
-          lieu_soumission_pays: "Sénégal",
-          lieu_soumission_ville: "",
-          lieu_soumission_region: "",
+          // lieu_soumission_* : Géolocalisation automatique côté backend
           certification: false,
           lettre_soumission: [],
           note_conceptuelle: [],
