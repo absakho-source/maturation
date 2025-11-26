@@ -203,6 +203,27 @@ class FicheEvaluation(db.Model):
         )  # Total = 100
 
         return self.score_total
+
+    def calculer_avis_depuis_score(self):
+        """
+        Calcule automatiquement l'avis (proposition) basé sur le score total
+
+        Barème:
+        - 80-100 points : Favorable
+        - 70-79 points : Favorable sous condition
+        - 0-69 points : Défavorable
+
+        Returns:
+            str: L'avis calculé
+        """
+        score = self.score_total or 0
+
+        if score >= 80:
+            return "favorable"
+        elif score >= 70:
+            return "favorable sous conditions"
+        else:
+            return "défavorable"
     
     def get_appreciation_globale(self):
         """Retourne l'appréciation basée sur le score total sur 105"""
