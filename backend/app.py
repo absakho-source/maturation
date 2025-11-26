@@ -3949,6 +3949,71 @@ def sync_project_avis():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/admin/fix-avis-terminologie", methods=["POST"])
+def fix_avis_terminology_route():
+    """
+    Route pour corriger la terminologie des avis en base de données
+    Remplace 'favorable sous réserve' par 'favorable sous conditions'
+    """
+    try:
+        count_projects = 0
+        count_fiches = 0
+
+        # 1. Corriger les avis des projets
+        projects = Project.query.filter(
+            db.or_(
+                Project.avis.like('%favorable sous réserve%'),
+                Project.avis.like('%favorable sous reserve%')
+            )
+        ).all()
+
+        for project in projects:
+            old_avis = project.avis
+            if old_avis:
+                new_avis = old_avis.replace('favorable sous réserve', 'favorable sous conditions')
+                new_avis = new_avis.replace('favorable sous reserve', 'favorable sous conditions')
+                new_avis = new_avis.replace('Favorable sous réserve', 'Favorable sous conditions')
+
+                if new_avis != old_avis:
+                    project.avis = new_avis
+                    count_projects += 1
+
+        # 2. Corriger les propositions des fiches d'évaluation
+        fiches = FicheEvaluation.query.filter(
+            db.or_(
+                FicheEvaluation.proposition.like('%favorable sous réserve%'),
+                FicheEvaluation.proposition.like('%favorable sous reserve%')
+            )
+        ).all()
+
+        for fiche in fiches:
+            old_prop = fiche.proposition
+            if old_prop:
+                new_prop = old_prop.replace('favorable sous réserve', 'favorable sous conditions')
+                new_prop = new_prop.replace('favorable sous reserve', 'favorable sous conditions')
+                new_prop = new_prop.replace('Favorable sous réserve', 'Favorable sous conditions')
+
+                if new_prop != old_prop:
+                    fiche.proposition = new_prop
+                    count_fiches += 1
+
+        # 3. Commit les changements
+        if count_projects > 0 or count_fiches > 0:
+            db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "projects_fixed": count_projects,
+            "fiches_fixed": count_fiches,
+            "message": f"{count_projects} projet(s) et {count_fiches} fiche(s) corrigé(s)"
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 # Import and register evaluation routes
 try:
     from routes.evaluation_routes import evaluation_bp
