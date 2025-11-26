@@ -611,8 +611,11 @@ export default {
       this.financingStats.totalSubmitted = this.allProjects.reduce((sum, p) => sum + (p.cout_estimatif || 0), 0);
 
       // Projets avec décision finale confirmée par la Présidence du Comité
-      // Note: decision_finale = 'confirme' (et non 'favorable')
-      const approvedProjects = this.allProjects.filter(p => p.decision_finale === 'confirme');
+      // ET avec avis favorable ou favorable sous conditions uniquement
+      const approvedProjects = this.allProjects.filter(p =>
+        p.decision_finale === 'confirme' &&
+        (p.avis === 'favorable' || p.avis === 'favorable sous conditions')
+      );
       this.financingStats.countApproved = approvedProjects.length;
       this.financingStats.totalApproved = approvedProjects.reduce((sum, p) => sum + (p.cout_estimatif || 0), 0);
     },
