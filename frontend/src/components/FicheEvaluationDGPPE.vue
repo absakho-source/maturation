@@ -266,8 +266,8 @@
                 <span class="radio-label favorable">Avis favorable (80 points et plus)</span>
               </label>
               <label class="radio-item">
-                <input type="radio" value="favorable_sous_reserves" v-model="fiche.avis_final" required>
-                <span class="radio-label conditionnel">Avis favorable sous réserves (70-79 points)</span>
+                <input type="radio" value="favorable_sous_conditions" v-model="fiche.avis_final" required>
+                <span class="radio-label conditionnel">Avis favorable sous conditions (70-79 points)</span>
               </label>
               <label class="radio-item">
                 <input type="radio" value="defavorable" v-model="fiche.avis_final" required>
@@ -402,10 +402,10 @@ export default {
     avisAutomatique() {
       // Calcul automatique de l'avis selon les seuils définis
       // Score 0-69: Avis défavorable
-      // Score 70-79: Avis favorable sous réserves
+      // Score 70-79: Avis favorable sous conditions
       // Score 80+: Avis favorable
       if (this.scoreTotal >= 80) return 'Avis favorable';
-      if (this.scoreTotal >= 70) return 'Avis favorable sous réserves';
+      if (this.scoreTotal >= 70) return 'Avis favorable sous conditions';
       return 'Avis défavorable';
     }
   },
