@@ -115,13 +115,14 @@ def get_statut_soumissionnaire(projet):
     """Convertit les statuts internes en statuts simplifiés pour le soumissionnaire"""
     statut_reel = projet.statut
 
-    # PRIORITÉ 1: Décision finale du Comité (trump tous les autres statuts)
+    # PRIORITÉ 1: Décision finale du Comité
     if projet.decision_finale == 'confirme' and projet.avis:
-        # Décision confirmée par le Comité = avis final
+        # Décision confirmée par le Comité = avis final validé
         return projet.avis  # "favorable", "favorable sous conditions", "défavorable"
     elif projet.decision_finale == 'infirme':
-        # Décision infirmée par le Comité = rejet définitif
-        return "dossier rejeté"
+        # Décision infirmée par le Comité = retour au Secrétariat SCT pour réexamen
+        # On ne montre PAS de décision finale, on affiche "en réexamen"
+        return "en réexamen"
 
     # PRIORITÉ 2: Si le projet est approuvé (sans passer par le comité), afficher l'avis
     if statut_reel == "approuvé" and projet.avis:
@@ -422,8 +423,8 @@ def projects():
                             # Afficher directement l'avis: favorable, favorable sous conditions, défavorable
                             statut_affiche = p.avis
                         elif p.decision_finale == 'infirme':
-                            # Décision infirmée par le Comité
-                            statut_affiche = 'rejeté par le Comité'
+                            # Décision infirmée par le Comité = retour au Secrétariat SCT
+                            statut_affiche = 'en réexamen par le Secrétariat SCT'
                         else:
                             # Pas de décision finale ou décision non confirmée
                             statut_affiche = p.statut
@@ -1109,16 +1110,18 @@ def traiter_project(project_id):
             if data.get("commentaires"):
                 p.commentaires_finaux = data.get("commentaires")
 
-            # Statut unique pour toutes les décisions finales
-            p.statut = "décision finale confirmée"
-
-            # Action différente selon la décision
+            # Gestion différente selon la décision
             if dec == "confirme":
-                action = "Projet approuvé par le Comité (décision favorable)"
+                # Décision confirmée = avis validé
+                p.statut = "décision finale confirmée"
+                action = "Décision finale du Comité : avis confirmé"
             else:
-                # Décision défavorable par Présidence du Comité
+                # Décision infirmée = retour au Secrétariat SCT pour réexamen
+                p.statut = "en réexamen par le Secrétariat SCT"
                 p.evaluateur_nom = None
-                action = "Avis rejeté par Présidence du Comité (décision défavorable)"
+                # Réinitialiser la validation SCT pour forcer un nouveau cycle
+                p.avis_presidencesct = None
+                action = "Décision finale du Comité : avis infirmé, retour au Secrétariat SCT"
 
         db.session.commit()
         if action:
