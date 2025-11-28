@@ -242,7 +242,7 @@ def create_or_update_fiche_evaluation(project_id):
 
             # Si c'est une modification (pas une création initiale), archiver l'ancienne version
             # On archive uniquement si le projet a déjà été évalué
-            if fiche.score_total and fiche.score_total > 0:
+            if fiche.fichier_pdf:
                 try:
                     # Compter les versions existantes
                     versions_existantes = FicheEvaluationArchive.query.filter_by(project_id=project_id).count()
@@ -287,7 +287,7 @@ def create_or_update_fiche_evaluation(project_id):
                     )
                     db.session.add(archive)
                     db.session.flush()
-                    print(f"✅ Fiche archivée (version {archive.version}) avant modification")
+                    print(f"✅ PDF archivé avec succès avant modification")
                 except Exception as e:
                     print(f"⚠️ Erreur archivage fiche: {e}")
                     # Continue quand même pour ne pas bloquer la modification
@@ -684,12 +684,12 @@ def delete_fiche_evaluation(project_id):
 
         # Archiver avant suppression si la fiche a du contenu
         username = request.headers.get('X-Username', 'system')
-        if fiche.score_total and fiche.score_total > 0:
+        if fiche.fichier_pdf:
             try:
                 print(f"[INFO] Archivage de la fiche pour le projet {project_id} (suppression manuelle)")
                 archive = archiver_fiche(fiche, "suppression_manuelle", username)
                 if archive:
-                    print(f"✅ Fiche archivée (version {archive.version}) avant suppression")
+                    print(f"✅ PDF archivé avec succès avant suppression")
                 else:
                     print(f"⚠️ Échec de l'archivage, suppression annulée")
                     return jsonify({'error': 'Échec de l\'archivage de la fiche'}), 500
@@ -796,13 +796,11 @@ def get_fiches_evaluation_stats():
 @evaluation_bp.route('/api/projects/<int:project_id>/fiches-archives', methods=['GET'])
 def get_fiches_archives(project_id):
     """
-    Récupère l'historique des fiches d'évaluation archivées pour un projet
+    Récupère l'historique des PDFs archivés pour un projet
     Accessible uniquement aux membres du Comité (admin, secretariatsct, presidencesct, presidencecomite)
     """
     try:
         # Vérifier les permissions (membres du comité uniquement)
-        # Note: Dans une vraie app, vérifier le rôle de l'utilisateur depuis le token/session
-        # Pour l'instant, on fait confiance au header X-Role
         role = request.headers.get('X-Role', '')
         roles_autorises = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite']
 
@@ -817,21 +815,56 @@ def get_fiches_archives(project_id):
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
 
-        # Récupérer toutes les archives pour ce projet, triées par version décroissante
-        archives = FicheEvaluationArchive.query.filter_by(
-            project_id=project_id
-        ).order_by(FicheEvaluationArchive.version.desc()).all()
+        # Dossier des archives
+        backend_dir = os.path.dirname(os.path.dirname(__file__))
+        archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
 
-        # Récupérer aussi la fiche actuelle
+        # Lister les PDFs archivés pour ce projet
+        import glob
+        projet_ref = project.numero_projet or f'ID{project_id}'
+        pattern = os.path.join(archives_dir, f"{projet_ref}_v*")
+        archive_files = sorted(glob.glob(pattern), reverse=True)  # Plus récents en premier
+
+        # Parser les noms de fichiers pour extraire les métadonnées
+        archives_list = []
+        for filepath in archive_files:
+            filename = os.path.basename(filepath)
+            # Format: PROJET-XXX_v1_20250128_153045_reassignation_jean.pdf
+            try:
+                parts = filename.replace('.pdf', '').split('_')
+                if len(parts) >= 5:
+                    version = parts[1].replace('v', '')
+                    date = parts[2]
+                    heure = parts[3]
+                    raison = parts[4]
+                    archive_par = parts[5] if len(parts) > 5 else 'inconnu'
+
+                    # Formater la date
+                    from datetime import datetime
+                    date_obj = datetime.strptime(f"{date}_{heure}", "%Y%m%d_%H%M%S")
+
+                    archives_list.append({
+                        'filename': filename,
+                        'version': int(version),
+                        'date_archivage': date_obj.isoformat(),
+                        'raison_archivage': raison,
+                        'archive_par': archive_par,
+                        'taille': os.path.getsize(filepath)
+                    })
+            except Exception as e:
+                print(f"Erreur parsing {filename}: {e}")
+                continue
+
+        # Récupérer la fiche actuelle
         fiche_actuelle = FicheEvaluation.query.filter_by(project_id=project_id).first()
 
         return jsonify({
             'project_id': project_id,
             'numero_projet': project.numero_projet,
             'titre_projet': project.titre,
-            'total_versions': len(archives),
+            'total_versions': len(archives_list),
             'fiche_actuelle': fiche_actuelle.to_dict() if fiche_actuelle else None,
-            'archives': [archive.to_dict() for archive in archives]
+            'archives': archives_list
         }), 200
 
     except Exception as e:

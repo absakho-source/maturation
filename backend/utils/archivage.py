@@ -1,14 +1,21 @@
 """
 Utilitaires pour l'archivage des fiches d'évaluation
+Archive uniquement les PDFs générés dans un dossier d'archives
 """
 
+import os
+import shutil
 from datetime import datetime
-from models import db, FicheEvaluationArchive
 
 
 def archiver_fiche(fiche, raison, archive_par):
     """
-    Archive une fiche d'évaluation avant modification ou réassignation
+    Archive le PDF d'une fiche d'évaluation avant modification ou réassignation
+
+    L'archivage consiste à :
+    1. Vérifier qu'un PDF a été généré (fiche.fichier_pdf existe)
+    2. Copier le PDF vers le dossier d'archives avec un nom horodaté
+    3. Le PDF archivé contient déjà toutes les informations de la fiche
 
     Args:
         fiche: Instance FicheEvaluation à archiver
@@ -16,154 +23,74 @@ def archiver_fiche(fiche, raison, archive_par):
         archive_par: Nom d'utilisateur de la personne qui déclenche l'archivage
 
     Returns:
-        FicheEvaluationArchive: L'objet archive créé, ou None en cas d'erreur
+        str: Chemin du fichier PDF archivé, ou None en cas d'erreur
     """
     if not fiche:
         print("⚠️ Aucune fiche fournie pour archivage")
         return None
 
+    # Vérifier qu'un PDF a été généré
+    if not fiche.fichier_pdf:
+        print(f"⚠️ Aucun PDF généré pour la fiche du projet {fiche.project_id} - archivage ignoré")
+        return None
+
     try:
+        # Chemin source du PDF
+        # Le PDF est dans backend/routes/pdfs/fiches_evaluation/
+        routes_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'routes')
+        pdf_source_dir = os.path.join(routes_dir, 'pdfs', 'fiches_evaluation')
+        pdf_source_path = os.path.join(pdf_source_dir, fiche.fichier_pdf)
+
+        # Vérifier que le fichier source existe
+        if not os.path.exists(pdf_source_path):
+            print(f"❌ Fichier PDF source non trouvé: {pdf_source_path}")
+            return None
+
+        # Créer le dossier d'archives s'il n'existe pas
+        # Structure: backend/archives/fiches_evaluation/
+        backend_dir = os.path.dirname(os.path.dirname(__file__))
+        archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+        os.makedirs(archives_dir, exist_ok=True)
+
+        # Construire le nom du fichier archivé avec métadonnées
+        # Format: PROJET-XXX_v1_20250128_153045_reassignation_jean.pdf
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
         # Compter les versions existantes pour ce projet
-        versions_existantes = FicheEvaluationArchive.query.filter_by(
-            project_id=fiche.project_id
-        ).count()
+        import glob
+        pattern = f"*{fiche.numero_projet or f'ID{fiche.project_id}'}*"
+        existing_archives = glob.glob(os.path.join(archives_dir, pattern))
+        version = len(existing_archives) + 1
 
-        # Créer l'archive avec copie de tous les champs
-        archive = FicheEvaluationArchive(
-            fiche_id_originale=fiche.id,
-            project_id=fiche.project_id,
-            raison_archivage=raison,
-            archive_par=archive_par,
-            version=versions_existantes + 1,
+        # Nom du fichier archivé
+        projet_ref = fiche.numero_projet or f'ID{fiche.project_id}'
+        evaluateur = fiche.evaluateur_nom or 'inconnu'
+        nom_archive = f"{projet_ref}_v{version}_{timestamp}_{raison}_{archive_par}.pdf"
 
-            # Copie de tous les champs de la fiche
-            evaluateur_nom=fiche.evaluateur_nom,
-            date_evaluation=fiche.date_evaluation,
-            date_modification=fiche.date_modification,
+        # Chemin complet du fichier archivé
+        archive_path = os.path.join(archives_dir, nom_archive)
 
-            # Section I - Présentation du projet (pré-rempli)
-            numero_projet=fiche.numero_projet,
-            titre_projet=fiche.titre_projet,
-            porteur_projet=fiche.porteur_projet,
-            structure_appartenance=fiche.structure_appartenance,
-            type_structure=fiche.type_structure,
-            nom_collectivite=fiche.nom_collectivite,
-            adresse_structure=fiche.adresse_structure,
-            email_porteur=fiche.email_porteur,
-            telephone_porteur=fiche.telephone_porteur,
-            zone_intervention=fiche.zone_intervention,
-            cout_total=fiche.cout_total,
-            financement_sollicite=fiche.financement_sollicite,
-            contribution_structure=fiche.contribution_structure,
-            autres_financements=fiche.autres_financements,
-            autres_financements_details=fiche.autres_financements_details,
+        # Copier le PDF vers le dossier d'archives
+        shutil.copy2(pdf_source_path, archive_path)
 
-            # Section II - Pertinence et cohérence (35 points)
-            conformite_priorites_plasepri=fiche.conformite_priorites_plasepri,
-            conformite_priorites_plasepri_score=fiche.conformite_priorites_plasepri_score,
-            conformite_priorites_plasepri_justification=fiche.conformite_priorites_plasepri_justification,
-
-            coherence_pld=fiche.coherence_pld,
-            coherence_pld_score=fiche.coherence_pld_score,
-            coherence_pld_justification=fiche.coherence_pld_justification,
-
-            adequation_besoins=fiche.adequation_besoins,
-            adequation_besoins_score=fiche.adequation_besoins_score,
-            adequation_besoins_justification=fiche.adequation_besoins_justification,
-
-            coherence_cout=fiche.coherence_cout,
-            coherence_cout_score=fiche.coherence_cout_score,
-            coherence_cout_justification=fiche.coherence_cout_justification,
-
-            pertinence_coherence_total=fiche.pertinence_coherence_total,
-
-            # Section III - Faisabilité (20 points)
-            faisabilite_technique=fiche.faisabilite_technique,
-            faisabilite_technique_score=fiche.faisabilite_technique_score,
-            faisabilite_technique_justification=fiche.faisabilite_technique_justification,
-
-            capacite_maitrise_ouvrage=fiche.capacite_maitrise_ouvrage,
-            capacite_maitrise_ouvrage_score=fiche.capacite_maitrise_ouvrage_score,
-            capacite_maitrise_ouvrage_justification=fiche.capacite_maitrise_ouvrage_justification,
-
-            faisabilite_financiere=fiche.faisabilite_financiere,
-            faisabilite_financiere_score=fiche.faisabilite_financiere_score,
-            faisabilite_financiere_justification=fiche.faisabilite_financiere_justification,
-
-            respect_reglementations=fiche.respect_reglementations,
-            respect_reglementations_score=fiche.respect_reglementations_score,
-            respect_reglementations_justification=fiche.respect_reglementations_justification,
-
-            faisabilite_total=fiche.faisabilite_total,
-
-            # Section IV - Impacts et durabilité (20 points)
-            impacts_economiques=fiche.impacts_economiques,
-            impacts_economiques_score=fiche.impacts_economiques_score,
-            impacts_economiques_justification=fiche.impacts_economiques_justification,
-
-            impacts_sociaux=fiche.impacts_sociaux,
-            impacts_sociaux_score=fiche.impacts_sociaux_score,
-            impacts_sociaux_justification=fiche.impacts_sociaux_justification,
-
-            impacts_environnementaux=fiche.impacts_environnementaux,
-            impacts_environnementaux_score=fiche.impacts_environnementaux_score,
-            impacts_environnementaux_justification=fiche.impacts_environnementaux_justification,
-
-            durabilite=fiche.durabilite,
-            durabilite_score=fiche.durabilite_score,
-            durabilite_justification=fiche.durabilite_justification,
-
-            impacts_durabilite_total=fiche.impacts_durabilite_total,
-
-            # Section V - Gouvernance et transparence (15 points)
-            implication_parties_prenantes=fiche.implication_parties_prenantes,
-            implication_parties_prenantes_score=fiche.implication_parties_prenantes_score,
-            implication_parties_prenantes_justification=fiche.implication_parties_prenantes_justification,
-
-            mecanismes_suivi=fiche.mecanismes_suivi,
-            mecanismes_suivi_score=fiche.mecanismes_suivi_score,
-            mecanismes_suivi_justification=fiche.mecanismes_suivi_justification,
-
-            transparence_gestion=fiche.transparence_gestion,
-            transparence_gestion_score=fiche.transparence_gestion_score,
-            transparence_gestion_justification=fiche.transparence_gestion_justification,
-
-            gouvernance_total=fiche.gouvernance_total,
-
-            # Section VI - Innovation et reproductibilité (10 points)
-            caractere_innovant=fiche.caractere_innovant,
-            caractere_innovant_score=fiche.caractere_innovant_score,
-            caractere_innovant_justification=fiche.caractere_innovant_justification,
-
-            potentiel_replicabilite=fiche.potentiel_replicabilite,
-            potentiel_replicabilite_score=fiche.potentiel_replicabilite_score,
-            potentiel_replicabilite_justification=fiche.potentiel_replicabilite_justification,
-
-            innovation_total=fiche.innovation_total,
-
-            # Scores totaux et proposition
-            score_total=fiche.score_total,
-            appreciation_globale=fiche.appreciation_globale,
-            points_forts=fiche.points_forts,
-            points_amelioration=fiche.points_amelioration,
-            recommandations=fiche.recommandations,
-            proposition=fiche.proposition,
-            conditions_reserves=fiche.conditions_reserves,
-
-            # PDF et statut
-            fichier_pdf=fiche.fichier_pdf,
-            statut=fiche.statut
-        )
-
-        # Ajouter à la session et flusher pour obtenir l'ID
-        db.session.add(archive)
-        db.session.flush()
-
-        print(f"✅ Fiche archivée avec succès (ID: {archive.id}, Version: {archive.version}, Raison: {raison})")
-        return archive
+        # Vérifier que la copie a réussi
+        if os.path.exists(archive_path):
+            file_size = os.path.getsize(archive_path)
+            print(f"✅ PDF archivé avec succès:")
+            print(f"   - Projet: {projet_ref}")
+            print(f"   - Version: {version}")
+            print(f"   - Raison: {raison}")
+            print(f"   - Par: {archive_par}")
+            print(f"   - Évaluateur: {evaluateur}")
+            print(f"   - Fichier: {nom_archive}")
+            print(f"   - Taille: {file_size / 1024:.1f} Ko")
+            return archive_path
+        else:
+            print(f"❌ Échec de la copie du fichier vers {archive_path}")
+            return None
 
     except Exception as e:
-        print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
+        print(f"❌ Erreur lors de l'archivage de la fiche PDF: {e}")
         import traceback
         traceback.print_exc()
         return None

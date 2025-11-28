@@ -781,7 +781,7 @@ def traiter_project(project_id):
 
             # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-            if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+            if fiche_existante and fiche_existante.fichier_pdf:
                 try:
                     print(f"[INFO] Archivage de la fiche pour le projet {project_id} (assignation/réassignation)")
                     # Déterminer la raison selon le contexte
@@ -792,7 +792,7 @@ def traiter_project(project_id):
 
                     archive = archiver_fiche(fiche_existante, raison, username)
                     if archive:
-                        print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                        print(f"✅ PDF archivé avec succès pour le projet {project_id}")
                     else:
                         print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                 except Exception as e:
@@ -830,12 +830,12 @@ def traiter_project(project_id):
 
             # Archiver et supprimer la fiche d'évaluation existante
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-            if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+            if fiche_existante and fiche_existante.fichier_pdf:
                 try:
                     print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation explicite)")
                     archive = archiver_fiche(fiche_existante, "reassignation_avant_hierarchie", username)
                     if archive:
-                        print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                        print(f"✅ PDF archivé avec succès pour le projet {project_id}")
                     else:
                         print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                 except Exception as e:
@@ -899,12 +899,12 @@ def traiter_project(project_id):
             if statut_action == "reevaluer_complements":
                 # Archiver et supprimer la fiche d'évaluation existante pour une nouvelle évaluation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+                if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réévaluation après compléments)")
                         archive = archiver_fiche(fiche_existante, "reevaluation_apres_complements", username)
                         if archive:
-                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                            print(f"✅ PDF archivé avec succès pour le projet {project_id}")
                         else:
                             print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                     except Exception as e:
@@ -953,7 +953,7 @@ def traiter_project(project_id):
 
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+                if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation après rejet)")
                         # Déterminer la raison selon qui a rejeté
@@ -966,7 +966,7 @@ def traiter_project(project_id):
 
                         archive = archiver_fiche(fiche_existante, raison, username)
                         if archive:
-                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                            print(f"✅ PDF archivé avec succès pour le projet {project_id}")
                         else:
                             print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                     except Exception as e:
@@ -1046,12 +1046,12 @@ def traiter_project(project_id):
 
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+                if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation par SecretariatSCT)")
                         archive = archiver_fiche(fiche_existante, "reassignation_par_secretariat", username)
                         if archive:
-                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                            print(f"✅ PDF archivé avec succès pour le projet {project_id}")
                         else:
                             print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                     except Exception as e:
