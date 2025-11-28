@@ -8,6 +8,7 @@ import sys
 import json
 from datetime import datetime
 from models import db, Project, FicheEvaluation, FicheEvaluationArchive, DocumentProjet
+from utils.archivage import archiver_fiche
 
 # Import pdf_generator DGPPE depuis le dossier parent
 try:
@@ -674,26 +675,41 @@ def save_fiche_evaluation_brouillon(project_id):
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['DELETE'])
 def delete_fiche_evaluation(project_id):
-    """Suppression d'une fiche d'évaluation"""
+    """Suppression d'une fiche d'évaluation (avec archivage automatique)"""
     try:
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-        
+
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
-        
+
+        # Archiver avant suppression si la fiche a du contenu
+        username = request.headers.get('X-Username', 'system')
+        if fiche.score_total and fiche.score_total > 0:
+            try:
+                print(f"[INFO] Archivage de la fiche pour le projet {project_id} (suppression manuelle)")
+                archive = archiver_fiche(fiche, "suppression_manuelle", username)
+                if archive:
+                    print(f"✅ Fiche archivée (version {archive.version}) avant suppression")
+                else:
+                    print(f"⚠️ Échec de l'archivage, suppression annulée")
+                    return jsonify({'error': 'Échec de l\'archivage de la fiche'}), 500
+            except Exception as e:
+                print(f"❌ Erreur lors de l'archivage: {e}")
+                return jsonify({'error': f'Erreur lors de l\'archivage: {str(e)}'}), 500
+
         # Supprimer le fichier PDF s'il existe
         if fiche.fichier_pdf:
             pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
             pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
             if os.path.exists(pdf_path):
                 os.remove(pdf_path)
-        
+
         # Supprimer la fiche de la base
         db.session.delete(fiche)
         db.session.commit()
-        
-        return jsonify({'message': 'Fiche d\'évaluation supprimée avec succès'}), 200
-        
+
+        return jsonify({'message': 'Fiche d\'évaluation archivée et supprimée avec succès'}), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500

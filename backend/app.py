@@ -6,8 +6,9 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, FicheEvaluationArchive, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage
 from flask_cors import CORS
+from utils.archivage import archiver_fiche
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
@@ -144,79 +145,6 @@ def get_statut_soumissionnaire(projet):
     else:
         # Tous les autres statuts internes = "en instruction"
         return "en instruction"
-
-# ============ FONCTIONS HELPERS POUR L'ARCHIVAGE DES FICHES ============
-
-def archiver_fiche(fiche, raison, archive_par):
-    """
-    Archive une fiche d'évaluation avant modification ou réassignation
-
-    Args:
-        fiche: Instance FicheEvaluation à archiver
-        raison: Raison de l'archivage ("modification_secretariat", "reassignation", etc.)
-        archive_par: Username de la personne qui déclenche l'archivage
-
-    Returns:
-        FicheEvaluationArchive: L'archive créée
-    """
-    try:
-        # Compter les versions existantes pour ce projet
-        versions_existantes = FicheEvaluationArchive.query.filter_by(
-            project_id=fiche.project_id
-        ).count()
-
-        # Créer l'archive
-        archive = FicheEvaluationArchive(
-            fiche_id_originale=fiche.id,
-            project_id=fiche.project_id,
-            raison_archivage=raison,
-            archive_par=archive_par,
-            version=versions_existantes + 1,
-
-            # Copier toutes les données de la fiche
-            evaluateur_nom=fiche.evaluateur_nom,
-            date_evaluation_originale=fiche.date_evaluation,
-            reference_fiche=fiche.reference_fiche,
-
-            # Copier tous les scores et descriptions
-            pertinence_score=fiche.pertinence_score,
-            pertinence_description=fiche.pertinence_description,
-            alignement_score=fiche.alignement_score,
-            alignement_description=fiche.alignement_description,
-            activites_couts_score=fiche.activites_couts_score,
-            activites_couts_description=fiche.activites_couts_description,
-            equite_score=fiche.equite_score,
-            equite_description=fiche.equite_description,
-            viabilite_score=fiche.viabilite_score,
-            viabilite_description=fiche.viabilite_description,
-            rentabilite_score=fiche.rentabilite_score,
-            rentabilite_description=fiche.rentabilite_description,
-            benefices_strategiques_score=fiche.benefices_strategiques_score,
-            benefices_strategiques_description=fiche.benefices_strategiques_description,
-            perennite_score=fiche.perennite_score,
-            perennite_description=fiche.perennite_description,
-            avantages_intangibles_score=fiche.avantages_intangibles_score,
-            avantages_intangibles_description=fiche.avantages_intangibles_description,
-            faisabilite_score=fiche.faisabilite_score,
-            faisabilite_description=fiche.faisabilite_description,
-            ppp_score=fiche.ppp_score,
-            ppp_description=fiche.ppp_description,
-            impact_environnemental_score=fiche.impact_environnemental_score,
-            impact_environnemental_description=fiche.impact_environnemental_description,
-
-            score_total=fiche.score_total,
-            proposition=fiche.proposition,
-            recommandations=fiche.recommandations
-        )
-
-        db.session.add(archive)
-        db.session.flush()  # Pour obtenir l'ID de l'archive
-
-        return archive
-
-    except Exception as e:
-        print(f"Erreur lors de l'archivage de la fiche: {e}")
-        return None
 
 # ============ FONCTIONS HELPERS POUR LES NOTIFICATIONS ============
 
@@ -853,19 +781,25 @@ def traiter_project(project_id):
 
             # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-            if fiche_existante:
+            if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
                 try:
-                    print(f"[INFO] Tentative d'archivage de la fiche pour le projet {project_id} (assignation)")
-                    # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                    success = _archiver_fiche_evaluation(fiche_existante, p, username)
-                    if success:
-                        print(f"[INFO] Fiche archivée avec succès pour le projet {project_id}")
+                    print(f"[INFO] Archivage de la fiche pour le projet {project_id} (assignation/réassignation)")
+                    # Déterminer la raison selon le contexte
+                    if p.statut in ["soumis", "en attente d'assignation"]:
+                        raison = "assignation_initiale"
                     else:
-                        print(f"[ATTENTION] L'archivage a retourné False pour le projet {project_id}")
+                        raison = "reassignation_avant_hierarchie"
+
+                    archive = archiver_fiche(fiche_existante, raison, username)
+                    if archive:
+                        print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                    else:
+                        print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                 except Exception as e:
-                    print(f"[ERREUR] Échec de l'archivage de la fiche: {e}")
+                    print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
                     import traceback
                     traceback.print_exc()
+
                 # Supprimer la fiche de la base de données
                 print(f"[INFO] Suppression de la fiche de la base de données pour le projet {project_id}")
                 db.session.delete(fiche_existante)
@@ -896,20 +830,18 @@ def traiter_project(project_id):
 
             # Archiver et supprimer la fiche d'évaluation existante
             fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-            if fiche_existante:
+            if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
                 try:
-                    print(f"[INFO] Tentative d'archivage de la fiche pour le projet {project_id}")
-                    # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                    success = _archiver_fiche_evaluation(fiche_existante, p, username)
-                    if success:
-                        print(f"[INFO] Fiche archivée avec succès pour le projet {project_id}")
+                    print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation explicite)")
+                    archive = archiver_fiche(fiche_existante, "reassignation_avant_hierarchie", username)
+                    if archive:
+                        print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
                     else:
-                        print(f"[ATTENTION] L'archivage a retourné False pour le projet {project_id}")
+                        print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                 except Exception as e:
-                    print(f"[ERREUR] Échec de l'archivage de la fiche: {e}")
+                    print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
                     import traceback
                     traceback.print_exc()
-                    # Continuer même si l'archivage échoue
 
                 # Supprimer la fiche de la base de données
                 print(f"[INFO] Suppression de la fiche de la base de données pour le projet {project_id}")
@@ -965,9 +897,22 @@ def traiter_project(project_id):
         elif "statut_action" in data and "validation_secretariat" not in data:
             statut_action = data.get("statut_action")
             if statut_action == "reevaluer_complements":
-                # Supprimer la fiche d'évaluation existante pour une nouvelle évaluation
+                # Archiver et supprimer la fiche d'évaluation existante pour une nouvelle évaluation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante:
+                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+                    try:
+                        print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réévaluation après compléments)")
+                        archive = archiver_fiche(fiche_existante, "reevaluation_apres_complements", username)
+                        if archive:
+                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                        else:
+                            print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
+                    except Exception as e:
+                        print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                    # Supprimer la fiche de la base de données
                     db.session.delete(fiche_existante)
 
                 # Réinitialiser l'évaluation préalable
@@ -1008,17 +953,24 @@ def traiter_project(project_id):
 
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante:
+                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
                     try:
-                        # Archiver la fiche dans la documenthèque (invisible pour le soumissionnaire)
-                        success = _archiver_fiche_evaluation(fiche_existante, p, username)
-                        if success:
-                            print(f"[ARCHIVAGE] Fiche d'évaluation archivée avec succès pour le projet {project_id}")
+                        print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation après rejet)")
+                        # Déterminer la raison selon qui a rejeté
+                        if p.avis_presidencesct == "rejeté":
+                            raison = "reassignation_apres_rejet_presidencesct"
+                        elif p.decision_finale == "infirme":
+                            raison = "reassignation_apres_rejet_comite"
                         else:
-                            print(f"[WARNING] L'archivage de la fiche d'évaluation a échoué pour le projet {project_id}")
+                            raison = "reassignation_apres_rejet"
+
+                        archive = archiver_fiche(fiche_existante, raison, username)
+                        if archive:
+                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                        else:
+                            print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
                     except Exception as e:
-                        # En cas d'erreur d'archivage, logger l'erreur mais continuer la réassignation
-                        print(f"[WARNING] Erreur lors de l'archivage de la fiche d'évaluation pour le projet {project_id}: {e}")
+                        print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
                         import traceback
                         traceback.print_exc()
 
@@ -1092,9 +1044,22 @@ def traiter_project(project_id):
                 if not to:
                     return jsonify({"error": "evaluateur_nom requis pour la réassignation"}), 400
 
-                # Supprimer la fiche d'évaluation existante lors d'une réassignation
+                # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
                 fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
-                if fiche_existante:
+                if fiche_existante and fiche_existante.score_total and fiche_existante.score_total > 0:
+                    try:
+                        print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation par SecretariatSCT)")
+                        archive = archiver_fiche(fiche_existante, "reassignation_par_secretariat", username)
+                        if archive:
+                            print(f"✅ Fiche archivée (version {archive.version}) pour le projet {project_id}")
+                        else:
+                            print(f"⚠️ Échec de l'archivage pour le projet {project_id}")
+                    except Exception as e:
+                        print(f"❌ Erreur lors de l'archivage de la fiche: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                    # Supprimer la fiche de la base de données
                     db.session.delete(fiche_existante)
 
                 p.validation_secretariat = "reassigne"
