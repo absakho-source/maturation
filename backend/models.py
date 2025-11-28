@@ -313,6 +313,92 @@ class FicheEvaluation(db.Model):
             'fichier_pdf': self.fichier_pdf
         }
 
+
+class FicheEvaluationArchive(db.Model):
+    """
+    Archive des fiches d'évaluation pour traçabilité
+    Une copie est créée à chaque modification ou réassignation
+    """
+    __tablename__ = "fiches_evaluation_archive"
+
+    id = db.Column(db.Integer, primary_key=True)
+    fiche_id_originale = db.Column(db.Integer, nullable=False)  # ID de la fiche source
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+
+    # Métadonnées d'archivage
+    date_archivage = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    raison_archivage = db.Column(db.String(255))  # "modification_secretariat", "reassignation", etc.
+    archive_par = db.Column(db.String(100))  # Nom d'utilisateur qui a déclenché l'archivage
+    version = db.Column(db.Integer, default=1)  # Numéro de version
+
+    # Données de la fiche archivée (JSON complet)
+    evaluateur_nom = db.Column(db.String(100))
+    date_evaluation_originale = db.Column(db.DateTime)
+    reference_fiche = db.Column(db.String(50))
+
+    # Scores et descriptions (copie exacte de FicheEvaluation)
+    pertinence_score = db.Column(db.Integer)
+    pertinence_description = db.Column(db.Text)
+    alignement_score = db.Column(db.Integer)
+    alignement_description = db.Column(db.Text)
+    activites_couts_score = db.Column(db.Integer)
+    activites_couts_description = db.Column(db.Text)
+    equite_score = db.Column(db.Integer)
+    equite_description = db.Column(db.Text)
+    viabilite_score = db.Column(db.Integer)
+    viabilite_description = db.Column(db.Text)
+    rentabilite_score = db.Column(db.Integer)
+    rentabilite_description = db.Column(db.Text)
+    benefices_strategiques_score = db.Column(db.Integer)
+    benefices_strategiques_description = db.Column(db.Text)
+    perennite_score = db.Column(db.Integer)
+    perennite_description = db.Column(db.Text)
+    avantages_intangibles_score = db.Column(db.Integer)
+    avantages_intangibles_description = db.Column(db.Text)
+    faisabilite_score = db.Column(db.Integer)
+    faisabilite_description = db.Column(db.Text)
+    ppp_score = db.Column(db.Integer)
+    ppp_description = db.Column(db.Text)
+    impact_environnemental_score = db.Column(db.Integer)
+    impact_environnemental_description = db.Column(db.Text)
+
+    score_total = db.Column(db.Integer)
+    proposition = db.Column(db.String(100))
+    recommandations = db.Column(db.Text)
+
+    def to_dict(self):
+        """Convertit l'archive en dictionnaire"""
+        return {
+            'id': self.id,
+            'fiche_id_originale': self.fiche_id_originale,
+            'project_id': self.project_id,
+            'date_archivage': self.date_archivage.isoformat() if self.date_archivage else None,
+            'raison_archivage': self.raison_archivage,
+            'archive_par': self.archive_par,
+            'version': self.version,
+            'evaluateur_nom': self.evaluateur_nom,
+            'date_evaluation_originale': self.date_evaluation_originale.isoformat() if self.date_evaluation_originale else None,
+            'reference_fiche': self.reference_fiche,
+            'score_total': self.score_total,
+            'proposition': self.proposition,
+            'recommandations': self.recommandations,
+            'criteres': {
+                'pertinence': {'score': self.pertinence_score, 'description': self.pertinence_description},
+                'alignement': {'score': self.alignement_score, 'description': self.alignement_description},
+                'activites_couts': {'score': self.activites_couts_score, 'description': self.activites_couts_description},
+                'equite': {'score': self.equite_score, 'description': self.equite_description},
+                'viabilite': {'score': self.viabilite_score, 'description': self.viabilite_description},
+                'rentabilite': {'score': self.rentabilite_score, 'description': self.rentabilite_description},
+                'benefices_strategiques': {'score': self.benefices_strategiques_score, 'description': self.benefices_strategiques_description},
+                'perennite': {'score': self.perennite_score, 'description': self.perennite_description},
+                'avantages_intangibles': {'score': self.avantages_intangibles_score, 'description': self.avantages_intangibles_description},
+                'faisabilite': {'score': self.faisabilite_score, 'description': self.faisabilite_description},
+                'ppp': {'score': self.ppp_score, 'description': self.ppp_description},
+                'impact_environnemental': {'score': self.impact_environnemental_score, 'description': self.impact_environnemental_description}
+            }
+        }
+
+
 class DocumentProjet(db.Model):
     """Modèle pour gérer les documents supplémentaires ajoutés à un projet après sa soumission"""
     __tablename__ = "documents_projet"
