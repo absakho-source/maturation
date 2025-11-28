@@ -145,6 +145,79 @@ def get_statut_soumissionnaire(projet):
         # Tous les autres statuts internes = "en instruction"
         return "en instruction"
 
+# ============ FONCTIONS HELPERS POUR L'ARCHIVAGE DES FICHES ============
+
+def archiver_fiche(fiche, raison, archive_par):
+    """
+    Archive une fiche d'évaluation avant modification ou réassignation
+
+    Args:
+        fiche: Instance FicheEvaluation à archiver
+        raison: Raison de l'archivage ("modification_secretariat", "reassignation", etc.)
+        archive_par: Username de la personne qui déclenche l'archivage
+
+    Returns:
+        FicheEvaluationArchive: L'archive créée
+    """
+    try:
+        # Compter les versions existantes pour ce projet
+        versions_existantes = FicheEvaluationArchive.query.filter_by(
+            project_id=fiche.project_id
+        ).count()
+
+        # Créer l'archive
+        archive = FicheEvaluationArchive(
+            fiche_id_originale=fiche.id,
+            project_id=fiche.project_id,
+            raison_archivage=raison,
+            archive_par=archive_par,
+            version=versions_existantes + 1,
+
+            # Copier toutes les données de la fiche
+            evaluateur_nom=fiche.evaluateur_nom,
+            date_evaluation_originale=fiche.date_evaluation,
+            reference_fiche=fiche.reference_fiche,
+
+            # Copier tous les scores et descriptions
+            pertinence_score=fiche.pertinence_score,
+            pertinence_description=fiche.pertinence_description,
+            alignement_score=fiche.alignement_score,
+            alignement_description=fiche.alignement_description,
+            activites_couts_score=fiche.activites_couts_score,
+            activites_couts_description=fiche.activites_couts_description,
+            equite_score=fiche.equite_score,
+            equite_description=fiche.equite_description,
+            viabilite_score=fiche.viabilite_score,
+            viabilite_description=fiche.viabilite_description,
+            rentabilite_score=fiche.rentabilite_score,
+            rentabilite_description=fiche.rentabilite_description,
+            benefices_strategiques_score=fiche.benefices_strategiques_score,
+            benefices_strategiques_description=fiche.benefices_strategiques_description,
+            perennite_score=fiche.perennite_score,
+            perennite_description=fiche.perennite_description,
+            avantages_intangibles_score=fiche.avantages_intangibles_score,
+            avantages_intangibles_description=fiche.avantages_intangibles_description,
+            faisabilite_score=fiche.faisabilite_score,
+            faisabilite_description=fiche.faisabilite_description,
+            ppp_score=fiche.ppp_score,
+            ppp_description=fiche.ppp_description,
+            impact_environnemental_score=fiche.impact_environnemental_score,
+            impact_environnemental_description=fiche.impact_environnemental_description,
+
+            score_total=fiche.score_total,
+            proposition=fiche.proposition,
+            recommandations=fiche.recommandations
+        )
+
+        db.session.add(archive)
+        db.session.flush()  # Pour obtenir l'ID de l'archive
+
+        return archive
+
+    except Exception as e:
+        print(f"Erreur lors de l'archivage de la fiche: {e}")
+        return None
+
 # ============ FONCTIONS HELPERS POUR LES NOTIFICATIONS ============
 
 def create_notification_for_user(user_id, notif_type, titre, message, project_id=None, lien=None, priorite_email=False):

@@ -7,7 +7,7 @@ import os
 import sys
 import json
 from datetime import datetime
-from models import db, Project, FicheEvaluation, DocumentProjet
+from models import db, Project, FicheEvaluation, FicheEvaluationArchive, DocumentProjet
 
 # Import pdf_generator DGPPE depuis le dossier parent
 try:
@@ -233,6 +233,63 @@ def create_or_update_fiche_evaluation(project_id):
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
 
         is_update = fiche is not None
+
+        # ARCHIVAGE AUTOMATIQUE lors de modification par SecretariatSCT
+        if is_update and fiche:
+            # Détermine qui modifie (username depuis le header ou depuis les données)
+            modificateur = request.headers.get('X-Username', data.get('evaluateur_nom', 'secretariatsct'))
+
+            # Si c'est une modification (pas une création initiale), archiver l'ancienne version
+            # On archive uniquement si le projet a déjà été évalué
+            if fiche.score_total and fiche.score_total > 0:
+                try:
+                    # Compter les versions existantes
+                    versions_existantes = FicheEvaluationArchive.query.filter_by(project_id=project_id).count()
+
+                    # Créer l'archive
+                    archive = FicheEvaluationArchive(
+                        fiche_id_originale=fiche.id,
+                        project_id=fiche.project_id,
+                        raison_archivage='modification_secretariat',
+                        archive_par=modificateur,
+                        version=versions_existantes + 1,
+                        evaluateur_nom=fiche.evaluateur_nom,
+                        date_evaluation_originale=fiche.date_evaluation,
+                        reference_fiche=fiche.reference_fiche,
+                        pertinence_score=fiche.pertinence_score,
+                        pertinence_description=fiche.pertinence_description,
+                        alignement_score=fiche.alignement_score,
+                        alignement_description=fiche.alignement_description,
+                        activites_couts_score=fiche.activites_couts_score,
+                        activites_couts_description=fiche.activites_couts_description,
+                        equite_score=fiche.equite_score,
+                        equite_description=fiche.equite_description,
+                        viabilite_score=fiche.viabilite_score,
+                        viabilite_description=fiche.viabilite_description,
+                        rentabilite_score=fiche.rentabilite_score,
+                        rentabilite_description=fiche.rentabilite_description,
+                        benefices_strategiques_score=fiche.benefices_strategiques_score,
+                        benefices_strategiques_description=fiche.benefices_strategiques_description,
+                        perennite_score=fiche.perennite_score,
+                        perennite_description=fiche.perennite_description,
+                        avantages_intangibles_score=fiche.avantages_intangibles_score,
+                        avantages_intangibles_description=fiche.avantages_intangibles_description,
+                        faisabilite_score=fiche.faisabilite_score,
+                        faisabilite_description=fiche.faisabilite_description,
+                        ppp_score=fiche.ppp_score,
+                        ppp_description=fiche.ppp_description,
+                        impact_environnemental_score=fiche.impact_environnemental_score,
+                        impact_environnemental_description=fiche.impact_environnemental_description,
+                        score_total=fiche.score_total,
+                        proposition=fiche.proposition,
+                        recommandations=fiche.recommandations
+                    )
+                    db.session.add(archive)
+                    db.session.flush()
+                    print(f"✅ Fiche archivée (version {archive.version}) avant modification")
+                except Exception as e:
+                    print(f"⚠️ Erreur archivage fiche: {e}")
+                    # Continue quand même pour ne pas bloquer la modification
 
         if not fiche:
             # Générer une référence automatique si absente
@@ -718,3 +775,50 @@ def get_fiches_evaluation_stats():
         
     except Exception as e:
         return jsonify({'error': f'Erreur lors du calcul des statistiques: {str(e)}'}), 500
+
+
+@evaluation_bp.route('/api/projects/<int:project_id>/fiches-archives', methods=['GET'])
+def get_fiches_archives(project_id):
+    """
+    Récupère l'historique des fiches d'évaluation archivées pour un projet
+    Accessible uniquement aux membres du Comité (admin, secretariatsct, presidencesct, presidencecomite)
+    """
+    try:
+        # Vérifier les permissions (membres du comité uniquement)
+        # Note: Dans une vraie app, vérifier le rôle de l'utilisateur depuis le token/session
+        # Pour l'instant, on fait confiance au header X-Role
+        role = request.headers.get('X-Role', '')
+        roles_autorises = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite']
+
+        if role not in roles_autorises:
+            return jsonify({
+                'error': 'Accès refusé',
+                'message': 'Seuls les membres du Comité peuvent consulter l\'historique des fiches'
+            }), 403
+
+        # Vérifier que le projet existe
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Projet non trouvé'}), 404
+
+        # Récupérer toutes les archives pour ce projet, triées par version décroissante
+        archives = FicheEvaluationArchive.query.filter_by(
+            project_id=project_id
+        ).order_by(FicheEvaluationArchive.version.desc()).all()
+
+        # Récupérer aussi la fiche actuelle
+        fiche_actuelle = FicheEvaluation.query.filter_by(project_id=project_id).first()
+
+        return jsonify({
+            'project_id': project_id,
+            'numero_projet': project.numero_projet,
+            'titre_projet': project.titre,
+            'total_versions': len(archives),
+            'fiche_actuelle': fiche_actuelle.to_dict() if fiche_actuelle else None,
+            'archives': [archive.to_dict() for archive in archives]
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors de la récupération des archives: {str(e)}'}), 500
