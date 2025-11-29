@@ -4,13 +4,6 @@
 # Créer les dossiers nécessaires
 mkdir -p uploads static/uploads
 
-# Initialiser la base de données si elle n'existe pas
-python -c "from db import db; from app import app;
-with app.app_context():
-    db.create_all();
-    print('Base de données initialisée')"
-
-# Les migrations sont gérées automatiquement par SQLAlchemy avec db.create_all()
-
 # Lancer l'application
+# Les migrations sont gérées automatiquement par ensure_sqlite_columns() dans app.py
 python app.py
