@@ -12,20 +12,16 @@ with app.app_context():
 
 # IMPORTANT: Exécuter les migrations AVANT l'initialisation des données
 echo "[MIGRATION] Exécution des migrations de schéma..."
-[ -f add_missing_user_columns.py ] && python add_missing_user_columns.py || echo "[SKIP] add_missing_user_columns.py non trouvé"
-python add_visibility_column.py
+[ -f migrations/add_must_change_password_column.py ] && python migrations/add_must_change_password_column.py || echo "[SKIP] add_must_change_password_column.py non trouvé"
+[ -f migrations/add_project_versions_table.py ] && python migrations/add_project_versions_table.py || echo "[SKIP] add_project_versions_table.py non trouvé"
 
 # Initialiser les ministères
 echo "[INIT] Initialisation des ministères..."
-python create_ministeres_table.py
+[ -f migrations/create_ministeres_table.py ] && python migrations/create_ministeres_table.py || echo "[SKIP] create_ministeres_table.py non trouvé"
 
 # Initialiser les données de démonstration (après les migrations)
 echo "[INIT] Initialisation des données de démonstration..."
-python init_demo_data.py
-
-# Exécuter les migrations de données
-echo "[DATA MIGRATION] Correction des données existantes..."
-echo "oui" | python fix_stale_decision_finale.py || echo "[WARNING] fix_stale_decision_finale.py n'a pas corrigé de données (normal si aucune donnée à corriger)"
+[ -f migrations/init_demo_data.py ] && python migrations/init_demo_data.py || echo "[SKIP] init_demo_data.py non trouvé"
 
 # Lancer l'application
 python app.py
