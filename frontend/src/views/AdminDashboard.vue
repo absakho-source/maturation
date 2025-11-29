@@ -178,8 +178,25 @@
             </div>
           </div>
 
-          <!-- Filtres -->
-          <div class="filters-container">
+          <!-- Barre de recherche -->
+          <div class="search-bar">
+            <input
+              type="text"
+              v-model="searchQuery"
+              @input="applyFilters"
+              placeholder="🔍 Rechercher par titre, numéro de projet, auteur, secteur..."
+              class="search-input"
+            />
+          </div>
+
+          <!-- Filtres compacts -->
+          <div class="filters-compact">
+            <button @click="toggleFilters" class="btn-toggle-filters">
+              {{ showFilters ? '▲ Masquer les filtres' : '▼ Afficher les filtres' }}
+            </button>
+          </div>
+
+          <div v-if="showFilters" class="filters-container">
             <div class="filter-group">
               <label>Année:</label>
               <select v-model="selectedYear" @change="applyFilters">
@@ -216,44 +233,116 @@
             <button @click="resetFilters" class="btn-reset">Réinitialiser</button>
           </div>
 
-          <!-- Tableau des projets -->
-          <div class="projects-table-container">
-            <table class="projects-table">
-              <thead>
-                <tr>
-                  <th>N° Projet</th>
-                  <th>Titre</th>
-                  <th>Auteur</th>
-                  <th>Secteur</th>
-                  <th>Coût (FCFA)</th>
-                  <th>Statut</th>
-                  <th>Évaluateur</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="project in filteredProjects" :key="project.id">
-                  <td><strong class="project-number-table">{{ project.numero_projet || 'N/A' }}</strong></td>
-                  <td class="project-title">{{ project.titre }}</td>
-                  <td>{{ project.auteur_nom || 'N/A' }}</td>
-                  <td>{{ project.secteur || 'N/A' }}</td>
-                  <td class="project-cost">{{ formatCurrency(project.cout_estimatif) }}</td>
-                  <td>
+          <!-- Vue cards pour mobile, tableau pour desktop -->
+          <div class="projects-list-container">
+            <!-- Vue en cartes (mobile) -->
+            <div class="projects-cards mobile-only">
+              <div v-for="project in paginatedProjects" :key="project.id" class="project-card">
+                <div class="card-header">
+                  <div class="card-title-row">
+                    <strong class="project-number">{{ project.numero_projet || 'N/A' }}</strong>
                     <span class="badge" :class="getStatusClass(project.statut)">{{ project.statut }}</span>
-                  </td>
-                  <td>{{ project.evaluateur_nom || '-' }}</td>
-                  <td>{{ formatDate(project.date_soumission) }}</td>
-                  <td>
-                    <button @click="viewProject(project.id)" class="btn-view-small">👁️</button>
-                    <button @click="deleteProject(project)" class="btn-delete-small">🗑️</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            
+                  </div>
+                  <h3 class="card-title">{{ project.titre }}</h3>
+                </div>
+                <div class="card-body">
+                  <div class="card-info-row">
+                    <span class="info-label">Auteur:</span>
+                    <span class="info-value">{{ project.auteur_nom || 'N/A' }}</span>
+                  </div>
+                  <div class="card-info-row">
+                    <span class="info-label">Secteur:</span>
+                    <span class="info-value">{{ project.secteur || 'N/A' }}</span>
+                  </div>
+                  <div class="card-info-row">
+                    <span class="info-label">Coût:</span>
+                    <span class="info-value">{{ formatCurrency(project.cout_estimatif) }}</span>
+                  </div>
+                  <div class="card-info-row">
+                    <span class="info-label">Évaluateur:</span>
+                    <span class="info-value">{{ project.evaluateur_nom || '-' }}</span>
+                  </div>
+                  <div class="card-info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">{{ formatDate(project.date_soumission) }}</span>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <button @click="viewProject(project.id)" class="btn-view">👁️ Voir</button>
+                  <button @click="deleteProject(project)" class="btn-delete">🗑️ Supprimer</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vue en tableau (desktop) -->
+            <div class="projects-table-container desktop-only">
+              <table class="projects-table">
+                <thead>
+                  <tr>
+                    <th>N° Projet</th>
+                    <th>Titre</th>
+                    <th>Auteur</th>
+                    <th>Secteur</th>
+                    <th>Coût (FCFA)</th>
+                    <th>Statut</th>
+                    <th>Évaluateur</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="project in paginatedProjects" :key="project.id">
+                    <td><strong class="project-number-table">{{ project.numero_projet || 'N/A' }}</strong></td>
+                    <td class="project-title">{{ project.titre }}</td>
+                    <td>{{ project.auteur_nom || 'N/A' }}</td>
+                    <td>{{ project.secteur || 'N/A' }}</td>
+                    <td class="project-cost">{{ formatCurrency(project.cout_estimatif) }}</td>
+                    <td>
+                      <span class="badge" :class="getStatusClass(project.statut)">{{ project.statut }}</span>
+                    </td>
+                    <td>{{ project.evaluateur_nom || '-' }}</td>
+                    <td>{{ formatDate(project.date_soumission) }}</td>
+                    <td>
+                      <button @click="viewProject(project.id)" class="btn-view-small">👁️</button>
+                      <button @click="deleteProject(project)" class="btn-delete-small">🗑️</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             <div v-if="filteredProjects.length === 0" class="empty-state">
               <p>Aucun projet trouvé avec les filtres sélectionnés</p>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="filteredProjects.length > 0" class="pagination">
+            <div class="pagination-info">
+              Affichage {{ ((currentPage - 1) * itemsPerPage) + 1 }} à {{ Math.min(currentPage * itemsPerPage, filteredProjects.length) }} sur {{ filteredProjects.length }} projets
+            </div>
+            <div class="pagination-controls">
+              <button @click="previousPage" :disabled="currentPage === 1" class="btn-page">← Précédent</button>
+              <span class="page-numbers">
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  @click="goToPage(page)"
+                  :class="['btn-page-number', { active: page === currentPage }]"
+                >
+                  {{ page }}
+                </button>
+              </span>
+              <button @click="nextPage" :disabled="currentPage === totalPages" class="btn-page">Suivant →</button>
+            </div>
+            <div class="items-per-page">
+              <label>Par page:</label>
+              <select v-model="itemsPerPage" @change="resetPagination">
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
             </div>
           </div>
         </div>
@@ -478,16 +567,48 @@ export default {
         "Nord (Saint-Louis)",
         "Nord-Est (Matam)",
       ],
+
+      // Recherche et pagination
+      searchQuery: '',
+      showFilters: false,
+      currentPage: 1,
+      itemsPerPage: 25,
     };
   },
-  
+
+  computed: {
+    paginatedProjects() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredProjects.slice(start, end);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredProjects.length / this.itemsPerPage);
+    },
+    visiblePages() {
+      const pages = [];
+      const maxVisible = 5;
+      let start = Math.max(1, this.currentPage - 2);
+      let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+      if (end - start < maxVisible - 1) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+  },
+
   mounted() {
     this.loadUsers();
     this.loadAllProjects();
     this.loadProjects();
     this.loadMetrics();
   },
-  
+
   methods: {
     // ============ Gestion des utilisateurs ============
     async loadUsers() {
@@ -588,8 +709,13 @@ export default {
             body: JSON.stringify({
               username: this.formUser.username,
               display_name: this.formUser.display_name,
+              email: this.formUser.email,
+              telephone: this.formUser.telephone,
+              fonction: this.formUser.fonction,
+              nom_structure: this.formUser.nom_structure,
               password: this.formUser.password,
-              role: this.formUser.role
+              role: this.formUser.role,
+              created_by_admin: true  // Indique que le compte est créé par l'admin
             })
           });
         }
@@ -693,6 +819,19 @@ export default {
 
     applyFilters() {
       this.filteredProjects = this.allProjects.filter(project => {
+        // Filtre par recherche textuelle
+        let searchMatch = true;
+        if (this.searchQuery && this.searchQuery.trim()) {
+          const query = this.searchQuery.trim().toLowerCase();
+          searchMatch = (
+            (project.titre && project.titre.toLowerCase().includes(query)) ||
+            (project.numero_projet && project.numero_projet.toLowerCase().includes(query)) ||
+            (project.auteur_nom && project.auteur_nom.toLowerCase().includes(query)) ||
+            (project.secteur && project.secteur.toLowerCase().includes(query)) ||
+            (project.evaluateur_nom && project.evaluateur_nom.toLowerCase().includes(query))
+          );
+        }
+
         // Filtre par année
         let yearMatch = true;
         if (this.selectedYear) {
@@ -708,8 +847,11 @@ export default {
         const statutMatch = !this.selectedStatut || project.statut === this.selectedStatut;
         const poleMatch = !this.selectedPole || (project.poles && project.poles.includes(this.selectedPole));
 
-        return yearMatch && secteurMatch && statutMatch && poleMatch;
+        return searchMatch && yearMatch && secteurMatch && statutMatch && poleMatch;
       });
+
+      // Réinitialiser à la première page après filtrage
+      this.currentPage = 1;
     },
 
     resetFilters() {
@@ -717,7 +859,34 @@ export default {
       this.selectedSecteur = "";
       this.selectedStatut = "";
       this.selectedPole = "";
+      this.searchQuery = "";
+      this.currentPage = 1;
       this.filteredProjects = [...this.allProjects];
+    },
+
+    toggleFilters() {
+      this.showFilters = !this.showFilters;
+    },
+
+    // Pagination methods
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+
+    goToPage(page) {
+      this.currentPage = page;
+    },
+
+    resetPagination() {
+      this.currentPage = 1;
     },
 
     countByStatus(statuses) {
@@ -1481,6 +1650,246 @@ export default {
   text-transform: uppercase;
 }
 
+/* ==================== RECHERCHE ET FILTRES ==================== */
+.search-bar {
+  margin-bottom: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--dgppe-primary);
+  box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+}
+
+.filters-compact {
+  margin-bottom: 16px;
+}
+
+.btn-toggle-filters {
+  padding: 10px 20px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-toggle-filters:hover {
+  background: #e5e7eb;
+}
+
+/* ==================== VUE EN CARTES (MOBILE) ==================== */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
+.projects-cards {
+  display: grid;
+  gap: 16px;
+}
+
+.project-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.project-number {
+  font-size: 14px;
+  color: var(--dgppe-primary);
+  font-weight: 700;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-body {
+  margin-bottom: 12px;
+}
+
+.card-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.info-value {
+  color: #1f2937;
+  text-align: right;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-view,
+.btn-delete {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-view {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.btn-view:hover {
+  background: var(--dgppe-primary-light);
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding: 16px 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-page {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-page:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: var(--dgppe-primary);
+}
+
+.btn-page:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-page-number {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 40px;
+  font-size: 14px;
+}
+
+.btn-page-number.active {
+  background: var(--dgppe-primary);
+  color: white;
+  border-color: var(--dgppe-primary);
+}
+
+.btn-page-number:hover:not(.active) {
+  background: #f3f4f6;
+}
+
+.items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.items-per-page label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.items-per-page select {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
 
 /* Modal */
 .modal-overlay {
@@ -1716,6 +2125,48 @@ export default {
   .financing-amount {
     font-size: 1.5rem;
   }
+
+  /* Responsive pour la page projets */
+  .mobile-only {
+    display: block !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .project-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat-item {
+    width: 100%;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pagination-controls {
+    order: 2;
+  }
+
+  .pagination-info {
+    order: 1;
+    text-align: center;
+  }
+
+  .items-per-page {
+    order: 3;
+    justify-content: center;
+  }
+
+  .page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1754,6 +2205,23 @@ export default {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  /* Responsive supplémentaire pour pagination */
+  .btn-page,
+  .btn-page-number {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 32px;
+  }
+
+  .pagination-info {
+    font-size: 12px;
+  }
+
+  .filters-container {
+    grid-template-columns: 1fr;
+    padding: 16px;
   }
 }
 

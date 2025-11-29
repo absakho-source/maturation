@@ -30,6 +30,7 @@ class User(db.Model):
     date_verification = db.Column(db.DateTime, nullable=True)  # Date de validation
     verifie_par = db.Column(db.String(100), nullable=True)  # Username du validateur
     date_creation = db.Column(db.DateTime, nullable=True)  # Date de création du compte
+    must_change_password = db.Column(db.Boolean, default=False)  # Doit changer le mot de passe à la première connexion
 
     # Champs pour le système de Point Focal
     is_point_focal = db.Column(db.Boolean, default=False)  # Est-ce un point focal ?

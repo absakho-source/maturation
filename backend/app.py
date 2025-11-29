@@ -1561,8 +1561,10 @@ def login():
             db.session.commit()
             return jsonify({"error": "Identifiant et mot de passe requis"}), 400
 
-        # Vérifier les identifiants
-        user = User.query.filter_by(username=username).first()
+        # Vérifier les identifiants (username OU email)
+        user = User.query.filter(
+            (User.username == username) | (User.email == username)
+        ).first()
 
         if not user or user.password != password:
             # Logger la tentative échouée
@@ -1622,7 +1624,8 @@ def login():
             "telephone": user.telephone if hasattr(user, 'telephone') else None,
             "statut_compte": user.statut_compte if hasattr(user, 'statut_compte') else 'actif',
             "is_point_focal": user.is_point_focal if hasattr(user, 'is_point_focal') else False,
-            "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None
+            "point_focal_organisme": user.point_focal_organisme if hasattr(user, 'point_focal_organisme') else None,
+            "must_change_password": user.must_change_password if hasattr(user, 'must_change_password') else False
         }), 200
 
     except Exception as e:
@@ -2453,6 +2456,7 @@ def create_user():
         display_name = data.get("display_name", "").strip()
 
         # Nouveaux champs pour la validation des comptes (système Institution)
+        email = data.get("email", "").strip()
         nom_complet = data.get("nom_complet", "").strip()
         telephone = data.get("telephone", "").strip()
         fonction = data.get("fonction", "").strip()
@@ -2466,6 +2470,9 @@ def create_user():
             nom_ministere = nom_ministere.strip()
         if tutelle_agence:
             tutelle_agence = tutelle_agence.strip()
+
+        # Vérifier si créé par un admin (donc doit changer le mot de passe)
+        created_by_admin = data.get("created_by_admin", False)
 
         if not username or not password or not role:
             return jsonify({"error": "Username, password et rôle sont requis"}), 400
@@ -2481,6 +2488,7 @@ def create_user():
             password=password,
             role=role,
             display_name=display_name,
+            email=email if email else None,
             nom_complet=nom_complet,
             telephone=telephone,
             fonction=fonction,
@@ -2491,7 +2499,8 @@ def create_user():
             nom_ministere=nom_ministere if nom_ministere else None,
             tutelle_agence=tutelle_agence if tutelle_agence else None,
             statut_compte='non_verifie',
-            date_creation=datetime.utcnow()
+            date_creation=datetime.utcnow(),
+            must_change_password=created_by_admin  # Si créé par admin, doit changer le mot de passe
         )
 
         db.session.add(new_user)
@@ -2583,11 +2592,47 @@ def delete_user(user_id):
     try:
         user = User.query.get_or_404(user_id)
         username = user.username
-        
+
         db.session.delete(user)
         db.session.commit()
-        
+
         return jsonify({"message": f"Utilisateur '{username}' supprimé avec succès"}), 200
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/change-password", methods=["POST"])
+def change_password():
+    """Changer le mot de passe (utilisé lors de la première connexion)"""
+    try:
+        data = request.get_json(silent=True) or {}
+        user_id = data.get("user_id")
+        old_password = data.get("old_password", "").strip()
+        new_password = data.get("new_password", "").strip()
+
+        if not user_id or not old_password or not new_password:
+            return jsonify({"error": "Tous les champs sont requis"}), 400
+
+        # Vérifier que le nouveau mot de passe est différent
+        if old_password == new_password:
+            return jsonify({"error": "Le nouveau mot de passe doit être différent de l'ancien"}), 400
+
+        # Trouver l'utilisateur
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "Utilisateur non trouvé"}), 404
+
+        # Vérifier l'ancien mot de passe
+        if user.password != old_password:
+            return jsonify({"error": "Ancien mot de passe incorrect"}), 401
+
+        # Mettre à jour le mot de passe et réinitialiser le flag
+        user.password = new_password
+        user.must_change_password = False
+        db.session.commit()
+
+        return jsonify({"message": "Mot de passe modifié avec succès"}), 200
     except Exception as e:
         db.session.rollback()
         import traceback; traceback.print_exc()
