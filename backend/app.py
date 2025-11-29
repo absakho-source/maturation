@@ -1690,32 +1690,62 @@ def get_connexion_logs():
         return jsonify({"error": str(e)}), 500
 
 def get_geolocation(ip_address):
-    """Récupère la géolocalisation d'une adresse IP via ipapi.co"""
+    """Récupère la géolocalisation d'une adresse IP via plusieurs APIs avec fallback"""
     try:
         # Pour les IPs locales en développement, retourner des données de test
         if ip_address in ['127.0.0.1', 'localhost', '::1'] or ip_address.startswith('192.168.') or ip_address.startswith('10.'):
             print(f"[GEOLOC] IP locale détectée: {ip_address} - Données de test retournées")
             return "Sénégal", "Dakar", "Dakar"
 
-        # Appel à l'API ipapi.co (gratuit, 30k requêtes/mois)
-        print(f"[GEOLOC] Appel API ipapi.co pour {ip_address}")
-        response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=3)
+        # Essayer d'abord ip-api.com (gratuit, 45 requêtes/minute sans clé API)
+        print(f"[GEOLOC] Tentative 1: ip-api.com pour {ip_address}")
+        try:
+            response = requests.get(f'http://ip-api.com/json/{ip_address}?fields=status,country,regionName,city', timeout=3)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    pays = data.get('country', None)
+                    ville = data.get('city', None)
+                    region = data.get('regionName', None)
+                    print(f"[GEOLOC] ip-api.com - Données reçues: pays={pays}, ville={ville}, region={region}")
+                    return pays, ville, region
+                else:
+                    print(f"[GEOLOC] ip-api.com - Échec: {data.get('message', 'Unknown error')}")
+        except Exception as e:
+            print(f"[GEOLOC] ip-api.com - Exception: {e}")
 
-        if response.status_code == 200:
-            data = response.json()
-            pays = data.get('country_name', None)
-            ville = data.get('city', None)
-            region = data.get('region', None)
-            print(f"[GEOLOC] Données reçues: pays={pays}, ville={ville}, region={region}")
-            return pays, ville, region
-        else:
-            print(f"[GEOLOC] Erreur HTTP {response.status_code}: {response.text[:100]}")
+        # Fallback: ipapi.co (30k requêtes/mois)
+        print(f"[GEOLOC] Tentative 2: ipapi.co pour {ip_address}")
+        try:
+            response = requests.get(f'https://ipapi.co/{ip_address}/json/', timeout=3)
+            if response.status_code == 200:
+                data = response.json()
+                # Vérifier si c'est une erreur (ipapi.co retourne parfois 200 avec un message d'erreur)
+                if 'error' not in data:
+                    pays = data.get('country_name', None)
+                    ville = data.get('city', None)
+                    region = data.get('region', None)
+                    print(f"[GEOLOC] ipapi.co - Données reçues: pays={pays}, ville={ville}, region={region}")
+                    return pays, ville, region
+                else:
+                    print(f"[GEOLOC] ipapi.co - Erreur: {data.get('reason', 'Unknown')}")
+            else:
+                print(f"[GEOLOC] ipapi.co - HTTP {response.status_code}")
+        except Exception as e:
+            print(f"[GEOLOC] ipapi.co - Exception: {e}")
+
+        # Fallback final: identifier le pays par IP range (basique)
+        # IPs sénégalaises commencent souvent par 41.x ou 197.x
+        if ip_address.startswith('41.') or ip_address.startswith('197.'):
+            print(f"[GEOLOC] Fallback: IP sénégalaise détectée par range")
+            return "Sénégal", None, None
 
     except Exception as e:
-        print(f"[GEOLOC] Exception lors de la géolocalisation pour {ip_address}: {e}")
+        print(f"[GEOLOC] Exception générale pour {ip_address}: {e}")
         import traceback
         traceback.print_exc()
 
+    print(f"[GEOLOC] Aucune géolocalisation trouvée pour {ip_address}")
     return None, None, None
 
 @app.route("/api/connexion-logs", methods=["POST"])
