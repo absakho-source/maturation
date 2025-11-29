@@ -416,7 +416,12 @@ export default {
       // Charger les archives des fiches d'évaluation (admin uniquement)
       if (this.currentUser && this.currentUser.role === 'admin') {
         try {
-          const archivesRes = await fetch(`/api/projects/${id}/fiches-archives`);
+          const archivesRes = await fetch(`/api/projects/${id}/fiches-archives`, {
+            headers: {
+              'X-Role': this.currentUser.role,
+              'X-Username': this.currentUser.username
+            }
+          });
           if (archivesRes.ok) {
             this.archives = await archivesRes.json();
           } else {
@@ -723,7 +728,12 @@ export default {
         if (response.ok) {
           alert('Archive supprimée avec succès');
           // Recharger la liste des archives
-          const archivesRes = await fetch(`/api/projects/${this.project.id}/fiches-archives`);
+          const archivesRes = await fetch(`/api/projects/${this.project.id}/fiches-archives`, {
+            headers: {
+              'X-Role': this.currentUser.role,
+              'X-Username': this.currentUser.username
+            }
+          });
           if (archivesRes.ok) {
             this.archives = await archivesRes.json();
           }
