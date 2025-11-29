@@ -281,47 +281,95 @@
           </div>
           
           <div class="modal-body">
-            <div class="form-group">
-              <label>Nom d'utilisateur *</label>
-              <input 
-                v-model="formUser.username" 
-                type="text" 
-                placeholder="Entrez le nom d'utilisateur"
-                class="form-input"
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nom d'utilisateur *</label>
+                <input
+                  v-model="formUser.username"
+                  type="text"
+                  placeholder="Entrez le nom d'utilisateur"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Nom complet</label>
+                <input
+                  v-model="formUser.display_name"
+                  type="text"
+                  placeholder="Entrez le nom complet (ex: Agent DPSE)"
+                  class="form-input"
+                />
+              </div>
             </div>
 
-            <div class="form-group">
-              <label>Nom complet</label>
-              <input 
-                v-model="formUser.display_name" 
-                type="text" 
-                placeholder="Entrez le nom complet (ex: Agent DPSE)"
-                class="form-input"
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email</label>
+                <input
+                  v-model="formUser.email"
+                  type="email"
+                  placeholder="exemple@domaine.com"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Téléphone</label>
+                <input
+                  v-model="formUser.telephone"
+                  type="tel"
+                  placeholder="+221 XX XXX XX XX"
+                  class="form-input"
+                />
+              </div>
             </div>
 
-            <div class="form-group">
-              <label>Mot de passe {{ isEditing ? '(laisser vide pour conserver)' : '*' }}</label>
-              <input 
-                v-model="formUser.password" 
-                type="password" 
-                placeholder="Entrez le mot de passe"
-                class="form-input"
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label>Fonction / Poste</label>
+                <input
+                  v-model="formUser.fonction"
+                  type="text"
+                  placeholder="Ex: Chef de service, Directeur, etc."
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Structure d'appartenance</label>
+                <input
+                  v-model="formUser.nom_structure"
+                  type="text"
+                  placeholder="Ex: DPSE, DGPPE, etc."
+                  class="form-input"
+                />
+              </div>
             </div>
 
-            <div class="form-group">
-              <label>Rôle *</label>
-              <select v-model="formUser.role" class="form-select">
-                <option value="">-- Choisir un rôle --</option>
-                <option value="soumissionnaire">Soumissionnaire</option>
-                <option value="evaluateur">Évaluateur</option>
-                <option value="secretariatsct">Secrétariat SCT</option>
-                <option value="presidencesct">Présidence SCT</option>
-                <option value="presidencecomite">Présidence du Comité</option>
-                <option value="admin">Administrateur</option>
-              </select>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mot de passe {{ isEditing ? '(laisser vide pour conserver)' : '*' }}</label>
+                <input
+                  v-model="formUser.password"
+                  type="password"
+                  placeholder="Entrez le mot de passe"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Rôle *</label>
+                <select v-model="formUser.role" class="form-select">
+                  <option value="">-- Choisir un rôle --</option>
+                  <option value="soumissionnaire">Soumissionnaire</option>
+                  <option value="evaluateur">Évaluateur</option>
+                  <option value="secretariatsct">Secrétariat SCT</option>
+                  <option value="presidencesct">Présidence SCT</option>
+                  <option value="presidencecomite">Présidence du Comité</option>
+                  <option value="admin">Administrateur</option>
+                </select>
+              </div>
             </div>
 
             <div v-if="errorMessage" class="error-message">
@@ -379,6 +427,10 @@ export default {
         id: null,
         username: '',
         display_name: '',
+        email: '',
+        telephone: '',
+        fonction: '',
+        nom_structure: '',
         password: '',
         role: ''
       },
@@ -457,19 +509,27 @@ export default {
         id: null,
         username: '',
         display_name: '',
+        email: '',
+        telephone: '',
+        fonction: '',
+        nom_structure: '',
         password: '',
         role: ''
       };
       this.errorMessage = '';
       this.showModal = true;
     },
-    
+
     openEditModal(user) {
       this.isEditing = true;
       this.formUser = {
         id: user.id,
         username: user.username,
         display_name: user.display_name || '',
+        email: user.email || '',
+        telephone: user.telephone || '',
+        fonction: user.fonction || '',
+        nom_structure: user.nom_structure || '',
         password: '', // Ne pas afficher le mot de passe
         role: user.role
       };
@@ -1495,6 +1555,13 @@ export default {
   padding: 24px;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
 .form-group {
   margin-bottom: 20px;
 }
@@ -1683,6 +1750,10 @@ export default {
 
   .section-header .btn-primary {
     width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }
 
