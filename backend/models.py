@@ -694,6 +694,10 @@ class ConnexionLog(db.Model):
     pays = db.Column(db.String(100), nullable=True)  # Pays de connexion
     ville = db.Column(db.String(100), nullable=True)  # Ville de connexion
     region = db.Column(db.String(100), nullable=True)  # Région de connexion
+    latitude = db.Column(db.Float, nullable=True)  # Latitude GPS (si disponible)
+    longitude = db.Column(db.Float, nullable=True)  # Longitude GPS (si disponible)
+    source_geoloc = db.Column(db.String(20), nullable=True)  # 'gps', 'ip', ou 'fallback'
+    precision_geoloc = db.Column(db.Integer, nullable=True)  # Précision en mètres (pour GPS)
     user_agent = db.Column(db.Text, nullable=True)
     statut = db.Column(db.String(20), nullable=False)  # 'succes' ou 'echec'
     raison_echec = db.Column(db.String(200), nullable=True)  # Motif si échec
@@ -709,6 +713,10 @@ class ConnexionLog(db.Model):
             'pays': self.pays,
             'ville': self.ville,
             'region': self.region,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'source_geoloc': self.source_geoloc,
+            'precision_geoloc': self.precision_geoloc,
             'user_agent': self.user_agent,
             'statut': self.statut,
             'raison_echec': self.raison_echec

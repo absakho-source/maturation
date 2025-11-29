@@ -1773,8 +1773,61 @@ def log_connexion():
 
         print(f"[CONNEXION] IP détectée: {ip_address}")
 
-        # Obtenir la géolocalisation
-        pays, ville, region = get_geolocation(ip_address)
+        # Vérifier si des coordonnées GPS sont fournies par le client
+        gps_coords = data.get('gps_coordinates')
+        latitude = None
+        longitude = None
+        precision_geoloc = None
+        source_geoloc = None
+        pays = None
+        ville = None
+        region = None
+
+        if gps_coords and isinstance(gps_coords, dict):
+            # Géolocalisation GPS prioritaire
+            latitude = gps_coords.get('latitude')
+            longitude = gps_coords.get('longitude')
+            precision_geoloc = gps_coords.get('accuracy')  # Précision en mètres
+
+            if latitude is not None and longitude is not None:
+                print(f"[CONNEXION] GPS reçu: lat={latitude}, lon={longitude}, précision={precision_geoloc}m")
+                source_geoloc = 'gps'
+
+                # Reverse geocoding pour obtenir pays/ville à partir des coordonnées
+                # Utiliser une API de reverse geocoding (OpenStreetMap Nominatim gratuit)
+                try:
+                    reverse_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=10"
+                    headers = {'User-Agent': 'PLASMAP/1.0'}  # Nominatim requiert un User-Agent
+                    reverse_response = requests.get(reverse_url, headers=headers, timeout=3)
+                    if reverse_response.status_code == 200:
+                        reverse_data = reverse_response.json()
+                        address = reverse_data.get('address', {})
+                        pays = address.get('country', None)
+                        ville = address.get('city') or address.get('town') or address.get('village', None)
+                        region = address.get('state') or address.get('region', None)
+                        print(f"[CONNEXION] Reverse geocoding: {ville}, {region}, {pays}")
+                except Exception as e:
+                    print(f"[CONNEXION] Erreur reverse geocoding: {e}")
+
+        # Fallback sur géolocalisation IP si pas de GPS ou échec
+        if not pays or not ville:
+            print(f"[CONNEXION] Fallback sur géolocalisation IP")
+            pays_ip, ville_ip, region_ip = get_geolocation(ip_address)
+
+            # Utiliser les données IP si GPS n'a pas fourni de ville
+            if not pays:
+                pays = pays_ip
+            if not ville:
+                ville = ville_ip
+            if not region:
+                region = region_ip
+
+            # Indiquer la source si on n'avait pas de GPS
+            if source_geoloc != 'gps':
+                if pays_ip or ville_ip:
+                    source_geoloc = 'ip'
+                else:
+                    source_geoloc = 'fallback'
 
         # Créer le log de connexion
         log = ConnexionLog(
@@ -1785,6 +1838,10 @@ def log_connexion():
             pays=pays,
             ville=ville,
             region=region,
+            latitude=latitude,
+            longitude=longitude,
+            source_geoloc=source_geoloc,
+            precision_geoloc=precision_geoloc,
             user_agent=request.headers.get('User-Agent', ''),
             statut='succes'
         )

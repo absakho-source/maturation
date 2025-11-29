@@ -187,6 +187,49 @@
             </button>
           </div>
 
+          <!-- Section Archives des fiches d'évaluation - Visible uniquement pour les admins -->
+          <div class="info-card archives-section" v-if="currentUser && currentUser.role === 'admin' && !isSoumissionnaire()">
+            <h3>📚 Historique des fiches d'évaluation archivées</h3>
+            <div v-if="loadingArchives" class="loading-state">
+              <p>Chargement des archives...</p>
+            </div>
+            <div v-else-if="archives.length === 0" class="empty-state">
+              <p>Aucune archive disponible</p>
+            </div>
+            <div v-else class="archives-list">
+              <div v-for="archive in archives" :key="archive.filename" class="archive-item">
+                <div class="archive-info">
+                  <div class="archive-header">
+                    <span class="archive-version">Version {{ archive.version }}</span>
+                    <span class="archive-date">{{ formatDateTime(archive.date_archivage) }}</span>
+                  </div>
+                  <div class="archive-details">
+                    <div class="archive-detail-row">
+                      <span class="label">Raison :</span>
+                      <span class="value">{{ formatRaisonArchivage(archive.raison_archivage) }}</span>
+                    </div>
+                    <div class="archive-detail-row">
+                      <span class="label">Archivé par :</span>
+                      <span class="value">{{ archive.archive_par }}</span>
+                    </div>
+                    <div class="archive-detail-row">
+                      <span class="label">Taille :</span>
+                      <span class="value">{{ formatFileSize(archive.taille) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="archive-actions">
+                  <button @click="telechargerArchive(archive.filename)" class="btn-download" title="Télécharger">
+                    📥 Télécharger
+                  </button>
+                  <button @click="supprimerArchive(archive.filename)" class="btn-delete" title="Supprimer">
+                    🗑️ Supprimer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- Documenthèque du projet - Accessible à tous les membres -->
@@ -234,7 +277,9 @@ export default {
       historique: [],
       ficheEvaluation: null,
       loadingHistorique: true,
-      currentUser: null
+      currentUser: null,
+      archives: [],
+      loadingArchives: true
     };
   },
   computed: {
@@ -372,6 +417,25 @@ export default {
       } catch (ficheErr) {
         // Erreur réseau ou autre - ignorer silencieusement
         this.ficheEvaluation = null;
+      }
+
+      // Charger les archives des fiches d'évaluation (admin uniquement)
+      if (this.currentUser && this.currentUser.role === 'admin') {
+        try {
+          const archivesRes = await fetch(`/api/projects/${id}/fiches-archives`);
+          if (archivesRes.ok) {
+            this.archives = await archivesRes.json();
+          } else {
+            this.archives = [];
+          }
+        } catch (archivesErr) {
+          console.error('Erreur chargement archives:', archivesErr);
+          this.archives = [];
+        } finally {
+          this.loadingArchives = false;
+        }
+      } else {
+        this.loadingArchives = false;
       }
     } catch (err) {
       console.error(err);
@@ -617,6 +681,66 @@ export default {
         'ppp': { label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
         'impact_environnemental': { label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       };
+    },
+
+    formatRaisonArchivage(raison) {
+      const raisons = {
+        'assignation_initiale': 'Assignation initiale',
+        'reassignation_avant_hierarchie': 'Réassignation avant hiérarchie',
+        'reassignation_par_secretariat': 'Réassignation par secrétariat',
+        'reassignation_apres_rejet_presidencesct': 'Réassignation après rejet Présidence SCT',
+        'reassignation_apres_rejet_comite': 'Réassignation après rejet Comité',
+        'reevaluation_apres_complements': 'Réévaluation après compléments',
+        'suppression_manuelle': 'Suppression manuelle'
+      };
+      return raisons[raison] || raison;
+    },
+
+    formatFileSize(bytes) {
+      if (!bytes) return 'N/A';
+      const kb = bytes / 1024;
+      if (kb < 1024) {
+        return `${kb.toFixed(1)} Ko`;
+      }
+      const mb = kb / 1024;
+      return `${mb.toFixed(2)} Mo`;
+    },
+
+    telechargerArchive(filename) {
+      // Télécharger le fichier archivé
+      const url = `/api/projects/${this.project.id}/fiches-archives/${filename}`;
+      window.open(url, '_blank');
+    },
+
+    async supprimerArchive(filename) {
+      if (!confirm(`Êtes-vous sûr de vouloir supprimer cette archive ?\n\nFichier : ${filename}\n\nCette action est irréversible.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/projects/${this.project.id}/fiches-archives/${filename}`, {
+          method: 'DELETE',
+          headers: {
+            'X-Role': this.currentUser.role,
+            'X-Username': this.currentUser.username
+          }
+        });
+
+        if (response.ok) {
+          alert('Archive supprimée avec succès');
+          // Recharger la liste des archives
+          const archivesRes = await fetch(`/api/projects/${this.project.id}/fiches-archives`);
+          if (archivesRes.ok) {
+            this.archives = await archivesRes.json();
+          }
+        } else {
+          const error = await response.json();
+          alert(`Erreur lors de la suppression : ${error.error || 'Erreur inconnue'}`);
+        }
+      } catch (err) {
+        console.error('Erreur suppression archive:', err);
+        alert('Erreur lors de la suppression de l\'archive');
+      }
     }
   }
 };
@@ -1235,6 +1359,115 @@ export default {
   line-height: 1.6;
 }
 
+/* Styles pour la section Archives */
+.archives-section {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+}
+
+.archives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.archive-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.archive-item:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.archive-info {
+  flex: 1;
+}
+
+.archive-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.archive-version {
+  font-weight: 700;
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+.archive-date {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.archive-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.archive-detail-row {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.archive-detail-row .label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 100px;
+}
+
+.archive-detail-row .value {
+  color: #1f2937;
+}
+
+.archive-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-download, .btn-delete {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.btn-download:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 @media (max-width: 768px) {
   .info-row {
     grid-template-columns: 1fr;
@@ -1252,6 +1485,21 @@ export default {
 
   .score-value {
     font-size: 2rem;
+  }
+
+  .archive-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .archive-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-download, .btn-delete {
+    width: 100%;
   }
 }
 </style>

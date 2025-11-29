@@ -138,9 +138,17 @@
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                     <circle cx="12" cy="10" r="3"/>
                   </svg>
-                  <span class="location-text">
-                    {{ log.ville ? log.ville + ', ' : '' }}{{ log.pays || '' }}
-                  </span>
+                  <div class="location-info">
+                    <span class="location-text">
+                      {{ log.ville ? log.ville + ', ' : '' }}{{ log.pays || '' }}
+                    </span>
+                    <span v-if="log.source_geoloc" class="location-source" :class="`source-${log.source_geoloc}`">
+                      {{ formatSourceGeoloc(log.source_geoloc) }}
+                      <span v-if="log.source_geoloc === 'gps' && log.precision_geoloc" class="gps-precision">
+                        (±{{ log.precision_geoloc }}m)
+                      </span>
+                    </span>
+                  </div>
                 </div>
                 <span v-else class="location-na">N/A</span>
               </td>
@@ -406,6 +414,14 @@ export default {
       } else {
         return '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>';
       }
+    },
+    formatSourceGeoloc(source) {
+      const sources = {
+        'gps': 'GPS',
+        'ip': 'IP',
+        'fallback': 'Estimée'
+      };
+      return sources[source] || source;
     }
   }
 };
@@ -641,7 +657,7 @@ export default {
 /* Location */
 .location-cell {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   color: var(--dgppe-text-muted);
 }
@@ -649,6 +665,13 @@ export default {
 .location-cell svg {
   flex-shrink: 0;
   color: var(--dgppe-primary);
+  margin-top: 2px;
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .location-text {
@@ -660,6 +683,34 @@ export default {
   color: var(--dgppe-text-muted);
   font-style: italic;
   font-size: 0.875rem;
+}
+
+.location-source {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.location-source.source-gps {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.location-source.source-ip {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.location-source.source-fallback {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.gps-precision {
+  font-weight: 400;
+  opacity: 0.8;
 }
 
 /* Browser/OS */

@@ -675,15 +675,23 @@ def save_fiche_evaluation_brouillon(project_id):
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['DELETE'])
 def delete_fiche_evaluation(project_id):
-    """Suppression d'une fiche d'évaluation (avec archivage automatique)"""
+    """Suppression d'une fiche d'évaluation active (avec archivage automatique) - Admin uniquement"""
     try:
+        # Vérification stricte : admin uniquement
+        role = request.headers.get('X-Role', '')
+        if role != 'admin':
+            return jsonify({
+                'error': 'Accès refusé',
+                'message': 'Seuls les administrateurs peuvent supprimer une fiche d\'évaluation'
+            }), 403
+
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
 
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
 
         # Archiver avant suppression si la fiche a du contenu
-        username = request.headers.get('X-Username', 'system')
+        username = request.headers.get('X-Username', 'admin')
         if fiche.fichier_pdf:
             try:
                 print(f"[INFO] Archivage de la fiche pour le projet {project_id} (suppression manuelle)")
@@ -871,3 +879,60 @@ def get_fiches_archives(project_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Erreur lors de la récupération des archives: {str(e)}'}), 500
+
+
+@evaluation_bp.route('/api/projects/<int:project_id>/fiches-archives/<filename>', methods=['DELETE'])
+def delete_fiche_archive(project_id, filename):
+    """
+    Supprime un PDF archivé
+    Accessible uniquement aux administrateurs
+    """
+    try:
+        # Vérification stricte : admin uniquement
+        role = request.headers.get('X-Role', '')
+        if role != 'admin':
+            return jsonify({
+                'error': 'Accès refusé',
+                'message': 'Seuls les administrateurs peuvent supprimer les archives'
+            }), 403
+
+        # Vérifier que le projet existe
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Projet non trouvé'}), 404
+
+        # Dossier des archives
+        backend_dir = os.path.dirname(os.path.dirname(__file__))
+        archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+
+        # Chemin complet du fichier à supprimer
+        file_path = os.path.join(archives_dir, filename)
+
+        # Vérifications de sécurité
+        # 1. Le fichier doit être dans le dossier d'archives (pas de path traversal)
+        if not os.path.abspath(file_path).startswith(os.path.abspath(archives_dir)):
+            return jsonify({'error': 'Chemin de fichier invalide'}), 400
+
+        # 2. Le fichier doit appartenir au projet (vérifier le numéro de projet dans le nom)
+        projet_ref = project.numero_projet or f'ID{project_id}'
+        if not filename.startswith(projet_ref):
+            return jsonify({'error': 'Ce fichier n\'appartient pas à ce projet'}), 400
+
+        # 3. Le fichier doit exister
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Fichier non trouvé'}), 404
+
+        # Supprimer le fichier
+        os.remove(file_path)
+
+        print(f"✅ Archive supprimée par admin: {filename}")
+
+        return jsonify({
+            'message': 'Archive supprimée avec succès',
+            'filename': filename
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500
