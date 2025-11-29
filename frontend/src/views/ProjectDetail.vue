@@ -187,16 +187,10 @@
             </button>
           </div>
 
-          <!-- Section Archives des fiches d'évaluation - Visible uniquement pour les admins -->
-          <div class="info-card archives-section" v-if="currentUser && currentUser.role === 'admin' && !isSoumissionnaire()">
+          <!-- Section Archives des fiches d'évaluation - Visible uniquement pour les admins ET s'il y a des archives -->
+          <div class="info-card archives-section" v-if="currentUser && currentUser.role === 'admin' && !isSoumissionnaire() && (!loadingArchives && archives.length > 0)">
             <h3>📚 Historique des fiches d'évaluation archivées</h3>
-            <div v-if="loadingArchives" class="loading-state">
-              <p>Chargement des archives...</p>
-            </div>
-            <div v-else-if="archives.length === 0" class="empty-state">
-              <p>Aucune archive disponible</p>
-            </div>
-            <div v-else class="archives-list">
+            <div class="archives-list">
               <div v-for="archive in archives" :key="archive.filename" class="archive-item">
                 <div class="archive-info">
                   <div class="archive-header">

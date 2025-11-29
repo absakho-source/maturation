@@ -1692,11 +1692,21 @@ export default {
 
 /* ==================== VUE EN CARTES (MOBILE) ==================== */
 .mobile-only {
-  display: none;
+  display: none !important;
 }
 
 .desktop-only {
-  display: block;
+  display: block !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
 }
 
 .projects-cards {
@@ -2127,14 +2137,6 @@ export default {
   }
 
   /* Responsive pour la page projets */
-  .mobile-only {
-    display: block !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   .project-stats {
     flex-direction: column;
     gap: 8px;
