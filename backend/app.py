@@ -266,7 +266,7 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding contact_messages.{c}")
                 cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
 
-    # Migration pour la table users (Point Focal + ministère/tutelle)
+    # Migration pour la table users (Point Focal + ministère/tutelle + must_change_password)
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user'")
     if cur.fetchone():
         cur.execute("PRAGMA table_info(user)")
@@ -275,12 +275,35 @@ def ensure_sqlite_columns():
             "is_point_focal": "BOOLEAN DEFAULT 0",
             "point_focal_organisme": "VARCHAR(300)",
             "nom_ministere": "VARCHAR(300)",
-            "tutelle_agence": "VARCHAR(300)"
+            "tutelle_agence": "VARCHAR(300)",
+            "must_change_password": "BOOLEAN DEFAULT 0"
         }
         for c, cdef in needed_user_cols.items():
             if c not in cols:
                 print(f"[DB MIGRATION] Adding user.{c}")
                 cur.execute(f"ALTER TABLE user ADD COLUMN {c} {cdef}")
+
+    # Migration pour la table project_version (versioning)
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project_version'")
+    if not cur.fetchone():
+        print(f"[DB MIGRATION] Creating project_version table")
+        cur.execute("""
+            CREATE TABLE project_version (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL,
+                version_number INTEGER NOT NULL,
+                modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                modified_by VARCHAR(100),
+                modification_type VARCHAR(50),
+                change_summary TEXT,
+                project_data TEXT NOT NULL,
+                statut_before VARCHAR(100),
+                statut_after VARCHAR(100),
+                FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+            )
+        """)
+        cur.execute("CREATE INDEX idx_project_version_project_id ON project_version(project_id)")
+        cur.execute("CREATE INDEX idx_project_version_modified_at ON project_version(modified_at)")
 
     con.commit()
     con.close()
