@@ -72,6 +72,8 @@ test_*.py
 creer_*.py
 generer_*.py
 migrate_*.py
+!backend/migrate_prod_gps.py
+!backend/migrate_prod_gps.sh
 update_*.py
 add_*.py
 analyze_*.py
