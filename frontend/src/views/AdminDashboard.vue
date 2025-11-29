@@ -1046,6 +1046,14 @@ export default {
     // ============ Export CSV des projets ============
     async exporterProjetsCSV() {
       try {
+        // Récupérer l'utilisateur depuis localStorage
+        const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+        if (!user.role || !user.username) {
+          alert('Erreur: Utilisateur non connecté');
+          return;
+        }
+
         const params = new URLSearchParams();
 
         // Appliquer les filtres actifs
@@ -1061,8 +1069,8 @@ export default {
 
         const response = await fetch(`/api/export/projects/csv?${params.toString()}`, {
           headers: {
-            'X-Role': this.currentUser.role,
-            'X-Username': this.currentUser.username
+            'X-Role': user.role,
+            'X-Username': user.username
           }
         });
 
