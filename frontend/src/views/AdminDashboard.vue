@@ -1558,35 +1558,131 @@ export default {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .admin-container {
+    padding: var(--dgppe-spacing-4);
+  }
+
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dgppe-spacing-4);
+  }
+
+  .header-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-download-rapport {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .financing-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
+  .admin-container {
+    padding: var(--dgppe-spacing-3);
+  }
+
+  .page-title {
+    font-size: 1.375rem;
+  }
+
   .stats-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .users-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .filters {
     flex-direction: column;
   }
-  
+
   .filter-select {
     width: 100%;
   }
-  
+
   .modal-content {
     width: 95%;
     margin: 20px;
   }
-  
+
   .projects-table {
     font-size: 12px;
   }
-  
+
   .projects-table th,
   .projects-table td {
     padding: 8px;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+    gap: var(--dgppe-spacing-2);
+  }
+
+  .tab-btn {
+    padding: var(--dgppe-spacing-2) var(--dgppe-spacing-3);
+    font-size: 0.813rem;
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+
+  .performance-metrics,
+  .financing-volumes,
+  .users-section {
+    padding: var(--dgppe-spacing-4);
+  }
+
+  .metric-value,
+  .financing-amount {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: var(--dgppe-spacing-2);
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dgppe-spacing-2);
+  }
+
+  .tab-btn {
+    min-width: auto;
+    font-size: 0.75rem;
+    padding: var(--dgppe-spacing-2);
+  }
+
+  .performance-metrics,
+  .financing-volumes,
+  .users-section {
+    padding: var(--dgppe-spacing-3);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dgppe-spacing-3);
+  }
+
+  .section-header .btn-primary {
+    width: 100%;
   }
 }
 

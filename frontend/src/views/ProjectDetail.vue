@@ -1468,14 +1468,61 @@ export default {
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+@media (max-width: 1024px) {
+  .project-detail-container {
+    padding: var(--dgppe-spacing-4);
+  }
+
+  .info-card {
+    padding: var(--dgppe-spacing-5);
+  }
+
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dgppe-spacing-4);
+  }
+
+  .project-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .project-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
+  .project-detail-container {
+    padding: var(--dgppe-spacing-3);
+  }
+
+  .info-card {
+    padding: var(--dgppe-spacing-4);
+  }
+
+  .info-card h3 {
+    font-size: 1.125rem;
+  }
+
   .info-row {
     grid-template-columns: 1fr;
     gap: 0.25rem;
   }
 
+  .info-label {
+    font-weight: 600;
+    margin-bottom: var(--dgppe-spacing-1);
+  }
+
   .evaluation-prealable-buttons {
     flex-direction: column;
+  }
+
+  .evaluation-prealable-buttons .btn {
+    width: 100%;
   }
 
   .fiche-summary {
@@ -1500,6 +1547,54 @@ export default {
 
   .btn-download, .btn-delete {
     width: 100%;
+  }
+
+  .status-badge {
+    font-size: 0.813rem;
+    padding: var(--dgppe-spacing-1) var(--dgppe-spacing-2);
+  }
+
+  .historique-table {
+    font-size: 0.813rem;
+  }
+
+  .historique-table th,
+  .historique-table td {
+    padding: var(--dgppe-spacing-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .project-detail-container {
+    padding: var(--dgppe-spacing-2);
+  }
+
+  .info-card {
+    padding: var(--dgppe-spacing-3);
+  }
+
+  .info-card h3 {
+    font-size: 1rem;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    font-size: 0.813rem;
+    padding: var(--dgppe-spacing-2) var(--dgppe-spacing-3);
+  }
+
+  .archive-detail-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .archive-detail-row .label {
+    min-width: auto;
+    margin-bottom: var(--dgppe-spacing-1);
   }
 }
 </style>

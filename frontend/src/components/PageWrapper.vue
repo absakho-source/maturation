@@ -18,9 +18,21 @@ export default {
 </script>
 
 <style scoped>
-.page-main { 
-  min-height: 60vh; 
-  background: #f5f7fa; 
-  padding: 1.5rem; 
+.page-main {
+  min-height: 60vh;
+  background: #f5f7fa;
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .page-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-main {
+    padding: 0.75rem;
+  }
 }
 </style>
