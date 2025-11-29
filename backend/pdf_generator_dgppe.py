@@ -131,6 +131,22 @@ class FicheEvaluationDGPPEPDF:
         title = Paragraph("FICHE D'ÉVALUATION", self.styles['MainTitle'])
         self.story.append(title)
 
+        # Date et heure de génération
+        date_generation = datetime.now().strftime("%d/%m/%Y à %H:%M:%S")
+        date_para = Paragraph(
+            f"<i>Générée le {date_generation}</i>",
+            ParagraphStyle(
+                name='DateGeneration',
+                parent=self.styles['Normal'],
+                fontSize=9,
+                alignment=TA_CENTER,
+                textColor=HexColor('#6c757d'),
+                spaceBefore=5,
+                spaceAfter=5
+            )
+        )
+        self.story.append(date_para)
+
         # Version du formulaire (si disponible)
         if self.version_affichage:
             version_para = Paragraph(
