@@ -494,11 +494,23 @@ def create_or_update_fiche_evaluation(project_id):
 
             # Répertoire de sortie pour les PDFs
             pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+            os.makedirs(pdf_directory, exist_ok=True)
 
-            # Générer le PDF
+            # Supprimer l'ancien PDF s'il existe (lors d'une modification)
+            if is_update and fiche.fichier_pdf:
+                old_pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
+                if os.path.exists(old_pdf_path):
+                    try:
+                        os.remove(old_pdf_path)
+                        print(f"[PDF] Ancien PDF supprimé: {fiche.fichier_pdf}")
+                    except Exception as e:
+                        print(f"[PDF] Erreur suppression ancien PDF: {e}")
+
+            # Générer le nouveau PDF
             pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
             fiche.fichier_pdf = os.path.basename(pdf_path)
             db.session.commit()
+            print(f"[PDF] Nouveau PDF généré et enregistré: {fiche.fichier_pdf}")
         except Exception as e:
             print(f"Erreur lors de la génération du PDF: {str(e)}")
             # Ne pas bloquer l'enregistrement si la génération PDF échoue
@@ -516,16 +528,36 @@ def create_or_update_fiche_evaluation(project_id):
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation/pdf', methods=['GET', 'POST'])
 def generate_fiche_evaluation_pdf(project_id):
-    """Génération du PDF de la fiche d'évaluation"""
+    """Récupération ou génération du PDF de la fiche d'évaluation"""
     try:
         # Récupérer le projet et sa fiche d'évaluation
         project = Project.query.get(project_id)
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
-        
+
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
+
+        # Répertoire de sortie pour les PDFs
+        pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+        os.makedirs(pdf_directory, exist_ok=True)
+
+        # Vérifier si le PDF existe déjà
+        if fiche.fichier_pdf:
+            pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
+            if os.path.exists(pdf_path):
+                # Le PDF existe déjà, le servir directement
+                print(f"[PDF] Servir PDF existant: {fiche.fichier_pdf}")
+                return send_file(
+                    pdf_path,
+                    as_attachment=False,
+                    download_name=f"{fiche.reference_fiche}.pdf",
+                    mimetype='application/pdf'
+                )
+
+        # Le PDF n'existe pas, le générer
+        print(f"[PDF] Génération du PDF pour le projet {project_id}")
 
         # Récupérer le display_name de l'évaluateur
         from models import User
@@ -557,7 +589,6 @@ def generate_fiche_evaluation_pdf(project_id):
             'id': project.id,
             'numero_projet': project.numero_projet,
             'titre': project.titre,
-            # 'auteur_nom' supprimé
             'poles': project.poles,
             'secteur': project.secteur,
             'cout_estimatif': project.cout_estimatif,
@@ -569,17 +600,16 @@ def generate_fiche_evaluation_pdf(project_id):
         fiche_data = fiche.to_dict()
         # Remplacer evaluateur_nom par le display_name
         fiche_data['evaluateur_nom'] = evaluateur_display_name
-        
-        # Répertoire de sortie pour les PDFs
-        pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
 
         # Générer le PDF avec le générateur DGPPE
         pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
-        
+
         # Mettre à jour le chemin du fichier PDF dans la base
         fiche.fichier_pdf = os.path.basename(pdf_path)
         db.session.commit()
-        
+
+        print(f"[PDF] PDF généré: {fiche.fichier_pdf}")
+
         # Retourner le fichier PDF pour ouverture dans un nouvel onglet
         return send_file(
             pdf_path,
@@ -587,8 +617,10 @@ def generate_fiche_evaluation_pdf(project_id):
             download_name=f"{fiche.reference_fiche}.pdf",
             mimetype='application/pdf'
         )
-        
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': f'Erreur lors de la génération du PDF: {str(e)}'}), 500
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation/pdf/<filename>', methods=['GET'])
