@@ -2522,8 +2522,8 @@ def create_user():
             nom_ministere=nom_ministere if nom_ministere else None,
             tutelle_agence=tutelle_agence if tutelle_agence else None,
             statut_compte='non_verifie',
-            date_creation=datetime.utcnow(),
-            must_change_password=created_by_admin  # Si créé par admin, doit changer le mot de passe
+            date_creation=datetime.utcnow()
+            # must_change_password=created_by_admin  # TEMPORAIREMENT COMMENTÉ pour permettre la migration
         )
 
         db.session.add(new_user)
@@ -2652,7 +2652,9 @@ def change_password():
 
         # Mettre à jour le mot de passe et réinitialiser le flag
         user.password = new_password
-        user.must_change_password = False
+        # user.must_change_password = False  # TEMPORAIREMENT COMMENTÉ pour permettre la migration
+        if hasattr(user, 'must_change_password'):
+            user.must_change_password = False
         db.session.commit()
 
         return jsonify({"message": "Mot de passe modifié avec succès"}), 200
