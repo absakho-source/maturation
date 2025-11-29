@@ -12,6 +12,6 @@ export DB_PATH="$DATA_DIR/maturation.db"
 
 echo "[MIGRATION] Base de données: $DB_PATH"
 
-python3 migrate_add_gps_columns.py
+python3 migrate_prod_gps.py
 
 echo "[MIGRATION] Migration terminée."
