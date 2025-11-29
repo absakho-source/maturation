@@ -2678,8 +2678,17 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         ensure_sqlite_columns()
+
+        # Compter les users avec raw SQL pour éviter erreur si colonne manquante
+        import sqlite3
+        con = sqlite3.connect(app.config["DB_PATH"])
+        cur = con.cursor()
+        cur.execute("SELECT COUNT(*) FROM user")
+        user_count = cur.fetchone()[0]
+        con.close()
+
         target_pwd = "    "
-        if User.query.count() == 0:
+        if user_count == 0:
             # Créer les utilisateurs par défaut avec assignation d'attributs
             user_data = [
                 ("soumissionnaire", "soumissionnaire"),
