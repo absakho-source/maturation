@@ -10,6 +10,7 @@ from models import Project, User, FicheEvaluation, Historique, DocumentProjet, M
 from flask_cors import CORS
 from utils.archivage import archiver_fiche
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
 from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 from io import BytesIO
@@ -23,6 +24,12 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me-in-production"
+
+# Configuration pour gérer correctement les proxies (Render, Nginx, etc.)
+# x_for=1: Fait confiance à 1 proxy pour X-Forwarded-For (IP réelle du client)
+# x_proto=1: Fait confiance à 1 proxy pour X-Forwarded-Proto (http/https)
+# x_host=1: Fait confiance à 1 proxy pour X-Forwarded-Host
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 # Configuration du stockage persistant
 # En production Render, utilise /data (disque persistant)
