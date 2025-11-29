@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 from models import Notification, User, Project
 from db import db
 from datetime import datetime
+from utils.email_service import email_service
+import os
 
 notification_bp = Blueprint('notifications', __name__)
 
@@ -105,7 +107,7 @@ def delete_notification(notification_id):
 
 def create_notification(user_id, type, titre, message, project_id=None, lien=None, priorite_email=False):
     """
-    Crée une nouvelle notification
+    Crée une nouvelle notification et envoie un email si configuré
 
     Types disponibles:
     - 'statut_change': Changement de statut du projet
@@ -128,6 +130,63 @@ def create_notification(user_id, type, titre, message, project_id=None, lien=Non
     )
     db.session.add(notification)
     db.session.commit()
+
+    # Envoyer un email si priorité élevée ou si configuré
+    if priorite_email or os.environ.get('EMAIL_SEND_ALL', 'false').lower() == 'true':
+        try:
+            user = User.query.get(user_id)
+            if user and user.email:
+                # Préparer les données pour l'email
+                frontend_url = os.environ.get('FRONTEND_URL', 'https://maturation-frontend.onrender.com')
+                lien_complet = f"{frontend_url}{lien}" if lien else frontend_url
+
+                # Déterminer le type de notification pour le template email
+                if project_id:
+                    project = Project.query.get(project_id)
+                    if project:
+                        notification_data = {
+                            'titre': project.titre,
+                            'numero': project.numero_projet or f'ID-{project.id}',
+                            'secteur': project.secteur or 'Non spécifié',
+                            'lien': lien_complet
+                        }
+
+                        # Mapper les types de notification vers les templates email
+                        email_type_map = {
+                            'assignation': 'evaluation_assignee',
+                            'statut_change': 'decision_finale' if 'décision finale' in message.lower() else None,
+                        }
+
+                        email_type = email_type_map.get(type)
+
+                        if type == 'assignation':
+                            # Email d'assignation d'évaluation
+                            soumissionnaire = User.query.get(project.soumissionnaire_id)
+                            notification_data['soumissionnaire'] = soumissionnaire.display_name if soumissionnaire else 'Inconnu'
+                            email_service.send_notification_email(
+                                user.email,
+                                user.display_name or user.username,
+                                'evaluation_assignee',
+                                notification_data
+                            )
+
+                        elif type == 'statut_change' and project.decision_finale:
+                            # Email de décision finale
+                            notification_data['decision'] = project.decision_finale
+                            notification_data['decision_color'] = '#10b981' if 'approuvé' in project.decision_finale.lower() else '#ef4444'
+                            email_service.send_notification_email(
+                                user.email,
+                                user.display_name or user.username,
+                                'decision_finale',
+                                notification_data
+                            )
+
+                print(f"[NOTIFICATION] Email envoyé à {user.email} pour notification type '{type}'")
+        except Exception as e:
+            print(f"[NOTIFICATION] Erreur lors de l'envoi d'email: {e}")
+            # Ne pas bloquer la création de la notification si l'email échoue
+            import traceback
+            traceback.print_exc()
 
     return notification
 

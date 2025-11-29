@@ -40,7 +40,10 @@
       "Bash(ping:*)",
       "Bash(timeout 5 python3:*)",
       "Bash(npm install)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(done)",
+      "Bash(while read line)",
+      "Bash(pip3 install:*)"
     ],
     "deny": [],
     "ask": []

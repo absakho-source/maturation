@@ -6,7 +6,7 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion
 from flask_cors import CORS
 from utils.archivage import archiver_fiche
 from werkzeug.utils import secure_filename
@@ -63,7 +63,7 @@ CORS(app, resources={
             "https://maturation-frontend.onrender.com"  # Production
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma"],
+        "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma", "X-Role", "X-Username"],
         "supports_credentials": True,
         "expose_headers": ["Content-Type", "Authorization"],
         "max_age": 3600  # Cache preflight pour 1 heure
@@ -82,7 +82,7 @@ def after_request(response):
     if origin in allowed_origins:
         response.headers['Access-Control-Allow-Origin'] = origin
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cache-Control, Pragma'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cache-Control, Pragma, X-Role, X-Username'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
     return response
 
@@ -4260,6 +4260,22 @@ try:
     print("Contact routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import contact routes: {e}")
+
+# Import and register export routes
+try:
+    from routes.export_routes import export_bp
+    app.register_blueprint(export_bp, url_prefix='')
+    print("Export routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import export routes: {e}")
+
+# Import and register versioning routes
+try:
+    from routes.versioning_routes import versioning_bp
+    app.register_blueprint(versioning_bp, url_prefix='')
+    print("Versioning routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import versioning routes: {e}")
 
 @app.route("/api/admin/run-migration", methods=["POST"])
 def run_migration():

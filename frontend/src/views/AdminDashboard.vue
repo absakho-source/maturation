@@ -12,6 +12,15 @@
           Tableau de bord - Administrateur
         </h2>
         <div class="header-buttons">
+          <button @click="exporterProjetsCSV" class="btn-download-rapport export-csv">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="11" x2="12" y2="17"/>
+              <polyline points="9 14 12 17 15 14"/>
+            </svg>
+            Exporter CSV
+          </button>
           <button @click="telechargerRapport" class="btn-download-rapport">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1034,6 +1043,60 @@ export default {
       }
     },
 
+    // ============ Export CSV des projets ============
+    async exporterProjetsCSV() {
+      try {
+        const params = new URLSearchParams();
+
+        // Appliquer les filtres actifs
+        if (this.filtres.statut) {
+          params.append('statut', this.filtres.statut);
+        }
+        if (this.filtres.secteur) {
+          params.append('secteur', this.filtres.secteur);
+        }
+        if (this.filtres.poles) {
+          params.append('poles', this.filtres.poles);
+        }
+
+        const response = await fetch(`/api/export/projects/csv?${params.toString()}`, {
+          headers: {
+            'X-Role': this.currentUser.role,
+            'X-Username': this.currentUser.username
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de l\'export CSV');
+        }
+
+        // Récupérer le blob du CSV
+        const blob = await response.blob();
+
+        // Créer un lien de téléchargement temporaire
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Nom du fichier avec timestamp
+        const filename = response.headers.get('content-disposition')?.split('filename=')[1] ||
+                        `projets_export_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = filename.replace(/"/g, '');
+
+        document.body.appendChild(link);
+        link.click();
+
+        // Nettoyer
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        alert('Export CSV téléchargé avec succès !');
+      } catch (error) {
+        console.error('Erreur export CSV:', error);
+        alert('Erreur lors de l\'export CSV');
+      }
+    },
+
     // ============ Téléchargement du rapport ============
     async telechargerRapport() {
       try {
@@ -1128,6 +1191,10 @@ export default {
   white-space: nowrap;
 }
 
+.btn-download-rapport.export-csv {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
 .btn-download-rapport.elabore {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -1136,6 +1203,10 @@ export default {
   background: var(--dgppe-secondary);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-download-rapport.export-csv:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 .btn-download-rapport.elabore:hover {

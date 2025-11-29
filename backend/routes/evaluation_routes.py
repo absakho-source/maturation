@@ -496,15 +496,15 @@ def create_or_update_fiche_evaluation(project_id):
             pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
             os.makedirs(pdf_directory, exist_ok=True)
 
-            # Supprimer l'ancien PDF s'il existe (lors d'une modification)
+            # Archiver l'ancien PDF s'il existe (lors d'une modification)
             if is_update and fiche.fichier_pdf:
-                old_pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
-                if os.path.exists(old_pdf_path):
-                    try:
-                        os.remove(old_pdf_path)
-                        print(f"[PDF] Ancien PDF supprimé: {fiche.fichier_pdf}")
-                    except Exception as e:
-                        print(f"[PDF] Erreur suppression ancien PDF: {e}")
+                from utils.archivage import archiver_fiche
+                modificateur = data.get('modified_by', 'admin')
+                archive_path = archiver_fiche(fiche, 'modification', modificateur)
+                if archive_path:
+                    print(f"[PDF] Ancien PDF archivé: {archive_path}")
+                else:
+                    print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué")
 
             # Générer le nouveau PDF
             pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)

@@ -822,3 +822,40 @@ class ContactMessage(db.Model):
             'date_assignation': self.date_assignation.isoformat() if self.date_assignation else None,
             'date_reponse': self.date_reponse.isoformat() if self.date_reponse else None
         }
+
+
+class ProjectVersion(db.Model):
+    """Modèle pour l'historique des versions de projets"""
+    __tablename__ = 'project_version'
+
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
+    version_number = db.Column(db.Integer, nullable=False)
+
+    # Informations de versioning
+    modified_at = db.Column(db.DateTime, default=datetime.utcnow)
+    modified_by = db.Column(db.String(100))
+    modification_type = db.Column(db.String(50))  # 'creation', 'update', 'status_change', etc.
+    change_summary = db.Column(db.Text)
+
+    # Snapshot complet du projet (JSON)
+    project_data = db.Column(db.Text, nullable=False)
+
+    # Métadonnées
+    statut_before = db.Column(db.String(100))
+    statut_after = db.Column(db.String(100))
+
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'version_number': self.version_number,
+            'modified_at': self.modified_at.isoformat() if self.modified_at else None,
+            'modified_by': self.modified_by,
+            'modification_type': self.modification_type,
+            'change_summary': self.change_summary,
+            'project_data': json.loads(self.project_data) if self.project_data else {},
+            'statut_before': self.statut_before,
+            'statut_after': self.statut_after
+        }
