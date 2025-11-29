@@ -1049,14 +1049,14 @@ export default {
         const params = new URLSearchParams();
 
         // Appliquer les filtres actifs
-        if (this.filtres.statut) {
-          params.append('statut', this.filtres.statut);
+        if (this.selectedStatut) {
+          params.append('statut', this.selectedStatut);
         }
-        if (this.filtres.secteur) {
-          params.append('secteur', this.filtres.secteur);
+        if (this.selectedSecteur) {
+          params.append('secteur', this.selectedSecteur);
         }
-        if (this.filtres.poles) {
-          params.append('poles', this.filtres.poles);
+        if (this.selectedPole) {
+          params.append('poles', this.selectedPole);
         }
 
         const response = await fetch(`/api/export/projects/csv?${params.toString()}`, {
