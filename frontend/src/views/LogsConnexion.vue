@@ -140,13 +140,10 @@
                   </svg>
                   <div class="location-info">
                     <span class="location-text">
-                      {{ log.ville ? log.ville + ', ' : '' }}{{ log.pays || '' }}
+                      {{ log.ville ? log.ville + (log.region ? ', ' + log.region : '') : log.region || '' }}{{ log.pays ? ', ' + log.pays : '' }}
                     </span>
                     <span v-if="log.source_geoloc" class="location-source" :class="`source-${log.source_geoloc}`">
                       {{ formatSourceGeoloc(log.source_geoloc) }}
-                      <span v-if="log.source_geoloc === 'gps' && log.precision_geoloc" class="gps-precision">
-                        (±{{ log.precision_geoloc }}m)
-                      </span>
                     </span>
                   </div>
                 </div>

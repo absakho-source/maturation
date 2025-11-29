@@ -1793,19 +1793,21 @@ def log_connexion():
                 print(f"[CONNEXION] GPS reçu: lat={latitude}, lon={longitude}, précision={precision_geoloc}m")
                 source_geoloc = 'gps'
 
-                # Reverse geocoding pour obtenir pays/ville à partir des coordonnées
+                # Reverse geocoding pour obtenir pays/département/région à partir des coordonnées
                 # Utiliser une API de reverse geocoding (OpenStreetMap Nominatim gratuit)
+                # Zoom 8 = niveau département (pas trop précis, adapté pour territorialisation)
                 try:
-                    reverse_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=10"
+                    reverse_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=8"
                     headers = {'User-Agent': 'PLASMAP/1.0'}  # Nominatim requiert un User-Agent
                     reverse_response = requests.get(reverse_url, headers=headers, timeout=3)
                     if reverse_response.status_code == 200:
                         reverse_data = reverse_response.json()
                         address = reverse_data.get('address', {})
                         pays = address.get('country', None)
-                        ville = address.get('city') or address.get('town') or address.get('village', None)
-                        region = address.get('state') or address.get('region', None)
-                        print(f"[CONNEXION] Reverse geocoding: {ville}, {region}, {pays}")
+                        # Pour le Sénégal : county = département, state = région
+                        ville = address.get('county') or address.get('state_district', None)  # Département
+                        region = address.get('state') or address.get('region', None)  # Région
+                        print(f"[CONNEXION] Reverse geocoding: Département={ville}, Région={region}, Pays={pays}")
                 except Exception as e:
                     print(f"[CONNEXION] Erreur reverse geocoding: {e}")
 
