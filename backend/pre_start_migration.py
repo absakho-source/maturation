@@ -21,13 +21,13 @@ try:
     con = sqlite3.connect(db_path)
     cur = con.cursor()
 
-    # Migration 1: Colonne must_change_password dans user
-    cur.execute("PRAGMA table_info(user)")
+    # Migration 1: Colonne must_change_password dans users
+    cur.execute("PRAGMA table_info(users)")
     cols = [row[1] for row in cur.fetchall()]
 
     if 'must_change_password' not in cols:
         print("[PRE-MIGRATION] Ajout de la colonne must_change_password...")
-        cur.execute("ALTER TABLE user ADD COLUMN must_change_password BOOLEAN DEFAULT 0")
+        cur.execute("ALTER TABLE users ADD COLUMN must_change_password BOOLEAN DEFAULT 0")
         con.commit()
         print("[PRE-MIGRATION] ✓ Colonne must_change_password ajoutée")
     else:

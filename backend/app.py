@@ -267,9 +267,9 @@ def ensure_sqlite_columns():
                 cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
 
     # Migration pour la table users (Point Focal + ministère/tutelle + must_change_password)
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user'")
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
     if cur.fetchone():
-        cur.execute("PRAGMA table_info(user)")
+        cur.execute("PRAGMA table_info(users)")
         cols = {r[1] for r in cur.fetchall()}
         needed_user_cols = {
             "is_point_focal": "BOOLEAN DEFAULT 0",
@@ -280,8 +280,8 @@ def ensure_sqlite_columns():
         }
         for c, cdef in needed_user_cols.items():
             if c not in cols:
-                print(f"[DB MIGRATION] Adding user.{c}")
-                cur.execute(f"ALTER TABLE user ADD COLUMN {c} {cdef}")
+                print(f"[DB MIGRATION] Adding users.{c}")
+                cur.execute(f"ALTER TABLE users ADD COLUMN {c} {cdef}")
 
     # Migration pour la table project_version (versioning)
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project_version'")
@@ -2683,7 +2683,7 @@ if __name__ == "__main__":
         import sqlite3
         con = sqlite3.connect(app.config["DB_PATH"])
         cur = con.cursor()
-        cur.execute("SELECT COUNT(*) FROM user")
+        cur.execute("SELECT COUNT(*) FROM users")
         user_count = cur.fetchone()[0]
         con.close()
 
