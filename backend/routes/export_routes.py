@@ -106,12 +106,12 @@ def export_projects_csv():
                 projet.avis or '',
                 projet.decision_finale or '',
                 projet.date_soumission.strftime('%d/%m/%Y %H:%M') if projet.date_soumission else '',
-                projet.organisme or '',
-                projet.structure or '',
-                projet.nom_ministere or '',
-                projet.region or '',
-                projet.departement or '',
-                projet.commune or ''
+                projet.organisme_tutelle or '',
+                projet.structure_soumissionnaire or '',
+                soumissionnaire.nom_ministere if soumissionnaire else '',
+                soumissionnaire.lieu_soumission_region if soumissionnaire and hasattr(soumissionnaire, 'lieu_soumission_region') else '',
+                soumissionnaire.lieu_soumission_ville if soumissionnaire and hasattr(soumissionnaire, 'lieu_soumission_ville') else '',
+                ''  # Commune (pas dans le modèle)
             ])
 
         # Préparer le fichier pour téléchargement
