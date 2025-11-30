@@ -80,17 +80,17 @@ def export_projects_csv():
         # Lignes de données
         for projet in projets:
             # Récupérer le nom du soumissionnaire
-            soumissionnaire = User.query.get(projet.soumissionnaire_id)
-            soumissionnaire_nom = soumissionnaire.display_name if soumissionnaire else 'Inconnu'
+            soumissionnaire = User.query.get(projet.soumissionnaire_id) if projet.soumissionnaire_id else None
+            soumissionnaire_nom = (soumissionnaire.display_name or soumissionnaire.username) if soumissionnaire else 'Inconnu'
 
             writer.writerow([
                 projet.numero_projet or f'ID-{projet.id}',
-                projet.titre,
+                projet.titre or '',
                 projet.secteur or '',
                 projet.poles or '',
-                projet.cout_estimatif or 0,
-                projet.statut,
-                soumissionnaire_nom,
+                str(projet.cout_estimatif) if projet.cout_estimatif is not None else '0',
+                projet.statut or '',
+                soumissionnaire_nom or '',
                 projet.evaluateur_nom or '',
                 projet.avis or '',
                 projet.decision_finale or '',
@@ -195,22 +195,22 @@ def export_evaluations_csv():
         for fiche, projet in evaluations:
             writer.writerow([
                 projet.numero_projet or f'ID-{projet.id}',
-                projet.titre,
+                projet.titre or '',
                 fiche.evaluateur_nom or '',
                 fiche.date_evaluation.strftime('%d/%m/%Y %H:%M') if fiche.date_evaluation else '',
-                fiche.score_total or 0,
-                fiche.pertinence_score or 0,
-                fiche.alignement_doctrine_score or 0,
-                fiche.activites_couts_score or 0,
-                fiche.equite_territoriale_score or 0,
-                fiche.viabilite_financiere_score or 0,
-                fiche.rentabilite_score or 0,
-                fiche.benefices_strategiques_score or 0,
-                fiche.perennite_score or 0,
-                fiche.avantages_intangibles_score or 0,
-                fiche.faisabilite_score or 0,
-                fiche.ppp_score or 0,
-                fiche.impact_environnemental_score or 0,
+                str(fiche.score_total) if fiche.score_total is not None else '0',
+                str(fiche.pertinence_score) if fiche.pertinence_score is not None else '0',
+                str(fiche.alignement_doctrine_score) if fiche.alignement_doctrine_score is not None else '0',
+                str(fiche.activites_couts_score) if fiche.activites_couts_score is not None else '0',
+                str(fiche.equite_territoriale_score) if fiche.equite_territoriale_score is not None else '0',
+                str(fiche.viabilite_financiere_score) if fiche.viabilite_financiere_score is not None else '0',
+                str(fiche.rentabilite_score) if fiche.rentabilite_score is not None else '0',
+                str(fiche.benefices_strategiques_score) if fiche.benefices_strategiques_score is not None else '0',
+                str(fiche.perennite_score) if fiche.perennite_score is not None else '0',
+                str(fiche.avantages_intangibles_score) if fiche.avantages_intangibles_score is not None else '0',
+                str(fiche.faisabilite_score) if fiche.faisabilite_score is not None else '0',
+                str(fiche.ppp_score) if fiche.ppp_score is not None else '0',
+                str(fiche.impact_environnemental_score) if fiche.impact_environnemental_score is not None else '0',
                 fiche.avis or '',
                 fiche.proposition or '',
                 fiche.recommandations or ''
