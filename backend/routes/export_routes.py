@@ -26,31 +26,42 @@ def export_projects_csv():
         return '', 204
 
     try:
+        print(f"[EXPORT CSV] Début de l'export, requête depuis {username if 'username' in locals() else 'inconnu'}")
+
         # Récupérer le rôle et username pour autorisation
         role = request.headers.get('X-Role', '')
         username = request.headers.get('X-Username', '')
 
+        print(f"[EXPORT CSV] Role: {role}, Username: {username}")
+
         if not role or role not in ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur']:
+            print(f"[EXPORT CSV] Accès refusé pour role: {role}")
             return jsonify({'error': 'Non autorisé'}), 403
 
         # Construire la requête avec filtres
+        print("[EXPORT CSV] Construction de la requête...")
         query = Project.query
 
         # Filtres optionnels
         statut = request.args.get('statut')
         if statut:
             query = query.filter_by(statut=statut)
+            print(f"[EXPORT CSV] Filtre statut: {statut}")
 
         secteur = request.args.get('secteur')
         if secteur:
             query = query.filter_by(secteur=secteur)
+            print(f"[EXPORT CSV] Filtre secteur: {secteur}")
 
         poles = request.args.get('poles')
         if poles:
             query = query.filter(Project.poles.contains(poles))
+            print(f"[EXPORT CSV] Filtre poles: {poles}")
 
         # Récupérer tous les projets
+        print("[EXPORT CSV] Récupération des projets...")
         projets = query.order_by(Project.date_soumission.desc()).all()
+        print(f"[EXPORT CSV] {len(projets)} projets trouvés")
 
         # Créer le CSV en mémoire
         output = io.StringIO()
