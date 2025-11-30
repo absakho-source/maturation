@@ -108,10 +108,10 @@ def export_projects_csv():
                 projet.date_soumission.strftime('%d/%m/%Y %H:%M') if projet.date_soumission else '',
                 projet.organisme_tutelle or '',
                 projet.structure_soumissionnaire or '',
-                getattr(soumissionnaire, 'nom_ministere', '') if soumissionnaire else '',
-                projet.lieu_soumission_region or '',
-                projet.lieu_soumission_ville or '',
-                projet.lieu_soumission_pays or ''  # Commune → Pays
+                projet.organisme_tutelle or '',  # Ministère de tutelle = organisme responsable du projet
+                projet.poles or '',  # Région = Pôles territoriaux couverts
+                '',  # Département (non capturé dans le système actuel)
+                ''   # Commune (non capturé dans le système actuel)
             ])
 
         # Préparer le fichier pour téléchargement
