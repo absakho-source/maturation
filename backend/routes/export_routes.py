@@ -131,7 +131,7 @@ def export_projects_csv():
             csv_bytes,
             mimetype='text/csv; charset=utf-8',
             as_attachment=True,
-            attachment_filename=filename
+            download_name=filename
         )
 
     except Exception as e:
@@ -244,7 +244,7 @@ def export_evaluations_csv():
             csv_bytes,
             mimetype='text/csv; charset=utf-8',
             as_attachment=True,
-            attachment_filename=filename
+            download_name=filename
         )
 
     except Exception as e:
