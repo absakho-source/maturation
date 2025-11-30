@@ -11,7 +11,7 @@ from datetime import datetime
 
 export_bp = Blueprint('export', __name__)
 
-@export_bp.route('/api/export/projects/csv', methods=['GET'])
+@export_bp.route('/api/export/projects/csv', methods=['GET', 'OPTIONS'])
 def export_projects_csv():
     """
     Export la liste des projets au format CSV
@@ -21,6 +21,10 @@ def export_projects_csv():
     - secteur: Filtrer par secteur (optionnel)
     - poles: Filtrer par pôle territorial (optionnel)
     """
+    # Gérer la requête OPTIONS (preflight CORS)
+    if request.method == 'OPTIONS':
+        return '', 204
+
     try:
         # Récupérer le rôle et username pour autorisation
         role = request.headers.get('X-Role', '')
@@ -126,7 +130,7 @@ def export_projects_csv():
         return jsonify({'error': str(e)}), 500
 
 
-@export_bp.route('/api/export/evaluations/csv', methods=['GET'])
+@export_bp.route('/api/export/evaluations/csv', methods=['GET', 'OPTIONS'])
 def export_evaluations_csv():
     """
     Export la liste des fiches d'évaluation au format CSV
@@ -134,6 +138,10 @@ def export_evaluations_csv():
     Query params:
     - statut_projet: Filtrer par statut de projet (optionnel)
     """
+    # Gérer la requête OPTIONS (preflight CORS)
+    if request.method == 'OPTIONS':
+        return '', 204
+
     try:
         # Récupérer le rôle et username pour autorisation
         role = request.headers.get('X-Role', '')
