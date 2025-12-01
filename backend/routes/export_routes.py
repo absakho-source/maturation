@@ -72,7 +72,6 @@ def export_projects_csv():
             'Numéro',
             'Titre',
             'Secteur',
-            'Pôles territoriaux',
             'Coût estimatif (FCFA)',
             'Statut',
             'Soumissionnaire',
@@ -80,12 +79,9 @@ def export_projects_csv():
             'Avis',
             'Décision finale',
             'Date soumission',
-            'Organisme',
             'Structure',
             'Ministère de tutelle',
-            'Région',
-            'Département',
-            'Commune'
+            'Pôle territorial'
         ])
 
         # Lignes de données
@@ -98,7 +94,6 @@ def export_projects_csv():
                 projet.numero_projet or f'ID-{projet.id}',
                 projet.titre or '',
                 projet.secteur or '',
-                projet.poles or '',
                 str(projet.cout_estimatif) if projet.cout_estimatif is not None else '0',
                 projet.statut or '',
                 soumissionnaire_nom or '',
@@ -106,12 +101,9 @@ def export_projects_csv():
                 projet.avis or '',
                 projet.decision_finale or '',
                 projet.date_soumission.strftime('%d/%m/%Y %H:%M') if projet.date_soumission else '',
-                projet.organisme_tutelle or '',
                 projet.structure_soumissionnaire or '',
-                projet.organisme_tutelle or '',  # Ministère de tutelle = organisme responsable du projet
-                projet.poles or '',  # Région = Pôles territoriaux couverts
-                '',  # Département (non capturé dans le système actuel)
-                ''   # Commune (non capturé dans le système actuel)
+                projet.organisme_tutelle or '',
+                projet.poles or ''
             ])
 
         # Préparer le fichier pour téléchargement
