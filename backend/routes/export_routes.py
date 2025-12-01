@@ -94,7 +94,7 @@ def export_projects_csv():
                 projet.numero_projet or f'ID-{projet.id}',
                 projet.titre or '',
                 projet.secteur or '',
-                str(projet.cout_estimatif) if projet.cout_estimatif is not None else '0',
+                str(int(projet.cout_estimatif)) if projet.cout_estimatif is not None else '0',
                 projet.statut or '',
                 soumissionnaire_nom or '',
                 projet.evaluateur_nom or '',
