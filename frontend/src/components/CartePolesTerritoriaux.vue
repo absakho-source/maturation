@@ -720,8 +720,9 @@ export default {
     },
 
     shouldHideRegionLabel(regionName) {
-      // Masquer les étiquettes des régions pour certaines régions 
-      // où on préfère afficher l'étiquette du pôle
+      // Masquer les étiquettes des régions pour éviter superposition avec pôles
+      // - Saint-Louis et Matam : ont des pôles "Nord" et "Nord-Est"
+      // - Dakar et Thiès : pôles mono-région avec même nom
       const regionsToHide = ['Saint-Louis', 'Matam', 'Dakar', 'Thiès']
       return regionsToHide.includes(regionName)
     },
@@ -845,19 +846,19 @@ export default {
 }
 
 .region-label-bg {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   fill: white;
   stroke: white;
-  stroke-width: 3;
+  stroke-width: 4;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .region-label {
-  font-size: 12px;
-  font-weight: 600;
-  fill: #2c3e50;
+  font-size: 13px;
+  font-weight: 700;
+  fill: #1a1a1a;
   pointer-events: none;
   opacity: 1;
 }
