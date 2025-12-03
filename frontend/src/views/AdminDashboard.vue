@@ -249,14 +249,6 @@
                   <span>Évalué</span>
                 </label>
                 <label class="checkbox-label">
-                  <input type="checkbox" value="approuvé" v-model="selectedStatuts" @change="applyFilters">
-                  <span>Approuvé</span>
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" value="rejeté" v-model="selectedStatuts" @change="applyFilters">
-                  <span>Rejeté</span>
-                </label>
-                <label class="checkbox-label">
                   <input type="checkbox" value="favorable" v-model="selectedStatuts" @change="applyFilters">
                   <span>Favorable</span>
                 </label>
