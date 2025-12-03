@@ -135,17 +135,16 @@
 
         <!-- COUCHE 3: Routes principales -->
         <g class="roads-layer">
-          <!-- Routes (nationales et départementales) -->
-          <g v-for="road in mainRoads" :key="road.name">
-            <line
-              :x1="lonToX(road.start[0])"
-              :y1="latToY(road.start[1])"
-              :x2="lonToX(road.end[0])"
-              :y2="latToY(road.end[1])"
-              :stroke="road.type === 'nationale' ? '#8b4513' : '#a0826d'"
-              :stroke-width="road.type === 'nationale' ? '2' : '1'"
-              :stroke-opacity="road.type === 'nationale' ? '0.7' : '0.5'"
+          <!-- Routes (nationales, départementales, locales) -->
+          <g v-for="road in roadSegments" :key="road.id">
+            <polyline
+              :points="getRoadPolylinePoints(road.coordinates)"
+              :stroke="getRoadColor(road.type)"
+              :stroke-width="getRoadWidth(road.type)"
+              :stroke-opacity="getRoadOpacity(road.type)"
+              fill="none"
               stroke-linecap="round"
+              stroke-linejoin="round"
             />
           </g>
         </g>
@@ -273,73 +272,8 @@ export default {
         q60: 0,
         q80: 0
       },
-      // Routes principales du Sénégal (Nationales + Départementales)
-      mainRoads: [
-        // === ROUTES NATIONALES (trait plus épais) ===
-        { name: 'N-Dakar-Thies', start: [-17.44, 14.69], end: [-16.93, 14.79], type: 'nationale' },
-        { name: 'N-Thies-Diourbel', start: [-16.93, 14.79], end: [-16.23, 14.66], type: 'nationale' },
-        { name: 'N-Diourbel-Touba', start: [-16.23, 14.66], end: [-15.88, 14.85], type: 'nationale' },
-        { name: 'N-Fatick-Kaolack', start: [-16.93, 14.79], end: [-16.07, 14.15], type: 'nationale' },
-        { name: 'N-Kaolack-Koungheul', start: [-16.07, 14.15], end: [-14.80, 13.98], type: 'nationale' },
-        { name: 'N-Koungheul-Tambacounda', start: [-14.80, 13.98], end: [-13.67, 13.77], type: 'nationale' },
-        { name: 'N-Tambacounda-Kedougou', start: [-13.67, 13.77], end: [-12.56, 12.56], type: 'nationale' },
-        { name: 'N-Kaolack-Bignona', start: [-16.07, 14.15], end: [-16.23, 12.81], type: 'nationale' },
-        { name: 'N-Bignona-Ziguinchor', start: [-16.23, 12.81], end: [-16.27, 12.58], type: 'nationale' },
-        { name: 'N-Thies-Louga', start: [-16.93, 14.79], end: [-16.22, 15.62], type: 'nationale' },
-        { name: 'N-Louga-St-Louis', start: [-16.22, 15.62], end: [-16.03, 16.02], type: 'nationale' },
-        { name: 'N-St-Louis-Richard-Toll', start: [-16.03, 16.02], end: [-15.71, 16.46], type: 'nationale' },
-        { name: 'N-Richard-Toll-Matam', start: [-15.71, 16.46], end: [-13.25, 15.66], type: 'nationale' },
-        { name: 'N-Matam-Bakel', start: [-13.25, 15.66], end: [-12.47, 14.90], type: 'nationale' },
-
-        // === ROUTES DÉPARTEMENTALES (trait plus fin) ===
-        // Région de Dakar
-        { name: 'D-Dakar-Rufisque', start: [-17.44, 14.69], end: [-17.27, 14.72], type: 'departementale' },
-        { name: 'D-Rufisque-Bargny', start: [-17.27, 14.72], end: [-17.20, 14.75], type: 'departementale' },
-
-        // Région de Thiès
-        { name: 'D-Thies-Tivaouane', start: [-16.93, 14.79], end: [-16.82, 14.95], type: 'departementale' },
-        { name: 'D-Thies-Mbour', start: [-16.93, 14.79], end: [-16.96, 14.42], type: 'departementale' },
-        { name: 'D-Mbour-Joal', start: [-16.96, 14.42], end: [-16.83, 14.17], type: 'departementale' },
-
-        // Région de Diourbel
-        { name: 'D-Diourbel-Bambey', start: [-16.23, 14.66], end: [-16.45, 14.70], type: 'departementale' },
-        { name: 'D-Bambey-Mbacke', start: [-16.45, 14.70], end: [-15.88, 14.85], type: 'departementale' },
-
-        // Région de Kaolack
-        { name: 'D-Kaolack-Nioro', start: [-16.07, 14.15], end: [-15.78, 13.75], type: 'departementale' },
-        { name: 'D-Kaolack-Foundiougne', start: [-16.07, 14.15], end: [-16.47, 14.13], type: 'departementale' },
-        { name: 'D-Kaolack-Kaffrine', start: [-16.07, 14.15], end: [-15.55, 14.11], type: 'departementale' },
-
-        // Région de Louga
-        { name: 'D-Louga-Linguere', start: [-16.22, 15.62], end: [-15.12, 15.39], type: 'departementale' },
-        { name: 'D-Louga-Kebemer', start: [-16.22, 15.62], end: [-16.45, 15.37], type: 'departementale' },
-
-        // Région de Saint-Louis
-        { name: 'D-St-Louis-Dagana', start: [-16.03, 16.02], end: [-15.51, 16.52], type: 'departementale' },
-        { name: 'D-St-Louis-Podor', start: [-16.03, 16.02], end: [-14.97, 16.65], type: 'departementale' },
-
-        // Région de Matam
-        { name: 'D-Matam-Kanel', start: [-13.25, 15.66], end: [-13.18, 15.50], type: 'departementale' },
-        { name: 'D-Matam-Ranerou', start: [-13.25, 15.66], end: [-13.95, 15.30], type: 'departementale' },
-
-        // Région de Tambacounda
-        { name: 'D-Tambacounda-Bakel', start: [-13.67, 13.77], end: [-12.47, 14.90], type: 'departementale' },
-        { name: 'D-Tambacounda-Goudiry', start: [-13.67, 13.77], end: [-12.72, 14.18], type: 'departementale' },
-        { name: 'D-Tambacounda-Koumpentoum', start: [-13.67, 13.77], end: [-14.56, 13.98], type: 'departementale' },
-
-        // Région de Kédougou
-        { name: 'D-Kedougou-Saraya', start: [-12.56, 12.56], end: [-11.73, 12.83], type: 'departementale' },
-        { name: 'D-Kedougou-Salémata', start: [-12.56, 12.56], end: [-12.05, 12.85], type: 'departementale' },
-
-        // Région de Kolda
-        { name: 'D-Kolda-Velingara', start: [-14.94, 12.89], end: [-14.11, 13.15], type: 'departementale' },
-        { name: 'D-Kolda-Sedhiou', start: [-14.94, 12.89], end: [-15.56, 12.71], type: 'departementale' },
-
-        // Région de Ziguinchor (Casamance)
-        { name: 'D-Ziguinchor-Oussouye', start: [-16.27, 12.58], end: [-16.55, 12.48], type: 'departementale' },
-        { name: 'D-Ziguinchor-Bignona', start: [-16.27, 12.58], end: [-16.23, 12.81], type: 'departementale' },
-        { name: 'D-Bignona-Kolda', start: [-16.23, 12.81], end: [-14.94, 12.89], type: 'departementale' }
-      ]
+      // Routes chargées depuis senegal_roads_full.json (OSM data)
+      roadSegments: []
     }
   },
   computed: {
@@ -418,9 +352,10 @@ export default {
   
   async mounted() {
     await this.loadGeojsonData()
+    await this.loadRoadsData()
     await this.loadStats()
   },
-  
+
   methods: {
     async loadGeojsonData() {
       try {
@@ -432,7 +367,58 @@ export default {
         // Fallback avec les anciennes données si nécessaire
       }
     },
-    
+
+    async loadRoadsData() {
+      try {
+        const response = await fetch('/senegal_roads_full.json')
+        const roads = await response.json()
+        this.roadSegments = roads
+        console.log(`✅ ${roads.length} routes chargées`)
+      } catch (error) {
+        console.error('❌ Erreur chargement routes:', error)
+        this.roadSegments = []
+      }
+    },
+
+    // Helper methods pour le rendu des routes
+    getRoadPolylinePoints(coordinates) {
+      // Convertir les coordonnées [lon, lat] en points SVG "x1,y1 x2,y2 ..."
+      if (!coordinates || coordinates.length === 0) return ''
+      return coordinates.map(([lon, lat]) =>
+        `${this.lonToX(lon)},${this.latToY(lat)}`
+      ).join(' ')
+    },
+
+    getRoadColor(type) {
+      const colors = {
+        'autoroute': '#8b4513',      // Marron foncé
+        'nationale': '#8b4513',       // Marron
+        'departementale': '#a0826d',  // Marron clair
+        'locale': '#c4a57b'           // Marron très clair
+      }
+      return colors[type] || '#c4a57b'
+    },
+
+    getRoadWidth(type) {
+      const widths = {
+        'autoroute': 2.5,
+        'nationale': 2,
+        'departementale': 1,
+        'locale': 0.5
+      }
+      return widths[type] || 0.5
+    },
+
+    getRoadOpacity(type) {
+      const opacities = {
+        'autoroute': 0.8,
+        'nationale': 0.7,
+        'departementale': 0.5,
+        'locale': 0.3
+      }
+      return opacities[type] || 0.3
+    },
+
     async loadStats() {
       try {
         // Construire l'URL avec le filtre de statut si nécessaire
