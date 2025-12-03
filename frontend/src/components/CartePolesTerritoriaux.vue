@@ -739,8 +739,8 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'FATICK': [-0.10, 0],   // Décaler plus à gauche
-        'KOLDA': [-0.10, 0],    // Décaler plus à gauche
+        'FATICK': [-0.20, 0],   // Décaler encore plus à gauche
+        'KOLDA': [-0.20, 0],    // Décaler encore plus à gauche
         // Ajouter d'autres ajustements si nécessaire
       }
 
