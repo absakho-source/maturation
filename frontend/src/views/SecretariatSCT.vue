@@ -3588,4 +3588,54 @@ export default {
   background: #ef4444 !important;
   color: white !important;
 }
+
+.status-Défavorable {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.status-en-évaluation {
+  background: #8b5cf6 !important;
+  color: white !important;
+}
+
+.status-validé-par-presidencesct {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.status-valide_sct {
+  background: #06b6d4 !important;
+  color: white !important;
+}
+
+.status-en-réexamen-par-le-Secrétariat-SCT {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+.status-en-attente-validation-presidencesct {
+  background: #fbbf24 !important;
+  color: #78350f !important;
+}
+
+.status-en-attente-validation-demande-compléments {
+  background: #fb923c !important;
+  color: white !important;
+}
+
+.status-décision-finale-confirmée {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.status-décision-finale-infirmée {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.status-rejeté-par-le-Comité {
+  background: #991b1b !important;
+  color: white !important;
+}
 </style>
