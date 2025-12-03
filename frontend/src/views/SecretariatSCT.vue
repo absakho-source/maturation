@@ -325,7 +325,7 @@
                 <tr>
                   <th>N° Projet</th>
                   <th>Titre</th>
-                  <th>Auteur</th>
+                  <th>Structure soumissionnaire</th>
                   <th>Secteur</th>
                   <th>Statut</th>
                   <th>Évaluateur</th>
@@ -340,7 +340,7 @@
                 <tr v-for="projet in projetsFiltres" :key="projet.id">
                   <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
                   <td class="project-title">{{ projet.titre }}</td>
-                  <td>{{ projet.auteur_nom || 'N/A' }}</td>
+                  <td>{{ projet.structure_soumissionnaire || 'N/A' }}</td>
                   <td>{{ projet.secteur || 'N/A' }}</td>
                   <td>
                     <span class="badge" :class="'status-' + (projet.statut || '').replace(/ /g, '-')">{{ projet.statut }}</span>

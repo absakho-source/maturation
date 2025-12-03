@@ -291,8 +291,8 @@
                 </div>
                 <div class="card-body">
                   <div class="card-info-row">
-                    <span class="info-label">Auteur:</span>
-                    <span class="info-value">{{ project.auteur_nom || 'N/A' }}</span>
+                    <span class="info-label">Structure:</span>
+                    <span class="info-value">{{ project.structure_soumissionnaire || 'N/A' }}</span>
                   </div>
                   <div class="card-info-row">
                     <span class="info-label">Secteur:</span>
@@ -325,7 +325,7 @@
                   <tr>
                     <th>N° Projet</th>
                     <th>Titre</th>
-                    <th>Auteur</th>
+                    <th>Structure soumissionnaire</th>
                     <th>Secteur</th>
                     <th>Pôles Territoriaux</th>
                     <th>Coût (FCFA)</th>
@@ -339,7 +339,7 @@
                   <tr v-for="project in paginatedProjects" :key="project.id">
                     <td><strong class="project-number-table">{{ project.numero_projet || 'N/A' }}</strong></td>
                     <td class="project-title">{{ project.titre }}</td>
-                    <td>{{ project.auteur_nom || 'N/A' }}</td>
+                    <td>{{ project.structure_soumissionnaire || 'N/A' }}</td>
                     <td>{{ project.secteur || 'N/A' }}</td>
                     <td class="poles-cell">{{ project.poles || '-' }}</td>
                     <td class="project-cost">{{ formatCurrency(project.cout_estimatif) }}</td>
