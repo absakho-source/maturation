@@ -741,7 +741,7 @@ export default {
       const adjustments = {
         'FATICK': [-0.30, 0],      // Décaler très loin à gauche
         'KOLDA': [-0.30, 0],       // Décaler très loin à gauche
-        'ZIGUINCHOR': [-0.15, 0],  // Décaler modérément à gauche (éviter débordement)
+        'ZIGUINCHOR': [0, 0],      // Position d'origine (pas de décalage)
         // Ajouter d'autres ajustements si nécessaire
       }
 
