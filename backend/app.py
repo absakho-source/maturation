@@ -3082,6 +3082,7 @@ def stats_poles_territorial():
                         'titre': project.titre,
                         'cout_estimatif': project.cout_estimatif,
                         'statut': project.statut,
+                        'avis': project.avis,
                         'secteur': project.secteur
                     })
 
@@ -3089,9 +3090,14 @@ def stats_poles_territorial():
                 secteur = project.secteur or 'non défini'
                 poles_stats[pole_territorial]['secteurs'][secteur] = poles_stats[pole_territorial]['secteurs'].get(secteur, 0) + 1
 
-                # Répartition par statut dans ce pôle
-                statut = project.statut or 'non défini'
-                poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
+                # Répartition par statut/avis dans ce pôle
+                # Si on filtre par avis favorable, afficher les avis au lieu des statuts
+                if status_filter == 'favorable_avis':
+                    avis = project.avis or 'non défini'
+                    poles_stats[pole_territorial]['statuts'][avis] = poles_stats[pole_territorial]['statuts'].get(avis, 0) + 1
+                else:
+                    statut = project.statut or 'non défini'
+                    poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1
 
         # Correction : toujours retourner un JSON valide
         return jsonify(poles_stats if poles_stats else {})
