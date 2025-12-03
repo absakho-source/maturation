@@ -230,6 +230,10 @@
                 <option value="validé par presidencesct">Validé par présidence SCT</option>
                 <option value="approuvé">Approuvé</option>
                 <option value="rejeté">Rejeté</option>
+                <option value="favorable">Favorable</option>
+                <option value="favorable sous conditions">Favorable sous conditions</option>
+                <option value="défavorable">Défavorable</option>
+                <option value="en réexamen">En réexamen</option>
               </select>
             </div>
             <div class="filter-group">
