@@ -14,6 +14,15 @@
             Tableau de bord - Secrétariat SCT
           </h2>
           <div class="header-buttons">
+            <button @click="exporterProjetsCSV" class="btn-download-rapport export-csv">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="11" x2="12" y2="17"/>
+                <polyline points="9 14 12 17 15 14"/>
+              </svg>
+              Exporter CSV
+            </button>
             <button @click="telechargerRapport" class="btn-download-rapport">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -228,6 +237,85 @@
               <input type="text" v-model="searchQuery" @input="applyFiltersAll" placeholder="Titre, auteur, numéro..." />
             </div>
             <button @click="resetFiltersAll" class="btn-reset">Réinitialiser</button>
+          </div>
+
+          <!-- Filtres compacts -->
+          <div class="filters-compact">
+            <button @click="toggleFilters" class="btn-toggle-filters">
+              {{ showFilters ? '▲ Masquer les filtres' : '▼ Afficher les filtres' }}
+            </button>
+          </div>
+
+          <div v-if="showFilters" class="filters-container">
+            <div class="filter-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('years')">
+                <span class="collapse-icon">{{ filterGroupsOpen.years ? '▼' : '▶' }}</span>
+                Années: <span v-if="selectedYears.length > 0" class="filter-count">({{ selectedYears.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.years" class="checkbox-group">
+                <label v-for="year in availableYears" :key="year" class="checkbox-label">
+                  <input type="checkbox" :value="year" v-model="selectedYears">
+                  <span>{{ year }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('secteurs')">
+                <span class="collapse-icon">{{ filterGroupsOpen.secteurs ? '▼' : '▶' }}</span>
+                Secteurs: <span v-if="selectedSecteurs.length > 0" class="filter-count">({{ selectedSecteurs.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.secteurs" class="checkbox-group">
+                <label v-for="secteur in secteurs" :key="secteur" class="checkbox-label">
+                  <input type="checkbox" :value="secteur" v-model="selectedSecteurs">
+                  <span>{{ secteur }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('statuts')">
+                <span class="collapse-icon">{{ filterGroupsOpen.statuts ? '▼' : '▶' }}</span>
+                Statuts: <span v-if="selectedStatuts.length > 0" class="filter-count">({{ selectedStatuts.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.statuts" class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" value="soumis" v-model="selectedStatuts">
+                  <span>Soumis</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="assigné" v-model="selectedStatuts">
+                  <span>Assigné</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="évalué" v-model="selectedStatuts">
+                  <span>Évalué</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="favorable" v-model="selectedStatuts">
+                  <span>Favorable</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="favorable sous conditions" v-model="selectedStatuts">
+                  <span>Favorable sous conditions</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="défavorable" v-model="selectedStatuts">
+                  <span>Défavorable</span>
+                </label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('poles')">
+                <span class="collapse-icon">{{ filterGroupsOpen.poles ? '▼' : '▶' }}</span>
+                Pôles: <span v-if="selectedPoles.length > 0" class="filter-count">({{ selectedPoles.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.poles" class="checkbox-group">
+                <label v-for="pole in polesList" :key="pole" class="checkbox-label">
+                  <input type="checkbox" :value="pole" v-model="selectedPoles">
+                  <span>{{ pole }}</span>
+                </label>
+              </div>
+            </div>
+            <button @click="resetFilters" class="btn-reset">Réinitialiser</button>
           </div>
 
           <!-- Tableau des projets -->
@@ -1053,16 +1141,102 @@ export default {
         { key: 'faisabilite', label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
         { key: 'ppp', label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
         { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
+      ],
+      // Filtres multi-sélection
+      showFilters: false,
+      selectedYears: [],
+      selectedSecteurs: [],
+      selectedStatuts: [],
+      selectedPoles: [],
+      filterGroupsOpen: {
+        years: false,
+        secteurs: false,
+        statuts: false,
+        poles: false
+      },
+      secteurs: [
+        'Agriculture et Développement rural',
+        'Eau et Assainissement',
+        'Éducation et Formation',
+        'Énergie',
+        'Environnement',
+        'Gouvernance',
+        'Industrie et Commerce',
+        'Justice',
+        'Mines',
+        'Numérique',
+        'Pêche et Aquaculture',
+        'Santé',
+        'Social',
+        'Sport',
+        'Tourisme et Artisanat',
+        'Transport et Mobilité urbaine',
+        'Urbanisme et Habitat'
+      ],
+      polesList: [
+        'Dakar',
+        'Thiès',
+        'Diourbel',
+        'Kaolack',
+        'Fatick',
+        'Kaffrine',
+        'Louga',
+        'Matam',
+        'Saint-Louis',
+        'Tambacounda',
+        'Kédougou',
+        'Kolda',
+        'Sédhiou',
+        'Ziguinchor'
       ]
     };
   },
   computed: {
+    availableYears() {
+      const years = new Set();
+      this.allProjects.forEach(p => {
+        if (p.date_soumission) {
+          const year = new Date(p.date_soumission).getFullYear();
+          if (!isNaN(year)) years.add(year);
+        }
+      });
+      return Array.from(years).sort((a, b) => b - a);
+    },
     projetsFiltres() {
       let projets = this.allProjects;
 
-      // Filtre par statut
+      // Filtre par statut (ancien système - via stats cliquables)
       if (this.filtreStatut) {
         projets = projets.filter(p => p.statut === this.filtreStatut);
+      }
+
+      // Filtres multi-sélection
+      // Filtre par années (multi-select)
+      if (this.selectedYears.length > 0) {
+        projets = projets.filter(p => {
+          if (p.date_soumission) {
+            const projectYear = new Date(p.date_soumission).getFullYear();
+            return this.selectedYears.includes(projectYear);
+          }
+          return false;
+        });
+      }
+
+      // Filtre par secteurs (multi-select)
+      if (this.selectedSecteurs.length > 0) {
+        projets = projets.filter(p => this.selectedSecteurs.includes(p.secteur));
+      }
+
+      // Filtre par statuts (multi-select)
+      if (this.selectedStatuts.length > 0) {
+        projets = projets.filter(p => this.selectedStatuts.includes(p.statut));
+      }
+
+      // Filtre par pôles (multi-select)
+      if (this.selectedPoles.length > 0) {
+        projets = projets.filter(p =>
+          p.poles && this.selectedPoles.some(pole => p.poles.includes(pole))
+        );
       }
 
       // Filtre par recherche
@@ -1170,6 +1344,84 @@ export default {
     }
   },
   methods: {
+    toggleFilters() {
+      this.showFilters = !this.showFilters;
+    },
+    toggleFilterGroup(groupName) {
+      this.filterGroupsOpen[groupName] = !this.filterGroupsOpen[groupName];
+    },
+    resetFilters() {
+      this.selectedYears = [];
+      this.selectedSecteurs = [];
+      this.selectedStatuts = [];
+      this.selectedPoles = [];
+    },
+    async exporterProjetsCSV() {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+        if (!user.role || !user.username) {
+          alert('Erreur: Utilisateur non connecté');
+          return;
+        }
+
+        // Construire le message de confirmation avec les filtres actifs
+        let filtresActifs = [];
+        if (this.selectedYears.length > 0) {
+          filtresActifs.push(`Années: ${this.selectedYears.join(', ')}`);
+        }
+        if (this.selectedStatuts.length > 0) {
+          filtresActifs.push(`Statuts: ${this.selectedStatuts.join(', ')}`);
+        }
+        if (this.selectedSecteurs.length > 0) {
+          filtresActifs.push(`Secteurs: ${this.selectedSecteurs.join(', ')}`);
+        }
+        if (this.selectedPoles.length > 0) {
+          filtresActifs.push(`Pôles: ${this.selectedPoles.join(', ')}`);
+        }
+
+        const messageConfirmation = filtresActifs.length > 0
+          ? `Exporter les projets avec les filtres suivants ?\n\n${filtresActifs.join('\n')}`
+          : `Exporter tous les projets ?`;
+
+        if (!confirm(messageConfirmation)) {
+          return;
+        }
+
+        const params = new URLSearchParams();
+
+        // Appliquer les filtres actifs (multi-valeurs)
+        this.selectedStatuts.forEach(statut => params.append('statut', statut));
+        this.selectedSecteurs.forEach(secteur => params.append('secteur', secteur));
+        this.selectedPoles.forEach(pole => params.append('poles', pole));
+        this.selectedYears.forEach(year => params.append('year', year));
+
+        const response = await fetch(`/api/export/projects/csv?${params.toString()}`, {
+          headers: {
+            'X-Role': user.role,
+            'X-Username': user.username
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de l\'export CSV');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `projets_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+      } catch (error) {
+        console.error('Erreur export CSV:', error);
+        alert('Erreur lors de l\'export CSV');
+      }
+    },
     async loadMetrics() {
       try {
         const response = await fetch('/api/performance-metrics');
@@ -3196,5 +3448,134 @@ export default {
 .btn-view-small:hover {
   background: var(--dgppe-secondary);
   transform: scale(1.1);
+}
+
+/* Filtres multi-sélection */
+.filters-compact {
+  margin-bottom: 1rem;
+}
+
+.btn-toggle-filters {
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid var(--dgppe-primary);
+  color: var(--dgppe-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-toggle-filters:hover {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.filters-container {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.filter-label.collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.filter-label.collapsible:hover {
+  color: var(--dgppe-primary);
+}
+
+.collapse-icon {
+  display: inline-block;
+  width: 16px;
+  font-size: 0.8rem;
+  color: var(--dgppe-primary);
+}
+
+.filter-count {
+  color: var(--dgppe-accent);
+  font-weight: 700;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.checkbox-label:hover {
+  background: #f3f4f6;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.btn-reset {
+  padding: 8px 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.btn-reset:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.export-csv {
+  background: #059669;
+}
+
+.export-csv:hover {
+  background: #047857;
+}
+
+.status-favorable-conditions {
+  background: #f59e0b !important;
+  color: white !important;
 }
 </style>
