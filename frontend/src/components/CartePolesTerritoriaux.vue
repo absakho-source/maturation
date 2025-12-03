@@ -105,11 +105,37 @@
               stroke="none"
               class="pole-fill"
             />
+          </g>
+        </g>
 
+        <!-- COUCHE 3: Routes principales (AVANT les contours et labels) -->
+        <g class="roads-layer">
+          <!-- Routes (nationales, départementales, locales) -->
+          <g v-for="road in roadSegments" :key="road.id">
+            <polyline
+              :points="getRoadPolylinePoints(road.coordinates)"
+              :stroke="getRoadColor(road.type)"
+              :stroke-width="getRoadWidth(road.type)"
+              :stroke-opacity="getRoadOpacity(road.type)"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+        </g>
+
+        <!-- COUCHE 4: Contours et labels des pôles (au-dessus des routes) -->
+        <g class="poles-borders-labels-layer">
+          <g v-for="(pole, index) in polesWithGeometry" :key="'borders-' + index"
+            @mouseenter="showTooltip($event, pole)"
+            @mousemove="updateTooltip($event)"
+            @mouseleave="clearTooltip"
+            @click="selectPole(pole)"
+          >
             <!-- Contour normal du pôle (toujours affiché, même si sélectionné) -->
             <path
-              v-for="(pathData, index) in pole.paths"
-              :key="'stroke-' + index"
+              v-for="(pathData, pIndex) in pole.paths"
+              :key="'stroke-' + pIndex"
               :d="pathData"
               fill="none"
               stroke="#2c3e50"
@@ -130,22 +156,6 @@
             >
               {{ pole.name }}
             </text>
-          </g>
-        </g>
-
-        <!-- COUCHE 3: Routes principales -->
-        <g class="roads-layer">
-          <!-- Routes (nationales, départementales, locales) -->
-          <g v-for="road in roadSegments" :key="road.id">
-            <polyline
-              :points="getRoadPolylinePoints(road.coordinates)"
-              :stroke="getRoadColor(road.type)"
-              :stroke-width="getRoadWidth(road.type)"
-              :stroke-opacity="getRoadOpacity(road.type)"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
           </g>
         </g>
 
@@ -391,12 +401,12 @@ export default {
 
     getRoadColor(type) {
       const colors = {
-        'autoroute': '#8b4513',      // Marron foncé
-        'nationale': '#8b4513',       // Marron
-        'departementale': '#a0826d',  // Marron clair
-        'locale': '#c4a57b'           // Marron très clair
+        'autoroute': '#4a5568',      // Gris foncé
+        'nationale': '#4a5568',       // Gris foncé
+        'departementale': '#718096',  // Gris moyen
+        'locale': '#a0aec0'           // Gris clair
       }
-      return colors[type] || '#c4a57b'
+      return colors[type] || '#a0aec0'
     },
 
     getRoadWidth(type) {
