@@ -598,6 +598,23 @@ def projects():
         # Générer le numéro de projet automatiquement
         numero_projet = generer_numero_projet()
 
+        # Récupérer les coordonnées GPS si fournies
+        gps_coords_str = request.form.get("gps_coordinates")
+        gps_latitude = None
+        gps_longitude = None
+        gps_accuracy = None
+
+        if gps_coords_str:
+            try:
+                import json
+                gps_coords = json.loads(gps_coords_str)
+                gps_latitude = gps_coords.get('latitude')
+                gps_longitude = gps_coords.get('longitude')
+                gps_accuracy = gps_coords.get('accuracy')
+                print(f"[SOUMISSION] Coordonnées GPS reçues: lat={gps_latitude}, lon={gps_longitude}, accuracy={gps_accuracy}m")
+            except Exception as e:
+                print(f"[SOUMISSION] Erreur parsing GPS coordinates: {e}")
+
         # Capturer le lieu de soumission depuis le formulaire (priorité) ou via géolocalisation (fallback)
         lieu_pays = request.form.get("lieu_soumission_pays")
         lieu_ville = request.form.get("lieu_soumission_ville")
@@ -639,7 +656,10 @@ def projects():
             auteur_nom=auteur_nom,
             lieu_soumission_pays=lieu_pays,
             lieu_soumission_ville=lieu_ville,
-            lieu_soumission_region=lieu_region
+            lieu_soumission_region=lieu_region,
+            gps_latitude=gps_latitude,
+            gps_longitude=gps_longitude,
+            gps_accuracy=gps_accuracy
         )
         db.session.add(project)
         db.session.commit()

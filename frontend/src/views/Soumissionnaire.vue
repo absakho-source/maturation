@@ -586,6 +586,31 @@ export default {
       console.log("DEBUG - Organisme de tutelle construit:", organismeTutelle);
       console.log("DEBUG - Type organisme:", this.typeOrganisme);
 
+      // Tentative de récupération de la géolocalisation du projet
+      let gpsCoordinates = null;
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+              resolve,
+              reject,
+              { timeout: 5000, enableHighAccuracy: true, maximumAge: 0 }
+            );
+          });
+
+          gpsCoordinates = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: Math.round(position.coords.accuracy)
+          };
+
+          console.log('[PROJET] Géolocalisation obtenue:', gpsCoordinates);
+        } catch (geoError) {
+          console.log('[PROJET] Géolocalisation refusée ou indisponible:', geoError.message);
+          // Continue sans GPS - le projet sera soumis sans coordonnées
+        }
+      }
+
       const formData = new FormData();
       formData.append("titre", this.nouveauProjet.titre);
       formData.append("description", this.nouveauProjet.description);
@@ -594,6 +619,11 @@ export default {
       formData.append("poles", this.nouveauProjet.poles);
       formData.append("cout_estimatif", this.nouveauProjet.cout_estimatif);
       formData.append("auteur_nom", this.soumissionnaire);
+
+      // Ajouter les coordonnées GPS si disponibles
+      if (gpsCoordinates) {
+        formData.append("gps_coordinates", JSON.stringify(gpsCoordinates));
+      }
 
       this.fichiers.forEach((fichier) =>
         formData.append("files", fichier, fichier.name)

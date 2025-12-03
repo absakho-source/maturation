@@ -68,6 +68,11 @@ class Project(db.Model):
     lieu_soumission_ville = db.Column(db.String(100), nullable=True)
     lieu_soumission_region = db.Column(db.String(100), nullable=True)
 
+    # Coordonnées GPS du projet (localisation géographique précise)
+    gps_latitude = db.Column(db.Float, nullable=True)
+    gps_longitude = db.Column(db.Float, nullable=True)
+    gps_accuracy = db.Column(db.Integer, nullable=True)  # Précision en mètres
+
     # Nouveaux champs ajoutés
     organisme_tutelle = db.Column(db.String(300), nullable=True)
     organisme_tutelle_data = db.Column(db.Text, nullable=True)  # JSON: données structurées de la hiérarchie organisme

@@ -33,7 +33,21 @@ try:
     else:
         print("[PRE-MIGRATION] ✓ Colonne must_change_password existe déjà")
 
-    # Migration 2: Table project_version
+    # Migration 2: Colonnes GPS dans project
+    cur.execute("PRAGMA table_info(project)")
+    project_cols = [row[1] for row in cur.fetchall()]
+
+    if 'gps_latitude' not in project_cols:
+        print("[PRE-MIGRATION] Ajout des colonnes GPS au projet...")
+        cur.execute("ALTER TABLE project ADD COLUMN gps_latitude REAL")
+        cur.execute("ALTER TABLE project ADD COLUMN gps_longitude REAL")
+        cur.execute("ALTER TABLE project ADD COLUMN gps_accuracy INTEGER")
+        con.commit()
+        print("[PRE-MIGRATION] ✓ Colonnes GPS ajoutées")
+    else:
+        print("[PRE-MIGRATION] ✓ Colonnes GPS existent déjà")
+
+    # Migration 3: Table project_version
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project_version'")
     if not cur.fetchone():
         print("[PRE-MIGRATION] Création de la table project_version...")
