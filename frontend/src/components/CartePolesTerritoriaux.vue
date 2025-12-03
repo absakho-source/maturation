@@ -237,7 +237,7 @@
               <div class="projet-titre">{{ projet.titre }}</div>
               <div class="projet-meta-row">
                 <span class="projet-cout">{{ formatAmount(projet.cout_estimatif || 0) }}</span>
-                <span :class="['projet-statut', projet.statut]">{{ formatStatut(projet.statut) }}</span>
+                <span :class="['projet-statut', projet.avis || projet.statut]">{{ formatStatut(projet.avis || projet.statut) }}</span>
               </div>
             </div>
           </div>
