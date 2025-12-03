@@ -207,8 +207,11 @@
 
           <div v-if="showFilters" class="filters-container">
             <div class="filter-group">
-              <label class="filter-label">Années: <span v-if="selectedYears.length > 0" class="filter-count">({{ selectedYears.length }})</span></label>
-              <div class="checkbox-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('years')">
+                <span class="collapse-icon">{{ filterGroupsOpen.years ? '▼' : '▶' }}</span>
+                Années: <span v-if="selectedYears.length > 0" class="filter-count">({{ selectedYears.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.years" class="checkbox-group">
                 <label v-for="year in availableYears" :key="year" class="checkbox-label">
                   <input type="checkbox" :value="year" v-model="selectedYears" @change="applyFilters">
                   <span>{{ year }}</span>
@@ -216,8 +219,11 @@
               </div>
             </div>
             <div class="filter-group">
-              <label class="filter-label">Secteurs: <span v-if="selectedSecteurs.length > 0" class="filter-count">({{ selectedSecteurs.length }})</span></label>
-              <div class="checkbox-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('secteurs')">
+                <span class="collapse-icon">{{ filterGroupsOpen.secteurs ? '▼' : '▶' }}</span>
+                Secteurs: <span v-if="selectedSecteurs.length > 0" class="filter-count">({{ selectedSecteurs.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.secteurs" class="checkbox-group">
                 <label v-for="secteur in secteurs" :key="secteur" class="checkbox-label">
                   <input type="checkbox" :value="secteur" v-model="selectedSecteurs" @change="applyFilters">
                   <span>{{ secteur }}</span>
@@ -225,8 +231,11 @@
               </div>
             </div>
             <div class="filter-group">
-              <label class="filter-label">Statuts: <span v-if="selectedStatuts.length > 0" class="filter-count">({{ selectedStatuts.length }})</span></label>
-              <div class="checkbox-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('statuts')">
+                <span class="collapse-icon">{{ filterGroupsOpen.statuts ? '▼' : '▶' }}</span>
+                Statuts: <span v-if="selectedStatuts.length > 0" class="filter-count">({{ selectedStatuts.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.statuts" class="checkbox-group">
                 <label class="checkbox-label">
                   <input type="checkbox" value="soumis" v-model="selectedStatuts" @change="applyFilters">
                   <span>Soumis</span>
@@ -262,8 +271,11 @@
               </div>
             </div>
             <div class="filter-group">
-              <label class="filter-label">Pôles: <span v-if="selectedPoles.length > 0" class="filter-count">({{ selectedPoles.length }})</span></label>
-              <div class="checkbox-group">
+              <label class="filter-label collapsible" @click="toggleFilterGroup('poles')">
+                <span class="collapse-icon">{{ filterGroupsOpen.poles ? '▼' : '▶' }}</span>
+                Pôles: <span v-if="selectedPoles.length > 0" class="filter-count">({{ selectedPoles.length }})</span>
+              </label>
+              <div v-if="filterGroupsOpen.poles" class="checkbox-group">
                 <label v-for="pole in polesList" :key="pole" class="checkbox-label">
                   <input type="checkbox" :value="pole" v-model="selectedPoles" @change="applyFilters">
                   <span>{{ pole }}</span>
@@ -613,6 +625,12 @@ export default {
       // Recherche et pagination
       searchQuery: '',
       showFilters: false,
+      filterGroupsOpen: {
+        years: false,
+        secteurs: false,
+        statuts: false,
+        poles: false
+      },
       currentPage: 1,
       itemsPerPage: 25,
     };
@@ -916,6 +934,10 @@ export default {
 
     toggleFilters() {
       this.showFilters = !this.showFilters;
+    },
+
+    toggleFilterGroup(groupName) {
+      this.filterGroupsOpen[groupName] = !this.filterGroupsOpen[groupName];
     },
 
     // Pagination methods
@@ -1660,6 +1682,24 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.filter-label.collapsible {
+  cursor: pointer;
+  user-select: none;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.filter-label.collapsible:hover {
+  background: #e5e7eb;
+}
+
+.collapse-icon {
+  font-size: 10px;
+  color: #6b7280;
+  transition: transform 0.2s;
 }
 
 .filter-count {
