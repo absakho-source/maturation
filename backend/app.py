@@ -2996,17 +2996,22 @@ def stats_poles_territorial():
     try:
         role = request.args.get('role', '')
         username = request.args.get('username', '')
-        status_filter = request.args.get('filter', '')  # 'approved' pour filtrer uniquement les projets approuvés
+        status_filter = request.args.get('filter', '')  # 'favorable_avis' pour filtrer uniquement les projets avec avis favorable
 
         # Filtrer les projets selon le paramètre filter
-        # - 'approved' : uniquement les projets avec decision_finale = 'confirme'
+        # - 'favorable_avis' : uniquement les projets avec avis 'favorable' ou 'favorable sous conditions'
         # - 'all' ou vide : tous les projets soumis
-        if status_filter == 'approved':
-            # Carte des projets validés
+        if status_filter == 'favorable_avis':
+            # Carte des projets avec avis favorable
             if username:
-                projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
+                projects = Project.query.filter(
+                    Project.auteur_nom == username,
+                    Project.avis.in_(['favorable', 'favorable sous conditions'])
+                ).all()
             else:
-                projects = Project.query.filter_by(decision_finale='confirme').all()
+                projects = Project.query.filter(
+                    Project.avis.in_(['favorable', 'favorable sous conditions'])
+                ).all()
         else:
             # Carte de tous les projets soumis
             if username:

@@ -11,11 +11,11 @@
         />
       </div>
 
-      <!-- Carte des projets approuvés -->
+      <!-- Carte des projets avec avis favorable -->
       <div class="carte-wrapper">
         <CartePolesTerritoriaux
-          status-filter="approved"
-          title="Projets validés par la Présidence du Comité"
+          status-filter="favorable_avis"
+          title="Projets avec avis favorable"
         />
       </div>
     </div>
