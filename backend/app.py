@@ -2721,13 +2721,19 @@ if __name__ == "__main__":
                 ("invite", "invite")
             ]
             
+            # Rôles qui doivent changer leur mot de passe à la première connexion
+            roles_changement_obligatoire = ["admin", "secretariatsct", "presidencesct", "presidencecomite"]
+
             for username, role in user_data:
                 user = User()
                 user.username = username
                 user.password = target_pwd
                 user.role = role
+                # Forcer le changement de mot de passe pour les comptes admin
+                if role in roles_changement_obligatoire:
+                    user.must_change_password = True
                 db.session.add(user)
-            
+
             db.session.commit()
             print(f"[INIT] Créé {len(user_data)} utilisateurs par défaut")
 

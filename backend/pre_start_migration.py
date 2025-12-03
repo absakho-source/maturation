@@ -47,7 +47,20 @@ try:
     else:
         print("[PRE-MIGRATION] ✓ Colonnes GPS existent déjà")
 
-    # Migration 3: Table project_version
+    # Migration 3: Activer must_change_password pour les comptes admin existants
+    print("[PRE-MIGRATION] Activation du changement de mot de passe obligatoire pour les comptes admin...")
+    roles_admin = ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite')
+    cur.execute("""
+        UPDATE users
+        SET must_change_password = 1
+        WHERE role IN (?, ?, ?, ?)
+        AND (must_change_password IS NULL OR must_change_password = 0)
+    """, roles_admin)
+    affected = cur.rowcount
+    con.commit()
+    print(f"[PRE-MIGRATION] ✓ {affected} compte(s) admin mis à jour pour forcer le changement de mot de passe")
+
+    # Migration 4: Table project_version
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project_version'")
     if not cur.fetchone():
         print("[PRE-MIGRATION] Création de la table project_version...")
