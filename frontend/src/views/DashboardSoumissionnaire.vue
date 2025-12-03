@@ -313,19 +313,6 @@
             </div>
           </div>
 
-          <!-- Lieu de soumission - Détecté automatiquement via géolocalisation IP -->
-          <div class="form-section-title">
-            📍 Lieu de soumission
-            <span style="font-size: 0.85rem; color: #6b7280; font-weight: normal; margin-left: 8px;">
-              (Détecté automatiquement)
-            </span>
-          </div>
-          <div class="info-box" style="margin-bottom: 1.5rem;">
-            <p style="margin: 0; color: #475569; font-size: 0.9rem;">
-              ℹ️ Votre localisation est automatiquement détectée lors de la soumission pour les besoins de territorialisation des politiques publiques.
-            </p>
-          </div>
-
           <!-- Pôles et Secteur -->
           <div class="form-row">
             <div class="form-group">
