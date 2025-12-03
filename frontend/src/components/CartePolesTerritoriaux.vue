@@ -133,7 +133,24 @@
           </g>
         </g>
 
-        <!-- COUCHE 3: Contour orange du pôle sélectionné (toujours au-dessus) -->
+        <!-- COUCHE 3: Routes principales -->
+        <g class="roads-layer">
+          <!-- Routes nationales principales -->
+          <g v-for="road in mainRoads" :key="road.name">
+            <line
+              :x1="lonToX(road.start[0])"
+              :y1="latToY(road.start[1])"
+              :x2="lonToX(road.end[0])"
+              :y2="latToY(road.end[1])"
+              stroke="#8b4513"
+              stroke-width="1.5"
+              stroke-opacity="0.6"
+              stroke-linecap="round"
+            />
+          </g>
+        </g>
+
+        <!-- COUCHE 4: Contour orange du pôle sélectionné (toujours au-dessus) -->
         <g v-if="selectedPole" class="selected-pole-layer">
           <path
             v-for="(pathData, index) in getSelectedPolePaths()"
@@ -255,7 +272,44 @@ export default {
         q40: 0,
         q60: 0,
         q80: 0
-      }
+      },
+      // Routes principales du Sénégal (approximatives)
+      mainRoads: [
+        // Nationale 1: Dakar - Saint-Louis (côte)
+        { name: 'N1-1', start: [-17.44, 14.69], end: [-16.95, 15.30] },
+        { name: 'N1-2', start: [-16.95, 15.30], end: [-16.52, 15.75] },
+        { name: 'N1-3', start: [-16.52, 15.75], end: [-16.03, 16.02] },
+
+        // Nationale 2: Dakar - Tambacounda - Mali (axe principal est)
+        { name: 'N2-1', start: [-17.44, 14.69], end: [-17.00, 14.65] },
+        { name: 'N2-2', start: [-17.00, 14.65], end: [-16.25, 14.70] },
+        { name: 'N2-3', start: [-16.25, 14.70], end: [-15.50, 14.00] },
+        { name: 'N2-4', start: [-15.50, 14.00], end: [-14.50, 13.60] },
+        { name: 'N2-5', start: [-14.50, 13.60], end: [-13.67, 13.77] },
+
+        // Nationale 3: Thiès - Kaolack - Tambacounda
+        { name: 'N3-1', start: [-16.95, 14.80], end: [-16.07, 14.15] },
+        { name: 'N3-2', start: [-16.07, 14.15], end: [-15.00, 13.90] },
+        { name: 'N3-3', start: [-15.00, 13.90], end: [-13.67, 13.77] },
+
+        // Nationale 4: Kaolack - Ziguinchor (Transgambienne)
+        { name: 'N4-1', start: [-16.07, 14.15], end: [-15.90, 13.80] },
+        { name: 'N4-2', start: [-15.90, 13.80], end: [-15.50, 13.40] },
+        { name: 'N4-3', start: [-15.50, 13.40], end: [-16.00, 12.85] },
+        { name: 'N4-4', start: [-16.00, 12.85], end: [-16.27, 12.58] },
+
+        // Nationale 5: Kolda - Vélingara - Kédougou
+        { name: 'N5-1', start: [-14.94, 12.89], end: [-14.11, 12.48] },
+        { name: 'N5-2', start: [-14.11, 12.48], end: [-12.56, 12.56] },
+
+        // Nationale 6: Matam - Bakel (fleuve Sénégal)
+        { name: 'N6-1', start: [-15.66, 15.66], end: [-14.90, 15.20] },
+        { name: 'N6-2', start: [-14.90, 15.20], end: [-14.00, 14.80] },
+        { name: 'N6-3', start: [-14.00, 14.80], end: [-12.47, 14.90] },
+
+        // Route Dakar - Thiès (très fréquentée)
+        { name: 'Dakar-Thies', start: [-17.44, 14.69], end: [-16.95, 14.80] }
+      ]
     }
   },
   computed: {
