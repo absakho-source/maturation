@@ -372,7 +372,7 @@
                 <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
                 <h3>{{ projet.titre }}</h3>
               </div>
-              <span :class="'badge status-' + projet.statut.replace(' ', '-')">{{ projet.statut }}</span>
+              <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
               <!-- Alerte pour rejet proposé en attente de validation -->
               <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="badge status-rejected" style="margin-left: 8px;">⚠️ Rejet proposé</span>
             </div>
@@ -627,7 +627,7 @@
                 <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
                 <h3>{{ projet.titre }}</h3>
               </div>
-              <span :class="'badge status-' + projet.statut.replace(' ', '-')">{{ projet.statut }}</span>
+              <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
             </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
@@ -908,7 +908,7 @@
                 <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
                 <h3>{{ projet.titre }}</h3>
               </div>
-              <span :class="'badge status-' + projet.statut.replace(' ', '-')">{{ projet.statut }}</span>
+              <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
             </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
@@ -3574,8 +3574,18 @@ export default {
   background: #047857;
 }
 
-.status-favorable-conditions {
+.status-favorable {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.status-favorable-sous-conditions {
   background: #f59e0b !important;
+  color: white !important;
+}
+
+.status-defavorable {
+  background: #ef4444 !important;
   color: white !important;
 }
 </style>
