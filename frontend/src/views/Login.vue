@@ -182,40 +182,13 @@ export default {
 
       // Enregistrer la connexion avec géolocalisation
       try {
-        // Tentative de récupération des coordonnées GPS
-        let gpsCoordinates = null;
-
-        if (navigator.geolocation) {
-          try {
-            const position = await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(
-                resolve,
-                reject,
-                { timeout: 5000, enableHighAccuracy: true, maximumAge: 0 }
-              );
-            });
-
-            gpsCoordinates = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              accuracy: Math.round(position.coords.accuracy)
-            };
-
-            console.log('[LOGIN] Géolocalisation GPS obtenue:', gpsCoordinates);
-          } catch (geoError) {
-            console.log('[LOGIN] Géolocalisation GPS refusée ou indisponible:', geoError.message);
-            // Continue sans GPS - l'API utilisera l'IP en fallback
-          }
-        }
-
-        // Enregistrer la connexion (avec ou sans GPS)
+        // Enregistrer la connexion (sans géolocalisation - uniquement pour audit)
         await fetch('/api/connexion-logs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             username: uname,
-            role,
-            gps_coordinates: gpsCoordinates
+            role
           })
         });
       } catch (err) {
