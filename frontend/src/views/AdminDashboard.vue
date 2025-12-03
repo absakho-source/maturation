@@ -1054,6 +1054,20 @@ export default {
           return;
         }
 
+        // Construire le message de confirmation avec les filtres actifs
+        let filtresActifs = [];
+        if (this.selectedStatut) filtresActifs.push(`Statut: ${this.selectedStatut}`);
+        if (this.selectedSecteur) filtresActifs.push(`Secteur: ${this.selectedSecteur}`);
+        if (this.selectedPole) filtresActifs.push(`Pôle: ${this.selectedPole}`);
+
+        const messageConfirmation = filtresActifs.length > 0
+          ? `Exporter les projets avec les filtres suivants ?\n\n${filtresActifs.join('\n')}\n\nNombre de projets: ${this.projets.length}`
+          : `Exporter tous les projets ?\n\nNombre total: ${this.projets.length}`;
+
+        if (!confirm(messageConfirmation)) {
+          return;
+        }
+
         const params = new URLSearchParams();
 
         // Appliquer les filtres actifs
