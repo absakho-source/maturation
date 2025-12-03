@@ -327,7 +327,7 @@
                     <th>Titre</th>
                     <th>Auteur</th>
                     <th>Secteur</th>
-                    <th>Pôles</th>
+                    <th>Pôles Territoriaux</th>
                     <th>Coût (FCFA)</th>
                     <th>Statut</th>
                     <th>Évaluateur</th>
