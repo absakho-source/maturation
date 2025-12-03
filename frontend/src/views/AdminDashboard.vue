@@ -207,39 +207,68 @@
 
           <div v-if="showFilters" class="filters-container">
             <div class="filter-group">
-              <label>Année:</label>
-              <select v-model="selectedYear" @change="applyFilters">
-                <option value="">Toutes les années</option>
-                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
-              </select>
+              <label class="filter-label">Années: <span v-if="selectedYears.length > 0" class="filter-count">({{ selectedYears.length }})</span></label>
+              <div class="checkbox-group">
+                <label v-for="year in availableYears" :key="year" class="checkbox-label">
+                  <input type="checkbox" :value="year" v-model="selectedYears" @change="applyFilters">
+                  <span>{{ year }}</span>
+                </label>
+              </div>
             </div>
             <div class="filter-group">
-              <label>Secteur:</label>
-              <select v-model="selectedSecteur" @change="applyFilters">
-                <option value="">Tous les secteurs</option>
-                <option v-for="secteur in secteurs" :key="secteur" :value="secteur">{{ secteur }}</option>
-              </select>
+              <label class="filter-label">Secteurs: <span v-if="selectedSecteurs.length > 0" class="filter-count">({{ selectedSecteurs.length }})</span></label>
+              <div class="checkbox-group">
+                <label v-for="secteur in secteurs" :key="secteur" class="checkbox-label">
+                  <input type="checkbox" :value="secteur" v-model="selectedSecteurs" @change="applyFilters">
+                  <span>{{ secteur }}</span>
+                </label>
+              </div>
             </div>
             <div class="filter-group">
-              <label>Statut:</label>
-              <select v-model="selectedStatut" @change="applyFilters">
-                <option value="">Tous les statuts</option>
-                <option value="soumis">Soumis</option>
-                <option value="assigné">Assigné</option>
-                <option value="évalué">Évalué</option>
-                <option value="approuvé">Approuvé</option>
-                <option value="rejeté">Rejeté</option>
-                <option value="favorable">Favorable</option>
-                <option value="favorable sous conditions">Favorable sous conditions</option>
-                <option value="défavorable">Défavorable</option>
-              </select>
+              <label class="filter-label">Statuts: <span v-if="selectedStatuts.length > 0" class="filter-count">({{ selectedStatuts.length }})</span></label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" value="soumis" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Soumis</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="assigné" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Assigné</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="évalué" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Évalué</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="approuvé" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Approuvé</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="rejeté" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Rejeté</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="favorable" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Favorable</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="favorable sous conditions" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Favorable sous conditions</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="défavorable" v-model="selectedStatuts" @change="applyFilters">
+                  <span>Défavorable</span>
+                </label>
+              </div>
             </div>
             <div class="filter-group">
-              <label>Pôle:</label>
-              <select v-model="selectedPole" @change="applyFilters">
-                <option value="">Tous les pôles</option>
-                <option v-for="pole in polesList" :key="pole" :value="pole">{{ pole }}</option>
-              </select>
+              <label class="filter-label">Pôles: <span v-if="selectedPoles.length > 0" class="filter-count">({{ selectedPoles.length }})</span></label>
+              <div class="checkbox-group">
+                <label v-for="pole in polesList" :key="pole" class="checkbox-label">
+                  <input type="checkbox" :value="pole" v-model="selectedPoles" @change="applyFilters">
+                  <span>{{ pole }}</span>
+                </label>
+              </div>
             </div>
             <button @click="resetFilters" class="btn-reset">Réinitialiser</button>
           </div>
@@ -546,10 +575,10 @@ export default {
       // Statistiques des projets
       projects: [],
       stats: { total: 0, attente: 0, traitement: 0, valides: 0, rejetes: 0 },
-      selectedYear: "",
-      selectedSecteur: "",
-      selectedStatut: "",
-      selectedPole: "",
+      selectedYears: [],
+      selectedSecteurs: [],
+      selectedStatuts: [],
+      selectedPoles: [],
 
       secteurs: [
         "agriculture-élevage-pêche",
@@ -845,20 +874,28 @@ export default {
           );
         }
 
-        // Filtre par année
+        // Filtre par années (multi-select)
         let yearMatch = true;
-        if (this.selectedYear) {
+        if (this.selectedYears.length > 0) {
           if (project.date_soumission) {
             const projectYear = new Date(project.date_soumission).getFullYear();
-            yearMatch = projectYear === parseInt(this.selectedYear);
+            yearMatch = this.selectedYears.includes(projectYear);
           } else {
             yearMatch = false;
           }
         }
 
-        const secteurMatch = !this.selectedSecteur || project.secteur === this.selectedSecteur;
-        const statutMatch = !this.selectedStatut || project.statut === this.selectedStatut;
-        const poleMatch = !this.selectedPole || (project.poles && project.poles.includes(this.selectedPole));
+        // Filtre par secteurs (multi-select)
+        const secteurMatch = this.selectedSecteurs.length === 0 ||
+          this.selectedSecteurs.includes(project.secteur);
+
+        // Filtre par statuts (multi-select)
+        const statutMatch = this.selectedStatuts.length === 0 ||
+          this.selectedStatuts.includes(project.statut);
+
+        // Filtre par pôles (multi-select)
+        const poleMatch = this.selectedPoles.length === 0 ||
+          (project.poles && this.selectedPoles.some(pole => project.poles.includes(pole)));
 
         return searchMatch && yearMatch && secteurMatch && statutMatch && poleMatch;
       });
@@ -868,10 +905,10 @@ export default {
     },
 
     resetFilters() {
-      this.selectedYear = "";
-      this.selectedSecteur = "";
-      this.selectedStatut = "";
-      this.selectedPole = "";
+      this.selectedYears = [];
+      this.selectedSecteurs = [];
+      this.selectedStatuts = [];
+      this.selectedPoles = [];
       this.searchQuery = "";
       this.currentPage = 1;
       this.filteredProjects = [...this.allProjects];
@@ -1012,18 +1049,11 @@ export default {
     filterProjects() {
       this.filteredProjects = this.projects.filter((p) => {
         return (
-          (!this.selectedSecteur || p.secteur.includes(this.selectedSecteur)) &&
-          (!this.selectedStatut || p.statut === this.selectedStatut) &&
-          (!this.selectedPole || p.poles.includes(this.selectedPole))
+          (this.selectedSecteurs.length === 0 || this.selectedSecteurs.includes(p.secteur)) &&
+          (this.selectedStatuts.length === 0 || this.selectedStatuts.includes(p.statut)) &&
+          (this.selectedPoles.length === 0 || this.selectedPoles.some(pole => p.poles.includes(pole)))
         );
       });
-    },
-    
-    resetFilters() {
-      this.selectedSecteur = "";
-      this.selectedStatut = "";
-      this.selectedPole = "";
-      this.filteredProjects = [...this.projects];
     },
     
     formatCFA(val) {
@@ -1060,9 +1090,18 @@ export default {
 
         // Construire le message de confirmation avec les filtres actifs
         let filtresActifs = [];
-        if (this.selectedStatut) filtresActifs.push(`Statut: ${this.selectedStatut}`);
-        if (this.selectedSecteur) filtresActifs.push(`Secteur: ${this.selectedSecteur}`);
-        if (this.selectedPole) filtresActifs.push(`Pôle: ${this.selectedPole}`);
+        if (this.selectedYears.length > 0) {
+          filtresActifs.push(`Années: ${this.selectedYears.join(', ')}`);
+        }
+        if (this.selectedStatuts.length > 0) {
+          filtresActifs.push(`Statuts: ${this.selectedStatuts.join(', ')}`);
+        }
+        if (this.selectedSecteurs.length > 0) {
+          filtresActifs.push(`Secteurs: ${this.selectedSecteurs.join(', ')}`);
+        }
+        if (this.selectedPoles.length > 0) {
+          filtresActifs.push(`Pôles: ${this.selectedPoles.join(', ')}`);
+        }
 
         const messageConfirmation = filtresActifs.length > 0
           ? `Exporter les projets avec les filtres suivants ?\n\n${filtresActifs.join('\n')}`
@@ -1074,16 +1113,11 @@ export default {
 
         const params = new URLSearchParams();
 
-        // Appliquer les filtres actifs
-        if (this.selectedStatut) {
-          params.append('statut', this.selectedStatut);
-        }
-        if (this.selectedSecteur) {
-          params.append('secteur', this.selectedSecteur);
-        }
-        if (this.selectedPole) {
-          params.append('poles', this.selectedPole);
-        }
+        // Appliquer les filtres actifs (multi-valeurs)
+        this.selectedStatuts.forEach(statut => params.append('statut', statut));
+        this.selectedSecteurs.forEach(secteur => params.append('secteur', secteur));
+        this.selectedPoles.forEach(pole => params.append('poles', pole));
+        this.selectedYears.forEach(year => params.append('year', year));
 
         const response = await fetch(`/api/export/projects/csv?${params.toString()}`, {
           headers: {
@@ -1619,6 +1653,63 @@ export default {
   font-size: 14px;
 }
 
+.filter-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: #059669;
+  background: #d1fae5;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.checkbox-label:hover {
+  background: #f3f4f6;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--dgppe-primary);
+}
+
+.checkbox-label span {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.2;
+}
+
 .btn-reset {
   padding: 10px 20px;
   border: none;
@@ -1687,6 +1778,7 @@ export default {
 .status-complement { background: #f97316 !important; color: white !important; }
 .status-confirmed { background: #06b6d4 !important; color: white !important; }
 .status-favorable { background: #10b981 !important; color: white !important; }
+.status-favorable-conditions { background: #f59e0b !important; color: white !important; }
 .status-defavorable { background: #ef4444 !important; color: white !important; }
 .status-rejected { background: #dc2626 !important; color: white !important; }
 .status-default { background: #6b7280 !important; color: white !important; }
