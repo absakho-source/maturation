@@ -739,8 +739,9 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'FATICK': [-0.20, 0],   // Décaler encore plus à gauche
-        'KOLDA': [-0.20, 0],    // Décaler encore plus à gauche
+        'FATICK': [-0.30, 0],      // Décaler très loin à gauche
+        'KOLDA': [-0.30, 0],       // Décaler très loin à gauche
+        'ZIGUINCHOR': [-0.30, 0],  // Décaler très loin à gauche
         // Ajouter d'autres ajustements si nécessaire
       }
 
@@ -754,8 +755,8 @@ export default {
     getPoleAdjustedPosition(poleName, originalCenter) {
       // Ajustements spécifiques pour les étiquettes des pôles afin d'éviter les superpositions
       const poleAdjustments = {
-        'Nord': [0.08, -0.08],       // Saint-Louis : décaler en bas
-        'Nord-Est': [-0.06, -0.08]   // Matam : décaler en bas
+        'Nord': [0.08, -0.15],       // Saint-Louis : décaler encore plus bas
+        'Nord-Est': [-0.06, -0.15]   // Matam : décaler encore plus bas
       }
 
       const adjustment = poleAdjustments[poleName] || [0, 0]
