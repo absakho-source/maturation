@@ -1060,10 +1060,9 @@ export default {
         if (this.selectedSecteur) filtresActifs.push(`Secteur: ${this.selectedSecteur}`);
         if (this.selectedPole) filtresActifs.push(`Pôle: ${this.selectedPole}`);
 
-        const nombreProjets = this.projets?.length || 0;
         const messageConfirmation = filtresActifs.length > 0
-          ? `Exporter les projets avec les filtres suivants ?\n\n${filtresActifs.join('\n')}\n\nNombre de projets: ${nombreProjets}`
-          : `Exporter tous les projets ?\n\nNombre total: ${nombreProjets}`;
+          ? `Exporter les projets avec les filtres suivants ?\n\n${filtresActifs.join('\n')}`
+          : `Exporter tous les projets ?`;
 
         if (!confirm(messageConfirmation)) {
           return;
