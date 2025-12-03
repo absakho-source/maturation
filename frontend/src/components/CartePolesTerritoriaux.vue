@@ -756,7 +756,9 @@ export default {
       // Ajustements spécifiques pour les étiquettes des pôles afin d'éviter les superpositions
       const poleAdjustments = {
         'Nord': [0.08, -0.15],       // Saint-Louis : décaler encore plus bas
-        'Nord-Est': [-0.06, -0.15]   // Matam : décaler encore plus bas
+        'Nord-Est': [-0.06, -0.15],  // Matam : décaler encore plus bas
+        'Dakar': [0, -0.10],          // Dakar : décaler un peu vers le bas
+        'Thiès': [0, 0.05]            // Thiès : décaler un peu vers le haut
       }
 
       const adjustment = poleAdjustments[poleName] || [0, 0]
