@@ -15,7 +15,7 @@
       <div class="carte-wrapper">
         <CartePolesTerritoriaux
           status-filter="favorable_avis"
-          title="Projets avec avis favorable (v2.0 - Filtré par avis)"
+          title="Projets avec avis favorable"
         />
       </div>
     </div>
