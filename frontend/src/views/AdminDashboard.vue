@@ -226,9 +226,9 @@
                 <option value="">Tous les statuts</option>
                 <option value="soumis">Soumis</option>
                 <option value="assigné">Assigné</option>
-                <option value="évalué positivement">Évalué positivement</option>
-                <option value="évalué négativement">Évalué négativement</option>
+                <option value="évalué">Évalué</option>
                 <option value="validé par presidencesct">Validé par présidence SCT</option>
+                <option value="approuvé">Approuvé</option>
                 <option value="rejeté">Rejeté</option>
               </select>
             </div>
@@ -292,6 +292,7 @@
                     <th>Titre</th>
                     <th>Auteur</th>
                     <th>Secteur</th>
+                    <th>Pôles</th>
                     <th>Coût (FCFA)</th>
                     <th>Statut</th>
                     <th>Évaluateur</th>
@@ -305,6 +306,7 @@
                     <td class="project-title">{{ project.titre }}</td>
                     <td>{{ project.auteur_nom || 'N/A' }}</td>
                     <td>{{ project.secteur || 'N/A' }}</td>
+                    <td class="poles-cell">{{ project.poles || '-' }}</td>
                     <td class="project-cost">{{ formatCurrency(project.cout_estimatif) }}</td>
                     <td>
                       <span class="badge" :class="getStatusClass(project.statut)">{{ project.statut }}</span>
