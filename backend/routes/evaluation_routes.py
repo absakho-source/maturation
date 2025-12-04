@@ -836,7 +836,7 @@ def get_fiches_archives(project_id):
                 'version': version,
                 'date_archivage': doc.date_ajout.isoformat() if doc.date_ajout else None,
                 'raison_archivage': raison,
-                'archive_par': doc.description or 'Système',  # Description contient "Fiche archivée (v1) - Évaluée par XXX"
+                'archive_par': doc.auteur_nom or 'Système',  # Utiliser auteur_nom qui contient le nom du dernier éditeur
                 'taille': doc.taille_fichier or 0
             })
 
