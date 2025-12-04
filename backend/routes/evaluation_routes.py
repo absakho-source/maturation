@@ -316,61 +316,73 @@ def create_or_update_fiche_evaluation(project_id):
         if 'pertinence' in criteres:
             fiche.pertinence_score = min(criteres['pertinence'].get('score', 0), 5)
             fiche.pertinence_description = criteres['pertinence'].get('description', '')
+            fiche.pertinence_recommandations = criteres['pertinence'].get('recommandations', '')
         
         # ALIGNEMENT (/10)
         if 'alignement' in criteres:
             fiche.alignement_score = min(criteres['alignement'].get('score', 0), 10)
             fiche.alignement_description = criteres['alignement'].get('description', '')
-        
+            fiche.alignement_recommandations = criteres['alignement'].get('recommandations', '')
+
         # ACTIVITES ET COUTS (/15)
         if 'activites_couts' in criteres:
             fiche.activites_couts_score = min(criteres['activites_couts'].get('score', 0), 15)
             fiche.activites_couts_description = criteres['activites_couts'].get('description', '')
-        
+            fiche.activites_couts_recommandations = criteres['activites_couts'].get('recommandations', '')
+
         # EQUITE (/15)
         if 'equite' in criteres:
             fiche.equite_score = min(criteres['equite'].get('score', 0), 15)
             fiche.equite_description = criteres['equite'].get('description', '')
-        
+            fiche.equite_recommandations = criteres['equite'].get('recommandations', '')
+
         # VIABILITE (/5)
         if 'viabilite' in criteres:
             fiche.viabilite_score = min(criteres['viabilite'].get('score', 0), 5)
             fiche.viabilite_description = criteres['viabilite'].get('description', '')
-        
+            fiche.viabilite_recommandations = criteres['viabilite'].get('recommandations', '')
+
         # RENTABILITE (/5)
         if 'rentabilite' in criteres:
             fiche.rentabilite_score = min(criteres['rentabilite'].get('score', 0), 5)
             fiche.rentabilite_description = criteres['rentabilite'].get('description', '')
-        
+            fiche.rentabilite_recommandations = criteres['rentabilite'].get('recommandations', '')
+
         # BENEFICES STRATEGIQUES (/10)
         if 'benefices_strategiques' in criteres:
             fiche.benefices_strategiques_score = min(criteres['benefices_strategiques'].get('score', 0), 10)
             fiche.benefices_strategiques_description = criteres['benefices_strategiques'].get('description', '')
-        
+            fiche.benefices_strategiques_recommandations = criteres['benefices_strategiques'].get('recommandations', '')
+
         # PERENNITE (/5)
         if 'perennite' in criteres:
             fiche.perennite_score = min(criteres['perennite'].get('score', 0), 5)
             fiche.perennite_description = criteres['perennite'].get('description', '')
-        
+            fiche.perennite_recommandations = criteres['perennite'].get('recommandations', '')
+
         # AVANTAGES INTANGIBLES (/10)
         if 'avantages_intangibles' in criteres:
             fiche.avantages_intangibles_score = min(criteres['avantages_intangibles'].get('score', 0), 10)
             fiche.avantages_intangibles_description = criteres['avantages_intangibles'].get('description', '')
-        
+            fiche.avantages_intangibles_recommandations = criteres['avantages_intangibles'].get('recommandations', '')
+
         # FAISABILITE (/5)
         if 'faisabilite' in criteres:
             fiche.faisabilite_score = min(criteres['faisabilite'].get('score', 0), 5)
             fiche.faisabilite_description = criteres['faisabilite'].get('description', '')
+            fiche.faisabilite_recommandations = criteres['faisabilite'].get('recommandations', '')
         
         # PPP (/5)
         if 'ppp' in criteres:
             fiche.ppp_score = min(criteres['ppp'].get('score', 0), 5)
             fiche.ppp_description = criteres['ppp'].get('description', '')
-        
+            fiche.ppp_recommandations = criteres['ppp'].get('recommandations', '')
+
         # IMPACT ENVIRONNEMENTAL (/5)
         if 'impact_environnemental' in criteres:
             fiche.impact_environnemental_score = min(criteres['impact_environnemental'].get('score', 0), 5)
             fiche.impact_environnemental_description = criteres['impact_environnemental'].get('description', '')
+            fiche.impact_environnemental_recommandations = criteres['impact_environnemental'].get('recommandations', '')
         
         # IMPACT SUR L'EMPLOI (/5)
         if 'impact_emploi' in criteres:
