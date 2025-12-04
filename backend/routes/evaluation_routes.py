@@ -430,8 +430,16 @@ def create_or_update_fiche_evaluation(project_id):
             fiche_data['evaluateur_nom'] = evaluateur_display_name
 
             # Répertoire de sortie pour les PDFs
-            pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+            # Utiliser DATA_DIR si défini (Render), sinon chemin local
+            data_dir = os.environ.get('DATA_DIR', None)
+            if data_dir:
+                # Sur Render: stocker dans /data/pdfs/fiches_evaluation/
+                pdf_directory = os.path.join(data_dir, 'pdfs', 'fiches_evaluation')
+            else:
+                # En local: stocker dans backend/routes/pdfs/fiches_evaluation/
+                pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
             os.makedirs(pdf_directory, exist_ok=True)
+            print(f"[PDF] Répertoire PDF: {pdf_directory}", flush=True)
 
             # Archiver l'ancien PDF s'il existe (lors d'une modification)
             print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}", flush=True)
