@@ -30,12 +30,19 @@
       </div>
 
       <div class="form-group">
-        <label>Avis global:</label>
-        <select v-model="ficheEdition.proposition" class="form-control">
-          <option value="favorable">Favorable</option>
-          <option value="favorable sous conditions">Favorable sous conditions</option>
-          <option value="défavorable">Défavorable</option>
-        </select>
+        <label>Avis global (automatique basé sur le score):</label>
+        <div class="proposition-automatique" :class="{
+          'proposition-favorable': calculerScoreTotal() >= 80,
+          'proposition-conditionnel': calculerScoreTotal() >= 70 && calculerScoreTotal() < 80,
+          'proposition-defavorable': calculerScoreTotal() < 70
+        }">
+          {{ getAvisAutomatique() }}
+        </div>
+        <small class="help-text">
+          • 0-69 points = Défavorable
+          <br>• 70-79 points = Favorable sous conditions
+          <br>• 80-100 points = Favorable
+        </small>
       </div>
 
       <div class="form-group">
@@ -224,6 +231,23 @@ export default {
       return this.criteresConfig.reduce((sum, c) => {
         return sum + (this.ficheEdition.criteres[c.key]?.score || 0);
       }, 0);
+    },
+    getAvisAutomatique() {
+      const score = this.calculerScoreTotal();
+      if (score >= 80) return 'favorable';
+      if (score >= 70) return 'favorable sous conditions';
+      return 'défavorable';
+    }
+  },
+  watch: {
+    // Mettre à jour automatiquement la proposition quand le score change
+    'ficheEdition.criteres': {
+      handler() {
+        if (this.ficheEdition) {
+          this.ficheEdition.proposition = this.getAvisAutomatique();
+        }
+      },
+      deep: true
     }
   }
 };
@@ -402,5 +426,41 @@ export default {
   padding: 40px;
   color: #718096;
   font-size: 16px;
+}
+
+.proposition-automatique {
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.proposition-favorable {
+  background: #d1fae5;
+  color: #065f46;
+  border: 2px solid #059669;
+}
+
+.proposition-conditionnel {
+  background: #fef3c7;
+  color: #92400e;
+  border: 2px solid #d97706;
+}
+
+.proposition-defavorable {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 2px solid #dc2626;
+}
+
+.help-text {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  line-height: 1.6;
 }
 </style>
