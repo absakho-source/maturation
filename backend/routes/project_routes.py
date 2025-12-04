@@ -1,15 +1,16 @@
 """
 Routes pour la gestion des projets et des fiches d'évaluation
-VERSION: 2025-12-04-11:30 - FORCE GUNICORN RELOAD
+VERSION: 2025-12-04-12:00 - FORCE RELOAD WITH ROLE FIX
 """
 from flask import request, jsonify
 import traceback
 import os
 import sys
 
-# FORCE RELOAD MARKER - Ne pas supprimer
-_MODULE_VERSION = "2025-12-04-recommandations-fix-FINAL"
-print(f"[PROJECT_ROUTES] Module chargé - Version: {_MODULE_VERSION}", file=sys.stderr, flush=True)
+# FORCE RELOAD MARKER - Ne pas supprimer - TIMESTAMP: 2025-12-04T12:00:00
+_MODULE_VERSION = "2025-12-04-12:00-ROLE-FIX-CRITICAL"
+print(f"[PROJECT_ROUTES] ===== MODULE CHARGÉ - VERSION: {_MODULE_VERSION} =====", file=sys.stderr, flush=True)
+print(f"[PROJECT_ROUTES] Le fix du paramètre 'role' est actif!", file=sys.stderr, flush=True)
 
 def register_project_routes(app, Project, FicheEvaluation, db, User=None, Historique=None):
     # Importer la fonction d'archivage
@@ -403,10 +404,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                     # Continue même si l'historique échoue
 
             return jsonify({
-                'message': 'Fiche d\'évaluation sauvegardée avec succès',
-                'id': fiche.id,
+                'message': 'Fiche d\'évaluation enregistrée avec succès',
+                'fiche_id': fiche.id,
                 'score_total': fiche.calculer_score_total(),
-                'appreciation_globale': fiche.get_appreciation_globale()
+                'appreciation': fiche.get_appreciation_globale(),
+                '_debug_code_version': _MODULE_VERSION,
+                '_debug_recommandations_saved': {
+                    'pertinence': fiche.pertinence_recommandations[:20] if fiche.pertinence_recommandations else None,
+                    'alignement': fiche.alignement_recommandations[:20] if fiche.alignement_recommandations else None
+                }
             })
             
         except Exception as e:
