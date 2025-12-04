@@ -93,6 +93,37 @@ def archiver_fiche(fiche, raison, archive_par):
             print(f"   - Évaluateur: {evaluateur}")
             print(f"   - Fichier: {nom_archive}")
             print(f"   - Taille: {file_size / 1024:.1f} Ko")
+
+            # Enregistrer l'archive dans la base de données
+            try:
+                from models import db, DocumentProjet
+
+                description = f"Fiche d'évaluation archivée (v{version}) - {raison}"
+                if evaluateur != 'inconnu':
+                    description += f" - Évaluée par {evaluateur}"
+
+                doc_archive = DocumentProjet(
+                    project_id=fiche.project_id,
+                    nom_fichier=nom_archive,
+                    nom_original=f"Fiche_Evaluation_{projet_ref}_v{version}.pdf",
+                    description=description,
+                    type_document='fiche_evaluation_archivee',
+                    auteur_nom=archive_par,
+                    auteur_role='admin',  # L'archivage est fait par le système
+                    taille_fichier=file_size,
+                    visible_pour_roles='["admin", "secretariatsct", "presidencesct", "presidencecomite", "evaluateur"]'
+                )
+
+                db.session.add(doc_archive)
+                db.session.commit()
+
+                print(f"✅ Archive enregistrée dans la base de données (ID: {doc_archive.id})")
+
+            except Exception as db_error:
+                print(f"⚠️ Erreur lors de l'enregistrement dans la BDD: {db_error}")
+                # Le fichier est copié mais pas enregistré en BDD
+                # On ne considère pas cela comme un échec critique
+
             return archive_path
         else:
             print(f"❌ Échec de la copie du fichier vers {archive_path}")
