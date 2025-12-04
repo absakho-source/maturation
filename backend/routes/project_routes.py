@@ -91,68 +91,68 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             criteres = {
                 'pertinence': {
                     'score': fiche.pertinence_score or 0,
-                    'description': fiche.pertinence_appreciation or '',
+                    'description': fiche.pertinence_description or '',
                     'recommandations': fiche.pertinence_recommandations or ''
                 },
                 'alignement': {
                     'score': fiche.alignement_score or 0,
-                    'description': fiche.alignement_appreciation or '',
+                    'description': fiche.alignement_description or '',
                     'recommandations': fiche.alignement_recommandations or ''
                 },
                 'activites_couts': {
-                    'score': fiche.pertinence_activites_score or 0,
-                    'description': fiche.pertinence_activites_appreciation or '',
-                    'recommandations': fiche.pertinence_activites_recommandations or ''
+                    'score': fiche.activites_couts_score or 0,
+                    'description': fiche.activites_couts_description or '',
+                    'recommandations': fiche.activites_couts_recommandations or ''
                 },
                 'equite': {
                     'score': fiche.equite_score or 0,
-                    'description': fiche.equite_appreciation or '',
+                    'description': fiche.equite_description or '',
                     'recommandations': fiche.equite_recommandations or ''
                 },
                 'viabilite': {
-                    'score': fiche.rentabilite_financiere_score or 0,
-                    'description': fiche.rentabilite_financiere_appreciation or '',
-                    'recommandations': fiche.rentabilite_financiere_recommandations or ''
+                    'score': fiche.viabilite_score or 0,
+                    'description': fiche.viabilite_description or '',
+                    'recommandations': fiche.viabilite_recommandations or ''
                 },
                 'rentabilite': {
-                    'score': fiche.rentabilite_socio_score or 0,
-                    'description': fiche.rentabilite_socio_appreciation or '',
-                    'recommandations': fiche.rentabilite_socio_recommandations or ''
+                    'score': fiche.rentabilite_score or 0,
+                    'description': fiche.rentabilite_description or '',
+                    'recommandations': fiche.rentabilite_recommandations or ''
                 },
                 'benefices_strategiques': {
                     'score': fiche.benefices_strategiques_score or 0,
-                    'description': fiche.benefices_strategiques_appreciation or '',
+                    'description': fiche.benefices_strategiques_description or '',
                     'recommandations': fiche.benefices_strategiques_recommandations or ''
                 },
                 'perennite': {
                     'score': fiche.perennite_score or 0,
-                    'description': fiche.perennite_appreciation or '',
+                    'description': fiche.perennite_description or '',
                     'recommandations': fiche.perennite_recommandations or ''
                 },
                 'avantages_intangibles': {
-                    'score': fiche.avantages_couts_score or 0,
-                    'description': fiche.avantages_couts_appreciation or '',
-                    'recommandations': fiche.avantages_couts_recommandations or ''
+                    'score': fiche.avantages_intangibles_score or 0,
+                    'description': fiche.avantages_intangibles_description or '',
+                    'recommandations': fiche.avantages_intangibles_recommandations or ''
                 },
                 'faisabilite': {
                     'score': fiche.faisabilite_score or 0,
-                    'description': fiche.faisabilite_appreciation or '',
+                    'description': fiche.faisabilite_description or '',
                     'recommandations': fiche.faisabilite_recommandations or ''
                 },
                 'ppp': {
-                    'score': fiche.capacite_execution_score or 0,
-                    'description': fiche.capacite_execution_appreciation or '',
-                    'recommandations': fiche.capacite_execution_recommandations or ''
+                    'score': fiche.ppp_score or 0,
+                    'description': fiche.ppp_description or '',
+                    'recommandations': fiche.ppp_recommandations or ''
                 },
                 'impact_environnemental': {
-                    'score': fiche.impacts_environnementaux_score or 0,
-                    'description': fiche.impacts_environnementaux_appreciation or '',
-                    'recommandations': fiche.impacts_environnementaux_recommandations or ''
+                    'score': fiche.impact_environnemental_score or 0,
+                    'description': fiche.impact_environnemental_description or '',
+                    'recommandations': fiche.impact_environnemental_recommandations or ''
                 },
                 'impact_emploi': {
                     'score': 0,  # Pas de score pour l'impact emploi selon le modèle
-                    'description': fiche.impact_sur_emploi or '',
-                    'recommandations': ''
+                    'description': fiche.impact_emploi_description or '',
+                    'recommandations': fiche.impact_emploi_recommandations or ''
                 }
             }
             evaluation_data = {

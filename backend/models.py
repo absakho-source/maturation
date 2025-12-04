@@ -120,50 +120,62 @@ class FicheEvaluation(db.Model):
     # PERTINENCE (/5)
     pertinence_score = db.Column(db.Integer, default=0)  # 0-5
     pertinence_description = db.Column(db.Text)
-    
-    # ALIGNEMENT A LA DOCTRINE DE TRANSFORMATION SYSTEMIQUE (/10)  
+    pertinence_recommandations = db.Column(db.Text)
+
+    # ALIGNEMENT A LA DOCTRINE DE TRANSFORMATION SYSTEMIQUE (/10)
     alignement_score = db.Column(db.Integer, default=0)  # 0-10
     alignement_description = db.Column(db.Text)
-    
+    alignement_recommandations = db.Column(db.Text)
+
     # PERTINENCE DES ACTIVITES ET BIEN FONDE DES COUTS/PART DE FONCTIONNEMENT (/15)
     activites_couts_score = db.Column(db.Integer, default=0)  # 0-15
     activites_couts_description = db.Column(db.Text)
-    
+    activites_couts_recommandations = db.Column(db.Text)
+
     # ÉQUITE (SOCIALE-TERRITORIALE-GENRE) (/15)
     equite_score = db.Column(db.Integer, default=0)  # 0-15
     equite_description = db.Column(db.Text)
-    
+    equite_recommandations = db.Column(db.Text)
+
     # VIABILITE/RENTABILITE FINANCIERE (/5)
     viabilite_score = db.Column(db.Integer, default=0)  # 0-5
     viabilite_description = db.Column(db.Text)
-    
+    viabilite_recommandations = db.Column(db.Text)
+
     # RENTABILITE SOCIO-ECONOMIQUE (ACA/MPR) (/5)
     rentabilite_score = db.Column(db.Integer, default=0)  # 0-5
     rentabilite_description = db.Column(db.Text)
-    
+    rentabilite_recommandations = db.Column(db.Text)
+
     # BENEFICES STRATEGIQUES (SECURITE-RESILIENCE-INNOVATION-COMPETITIVITE-CONTENU LOCAL, ETC.) (/15)
     benefices_strategiques_score = db.Column(db.Integer, default=0)  # 0-15
     benefices_strategiques_description = db.Column(db.Text)
-    
+    benefices_strategiques_recommandations = db.Column(db.Text)
+
     # PERENNITE ET DURABILITE DES EFFETS ET IMPACTS DU PROJET (/5)
     perennite_score = db.Column(db.Integer, default=0)  # 0-5
     perennite_description = db.Column(db.Text)
-    
+    perennite_recommandations = db.Column(db.Text)
+
     # AVANTAGES ET COUTS INTANGIBLES (/10)
     avantages_intangibles_score = db.Column(db.Integer, default=0)  # 0-10
     avantages_intangibles_description = db.Column(db.Text)
-    
+    avantages_intangibles_recommandations = db.Column(db.Text)
+
     # FAISABILITE DU PROJET / RISQUES POTENTIELS (/5)
     faisabilite_score = db.Column(db.Integer, default=0)  # 0-5
     faisabilite_description = db.Column(db.Text)
-    
+    faisabilite_recommandations = db.Column(db.Text)
+
     # POTENTIALITE OU OPPORTUNITE DU PROJET A ETRE REALISE EN PPP (/5)
     ppp_score = db.Column(db.Integer, default=0)  # 0-5
     ppp_description = db.Column(db.Text)
-    
+    ppp_recommandations = db.Column(db.Text)
+
     # IMPACTS ENVIRONNEMENTAUX (/5)
     impact_environnemental_score = db.Column(db.Integer, default=0)  # 0-5
     impact_environnemental_description = db.Column(db.Text)
+    impact_environnemental_recommandations = db.Column(db.Text)
     
     # IMPACT SUR L'EMPLOI (/5) - Ajouté selon demande utilisateur
     impact_emploi_score = db.Column(db.Integer, default=0)  # 0-5

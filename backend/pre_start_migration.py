@@ -86,6 +86,38 @@ try:
     else:
         print("[PRE-MIGRATION] ✓ Table project_version existe déjà")
 
+    # Migration 5: Colonnes recommandations pour chaque critère de fiche_evaluation
+    cur.execute("PRAGMA table_info(fiche_evaluation)")
+    fiche_cols = [row[1] for row in cur.fetchall()]
+
+    recommandations_cols = [
+        'pertinence_recommandations',
+        'alignement_recommandations',
+        'activites_couts_recommandations',
+        'equite_recommandations',
+        'viabilite_recommandations',
+        'rentabilite_recommandations',
+        'benefices_strategiques_recommandations',
+        'perennite_recommandations',
+        'avantages_intangibles_recommandations',
+        'faisabilite_recommandations',
+        'ppp_recommandations',
+        'impact_environnemental_recommandations'
+    ]
+
+    added_count = 0
+    for col in recommandations_cols:
+        if col not in fiche_cols:
+            print(f"[PRE-MIGRATION] Ajout de la colonne {col}...")
+            cur.execute(f"ALTER TABLE fiche_evaluation ADD COLUMN {col} TEXT")
+            added_count += 1
+
+    if added_count > 0:
+        con.commit()
+        print(f"[PRE-MIGRATION] ✓ {added_count} colonne(s) recommandations ajoutée(s)")
+    else:
+        print("[PRE-MIGRATION] ✓ Toutes les colonnes recommandations existent déjà")
+
     con.close()
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)

@@ -45,6 +45,19 @@ class FicheEvaluationDGPPEPDF:
         self._setup_custom_styles()
         self.story = []
 
+    @staticmethod
+    def format_text_with_linebreaks(text):
+        """Convertir les retours à la ligne en balises <br/> pour ReportLab"""
+        if not text:
+            return text
+        # Échapper les caractères HTML spéciaux sauf <br/>
+        text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        # Remplacer les \n par <br/>
+        text = text.replace('\n', '<br/>')
+        # Rétablir <br/>
+        text = text.replace('&lt;br/&gt;', '<br/>')
+        return text
+
     def _setup_custom_styles(self):
         """Configuration des styles personnalisés"""
         # Style pour l'en-tête République
@@ -375,16 +388,20 @@ class FicheEvaluationDGPPEPDF:
 
             total_score += score
 
+            # Formater les textes pour préserver les retours à la ligne
+            description_formatted = self.format_text_with_linebreaks(description) if description else '-'
+            recommandations_formatted = self.format_text_with_linebreaks(recommandations) if recommandations else '-'
+
             row = [
                 Paragraph(f"<b>{title}</b><br/><font size=8>({max_score} points)</font>", self.styles['DGPPEBodyText']),
-                Paragraph(description if description else '-', self.styles['DGPPEBodyText']),
+                Paragraph(description_formatted, self.styles['DGPPEBodyText']),
                 Paragraph(f"<b>{score}/{max_score}</b>", ParagraphStyle(
                     name=f'Score{key}',
                     parent=self.styles['DGPPEBodyText'],
                     alignment=TA_CENTER,
                     fontSize=10
                 )),
-                Paragraph(recommandations if recommandations else '-', self.styles['DGPPEBodyText'])
+                Paragraph(recommandations_formatted, self.styles['DGPPEBodyText'])
             ]
             data.append(row)
 
@@ -510,9 +527,11 @@ class FicheEvaluationDGPPEPDF:
         # Recommandations
         recommandations = self.fiche.get('recommandations', '')
         if recommandations:
+            # Formater le texte pour préserver les retours à la ligne
+            recommandations_formatted = self.format_text_with_linebreaks(recommandations)
             data = [[
                 Paragraph("<b>RECOMMANDATIONS:</b>", self.styles['Label']),
-                Paragraph(recommandations, self.styles['DGPPEBodyText'])
+                Paragraph(recommandations_formatted, self.styles['DGPPEBodyText'])
             ]]
 
             table = Table(data, colWidths=[4*cm, 13*cm])
