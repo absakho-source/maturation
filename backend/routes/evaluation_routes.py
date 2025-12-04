@@ -130,86 +130,10 @@ def get_fiche_evaluation(project_id):
                 'recommandations': '',
                 'fichier_pdf': None
             }), 200
-        
-        # Convertir en dictionnaire avec les nouveaux champs
-        fiche_data = {
-            'id': fiche.id,
-            'project_id': fiche.project_id,
-            'evaluateur_nom': fiche.evaluateur_nom,
-            'date_evaluation': fiche.date_evaluation.isoformat() if fiche.date_evaluation else None,
-            'reference_fiche': fiche.reference_fiche,
-            
-            # Critères d'évaluation avec scores et descriptions
-            'criteres': {
-                'pertinence': {
-                    'score': fiche.pertinence_score,
-                    'max_score': 5,
-                    'description': fiche.pertinence_description
-                },
-                'alignement': {
-                    'score': fiche.alignement_score,
-                    'max_score': 10,
-                    'description': fiche.alignement_description
-                },
-                'activites_couts': {
-                    'score': fiche.activites_couts_score,
-                    'max_score': 15,
-                    'description': fiche.activites_couts_description
-                },
-                'equite': {
-                    'score': fiche.equite_score,
-                    'max_score': 15,
-                    'description': fiche.equite_description
-                },
-                'viabilite': {
-                    'score': fiche.viabilite_score,
-                    'max_score': 5,
-                    'description': fiche.viabilite_description
-                },
-                'rentabilite': {
-                    'score': fiche.rentabilite_score,
-                    'max_score': 5,
-                    'description': fiche.rentabilite_description
-                },
-                'benefices_strategiques': {
-                    'score': fiche.benefices_strategiques_score,
-                    'max_score': 10,
-                    'description': fiche.benefices_strategiques_description
-                },
-                'perennite': {
-                    'score': fiche.perennite_score,
-                    'max_score': 5,
-                    'description': fiche.perennite_description
-                },
-                'avantages_intangibles': {
-                    'score': fiche.avantages_intangibles_score,
-                    'max_score': 10,
-                    'description': fiche.avantages_intangibles_description
-                },
-                'faisabilite': {
-                    'score': fiche.faisabilite_score,
-                    'max_score': 5,
-                    'description': fiche.faisabilite_description
-                },
-                'ppp': {
-                    'score': fiche.ppp_score,
-                    'max_score': 5,
-                    'description': fiche.ppp_description
-                },
-                'impact_environnemental': {
-                    'score': fiche.impact_environnemental_score,
-                    'max_score': 5,
-                    'description': fiche.impact_environnemental_description
-                }
-            },
-            
-            'impact_emploi_description': fiche.impact_emploi_description,
-            'score_total': fiche.score_total,
-            'proposition': fiche.proposition,
-            'recommandations': fiche.recommandations,
-            'fichier_pdf': fiche.fichier_pdf
-        }
-        
+
+        # Utiliser to_dict() pour garantir la cohérence avec tous les champs (notamment recommandations)
+        fiche_data = fiche.to_dict()
+
         return jsonify(fiche_data), 200
         
     except Exception as e:
