@@ -187,8 +187,8 @@
             </button>
           </div>
 
-          <!-- Section Archives des fiches d'évaluation - Visible uniquement pour les admins ET s'il y a des archives -->
-          <div class="info-card archives-section" v-if="currentUser && currentUser.role === 'admin' && !isSoumissionnaire() && (!loadingArchives && archives.length > 0)">
+          <!-- Section Archives des fiches d'évaluation - Visible pour tous les rôles autorisés (sauf soumissionnaire) s'il y a des archives -->
+          <div class="info-card archives-section" v-if="currentUser && ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur'].includes(currentUser.role) && !isSoumissionnaire() && (!loadingArchives && archives.length > 0)">
             <h3>📚 Historique des fiches d'évaluation archivées</h3>
             <div class="archives-list">
               <div v-for="archive in archives" :key="archive.filename" class="archive-item">
@@ -413,8 +413,9 @@ export default {
         this.ficheEvaluation = null;
       }
 
-      // Charger les archives des fiches d'évaluation (admin uniquement)
-      if (this.currentUser && this.currentUser.role === 'admin') {
+      // Charger les archives des fiches d'évaluation (tous les rôles autorisés sauf soumissionnaire)
+      const rolesAutorises = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur'];
+      if (this.currentUser && rolesAutorises.includes(this.currentUser.role)) {
         try {
           const archivesRes = await fetch(`/api/projects/${id}/fiches-archives`, {
             headers: {
