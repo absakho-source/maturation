@@ -182,15 +182,24 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
     def save_fiche_evaluation(project_id):
         """Sauvegarde ou met à jour une fiche d'évaluation"""
         try:
+            # LOG IMMÉDIAT pour prouver que la fonction est appelée
+            import sys
+            print(f"[FICHE SAVE] Requête reçue pour projet {project_id}", file=sys.stderr, flush=True)
+
             data = request.get_json()
+            print(f"[FICHE SAVE] Données reçues: {list(data.keys())}", file=sys.stderr, flush=True)
 
             # Vérifier le rôle de l'utilisateur
             role = data.get("role", "")
+            print(f"[FICHE SAVE] Rôle: '{role}'", file=sys.stderr, flush=True)
 
             # Seuls certains rôles peuvent modifier les fiches d'évaluation
             roles_autorises = ['evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'admin']
             if role not in roles_autorises:
+                print(f"[FICHE SAVE] ❌ ACCÈS REFUSÉ - Rôle '{role}' non autorisé", file=sys.stderr, flush=True)
                 return jsonify({"error": "Accès refusé: Vous n'avez pas les permissions pour modifier les fiches d'évaluation"}), 403
+
+            print(f"[FICHE SAVE] ✅ Rôle autorisé, poursuite du traitement", file=sys.stderr, flush=True)
 
             # Vérifier que le projet existe
             project = Project.query.get_or_404(project_id)
