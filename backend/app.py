@@ -3381,10 +3381,23 @@ def delete_project_document(project_id, document_id):
             return jsonify({"error": "Vous n'avez pas la permission de supprimer ce document"}), 403
 
         # Supprimer le fichier physique
-        upload_folder = app.config["UPLOAD_FOLDER"]
-        filepath = os.path.join(upload_folder, document.nom_fichier)
+        # Les fiches archivées sont dans /data/archives/, les autres dans UPLOAD_FOLDER
+        if document.type_document == 'fiche_evaluation_archivee':
+            # Utiliser DATA_DIR si défini (Render), sinon chemin local
+            data_dir = os.environ.get('DATA_DIR', None)
+            if data_dir:
+                archives_dir = os.path.join(data_dir, 'archives', 'fiches_evaluation')
+            else:
+                backend_dir = os.path.dirname(__file__)
+                archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+            filepath = os.path.join(archives_dir, document.nom_fichier)
+        else:
+            upload_folder = app.config["UPLOAD_FOLDER"]
+            filepath = os.path.join(upload_folder, document.nom_fichier)
+
         if os.path.exists(filepath):
             os.remove(filepath)
+            print(f"[DELETE] Fichier supprimé: {filepath}")
 
         # Supprimer l'entrée de la base
         nom_original = document.nom_original
