@@ -383,7 +383,7 @@ def create_or_update_fiche_evaluation(project_id):
         db.session.commit()
 
         # Générer le PDF à chaque création ou mise à jour
-        print(f"[PDF] Début de la génération du PDF pour le projet {project_id}")
+        print(f"[PDF] Début de la génération du PDF pour le projet {project_id}", flush=True)
         try:
             from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
             import os
@@ -434,18 +434,18 @@ def create_or_update_fiche_evaluation(project_id):
             os.makedirs(pdf_directory, exist_ok=True)
 
             # Archiver l'ancien PDF s'il existe (lors d'une modification)
-            print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}")
+            print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}", flush=True)
             if is_update and fiche.fichier_pdf:
-                print(f"[PDF] Lancement de l'archivage...")
+                print(f"[PDF] Lancement de l'archivage...", flush=True)
                 from utils.archivage import archiver_fiche
                 modificateur = data.get('modified_by', 'admin')
                 archive_path = archiver_fiche(fiche, 'modification', modificateur)
                 if archive_path:
-                    print(f"[PDF] Ancien PDF archivé: {archive_path}")
+                    print(f"[PDF] Ancien PDF archivé: {archive_path}", flush=True)
                 else:
-                    print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué")
+                    print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué", flush=True)
             else:
-                print(f"[PDF] Archivage ignoré (première génération ou pas de PDF existant)")
+                print(f"[PDF] Archivage ignoré (première génération ou pas de PDF existant)", flush=True)
 
             # Générer le nouveau PDF
             pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
