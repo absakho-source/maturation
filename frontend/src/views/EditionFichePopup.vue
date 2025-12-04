@@ -174,10 +174,11 @@ export default {
         console.log('Utilisateur connecté:', user);
         console.log('Nom évaluateur:', evaluateurNom);
 
-        // Ajouter evaluateur_nom aux données
+        // Ajouter evaluateur_nom et role aux données
         const dataToSend = {
           ...this.ficheEdition,
-          evaluateur_nom: evaluateurNom
+          evaluateur_nom: evaluateurNom,
+          role: user?.role || 'evaluateur'
         };
 
         console.log('Données envoyées:', dataToSend);
