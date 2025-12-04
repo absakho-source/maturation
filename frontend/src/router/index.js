@@ -65,7 +65,7 @@ router.beforeEach((to, from, next) => {
     'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'mon-profil', 'project', 'evaluation'],
     'soumissionnaire': ['soumissionnaire', 'projets-tutelle', 'mon-profil', 'project'],
     'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
-    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'mon-profil', 'project', 'evaluation'],
+    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'invite': ['invite', 'mon-profil'] // Les invités n'ont accès qu'à leur dashboard et profil
