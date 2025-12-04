@@ -293,13 +293,20 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                     print(f"[FICHE UPDATE] Erreur lors de la suppression du PDF: {pdf_error}")
                     # Continue même si la suppression échoue
 
+            # Mettre à jour le champ avis du projet pour qu'il se reflète dans les dashboards
+            if fiche.proposition:
+                project.avis = fiche.proposition
+                print(f"[FICHE UPDATE] Mise à jour de project.avis = {fiche.proposition}")
+
             db.session.commit()
 
             # Enregistrer dans l'historique
             if Historique:
                 try:
                     evaluateur_nom = data.get('evaluateur_nom', fiche.evaluateur_nom)
-                    action_text = f"Modification de la fiche d'évaluation (Score: {fiche.calculer_score_total()}/100)"
+                    score_total = fiche.calculer_score_total()
+                    avis = fiche.proposition or 'non défini'
+                    action_text = f"Modification de la fiche d'évaluation (Score: {score_total}/100, Avis: {avis})"
                     historique_entry = Historique(
                         project_id=project_id,
                         action=action_text,
