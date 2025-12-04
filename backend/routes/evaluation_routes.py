@@ -433,7 +433,9 @@ def create_or_update_fiche_evaluation(project_id):
             os.makedirs(pdf_directory, exist_ok=True)
 
             # Archiver l'ancien PDF s'il existe (lors d'une modification)
+            print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}")
             if is_update and fiche.fichier_pdf:
+                print(f"[PDF] Lancement de l'archivage...")
                 from utils.archivage import archiver_fiche
                 modificateur = data.get('modified_by', 'admin')
                 archive_path = archiver_fiche(fiche, 'modification', modificateur)
@@ -441,6 +443,8 @@ def create_or_update_fiche_evaluation(project_id):
                     print(f"[PDF] Ancien PDF archivé: {archive_path}")
                 else:
                     print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué")
+            else:
+                print(f"[PDF] Archivage ignoré (première génération ou pas de PDF existant)")
 
             # Générer le nouveau PDF
             pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
