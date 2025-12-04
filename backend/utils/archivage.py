@@ -124,8 +124,8 @@ def archiver_fiche(fiche, raison, archive_par):
                     nom_original=f"Fiche_Evaluation_{projet_ref}_v{version}.pdf",
                     description=description,
                     type_document='fiche_evaluation_archivee',
-                    auteur_nom=archive_par,
-                    auteur_role='admin',  # L'archivage est fait par le système
+                    auteur_nom=evaluateur,  # L'évaluateur qui a créé la fiche, pas celui qui l'archive
+                    auteur_role='evaluateur',
                     taille_fichier=file_size,
                     visible_pour_roles='["admin", "secretariatsct", "presidencesct", "presidencecomite", "evaluateur"]'
                 )

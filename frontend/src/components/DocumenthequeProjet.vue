@@ -149,7 +149,9 @@ export default {
         }
         const response = await fetch(`/api/projects/${this.projectId}/documents?${params.toString()}`);
         if (response.ok) {
-          this.documents = await response.json();
+          const allDocs = await response.json();
+          // Filtrer les fiches archivées qui sont affichées dans une section séparée
+          this.documents = allDocs.filter(doc => doc.type_document !== 'fiche_evaluation_archivee');
         } else {
           console.error('Erreur lors du chargement des documents');
         }

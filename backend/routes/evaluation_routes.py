@@ -804,45 +804,38 @@ def get_fiches_archives(project_id):
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
 
-        # Dossier des archives
-        backend_dir = os.path.dirname(os.path.dirname(__file__))
-        archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+        # Récupérer les archives depuis la table DocumentProjet
+        archives_docs = DocumentProjet.query.filter_by(
+            project_id=project_id,
+            type_document='fiche_evaluation_archivee'
+        ).order_by(DocumentProjet.date_ajout.desc()).all()
 
-        # Lister les PDFs archivés pour ce projet
-        import glob
-        projet_ref = project.numero_projet or f'ID{project_id}'
-        pattern = os.path.join(archives_dir, f"{projet_ref}_v*")
-        archive_files = sorted(glob.glob(pattern), reverse=True)  # Plus récents en premier
-
-        # Parser les noms de fichiers pour extraire les métadonnées
+        # Construire la liste des archives avec les métadonnées
         archives_list = []
-        for filepath in archive_files:
-            filename = os.path.basename(filepath)
-            # Format: PROJET-XXX_v1_20250128_153045_reassignation_jean.pdf
+        for doc in archives_docs:
+            # Parser le nom du fichier pour extraire la version
+            # Format: DGPPE-25-004_v1_20250204_164530_modification_secretariatsct.pdf
+            filename = doc.nom_fichier
+            version = 'N/A'
+            raison = 'modification'
+
             try:
                 parts = filename.replace('.pdf', '').split('_')
-                if len(parts) >= 5:
+                if len(parts) >= 2 and parts[1].startswith('v'):
                     version = parts[1].replace('v', '')
-                    date = parts[2]
-                    heure = parts[3]
+                if len(parts) >= 5:
                     raison = parts[4]
-                    archive_par = parts[5] if len(parts) > 5 else 'inconnu'
+            except:
+                pass
 
-                    # Formater la date
-                    from datetime import datetime
-                    date_obj = datetime.strptime(f"{date}_{heure}", "%Y%m%d_%H%M%S")
-
-                    archives_list.append({
-                        'filename': filename,
-                        'version': int(version),
-                        'date_archivage': date_obj.isoformat(),
-                        'raison_archivage': raison,
-                        'archive_par': archive_par,
-                        'taille': os.path.getsize(filepath)
-                    })
-            except Exception as e:
-                print(f"Erreur parsing {filename}: {e}")
-                continue
+            archives_list.append({
+                'filename': filename,
+                'version': version,
+                'date_archivage': doc.date_ajout.isoformat() if doc.date_ajout else None,
+                'raison_archivage': raison,
+                'archive_par': doc.description or 'Système',  # Description contient "Fiche archivée (v1) - Évaluée par XXX"
+                'taille': doc.taille_fichier or 0
+            })
 
         # Récupérer la fiche actuelle
         fiche_actuelle = FicheEvaluation.query.filter_by(project_id=project_id).first()
