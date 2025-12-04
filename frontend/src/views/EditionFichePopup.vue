@@ -12,16 +12,16 @@
         <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
           <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
           <div class="critere-inputs">
-            <label>Valeur et/ou description:
+            <label>VALEUR ET/OU DESCRIPTION:
               <textarea v-model="ficheEdition.criteres[critere.key].description"
                 class="textarea-description" rows="2" placeholder="Analyser le critère..."></textarea>
             </label>
-            <label>Score:
+            <label>SCORE:
               <input type="number" :min="0" :max="critere.max"
                 v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
               / {{ critere.max }}
             </label>
-            <label>Recommandations:
+            <label>RECOMMANDATIONS:
               <textarea v-model="ficheEdition.criteres[critere.key].recommandations"
                 class="textarea-recommandations" rows="2" placeholder="Recommandations pour ce critère..."></textarea>
             </label>
