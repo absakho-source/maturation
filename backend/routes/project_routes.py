@@ -217,7 +217,13 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             
             # Mettre à jour les critères selon le modèle réel
             criteres = data.get('criteres', {})
-            
+
+            # DEBUG: Logger les données reçues
+            print(f"[FICHE UPDATE DEBUG] Données reçues:")
+            print(f"  - Critères: {list(criteres.keys())}")
+            for key, value in criteres.items():
+                print(f"  - {key}: score={value.get('score')}, has_desc={bool(value.get('description'))}, has_reco={bool(value.get('recommandations'))}")
+
             # Pertinence
             pertinence = criteres.get('pertinence', {})
             fiche.pertinence_score = pertinence.get('score', 0)
@@ -296,6 +302,12 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 print(f"[FICHE UPDATE] Mise à jour de project.avis = {fiche.proposition}")
 
             db.session.commit()
+
+            # DEBUG: Vérifier que les données sont bien sauvegardées
+            print(f"[FICHE UPDATE DEBUG] Après sauvegarde:")
+            print(f"  - pertinence_recommandations: '{fiche.pertinence_recommandations[:50] if fiche.pertinence_recommandations else None}'")
+            print(f"  - alignement_recommandations: '{fiche.alignement_recommandations[:50] if fiche.alignement_recommandations else None}'")
+            print(f"  - fichier_pdf avant génération: '{fiche.fichier_pdf}'")
 
             # Générer le nouveau PDF après la sauvegarde des données
             try:
