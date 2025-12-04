@@ -53,8 +53,21 @@ def archiver_fiche(fiche, raison, archive_par):
 
         # Vérifier que le fichier source existe
         if not os.path.exists(pdf_source_path):
-            print(f"❌ Fichier PDF source non trouvé: {pdf_source_path}")
-            return None
+            # Sur Render, essayer l'ancien emplacement (backend/routes/pdfs/) pour rétro-compatibilité
+            if data_dir:
+                # Chercher dans l'ancien emplacement (où les PDFs étaient générés avant la correction)
+                old_pdf_dir = os.path.join('/opt/render/project/src/backend/routes/pdfs', 'fiches_evaluation')
+                old_pdf_path = os.path.join(old_pdf_dir, fiche.fichier_pdf)
+                print(f"[ARCHIVAGE] PDF non trouvé dans {pdf_source_path}, essai emplacement ancien: {old_pdf_path}", flush=True)
+                if os.path.exists(old_pdf_path):
+                    pdf_source_path = old_pdf_path
+                    print(f"[ARCHIVAGE] ✓ PDF trouvé dans l'ancien emplacement", flush=True)
+                else:
+                    print(f"❌ Fichier PDF source non trouvé ni dans {pdf_source_dir} ni dans {old_pdf_dir}")
+                    return None
+            else:
+                print(f"❌ Fichier PDF source non trouvé: {pdf_source_path}")
+                return None
 
         # Créer le dossier d'archives s'il n'existe pas
         os.makedirs(archives_dir, exist_ok=True)
