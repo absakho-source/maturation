@@ -79,7 +79,7 @@ export default {
       ficheEdition: null,
       enregistrementEnCours: false,
       criteresConfig: [
-        { key: 'pertinence', label: 'PERTINENCE', max: 5 },
+        { key: 'pertinence', label: 'PERTINENCE', max: 10 },
         { key: 'alignement', label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
         { key: 'activites_couts', label: 'PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', max: 15 },
         { key: 'equite', label: 'ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', max: 15 },

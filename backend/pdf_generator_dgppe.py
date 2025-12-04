@@ -340,7 +340,7 @@ class FicheEvaluationDGPPEPDF:
         # Liste des 12 critères (total 100 points)
         # Note: impact_emploi retiré car pas dans le formulaire frontend
         criteria_list = [
-            ('PERTINENCE', 'pertinence', 5),
+            ('PERTINENCE', 'pertinence', 10),
             ('ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', 'alignement', 10),
             ('PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', 'activites_couts', 15),
             ('ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', 'equite', 15),

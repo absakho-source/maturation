@@ -236,9 +236,9 @@ def create_or_update_fiche_evaluation(project_id):
         # Mise à jour des critères d'évaluation selon le nouveau format
         criteres = data.get('criteres', {})
         
-        # PERTINENCE (/5)
+        # PERTINENCE (/10)
         if 'pertinence' in criteres:
-            fiche.pertinence_score = min(criteres['pertinence'].get('score', 0), 5)
+            fiche.pertinence_score = min(criteres['pertinence'].get('score', 0), 10)
             fiche.pertinence_description = criteres['pertinence'].get('description', '')
             fiche.pertinence_recommandations = criteres['pertinence'].get('recommandations', '')
         
@@ -383,6 +383,7 @@ def create_or_update_fiche_evaluation(project_id):
         db.session.commit()
 
         # Générer le PDF à chaque création ou mise à jour
+        print(f"[PDF] Début de la génération du PDF pour le projet {project_id}")
         try:
             from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
             import os
