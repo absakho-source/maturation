@@ -144,10 +144,17 @@ class FicheEvaluationDGPPEPDF:
         title = Paragraph("FICHE D'ÉVALUATION", self.styles['MainTitle'])
         self.story.append(title)
 
-        # Date et heure de génération
+        # Date et version sur la même ligne
         date_generation = datetime.now().strftime("%d/%m/%Y à %H:%M:%S")
+
+        # Construire le texte avec version si disponible
+        if self.version_affichage:
+            date_version_text = f"<i>Générée le {date_generation} - {self.version_affichage}</i>"
+        else:
+            date_version_text = f"<i>Générée le {date_generation}</i>"
+
         date_para = Paragraph(
-            f"<i>Générée le {date_generation}</i>",
+            date_version_text,
             ParagraphStyle(
                 name='DateGeneration',
                 parent=self.styles['Normal'],
@@ -155,27 +162,10 @@ class FicheEvaluationDGPPEPDF:
                 alignment=TA_CENTER,
                 textColor=HexColor('#6c757d'),
                 spaceBefore=5,
-                spaceAfter=5
+                spaceAfter=15
             )
         )
         self.story.append(date_para)
-
-        # Version du formulaire (si disponible)
-        if self.version_affichage:
-            version_para = Paragraph(
-                f"<i>{self.version_affichage}</i>",
-                ParagraphStyle(
-                    name='VersionInfo',
-                    parent=self.styles['Normal'],
-                    fontSize=9,
-                    alignment=TA_CENTER,
-                    textColor=HexColor('#6c757d')
-                )
-            )
-            self.story.append(version_para)
-            self.story.append(Spacer(1, 15))
-        else:
-            self.story.append(Spacer(1, 20))
 
     def _create_section_I(self):
         """Section I - PRÉSENTATION DU PROJET"""
