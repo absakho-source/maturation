@@ -424,7 +424,8 @@ export default {
             }
           });
           if (archivesRes.ok) {
-            this.archives = await archivesRes.json();
+            const data = await archivesRes.json();
+            this.archives = data.archives || [];
           } else {
             this.archives = [];
           }
@@ -736,7 +737,8 @@ export default {
             }
           });
           if (archivesRes.ok) {
-            this.archives = await archivesRes.json();
+            const data = await archivesRes.json();
+            this.archives = data.archives || [];
           }
         } else {
           const error = await response.json();
