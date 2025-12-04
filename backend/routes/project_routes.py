@@ -1,9 +1,15 @@
 """
 Routes pour la gestion des projets et des fiches d'évaluation
+VERSION: 2025-12-04-11:30 - FORCE GUNICORN RELOAD
 """
 from flask import request, jsonify
 import traceback
 import os
+import sys
+
+# FORCE RELOAD MARKER - Ne pas supprimer
+_MODULE_VERSION = "2025-12-04-recommandations-fix-FINAL"
+print(f"[PROJECT_ROUTES] Module chargé - Version: {_MODULE_VERSION}", file=sys.stderr, flush=True)
 
 def register_project_routes(app, Project, FicheEvaluation, db, User=None, Historique=None):
     # Importer la fonction d'archivage
