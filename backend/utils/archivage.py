@@ -96,12 +96,15 @@ def archiver_fiche(fiche, raison, archive_par):
 
             # Enregistrer l'archive dans la base de données
             try:
+                print(f"[ARCHIVAGE] Tentative d'enregistrement dans la BDD...")
                 from models import db, DocumentProjet
+                print(f"[ARCHIVAGE] Imports réussis (db, DocumentProjet)")
 
                 description = f"Fiche d'évaluation archivée (v{version}) - {raison}"
                 if evaluateur != 'inconnu':
                     description += f" - Évaluée par {evaluateur}"
 
+                print(f"[ARCHIVAGE] Création de l'objet DocumentProjet...")
                 doc_archive = DocumentProjet(
                     project_id=fiche.project_id,
                     nom_fichier=nom_archive,
@@ -114,13 +117,18 @@ def archiver_fiche(fiche, raison, archive_par):
                     visible_pour_roles='["admin", "secretariatsct", "presidencesct", "presidencecomite", "evaluateur"]'
                 )
 
+                print(f"[ARCHIVAGE] Ajout à la session...")
                 db.session.add(doc_archive)
+
+                print(f"[ARCHIVAGE] Commit...")
                 db.session.commit()
 
                 print(f"✅ Archive enregistrée dans la base de données (ID: {doc_archive.id})")
 
             except Exception as db_error:
-                print(f"⚠️ Erreur lors de l'enregistrement dans la BDD: {db_error}")
+                print(f"❌ Erreur lors de l'enregistrement dans la BDD: {db_error}")
+                import traceback
+                traceback.print_exc()
                 # Le fichier est copié mais pas enregistré en BDD
                 # On ne considère pas cela comme un échec critique
 
