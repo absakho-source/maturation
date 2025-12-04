@@ -262,8 +262,15 @@ export default {
       const backendUrl = isProduction
         ? 'https://maturation-backend.onrender.com'
         : '';
-      const url = `${backendUrl}/api/uploads/${doc.nom_fichier}`;
-      window.open(url, '_blank');
+
+      // Les fiches archivées utilisent un endpoint différent
+      if (doc.type_document === 'fiche_evaluation_archivee') {
+        const url = `${backendUrl}/api/archives/fiches_evaluation/${doc.nom_fichier}`;
+        window.open(url, '_blank');
+      } else {
+        const url = `${backendUrl}/api/uploads/${doc.nom_fichier}`;
+        window.open(url, '_blank');
+      }
     },
 
     canDeleteDocument(doc) {

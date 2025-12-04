@@ -1514,6 +1514,22 @@ def uploaded_file(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 404
 
+@app.route("/api/archives/fiches_evaluation/<path:filename>")
+def archived_fiche_file(filename):
+    """Serve archived evaluation form PDFs"""
+    try:
+        # Utiliser DATA_DIR si défini (Render), sinon chemin local
+        data_dir = os.environ.get('DATA_DIR', None)
+        if data_dir:
+            archives_dir = os.path.join(data_dir, 'archives', 'fiches_evaluation')
+        else:
+            backend_dir = os.path.dirname(__file__)
+            archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+
+        return send_from_directory(archives_dir, filename)
+    except Exception as e:
+        return jsonify({"error": f"Archive non trouvée: {str(e)}"}), 404
+
 @app.route("/api/logs/<int:project_id>")
 def get_project_logs(project_id):
     try:
