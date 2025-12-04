@@ -299,25 +299,67 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             impact_emploi = criteres.get('impact_emploi', {})
             fiche.impact_sur_emploi = impact_emploi.get('description', '')
 
-            # IMPORTANT: Supprimer l'ancien PDF pour forcer la régénération avec les nouvelles données
-            if fiche.fichier_pdf:
-                try:
-                    pdf_directory = os.path.join(os.path.dirname(__file__), '..', 'pdfs', 'fiches_evaluation')
-                    pdf_path = os.path.join(pdf_directory, fiche.fichier_pdf)
-                    if os.path.exists(pdf_path):
-                        os.remove(pdf_path)
-                        print(f"[FICHE UPDATE] Ancien PDF supprimé: {fiche.fichier_pdf}")
-                    fiche.fichier_pdf = None  # Réinitialiser le champ pour indiquer qu'il n'y a plus de PDF
-                except Exception as pdf_error:
-                    print(f"[FICHE UPDATE] Erreur lors de la suppression du PDF: {pdf_error}")
-                    # Continue même si la suppression échoue
-
             # Mettre à jour le champ avis du projet pour qu'il se reflète dans les dashboards
             if fiche.proposition:
                 project.avis = fiche.proposition
                 print(f"[FICHE UPDATE] Mise à jour de project.avis = {fiche.proposition}")
 
             db.session.commit()
+
+            # Générer le nouveau PDF après la sauvegarde des données
+            try:
+                # Import du générateur PDF
+                try:
+                    from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
+                except ImportError:
+                    import sys
+                    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+                    from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
+
+                # Préparer les données pour le PDF
+                fiche_data = {
+                    'id': fiche.id,
+                    'evaluateur_nom': fiche.evaluateur_nom,
+                    'proposition': fiche.proposition,
+                    'recommandations': fiche.recommandations_generales,
+                    'criteres': {
+                        'pertinence': {'score': fiche.pertinence_score, 'description': fiche.pertinence_description, 'recommandations': fiche.pertinence_recommandations},
+                        'alignement': {'score': fiche.alignement_score, 'description': fiche.alignement_description, 'recommandations': fiche.alignement_recommandations},
+                        'activites_couts': {'score': fiche.activites_couts_score, 'description': fiche.activites_couts_description, 'recommandations': fiche.activites_couts_recommandations},
+                        'equite': {'score': fiche.equite_score, 'description': fiche.equite_description, 'recommandations': fiche.equite_recommandations},
+                        'viabilite': {'score': fiche.viabilite_score, 'description': fiche.viabilite_description, 'recommandations': fiche.viabilite_recommandations},
+                        'rentabilite': {'score': fiche.rentabilite_score, 'description': fiche.rentabilite_description, 'recommandations': fiche.rentabilite_recommandations},
+                        'benefices_strategiques': {'score': fiche.benefices_strategiques_score, 'description': fiche.benefices_strategiques_description, 'recommandations': fiche.benefices_strategiques_recommandations},
+                        'perennite': {'score': fiche.perennite_score, 'description': fiche.perennite_description, 'recommandations': fiche.perennite_recommandations},
+                        'avantages_intangibles': {'score': fiche.avantages_intangibles_score, 'description': fiche.avantages_intangibles_description, 'recommandations': fiche.avantages_intangibles_recommandations},
+                        'faisabilite': {'score': fiche.faisabilite_score, 'description': fiche.faisabilite_description, 'recommandations': fiche.faisabilite_recommandations},
+                        'ppp': {'score': fiche.ppp_score, 'description': fiche.ppp_description, 'recommandations': fiche.ppp_recommandations},
+                        'impact_environnemental': {'score': fiche.impact_environnemental_score, 'description': fiche.impact_environnemental_description, 'recommandations': fiche.impact_environnemental_recommandations}
+                    }
+                }
+
+                project_data = {
+                    'id': project.id,
+                    'numero_projet': project.numero_projet,
+                    'titre': project.titre,
+                    'organisme_tutelle': project.organisme_tutelle,
+                    'cout_estimatif': project.cout_estimatif
+                }
+
+                # Répertoire de sortie pour les PDFs
+                pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+                os.makedirs(pdf_directory, exist_ok=True)
+
+                # Générer le nouveau PDF
+                pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
+                fiche.fichier_pdf = os.path.basename(pdf_path)
+                db.session.commit()
+                print(f"[FICHE UPDATE] Nouveau PDF généré: {fiche.fichier_pdf}")
+            except Exception as pdf_error:
+                print(f"[FICHE UPDATE] Erreur génération PDF: {pdf_error}")
+                import traceback
+                traceback.print_exc()
+                # Continue même si la génération PDF échoue
 
             # Enregistrer dans l'historique
             if Historique:
