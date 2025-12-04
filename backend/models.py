@@ -270,51 +270,63 @@ class FicheEvaluation(db.Model):
             'criteres': {
                 'pertinence': {
                     'score': self.pertinence_score,
-                    'description': self.pertinence_description
+                    'description': self.pertinence_description,
+                    'recommandations': self.pertinence_recommandations
                 },
                 'alignement': {
                     'score': self.alignement_score,
-                    'description': self.alignement_description
+                    'description': self.alignement_description,
+                    'recommandations': self.alignement_recommandations
                 },
                 'activites_couts': {
                     'score': self.activites_couts_score,
-                    'description': self.activites_couts_description
+                    'description': self.activites_couts_description,
+                    'recommandations': self.activites_couts_recommandations
                 },
                 'equite': {
                     'score': self.equite_score,
-                    'description': self.equite_description
+                    'description': self.equite_description,
+                    'recommandations': self.equite_recommandations
                 },
                 'viabilite': {
                     'score': self.viabilite_score,
-                    'description': self.viabilite_description
+                    'description': self.viabilite_description,
+                    'recommandations': self.viabilite_recommandations
                 },
                 'rentabilite': {
                     'score': self.rentabilite_score,
-                    'description': self.rentabilite_description
+                    'description': self.rentabilite_description,
+                    'recommandations': self.rentabilite_recommandations
                 },
                 'benefices_strategiques': {
                     'score': self.benefices_strategiques_score,
-                    'description': self.benefices_strategiques_description
+                    'description': self.benefices_strategiques_description,
+                    'recommandations': self.benefices_strategiques_recommandations
                 },
                 'perennite': {
                     'score': self.perennite_score,
-                    'description': self.perennite_description
+                    'description': self.perennite_description,
+                    'recommandations': self.perennite_recommandations
                 },
                 'avantages_intangibles': {
                     'score': self.avantages_intangibles_score,
-                    'description': self.avantages_intangibles_description
+                    'description': self.avantages_intangibles_description,
+                    'recommandations': self.avantages_intangibles_recommandations
                 },
                 'faisabilite': {
                     'score': self.faisabilite_score,
-                    'description': self.faisabilite_description
+                    'description': self.faisabilite_description,
+                    'recommandations': self.faisabilite_recommandations
                 },
                 'ppp': {
                     'score': self.ppp_score,
-                    'description': self.ppp_description
+                    'description': self.ppp_description,
+                    'recommandations': self.ppp_recommandations
                 },
                 'impact_environnemental': {
                     'score': self.impact_environnemental_score,
-                    'description': self.impact_environnemental_description
+                    'description': self.impact_environnemental_description,
+                    'recommandations': self.impact_environnemental_recommandations
                 },
                 'impact_emploi': {
                     'score': self.impact_emploi_score,
