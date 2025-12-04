@@ -4346,6 +4346,16 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import versioning routes: {e}")
 
+@app.route("/api/version", methods=["GET"])
+def get_version():
+    """Retourne la version du code backend déployé"""
+    return jsonify({
+        "version": "2025-12-04-recommandations-fix-v2",
+        "commit": "8d44fd5",
+        "description": "Fix recommandations avec debug logging détaillé",
+        "timestamp": datetime.now().isoformat()
+    })
+
 @app.route("/api/admin/run-migration", methods=["POST"])
 def run_migration():
     """Execute the migration script to add motivation_resoumission column"""
