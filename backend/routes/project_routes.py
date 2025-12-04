@@ -6,6 +6,12 @@ import traceback
 import os
 
 def register_project_routes(app, Project, FicheEvaluation, db, User=None, Historique=None):
+    # Importer la fonction d'archivage
+    try:
+        from utils.archivage import archiver_fiche
+    except ImportError:
+        print("[WARNING] Module d'archivage non disponible")
+        archiver_fiche = None
         
     @app.route('/api/projects/<int:project_id>/presentation', methods=['GET'])
     def get_project_presentation(project_id):
@@ -190,7 +196,20 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             
             # Chercher une fiche existante
             fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-            
+
+            # Si la fiche existe déjà, l'archiver avant modification
+            if fiche and archiver_fiche:
+                evaluateur_nom = data.get('evaluateur_nom', fiche.evaluateur_nom)
+                try:
+                    archive_result = archiver_fiche(fiche, 'modification', evaluateur_nom)
+                    if archive_result:
+                        print(f"[FICHE UPDATE] Ancienne fiche archivée: {archive_result}")
+                    else:
+                        print(f"[FICHE UPDATE] Avertissement: archivage échoué")
+                except Exception as archive_error:
+                    print(f"[FICHE UPDATE] Erreur archivage: {archive_error}")
+                    # Continue même si l'archivage échoue
+
             if not fiche:
                 # Créer une nouvelle fiche
                 fiche = FicheEvaluation(project_id=project_id)
