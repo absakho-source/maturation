@@ -213,10 +213,10 @@
                   </div>
                 </div>
                 <div class="archive-actions">
-                  <button @click="telechargerArchive(archive.filename)" class="btn-download" title="Télécharger">
-                    📥 Télécharger
+                  <button @click="ouvrirArchive(archive.filename)" class="btn-view" title="Voir">
+                    👁️ Voir
                   </button>
-                  <button @click="supprimerArchive(archive.filename)" class="btn-delete" title="Supprimer">
+                  <button v-if="currentUser.role === 'admin'" @click="supprimerArchive(archive.filename)" class="btn-delete" title="Supprimer">
                     🗑️ Supprimer
                   </button>
                 </div>
@@ -707,9 +707,13 @@ export default {
       return `${mb.toFixed(2)} Mo`;
     },
 
-    telechargerArchive(filename) {
-      // Télécharger le fichier archivé
-      const url = `/api/projects/${this.project.id}/fiches-archives/${filename}`;
+    ouvrirArchive(filename) {
+      // Ouvrir l'archive dans un nouvel onglet
+      const isProduction = window.location.hostname.includes('render.com');
+      const backendUrl = isProduction
+        ? 'https://maturation-backend.onrender.com'
+        : '';
+      const url = `${backendUrl}/api/archives/fiches_evaluation/${filename}`;
       window.open(url, '_blank');
     },
 
@@ -1368,8 +1372,9 @@ export default {
 
 /* Styles pour la section Archives */
 .archives-section {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #f59e0b;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-left: 4px solid #6366f1;
 }
 
 .archives-list {
@@ -1390,8 +1395,8 @@ export default {
 }
 
 .archive-item:hover {
-  border-color: #f59e0b;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
 .archive-info {
@@ -1407,7 +1412,7 @@ export default {
 
 .archive-version {
   font-weight: 700;
-  color: #f59e0b;
+  color: #6366f1;
   font-size: 1.1rem;
 }
 
@@ -1443,7 +1448,7 @@ export default {
   gap: 0.75rem;
 }
 
-.btn-download, .btn-delete {
+.btn-view, .btn-delete {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
@@ -1453,15 +1458,15 @@ export default {
   transition: all 0.2s;
 }
 
-.btn-download {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+.btn-view {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
 }
 
-.btn-download:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+.btn-view:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-delete {
