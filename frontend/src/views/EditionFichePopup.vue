@@ -183,6 +183,20 @@ export default {
         console.log('Données envoyées:', dataToSend);
         console.log('Score total calculé:', this.calculerScoreTotal());
 
+        // DEBUG: Vérifier le contenu des critères
+        console.log('=== DEBUG CRITERES ===');
+        console.log('Nombre de critères:', Object.keys(dataToSend.criteres).length);
+        for (const [key, value] of Object.entries(dataToSend.criteres)) {
+          console.log(`${key}:`, {
+            score: value.score,
+            hasDescription: !!value.description,
+            descLength: value.description?.length || 0,
+            hasRecommandations: !!value.recommandations,
+            recoLength: value.recommandations?.length || 0,
+            recommandations: value.recommandations
+          });
+        }
+
         const apiBase = import.meta.env.VITE_API_URL || '';
         const response = await fetch(`${apiBase}/api/projects/${this.projet.id}/fiche-evaluation`, {
           method: 'PUT',
