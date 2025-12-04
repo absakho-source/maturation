@@ -4350,11 +4350,27 @@ except ImportError as e:
 def get_version():
     """Retourne la version du code backend déployé"""
     return jsonify({
-        "version": "2025-12-04-recommandations-fix-v2",
-        "commit": "8d44fd5",
-        "description": "Fix recommandations avec debug logging détaillé",
+        "version": "2025-12-04-recommandations-fix-v3",
+        "commit": "255f5db",
+        "description": "Fix recommandations avec flush stdout - FORCE RELOAD",
         "timestamp": datetime.now().isoformat()
     })
+
+@app.route("/api/admin/reload-modules", methods=["POST"])
+def reload_modules():
+    """Force le rechargement des modules Python (workaround pour Gunicorn cache)"""
+    try:
+        import sys
+        import importlib
+
+        # Recharger le module project_routes
+        if 'routes.project_routes' in sys.modules:
+            importlib.reload(sys.modules['routes.project_routes'])
+            return jsonify({"message": "Module project_routes rechargé avec succès!"}), 200
+        else:
+            return jsonify({"message": "Module project_routes pas encore chargé"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/admin/run-migration", methods=["POST"])
 def run_migration():
