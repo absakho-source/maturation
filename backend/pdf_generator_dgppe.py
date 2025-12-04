@@ -347,7 +347,8 @@ class FicheEvaluationDGPPEPDF:
         # En-tête du tableau des critères
         criteres = self.fiche.get('criteres', {})
 
-        # Liste complète des 13 critères
+        # Liste des 12 critères (total 100 points)
+        # Note: impact_emploi retiré car pas dans le formulaire frontend
         criteria_list = [
             ('PERTINENCE', 'pertinence', 5),
             ('ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', 'alignement', 10),
@@ -360,8 +361,7 @@ class FicheEvaluationDGPPEPDF:
             ('AVANTAGES ET COÛTS INTANGIBLES', 'avantages_intangibles', 10),
             ('FAISABILITÉ DU PROJET / RISQUES POTENTIELS', 'faisabilite', 5),
             ('POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', 'ppp', 5),
-            ('IMPACTS ENVIRONNEMENTAUX', 'impact_environnemental', 5),
-            ('IMPACT SUR L\'EMPLOI', 'impact_emploi', 5)
+            ('IMPACTS ENVIRONNEMENTAUX', 'impact_environnemental', 5)
         ]
 
         # Créer le tableau des critères

@@ -154,11 +154,6 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                     'score': fiche.impact_environnemental_score or 0,
                     'description': fiche.impact_environnemental_description or '',
                     'recommandations': fiche.impact_environnemental_recommandations or ''
-                },
-                'impact_emploi': {
-                    'score': 0,  # Pas de score pour l'impact emploi selon le modèle
-                    'description': fiche.impact_emploi_description or '',
-                    'recommandations': fiche.impact_emploi_recommandations or ''
                 }
             }
             evaluation_data = {
@@ -294,11 +289,6 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             fiche.impact_environnemental_score = impact_environnemental.get('score', 0)
             fiche.impact_environnemental_description = impact_environnemental.get('description', '')
             fiche.impact_environnemental_recommandations = impact_environnemental.get('recommandations', '')
-
-            # Impact emploi (description seulement selon le modèle)
-            impact_emploi = criteres.get('impact_emploi', {})
-            fiche.impact_emploi_description = impact_emploi.get('description', '')
-            fiche.impact_emploi_recommandations = impact_emploi.get('recommandations', '')
 
             # Mettre à jour le champ avis du projet pour qu'il se reflète dans les dashboards
             if fiche.proposition:
