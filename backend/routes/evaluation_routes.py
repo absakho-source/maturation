@@ -446,8 +446,11 @@ def create_or_update_fiche_evaluation(project_id):
             if is_update and fiche.fichier_pdf:
                 print(f"[PDF] Lancement de l'archivage...", flush=True)
                 from utils.archivage import archiver_fiche
-                modificateur = data.get('modified_by', 'admin')
-                archive_path = archiver_fiche(fiche, 'modification', modificateur)
+                # Le modificateur est l'utilisateur actuel qui édite la fiche
+                modificateur = data.get('evaluateur_nom', 'admin')
+                # L'éditeur actuel de cette version (avant la mise à jour) est fiche.evaluateur_nom
+                editeur_actuel = fiche.evaluateur_nom
+                archive_path = archiver_fiche(fiche, 'modification', modificateur, editeur_actuel)
                 if archive_path:
                     print(f"[PDF] Ancien PDF archivé: {archive_path}", flush=True)
                 else:

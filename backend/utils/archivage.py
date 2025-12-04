@@ -8,7 +8,7 @@ import shutil
 from datetime import datetime
 
 
-def archiver_fiche(fiche, raison, archive_par):
+def archiver_fiche(fiche, raison, archive_par, editeur_actuel=None):
     """
     Archive le PDF d'une fiche d'évaluation avant modification ou réassignation
 
@@ -20,7 +20,8 @@ def archiver_fiche(fiche, raison, archive_par):
     Args:
         fiche: Instance FicheEvaluation à archiver
         raison: Raison de l'archivage (ex: "modification_secretariat", "reassignation_avant_hierarchie", etc.)
-        archive_par: Nom d'utilisateur de la personne qui déclenche l'archivage
+        archive_par: Nom d'utilisateur de la personne qui déclenche l'archivage (pour nom fichier)
+        editeur_actuel: Nom de la personne qui a édité cette version (pour auteur_nom dans DocumentProjet)
 
     Returns:
         str: Chemin du fichier PDF archivé, ou None en cas d'erreur
@@ -86,7 +87,8 @@ def archiver_fiche(fiche, raison, archive_par):
 
         # Nom du fichier archivé
         projet_ref = numero_projet or f'ID{fiche.project_id}'
-        evaluateur = fiche.evaluateur_nom or 'inconnu'
+        # Utiliser editeur_actuel si fourni, sinon evaluateur de la fiche
+        evaluateur_affiche = editeur_actuel or fiche.evaluateur_nom or 'inconnu'
         nom_archive = f"{projet_ref}_v{version}_{timestamp}_{raison}_{archive_par}.pdf"
 
         # Chemin complet du fichier archivé
@@ -103,7 +105,7 @@ def archiver_fiche(fiche, raison, archive_par):
             print(f"   - Version: {version}")
             print(f"   - Raison: {raison}")
             print(f"   - Par: {archive_par}")
-            print(f"   - Évaluateur: {evaluateur}")
+            print(f"   - Éditeur: {evaluateur_affiche}")
             print(f"   - Fichier: {nom_archive}")
             print(f"   - Taille: {file_size / 1024:.1f} Ko")
 
@@ -114,8 +116,8 @@ def archiver_fiche(fiche, raison, archive_par):
                 print(f"[ARCHIVAGE] Imports réussis (db, DocumentProjet)")
 
                 description = f"Fiche d'évaluation archivée (v{version}) - {raison}"
-                if evaluateur != 'inconnu':
-                    description += f" - Évaluée par {evaluateur}"
+                if evaluateur_affiche != 'inconnu':
+                    description += f" - Éditée par {evaluateur_affiche}"
 
                 print(f"[ARCHIVAGE] Création de l'objet DocumentProjet...")
                 doc_archive = DocumentProjet(
@@ -124,7 +126,7 @@ def archiver_fiche(fiche, raison, archive_par):
                     nom_original=f"Fiche_Evaluation_{projet_ref}_v{version}.pdf",
                     description=description,
                     type_document='fiche_evaluation_archivee',
-                    auteur_nom=evaluateur,  # L'évaluateur qui a créé la fiche, pas celui qui l'archive
+                    auteur_nom=evaluateur_affiche,  # L'éditeur actuel qui a modifié cette version
                     auteur_role='evaluateur',
                     taille_fichier=file_size,
                     visible_pour_roles='["admin", "secretariatsct", "presidencesct", "presidencecomite", "evaluateur"]'

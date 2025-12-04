@@ -94,7 +94,7 @@
             <!-- Deuxième ligne : Auteur et date -->
             <div class="document-info-row">
               <span class="document-author">
-                Ajouté par <strong>{{ doc.auteur_display_name || doc.auteur_nom }}</strong> ({{ getRoleLabel(doc.auteur_role) }})
+                {{ doc.type_document === 'fiche_evaluation_archivee' ? 'Édité par' : 'Ajouté par' }} <strong>{{ doc.auteur_display_name || doc.auteur_nom }}</strong> ({{ getRoleLabel(doc.auteur_role) }})
               </span>
               <span class="document-date">{{ formatDate(doc.date_ajout) }}</span>
             </div>
