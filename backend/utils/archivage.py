@@ -58,12 +58,14 @@ def archiver_fiche(fiche, raison, archive_par):
 
         # Compter les versions existantes pour ce projet
         import glob
-        pattern = f"*{fiche.numero_projet or f'ID{fiche.project_id}'}*"
+        # Récupérer le numéro de projet depuis la relation project
+        numero_projet = fiche.project.numero_projet if fiche.project else None
+        pattern = f"*{numero_projet or f'ID{fiche.project_id}'}*"
         existing_archives = glob.glob(os.path.join(archives_dir, pattern))
         version = len(existing_archives) + 1
 
         # Nom du fichier archivé
-        projet_ref = fiche.numero_projet or f'ID{fiche.project_id}'
+        projet_ref = numero_projet or f'ID{fiche.project_id}'
         evaluateur = fiche.evaluateur_nom or 'inconnu'
         nom_archive = f"{projet_ref}_v{version}_{timestamp}_{raison}_{archive_par}.pdf"
 

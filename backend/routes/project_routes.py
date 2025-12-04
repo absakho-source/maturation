@@ -226,78 +226,79 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             # Pertinence
             pertinence = criteres.get('pertinence', {})
             fiche.pertinence_score = pertinence.get('score', 0)
-            fiche.pertinence_appreciation = pertinence.get('description', '')
+            fiche.pertinence_description = pertinence.get('description', '')
             fiche.pertinence_recommandations = pertinence.get('recommandations', '')
-            
+
             # Alignement
             alignement = criteres.get('alignement', {})
             fiche.alignement_score = alignement.get('score', 0)
-            fiche.alignement_appreciation = alignement.get('description', '')
+            fiche.alignement_description = alignement.get('description', '')
             fiche.alignement_recommandations = alignement.get('recommandations', '')
-            
+
             # Activités et coûts
             activites_couts = criteres.get('activites_couts', {})
-            fiche.pertinence_activites_score = activites_couts.get('score', 0)
-            fiche.pertinence_activites_appreciation = activites_couts.get('description', '')
-            fiche.pertinence_activites_recommandations = activites_couts.get('recommandations', '')
-            
+            fiche.activites_couts_score = activites_couts.get('score', 0)
+            fiche.activites_couts_description = activites_couts.get('description', '')
+            fiche.activites_couts_recommandations = activites_couts.get('recommandations', '')
+
             # Équité
             equite = criteres.get('equite', {})
             fiche.equite_score = equite.get('score', 0)
-            fiche.equite_appreciation = equite.get('description', '')
+            fiche.equite_description = equite.get('description', '')
             fiche.equite_recommandations = equite.get('recommandations', '')
-            
-            # Viabilité -> rentabilité financière 
+
+            # Viabilité
             viabilite = criteres.get('viabilite', {})
-            fiche.rentabilite_financiere_score = viabilite.get('score', 0)
-            fiche.rentabilite_financiere_appreciation = viabilite.get('description', '')
-            fiche.rentabilite_financiere_recommandations = viabilite.get('recommandations', '')
-            
-            # Rentabilité -> rentabilité socio-économique
+            fiche.viabilite_score = viabilite.get('score', 0)
+            fiche.viabilite_description = viabilite.get('description', '')
+            fiche.viabilite_recommandations = viabilite.get('recommandations', '')
+
+            # Rentabilité
             rentabilite = criteres.get('rentabilite', {})
-            fiche.rentabilite_socio_score = rentabilite.get('score', 0)
-            fiche.rentabilite_socio_appreciation = rentabilite.get('description', '')
-            fiche.rentabilite_socio_recommandations = rentabilite.get('recommandations', '')
-            
+            fiche.rentabilite_score = rentabilite.get('score', 0)
+            fiche.rentabilite_description = rentabilite.get('description', '')
+            fiche.rentabilite_recommandations = rentabilite.get('recommandations', '')
+
             # Bénéfices stratégiques
             benefices_strategiques = criteres.get('benefices_strategiques', {})
             fiche.benefices_strategiques_score = benefices_strategiques.get('score', 0)
-            fiche.benefices_strategiques_appreciation = benefices_strategiques.get('description', '')
+            fiche.benefices_strategiques_description = benefices_strategiques.get('description', '')
             fiche.benefices_strategiques_recommandations = benefices_strategiques.get('recommandations', '')
-            
+
             # Pérennité
             perennite = criteres.get('perennite', {})
             fiche.perennite_score = perennite.get('score', 0)
-            fiche.perennite_appreciation = perennite.get('description', '')
+            fiche.perennite_description = perennite.get('description', '')
             fiche.perennite_recommandations = perennite.get('recommandations', '')
-            
+
             # Avantages intangibles
             avantages_intangibles = criteres.get('avantages_intangibles', {})
-            fiche.avantages_couts_score = avantages_intangibles.get('score', 0)
-            fiche.avantages_couts_appreciation = avantages_intangibles.get('description', '')
-            fiche.avantages_couts_recommandations = avantages_intangibles.get('recommandations', '')
-            
+            fiche.avantages_intangibles_score = avantages_intangibles.get('score', 0)
+            fiche.avantages_intangibles_description = avantages_intangibles.get('description', '')
+            fiche.avantages_intangibles_recommandations = avantages_intangibles.get('recommandations', '')
+
             # Faisabilité
             faisabilite = criteres.get('faisabilite', {})
             fiche.faisabilite_score = faisabilite.get('score', 0)
-            fiche.faisabilite_appreciation = faisabilite.get('description', '')
+            fiche.faisabilite_description = faisabilite.get('description', '')
             fiche.faisabilite_recommandations = faisabilite.get('recommandations', '')
-            
-            # PPP -> capacité d'exécution
+
+            # PPP
             ppp = criteres.get('ppp', {})
-            fiche.capacite_execution_score = ppp.get('score', 0)
-            fiche.capacite_execution_appreciation = ppp.get('description', '')
-            fiche.capacite_execution_recommandations = ppp.get('recommandations', '')
-            
+            fiche.ppp_score = ppp.get('score', 0)
+            fiche.ppp_description = ppp.get('description', '')
+            fiche.ppp_recommandations = ppp.get('recommandations', '')
+
             # Impact environnemental
             impact_environnemental = criteres.get('impact_environnemental', {})
-            fiche.impacts_environnementaux_score = impact_environnemental.get('score', 0)
-            fiche.impacts_environnementaux_appreciation = impact_environnemental.get('description', '')
-            fiche.impacts_environnementaux_recommandations = impact_environnemental.get('recommandations', '')
-            
+            fiche.impact_environnemental_score = impact_environnemental.get('score', 0)
+            fiche.impact_environnemental_description = impact_environnemental.get('description', '')
+            fiche.impact_environnemental_recommandations = impact_environnemental.get('recommandations', '')
+
             # Impact emploi (description seulement selon le modèle)
             impact_emploi = criteres.get('impact_emploi', {})
-            fiche.impact_sur_emploi = impact_emploi.get('description', '')
+            fiche.impact_emploi_description = impact_emploi.get('description', '')
+            fiche.impact_emploi_recommandations = impact_emploi.get('recommandations', '')
 
             # Mettre à jour le champ avis du projet pour qu'il se reflète dans les dashboards
             if fiche.proposition:
