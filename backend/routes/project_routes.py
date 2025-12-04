@@ -218,11 +218,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             # Mettre à jour les critères selon le modèle réel
             criteres = data.get('criteres', {})
 
-            # DEBUG: Logger les données reçues
+            # DEBUG: Logger les données reçues (FORCE RELOAD - 2025-12-04)
             print(f"[FICHE UPDATE DEBUG] Données reçues:")
             print(f"  - Critères: {list(criteres.keys())}")
             for key, value in criteres.items():
                 print(f"  - {key}: score={value.get('score')}, has_desc={bool(value.get('description'))}, has_reco={bool(value.get('recommandations'))}")
+
+            # FORCE: Flush stdout pour garantir que les logs apparaissent
+            import sys
+            sys.stdout.flush()
 
             # Pertinence
             pertinence = criteres.get('pertinence', {})
