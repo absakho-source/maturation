@@ -35,10 +35,20 @@ def archiver_fiche(fiche, raison, archive_par):
         return None
 
     try:
-        # Chemin source du PDF
-        # Le PDF est dans backend/routes/pdfs/fiches_evaluation/
-        routes_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'routes')
-        pdf_source_dir = os.path.join(routes_dir, 'pdfs', 'fiches_evaluation')
+        # Utiliser DATA_DIR si défini (Render), sinon chemin local
+        data_dir = os.environ.get('DATA_DIR', None)
+
+        if data_dir:
+            # Sur Render: PDFs dans /data/pdfs/fiches_evaluation/
+            pdf_source_dir = os.path.join(data_dir, 'pdfs', 'fiches_evaluation')
+            archives_dir = os.path.join(data_dir, 'archives', 'fiches_evaluation')
+        else:
+            # En local: PDFs dans backend/routes/pdfs/fiches_evaluation/
+            routes_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'routes')
+            pdf_source_dir = os.path.join(routes_dir, 'pdfs', 'fiches_evaluation')
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
+
         pdf_source_path = os.path.join(pdf_source_dir, fiche.fichier_pdf)
 
         # Vérifier que le fichier source existe
@@ -47,9 +57,6 @@ def archiver_fiche(fiche, raison, archive_par):
             return None
 
         # Créer le dossier d'archives s'il n'existe pas
-        # Structure: backend/archives/fiches_evaluation/
-        backend_dir = os.path.dirname(os.path.dirname(__file__))
-        archives_dir = os.path.join(backend_dir, 'archives', 'fiches_evaluation')
         os.makedirs(archives_dir, exist_ok=True)
 
         # Construire le nom du fichier archivé avec métadonnées
