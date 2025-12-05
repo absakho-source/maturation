@@ -37,6 +37,7 @@
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous</button>
         <button @click="activeTab = 'assignation'" :class="{ active: activeTab === 'assignation' }" class="tab-btn">✅ Assignation / Réassignation</button>
         <button @click="activeTab = 'validation'" :class="{ active: activeTab === 'validation' }" class="tab-btn">🔎 Validation d'avis</button>
+        <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'evaluation'" :class="{ active: activeTab === 'evaluation' }" class="tab-btn">✍️ Mes évaluations</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
@@ -646,6 +647,76 @@
         </div>
       </div>
 
+      <!-- Onglet Décisions du Comité -->
+      <div v-if="activeTab === 'decisions-comite'" class="tab-content">
+        <h2>🏛️ Décisions du Comité</h2>
+        <p class="info-text">Projets recommandés au Comité par la Présidence SCT, en attente de décision finale.</p>
+
+        <div v-if="projectsDecisionsComite.length === 0" class="empty-state">
+          <p>Aucun projet en attente de décision du Comité</p>
+        </div>
+
+        <div v-else class="projects-compact-grid">
+          <div v-for="p in projectsDecisionsComite" :key="p.id" class="project-compact-card">
+            <!-- En-tête compacte cliquable -->
+            <div class="compact-card-header" @click="toggleProjectExpansion(p.id)">
+              <div class="compact-card-top">
+                <span class="project-number-badge-small">{{ p.numero_projet || 'N/A' }}</span>
+                <span class="badge-small status-comite">🟡 En attente Comité</span>
+              </div>
+              <h4 class="compact-card-title">{{ p.titre }}</h4>
+              <button class="btn-expand-small" @click.stop="toggleProjectExpansion(p.id)">
+                {{ expandedProjects[p.id] ? '▲' : '▼ Actions' }}
+              </button>
+            </div>
+
+            <!-- Carte détaillée (expanded) -->
+            <div v-if="expandedProjects[p.id]" class="project-card-expanded">
+              <div class="card-header">
+                <div class="card-title-section">
+                  <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
+                  <h3>{{ p.titre }}</h3>
+                </div>
+                <span class="badge status-comite">🟡 En attente décision Comité</span>
+              </div>
+              <div class="card-body">
+                <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
+                <p><strong>Évaluateur:</strong> {{ p.evaluateur_display_name || p.evaluateur_nom || 'Non assigné' }}</p>
+                <p><strong>Avis:</strong> <span :class="'avis-' + (p.avis || '').toLowerCase().replace(/ /g, '-')">{{ p.avis }}</span></p>
+                <p v-if="p.commentaires"><strong>Commentaires évaluateur:</strong> {{ p.commentaires }}</p>
+                <p><strong>Statut SCT:</strong> Validé par Présidence SCT</p>
+                <p v-if="p.commentaires_finaux"><strong>Commentaires antérieurs:</strong> {{ p.commentaires_finaux }}</p>
+              </div>
+
+              <div class="decision-comite-section">
+                <h4>Enregistrer la décision du Comité</h4>
+                <p class="info-small">Le Comité a-t-il entériné ou contesté la recommandation ?</p>
+
+                <div class="decision-buttons">
+                  <button @click="enregistrerDecisionComite(p.id, 'enterine')" class="btn-enteriner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Entériner (Approuvé définitivement)
+                  </button>
+                  <button @click="prepareContesterDecision(p)" class="btn-contester">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M10 9l5 5-5 5M19 9l-5 5 5 5"/>
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Contester (Retour pour réévaluation)
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <button @click="goToProject(p.id)" class="btn-details">Détails complets</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Onglet Statistiques -->
       <div v-if="activeTab === 'stats'" class="tab-content">
         <StatsDashboard
@@ -1020,6 +1091,10 @@ export default {
       return this.allProjects.filter(p =>
         p.statut === 'évalué' || (p.evaluation_prealable === 'dossier_rejete' && p.statut !== 'rejeté')
       );
+    },
+    projectsDecisionsComite() {
+      // Projets recommandés au Comité (validés par Présidence SCT) avec statut_comite = 'recommande_comite'
+      return this.allProjects.filter(p => p.statut_comite === 'recommande_comite');
     },
     demandesComplementsEnAttente() {
       return this.allProjects.filter(p => p.statut === 'en attente validation demande compléments');
@@ -1616,6 +1691,61 @@ export default {
         body: JSON.stringify({ avis: av, commentaires: com, auteur: user.username, role: user.role })
       });
       alert("Avis soumis"); this.loadProjects();
+    },
+    async enregistrerDecisionComite(projectId, decision) {
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      // Demander confirmation
+      const confirmMessage = decision === 'enterine'
+        ? "Confirmer que le Comité a entériné ce projet (approuvé définitivement) ?"
+        : "Confirmer que le Comité a contesté ce projet (retour pour réévaluation) ?";
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      // Si on conteste, demander un commentaire optionnel
+      let commentaires = "";
+      if (decision === 'conteste') {
+        commentaires = prompt("Commentaires (optionnel) pour justifier la contestation du Comité :");
+        if (commentaires === null) {
+          // L'utilisateur a annulé
+          return;
+        }
+      }
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}/decision-comite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            decision: decision,
+            commentaires: commentaires,
+            auteur: user.username,
+            role: user.role
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          alert(`Erreur: ${error.error || 'Impossible d\'enregistrer la décision'}`);
+          return;
+        }
+
+        const successMessage = decision === 'enterine'
+          ? "Décision enregistrée : Projet entériné par le Comité (approuvé définitivement)"
+          : "Décision enregistrée : Projet contesté par le Comité, retourné pour réévaluation";
+
+        alert(successMessage);
+        await this.loadProjects();
+      } catch (error) {
+        console.error("Erreur lors de l'enregistrement de la décision:", error);
+        alert("Erreur lors de l'enregistrement de la décision");
+      }
+    },
+    prepareContesterDecision(projet) {
+      // Simplifiée: appeler directement enregistrerDecisionComite avec 'conteste'
+      this.enregistrerDecisionComite(projet.id, 'conteste');
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
     filtrerParStatut(statut) {
@@ -3667,5 +3797,85 @@ export default {
   background: var(--dgppe-primary);
   color: white;
   border-color: var(--dgppe-primary);
+}
+
+/* Styles pour l'onglet Décisions du Comité */
+.decision-comite-section {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.decision-comite-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: #92400e;
+  font-size: 0.95rem;
+}
+
+.info-small {
+  font-size: 0.85rem;
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-enteriner,
+.btn-contester {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-enteriner {
+  background: #10b981;
+  color: white;
+}
+
+.btn-enteriner:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-contester {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-contester:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.status-comite {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.info-text {
+  background: #e0f2fe;
+  border-left: 4px solid #0284c7;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  color: #075985;
+  font-size: 0.9rem;
 }
 </style>
