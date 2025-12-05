@@ -191,7 +191,7 @@ export default {
       this.dropdownSecretaryOpen = false;
     },
     navigateToUsers() {
-      this.$router.push({ path: '/admin', query: { tab: 'users' } });
+      this.$router.push('/gestion-comptes');
     },
     navigateToSoumissionnaires() {
       this.$router.push('/gestion-comptes');
