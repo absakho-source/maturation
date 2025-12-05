@@ -55,6 +55,7 @@ class Project(db.Model):
     avis = db.Column(db.String(100), nullable=True)  # favorable, favorable sous conditions, défavorable, compléments demandés
     avis_presidencesct = db.Column(db.String(100), nullable=True)
     decision_finale = db.Column(db.String(100), nullable=True)
+    statut_comite = db.Column(db.String(50), nullable=True)  # recommande_comite, approuve_definitif, en_reevaluation
     commentaires = db.Column(db.Text, nullable=True)
     commentaires_finaux = db.Column(db.Text, nullable=True)
     validation_secretariat = db.Column(db.String(100), nullable=True)
