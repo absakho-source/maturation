@@ -77,7 +77,19 @@
     <!-- Statistiques par secteur -->
     <div v-if="activeTab === 'secteurs'" class="stats-section">
       <h3>Analyse Détaillée par Secteur</h3>
-      <div v-if="stats.secteurs" class="secteurs-grid">
+
+      <!-- Message de chargement -->
+      <div v-if="loading" class="loading-message-inline">
+        ⏳ Chargement des statistiques par secteur...
+      </div>
+
+      <!-- Message si aucune donnée -->
+      <div v-else-if="!stats.secteurs || Object.keys(stats.secteurs).length === 0" class="no-data-message">
+        Aucune donnée disponible pour les secteurs
+      </div>
+
+      <!-- Données des secteurs -->
+      <div v-else class="secteurs-grid">
         <div 
           v-for="(data, secteur) in stats.secteurs" 
           :key="secteur"
@@ -105,9 +117,21 @@
     <!-- Statistiques par pôle territorial -->
     <div v-if="activeTab === 'poles'" class="stats-section">
       <h3>Analyse par Pôle Territorial</h3>
-      <div v-if="stats.poles" class="poles-grid">
-        <div 
-          v-for="(data, pole) in stats.poles" 
+
+      <!-- Message de chargement -->
+      <div v-if="loading" class="loading-message-inline">
+        ⏳ Chargement des statistiques par pôle...
+      </div>
+
+      <!-- Message si aucune donnée -->
+      <div v-else-if="!stats.poles || Object.keys(stats.poles).length === 0" class="no-data-message">
+        Aucune donnée disponible pour les pôles territoriaux
+      </div>
+
+      <!-- Données des pôles -->
+      <div v-else class="poles-grid">
+        <div
+          v-for="(data, pole) in stats.poles"
           :key="pole"
           class="pole-card"
         >
@@ -117,7 +141,7 @@
             <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
             <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
           </div>
-          
+
           <div class="mini-chart">
             <h5>Secteurs dans ce pôle:</h5>
             <div v-for="(count, secteur) in data.secteurs" :key="secteur" class="mini-bar">
@@ -215,6 +239,8 @@ export default {
       const response = await fetch(`/api/stats/poles?role=${this.role}&username=${this.username}`);
       if (!response.ok) throw new Error('Erreur chargement pôles');
       this.stats.poles = await response.json();
+      console.log('[StatsDashboard] Pôles chargés:', this.stats.poles);
+      console.log('[StatsDashboard] Nombre de pôles:', Object.keys(this.stats.poles || {}).length);
     },
 
     formatCurrency(amount) {
@@ -428,6 +454,27 @@ export default {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.loading-message-inline,
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 1rem;
+}
+
+.loading-message-inline {
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 2px solid #bae6fd;
+}
+
+.no-data-message {
+  background: #fef3c7;
+  color: #92400e;
+  border: 2px solid #fde68a;
 }
 
 .retry-btn {
