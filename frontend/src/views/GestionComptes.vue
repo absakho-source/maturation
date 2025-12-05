@@ -1029,8 +1029,14 @@ async function saveNewUser() {
   try {
     let response
     if (isEditingUser.value) {
-      // Mise à jour
-      response = await axios.put(`/api/users/${formUser.value.id}`, formUser.value)
+      // Mise à jour - utiliser l'API admin pour les utilisateurs internes
+      response = await axios.put(`/api/admin/users/${formUser.value.id}`, {
+        display_name: formUser.value.display_name,
+        role: formUser.value.role,
+        // Inclure le mot de passe seulement s'il est fourni
+        ...(formUser.value.password && { password: formUser.value.password }),
+        admin_username: user?.username
+      })
     } else {
       // Création - envoyer seulement les champs essentiels
       response = await axios.post('/api/register', {
@@ -1070,7 +1076,27 @@ function voirJustificatif(path) {
 }
 
 async function voirDetails(compte) {
-  // Créer une copie pour éviter la modification directe
+  // Pour les utilisateurs internes (non-soumissionnaires), utiliser le modal simplifié
+  if (compte.role !== 'soumissionnaire' && compte.role !== 'invite') {
+    // Ouvrir le modal de création en mode édition avec les données du compte
+    isEditingUser.value = true
+    formUser.value = {
+      id: compte.id,
+      username: compte.username,
+      display_name: compte.display_name,
+      email: '',
+      telephone: '',
+      fonction: '',
+      nom_structure: '',
+      password: '',
+      role: compte.role
+    }
+    createErrorMessage.value = ''
+    showCreateModal.value = true
+    return
+  }
+
+  // Pour les soumissionnaires, garder le modal détaillé
   compteSelectionne.value = { ...compte }
 
   // Initialiser les variables d'édition avec les valeurs du compte
