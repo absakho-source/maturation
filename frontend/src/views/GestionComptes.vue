@@ -76,15 +76,17 @@
       </div>
     </div>
 
-    <!-- Tableau des comptes -->
-    <div class="comptes-table-container">
+    <!-- Affichage des comptes -->
+    <div class="comptes-container">
       <div v-if="loading" class="loading">Chargement des comptes...</div>
       <div v-else-if="error" class="error-message">{{ error }}</div>
       <div v-else-if="comptesFiltres.length === 0" class="no-data">
         Aucun compte trouvé avec ces critères
       </div>
 
-      <table v-else class="comptes-table">
+      <!-- Tableau pour les soumissionnaires -->
+      <div v-else-if="userSubTab === 'soumissionnaires'" class="comptes-table-container">
+        <table class="comptes-table">
         <thead>
           <tr>
             <th>Utilisateur</th>
@@ -177,6 +179,54 @@
           </tr>
         </tbody>
       </table>
+      </div>
+
+      <!-- Cartes pour tous les utilisateurs -->
+      <div v-else-if="userSubTab === 'all'">
+        <!-- Bouton créer utilisateur -->
+        <div class="section-header-cards">
+          <h3>Liste des utilisateurs</h3>
+          <button @click="ouvrirModalCreation" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Créer un utilisateur
+          </button>
+        </div>
+
+        <div class="users-grid">
+        <div v-for="compte in comptesFiltres" :key="compte.id" class="user-card">
+          <div class="user-header">
+            <div class="user-avatar" :class="'role-' + compte.role">
+              {{ (compte.display_name || compte.username).charAt(0).toUpperCase() }}
+            </div>
+            <div class="user-info-card">
+              <h4>{{ compte.display_name || compte.username }}</h4>
+              <div class="user-username">@{{ compte.username }}</div>
+              <span class="user-role" :class="'badge-' + compte.role">{{ getRoleLabel(compte.role) }}</span>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button @click="voirDetails(compte)" class="btn-edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Modifier
+            </button>
+            <button @click="supprimerCompte(compte)" class="btn-delete">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
     </div>
     </div><!-- Fin section Comptes -->
 
@@ -708,7 +758,11 @@ function filtrerComptes() {
   // Filtrer d'abord par sous-onglet
   let comptesFiltre = comptes.value
   if (userSubTab.value === 'soumissionnaires') {
+    // Onglet soumissionnaires: uniquement soumissionnaires et invités
     comptesFiltre = comptes.value.filter(u => u.role === 'soumissionnaire' || u.role === 'invite')
+  } else {
+    // Onglet tous: tous les utilisateurs SAUF soumissionnaires et invités
+    comptesFiltre = comptes.value.filter(u => u.role !== 'soumissionnaire' && u.role !== 'invite')
   }
 
   // Ensuite filtrer par recherche textuelle
@@ -793,13 +847,14 @@ async function reintegrerCompte(compteId) {
   }
 }
 
-async function supprimerCompte(compteId, username) {
+async function supprimerCompte(compte) {
+  const username = compte.display_name || compte.username
   if (!confirm(`Voulez-vous SUPPRIMER DÉFINITIVEMENT le compte "${username}" ?\n\n⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nTous les projets associés à ce compte seront également supprimés.`)) return
 
-  actionEnCours.value = compteId
+  actionEnCours.value = compte.id
 
   try {
-    await axios.delete(`/api/users/${compteId}`)
+    await axios.delete(`/api/users/${compte.id}`)
 
     // Recharger les comptes
     await chargerComptes()
@@ -810,6 +865,25 @@ async function supprimerCompte(compteId, username) {
   } finally {
     actionEnCours.value = null
   }
+}
+
+function getRoleLabel(role) {
+  const labels = {
+    'soumissionnaire': 'Soumissionnaire',
+    'evaluateur': 'Évaluateur',
+    'secretariatsct': 'Secrétariat SCT',
+    'presidencesct': 'Présidence SCT',
+    'presidencecomite': 'Présidence du Comité',
+    'admin': 'Administrateur',
+    'invite': 'Invité'
+  }
+  return labels[role] || role
+}
+
+function ouvrirModalCreation() {
+  // TODO: Implémenter un formulaire de création complet
+  // Pour l'instant, on peut utiliser l'interface admin/gestion-comptes existante
+  alert('La création de nouveaux comptes se fait via l\'interface administrateur. Cette fonctionnalité sera ajoutée prochainement dans cette interface.')
 }
 
 function voirJustificatif(path) {
@@ -1343,6 +1417,205 @@ function getTypeInstitutionLabel(type) {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+}
+
+/* Grille de cartes utilisateurs (pour l'onglet tous) */
+.section-header-cards {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.section-header-cards h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1a202c;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.user-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-avatar.role-admin {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.user-avatar.role-soumissionnaire {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.user-avatar.role-evaluateur {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.user-avatar.role-secretariatsct {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.user-avatar.role-presidencesct {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.user-avatar.role-presidencecomite {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.user-avatar.role-invite {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.user-info-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1a202c;
+}
+
+.user-username {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-top: 0.25rem;
+}
+
+.user-role {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.badge-admin {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+.badge-soumissionnaire {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.badge-evaluateur {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.badge-secretariatsct {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge-presidencesct {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-presidencecomite {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.badge-invite {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btn-edit,
+.btn-delete {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #2563eb;
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
 }
 
 .loading,
