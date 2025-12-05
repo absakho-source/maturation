@@ -174,7 +174,7 @@
                   <td>{{ projet.structure_soumissionnaire || projet.organisme_tutelle || projet.auteur_nom || 'N/A' }}</td>
                   <td>{{ projet.secteur || 'N/A' }}</td>
                   <td>
-                    <span class="badge" :class="'status-' + (projet.statut || '').replace(/ /g, '-')">{{ projet.statut }}</span>
+                    <span class="badge" :class="getStatutBadge(projet).class">{{ getStatutBadge(projet).text }}</span>
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
                           class="badge status-rejected" style="margin-left: 4px;">⚠️</span>
                   </td>
@@ -1746,6 +1746,18 @@ export default {
     prepareContesterDecision(projet) {
       // Simplifiée: appeler directement enregistrerDecisionComite avec 'conteste'
       this.enregistrerDecisionComite(projet.id, 'conteste');
+    },
+    getStatutBadge(projet) {
+      // Fonction helper pour obtenir le badge de statut approprié en tenant compte du statut_comite
+      if (projet.statut_comite === 'recommande_comite') {
+        return { text: '🟡 En attente décision Comité', class: 'status-comite' };
+      } else if (projet.statut_comite === 'approuve_definitif') {
+        return { text: '✅ Approuvé définitivement', class: 'status-approved-final' };
+      } else if (projet.statut_comite === 'en_reevaluation') {
+        return { text: '🔄 En réévaluation', class: 'status-reevaluation' };
+      }
+      // Statut par défaut basé sur le champ statut
+      return { text: projet.statut, class: 'status-' + (projet.statut || '').replace(/ /g, '-') };
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
     filtrerParStatut(statut) {
@@ -3867,6 +3879,17 @@ export default {
 .status-comite {
   background: #fef3c7;
   color: #92400e;
+}
+
+.status-approved-final {
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 600;
+}
+
+.status-reevaluation {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .info-text {
