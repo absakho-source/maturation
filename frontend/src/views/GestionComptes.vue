@@ -199,7 +199,7 @@
           <thead>
             <tr>
               <th>Nom</th>
-              <th>Username</th>
+              <th>Identifiant de connexion</th>
               <th>Rôle</th>
               <th>Actions</th>
             </tr>
