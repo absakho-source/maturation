@@ -1136,9 +1136,8 @@ def traiter_project(project_id):
             p.avis_presidencesct = data["avis_presidencesct"]
             if data["avis_presidencesct"] == "valide":
                 p.statut = "validé par presidencesct"
-                # Définir le statut_comite à 'recommande_comite' pour indiquer que le projet attend la décision du Comité
-                p.statut_comite = 'recommande_comite'
-                action = "Validation par Présidence SCT - recommandé au Comité (en attente de décision finale)"
+                # NE PAS mettre de statut_comite ici - c'est le rôle de PresidenceComite
+                action = "Validation par Présidence SCT - transmission à Présidence du Comité"
 
                 # Ajouter la fiche d'évaluation PDF à la documenthèque
                 try:
@@ -1197,25 +1196,38 @@ def traiter_project(project_id):
 
                 action = "Avis rejeté par Présidence SCT"
 
-        # Décision finale (Comité)
+        # Validation Présidence du Comité (recommande au Comité)
         elif "decision_finale" in data:
             dec = data.get("decision_finale")
-            p.decision_finale = dec  # 'confirme' | 'infirme'
-            if data.get("commentaires"):
-                p.commentaires_finaux = data.get("commentaires")
 
-            # Gestion différente selon la décision
-            if dec == "confirme":
+            # Si PresidenceComite valide (decision_finale = 'valide'), définir statut_comite = 'recommande_comite'
+            if dec == "valide":
+                p.statut_comite = 'recommande_comite'
+                p.statut = "validé par presidencecomite"
+                action = "Validation par Présidence du Comité - recommandé au Comité (en attente décision finale)"
+                if data.get("commentaires"):
+                    p.commentaires_finaux = data.get("commentaires")
+
+            # Anciennes valeurs 'confirme' et 'infirme' conservées pour compatibilité
+            elif dec == "confirme":
                 # Décision confirmée = avis validé
+                p.decision_finale = dec
                 p.statut = "décision finale confirmée"
                 action = "Décision finale du Comité : avis confirmé"
-            else:
+                if data.get("commentaires"):
+                    p.commentaires_finaux = data.get("commentaires")
+            elif dec == "infirme":
                 # Décision infirmée = retour au Secrétariat SCT pour réexamen
+                p.decision_finale = dec
                 p.statut = "en réexamen par le Secrétariat SCT"
                 p.evaluateur_nom = None
                 # Réinitialiser la validation SCT pour forcer un nouveau cycle
                 p.avis_presidencesct = None
                 action = "Décision finale du Comité : avis infirmé, retour au Secrétariat SCT"
+                if data.get("commentaires"):
+                    p.commentaires_finaux = data.get("commentaires")
+            else:
+                return jsonify({"error": "decision_finale invalide"}), 400
 
         db.session.commit()
         if action:
