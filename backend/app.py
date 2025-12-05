@@ -4630,16 +4630,14 @@ def fix_stale_decision_finale_endpoint():
 def run_migrations_endpoint():
     """Endpoint pour exécuter manuellement les migrations de la base de données"""
     try:
-        from migrate_render import migrate_database
-        db_path = app.config.get("DB_PATH", "maturation.db")
+        from migrate_flask import migrate_with_flask_db
 
-        print(f"[API] Exécution manuelle de la migration sur {db_path}")
-        success = migrate_database(db_path)
+        print(f"[API] Exécution manuelle de la migration Flask-native")
+        success = migrate_with_flask_db(db)
 
         if success:
             return jsonify({
-                "message": "Migrations exécutées avec succès",
-                "db_path": db_path
+                "message": "Migrations exécutées avec succès"
             }), 200
         else:
             return jsonify({
