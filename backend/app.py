@@ -538,6 +538,7 @@ def projects():
                             "validation_secretariat": str(p.validation_secretariat) if p.validation_secretariat else "",
                             "avis_presidencesct": str(p.avis_presidencesct) if p.avis_presidencesct else "",
                             "decision_finale": str(p.decision_finale) if p.decision_finale else "",
+                            "statut_comite": str(p.statut_comite) if p.statut_comite else "",
                             "commentaires_finaux": str(p.commentaires_finaux) if p.commentaires_finaux else "",
                             "complements_demande_message": str(p.complements_demande_message) if p.complements_demande_message else "",
                             "complements_reponse_message": str(p.complements_reponse_message) if p.complements_reponse_message else "",
@@ -727,6 +728,7 @@ def get_project(project_id):
             "validation_secretariat": p.validation_secretariat,
             "avis_presidencesct": p.avis_presidencesct,
             "decision_finale": p.decision_finale,
+            "statut_comite": p.statut_comite,
             "commentaires_finaux": p.commentaires_finaux,
             "complements_demande_message": p.complements_demande_message,
             "complements_reponse_message": p.complements_reponse_message,
@@ -1037,6 +1039,7 @@ def traiter_project(project_id):
                 p.avis_presidencesct = None
                 p.decision_finale = None
                 p.commentaires_finaux = None
+                p.statut_comite = None  # Réinitialiser le statut_comite
 
                 # Réinitialiser l'évaluation préalable
                 p.evaluation_prealable = None
@@ -1121,6 +1124,7 @@ def traiter_project(project_id):
                 p.avis_presidencesct = None
                 p.decision_finale = None
                 p.commentaires_finaux = None
+                p.statut_comite = None  # Réinitialiser le statut_comite
 
                 p.statut = "assigné"
                 action = f"Avis rejeté par le Secrétariat — réassigné à {to}"
@@ -1132,8 +1136,9 @@ def traiter_project(project_id):
             p.avis_presidencesct = data["avis_presidencesct"]
             if data["avis_presidencesct"] == "valide":
                 p.statut = "validé par presidencesct"
-                # NE PAS mettre de decision_finale ici - c'est le rôle du Comité
-                action = "Validation par Présidence SCT - transmission au Comité"
+                # Définir le statut_comite à 'recommande_comite' pour indiquer que le projet attend la décision du Comité
+                p.statut_comite = 'recommande_comite'
+                action = "Validation par Présidence SCT - recommandé au Comité (en attente de décision finale)"
 
                 # Ajouter la fiche d'évaluation PDF à la documenthèque
                 try:
@@ -1188,6 +1193,7 @@ def traiter_project(project_id):
                 # Réinitialiser les décisions de présidence pour permettre un nouveau cycle
                 p.decision_finale = None
                 p.commentaires_finaux = None
+                p.statut_comite = None  # Réinitialiser aussi le statut_comite
 
                 action = "Avis rejeté par Présidence SCT"
 
@@ -1435,6 +1441,109 @@ def submit_complements(project_id):
         return jsonify({"message": "Compléments envoyés"}), 200
     except Exception as e:
         import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# Enregistrement de la décision du Comité (par le Secrétariat SCT)
+@app.route("/api/projects/<int:project_id>/decision-comite", methods=["POST"])
+def enregistrer_decision_comite(project_id):
+    """
+    Endpoint pour enregistrer la décision du Comité.
+    Le Secrétariat SCT enregistre si le Comité a entériné ou contesté la recommandation.
+
+    Paramètres attendus:
+    - decision: 'enterine' ou 'conteste'
+    - commentaires: (optionnel) commentaires explicatifs
+    - auteur: username de l'utilisateur qui enregistre la décision
+    - role: rôle de l'utilisateur (doit être secretariatsct ou admin)
+    """
+    try:
+        data = request.json or {}
+        p = Project.query.get_or_404(project_id)
+
+        auteur = data.get("auteur", "")
+        role = data.get("role", "")
+        decision = data.get("decision", "")  # 'enterine' ou 'conteste'
+        commentaires = data.get("commentaires", "").strip()
+
+        # Vérifier les permissions
+        if role not in ['secretariatsct', 'admin']:
+            return jsonify({"error": "Seul le Secrétariat SCT peut enregistrer les décisions du Comité"}), 403
+
+        # Vérifier que le projet est bien dans l'état 'recommande_comite'
+        if p.statut_comite != 'recommande_comite':
+            return jsonify({"error": "Ce projet n'est pas en attente de décision du Comité"}), 400
+
+        # Vérifier la décision
+        if decision not in ['enterine', 'conteste']:
+            return jsonify({"error": "Décision invalide. Valeurs acceptées: 'enterine' ou 'conteste'"}), 400
+
+        # Mettre à jour le statut_comite
+        if decision == 'enterine':
+            p.statut_comite = 'approuve_definitif'
+            p.statut = "décision finale confirmée"
+            action = "Décision du Comité: projet entériné (approuvé définitivement)"
+            if commentaires:
+                action += f" - {commentaires}"
+        else:  # conteste
+            p.statut_comite = 'en_reevaluation'
+            p.statut = "en réexamen par le Secrétariat SCT"
+            # Réinitialiser les validations pour permettre un nouveau cycle
+            p.avis_presidencesct = None
+            p.evaluateur_nom = None
+            action = "Décision du Comité: projet contesté, retour au Secrétariat SCT pour réévaluation"
+            if commentaires:
+                action += f" - {commentaires}"
+
+        # Sauvegarder les commentaires si fournis
+        if commentaires:
+            if p.commentaires_finaux:
+                p.commentaires_finaux += f"\n\n--- Décision Comité ({datetime.utcnow().strftime('%d/%m/%Y')}) ---\n{commentaires}"
+            else:
+                p.commentaires_finaux = commentaires
+
+        db.session.commit()
+
+        # Ajouter l'entrée dans l'historique
+        hist = Historique(
+            project_id=project_id,
+            action=action,
+            auteur=auteur,
+            role=role
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+        # Notification au soumissionnaire
+        try:
+            projet_titre = p.titre[:50] + "..." if len(p.titre) > 50 else p.titre
+            lien_projet = f"/project/{project_id}"
+
+            if decision == 'enterine':
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Décision du Comité",
+                    f"Votre projet '{projet_titre}' a été approuvé définitivement par le Comité.",
+                    lien_projet,
+                    priorite_email=True
+                )
+            else:
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Décision du Comité - Réévaluation demandée",
+                    f"Le Comité a demandé une réévaluation de votre projet '{projet_titre}'.",
+                    lien_projet,
+                    priorite_email=True
+                )
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur lors de la création de la notification: {notif_error}")
+
+        return jsonify({"message": "Décision du Comité enregistrée avec succès"}), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 # Édition de la fiche d'évaluation par le Secrétariat SCT
