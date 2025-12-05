@@ -14,15 +14,6 @@
             Tableau de bord - Secrétariat SCT
           </h2>
           <div class="header-buttons">
-            <button @click="exporterProjetsCSV" class="btn-download-rapport export-csv">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="11" x2="12" y2="17"/>
-                <polyline points="9 14 12 17 15 14"/>
-              </svg>
-              Exporter CSV
-            </button>
             <button @click="telechargerRapport" class="btn-download-rapport">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -230,6 +221,15 @@
             </div>
             <button @click="toggleFilters" class="btn-toggle-filters">
               {{ showFilters ? '▲ Masquer les filtres avancés' : '▼ Afficher les filtres avancés' }}
+            </button>
+            <button @click="exporterProjetsCSV" class="btn-export-csv">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="11" x2="12" y2="17"/>
+                <polyline points="9 14 12 17 15 14"/>
+              </svg>
+              Exporter CSV
             </button>
           </div>
 
@@ -3278,6 +3278,32 @@ export default {
 .btn-toggle-filters:hover {
   background: var(--dgppe-primary);
   color: white;
+}
+
+.btn-export-csv {
+  padding: 10px 20px;
+  background: #10b981;
+  border: 2px solid #10b981;
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-export-csv:hover {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-export-csv svg {
+  flex-shrink: 0;
 }
 
 .filters-container {
