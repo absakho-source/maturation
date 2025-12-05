@@ -337,32 +337,44 @@
                       <!-- Détails - toujours disponible -->
                       <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋 Détails</button>
 
-                      <!-- Actions selon le statut -->
+                      <!-- Assigner : projets soumis ou compléments fournis -->
                       <button
                         v-if="['soumis', 'compléments fournis'].includes(projet.statut)"
-                        @click="activeTab = 'assignation'; $nextTick(() => document.getElementById('projet-' + projet.id)?.scrollIntoView({ behavior: 'smooth' }))"
+                        @click="activeTab = 'assignation'"
                         class="btn-sm btn-primary"
                         title="Assigner à un évaluateur"
                       >
                         ➕ Assigner
                       </button>
 
+                      <!-- Réassigner : projets assignés ou en évaluation -->
+                      <button
+                        v-if="['assigné', 'en évaluation'].includes(projet.statut)"
+                        @click="activeTab = 'assignation'"
+                        class="btn-sm btn-secondary"
+                        title="Réassigner à un autre évaluateur"
+                      >
+                        🔄 Réassigner
+                      </button>
+
+                      <!-- Valider : projets évalués ou rejet proposé -->
                       <button
                         v-if="projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')"
                         @click="activeTab = 'validation'"
-                        class="btn-sm btn-warning"
+                        class="btn-sm btn-success"
                         title="Valider l'avis de l'évaluateur"
                       >
-                        ✓ Valider
+                        ✓ Valider avis
                       </button>
 
+                      <!-- Réassigner : projets rejetés -->
                       <button
                         v-if="projet.statut === 'rejeté'"
                         @click="activeTab = 'assignation'"
-                        class="btn-sm btn-secondary"
+                        class="btn-sm btn-warning"
                         title="Réassigner pour nouvelle évaluation"
                       >
-                        🔄 Réassigner
+                        🔄 Nouvelle chance
                       </button>
                     </div>
                   </td>
@@ -379,21 +391,18 @@
         <div v-if="projetsFiltres.length === 0" class="empty-state">
           <p>Aucun projet trouvé</p>
         </div>
-        <div v-else class="projects-compact-list">
-          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-item">
-            <!-- Ligne compacte -->
-            <div class="compact-row" @click="toggleProjectExpansion(projet.id)">
-              <div class="compact-left">
-                <span class="project-number-badge">{{ projet.numero_projet || 'N/A' }}</span>
-                <span class="project-title-compact">{{ projet.titre }}</span>
+        <div v-else class="projects-compact-grid">
+          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-card">
+            <!-- En-tête compacte cliquable -->
+            <div class="compact-card-header" @click="toggleProjectExpansion(projet.id)">
+              <div class="compact-card-top">
+                <span class="project-number-badge-small">{{ projet.numero_projet || 'N/A' }}</span>
+                <span :class="'badge-small status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
               </div>
-              <div class="compact-right">
-                <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
-                <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="badge status-rejected" style="margin-left: 5px;">⚠️ Rejet proposé</span>
-                <button class="btn-expand" @click.stop="toggleProjectExpansion(projet.id)">
-                  {{ expandedProjects[projet.id] ? '▲ Réduire' : '▼ Détails/Actions' }}
-                </button>
-              </div>
+              <h4 class="compact-card-title">{{ projet.titre }}</h4>
+              <button class="btn-expand-small" @click.stop="toggleProjectExpansion(projet.id)">
+                {{ expandedProjects[projet.id] ? '▲' : '▼ Actions' }}
+              </button>
             </div>
 
             <!-- Carte détaillée (expanded) -->
@@ -3584,5 +3593,91 @@ export default {
     opacity: 1;
     max-height: 2000px;
   }
+}
+
+/* Vue grille compacte pour Assignation */
+.projects-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.project-compact-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.project-compact-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.compact-card-header {
+  padding: 12px;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: background 0.2s;
+}
+
+.compact-card-header:hover {
+  background: #f3f4f6;
+}
+
+.compact-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.project-number-badge-small {
+  background: var(--dgppe-primary);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.badge-small {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.compact-card-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.6em;
+}
+
+.btn-expand-small {
+  width: 100%;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-expand-small:hover {
+  background: var(--dgppe-primary);
+  color: white;
+  border-color: var(--dgppe-primary);
 }
 </style>
