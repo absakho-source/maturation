@@ -4603,6 +4603,31 @@ def fix_stale_decision_finale_endpoint():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/run-migrations", methods=["POST"])
+def run_migrations_endpoint():
+    """Endpoint pour exécuter manuellement les migrations de la base de données"""
+    try:
+        from migrate_render import migrate_database
+        db_path = app.config.get("DB_PATH", "maturation.db")
+
+        print(f"[API] Exécution manuelle de la migration sur {db_path}")
+        success = migrate_database(db_path)
+
+        if success:
+            return jsonify({
+                "message": "Migrations exécutées avec succès",
+                "db_path": db_path
+            }), 200
+        else:
+            return jsonify({
+                "error": "Échec de la migration (voir logs serveur)"
+            }), 500
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
 
