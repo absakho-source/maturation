@@ -194,7 +194,7 @@ export default {
       this.$router.push({ path: '/admin', query: { tab: 'users' } });
     },
     navigateToSoumissionnaires() {
-      this.$router.push({ path: '/admin', query: { tab: 'users', subtab: 'soumissionnaires' } });
+      this.$router.push('/gestion-comptes');
     },
     logout() {
       // Enregistrer la déconnexion (on enregistre comme une "déconnexion" dans les logs)
