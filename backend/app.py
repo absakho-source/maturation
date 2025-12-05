@@ -118,6 +118,29 @@ def generer_numero_projet():
 
     return f"{prefix}{next_number:03d}"
 
+# Helper pour accéder au champ statut_comite de manière sécurisée
+def get_statut_comite(projet):
+    """
+    Retourne le statut_comite d'un projet de manière sécurisée.
+    Gère le cas où la colonne n'existe pas encore (migration en cours).
+    """
+    try:
+        return getattr(projet, 'statut_comite', None)
+    except Exception:
+        return None
+
+def set_statut_comite(projet, valeur):
+    """
+    Définit le statut_comite d'un projet de manière sécurisée.
+    Gère le cas où la colonne n'existe pas encore (migration en cours).
+    """
+    try:
+        if hasattr(projet, 'statut_comite'):
+            projet.statut_comite = valeur
+        return True
+    except Exception:
+        return False
+
 # Fonction pour simplifier les statuts vus par le soumissionnaire
 def get_statut_soumissionnaire(projet):
     """Convertit les statuts internes en statuts simplifiés pour le soumissionnaire"""
@@ -538,7 +561,7 @@ def projects():
                             "validation_secretariat": str(p.validation_secretariat) if p.validation_secretariat else "",
                             "avis_presidencesct": str(p.avis_presidencesct) if p.avis_presidencesct else "",
                             "decision_finale": str(p.decision_finale) if p.decision_finale else "",
-                            "statut_comite": str(p.statut_comite) if p.statut_comite else "",
+                            "statut_comite": str(get_statut_comite(p)) if get_statut_comite(p) else "",
                             "commentaires_finaux": str(p.commentaires_finaux) if p.commentaires_finaux else "",
                             "complements_demande_message": str(p.complements_demande_message) if p.complements_demande_message else "",
                             "complements_reponse_message": str(p.complements_reponse_message) if p.complements_reponse_message else "",
@@ -728,7 +751,7 @@ def get_project(project_id):
             "validation_secretariat": p.validation_secretariat,
             "avis_presidencesct": p.avis_presidencesct,
             "decision_finale": p.decision_finale,
-            "statut_comite": p.statut_comite,
+            "statut_comite": get_statut_comite(p),
             "commentaires_finaux": p.commentaires_finaux,
             "complements_demande_message": p.complements_demande_message,
             "complements_reponse_message": p.complements_reponse_message,
@@ -1039,7 +1062,7 @@ def traiter_project(project_id):
                 p.avis_presidencesct = None
                 p.decision_finale = None
                 p.commentaires_finaux = None
-                p.statut_comite = None  # Réinitialiser le statut_comite
+                set_statut_comite(p, None)  # Réinitialiser le statut_comite
 
                 # Réinitialiser l'évaluation préalable
                 p.evaluation_prealable = None
@@ -1124,7 +1147,7 @@ def traiter_project(project_id):
                 p.avis_presidencesct = None
                 p.decision_finale = None
                 p.commentaires_finaux = None
-                p.statut_comite = None  # Réinitialiser le statut_comite
+                set_statut_comite(p, None)  # Réinitialiser le statut_comite
 
                 p.statut = "assigné"
                 action = f"Avis rejeté par le Secrétariat — réassigné à {to}"
@@ -1192,7 +1215,7 @@ def traiter_project(project_id):
                 # Réinitialiser les décisions de présidence pour permettre un nouveau cycle
                 p.decision_finale = None
                 p.commentaires_finaux = None
-                p.statut_comite = None  # Réinitialiser aussi le statut_comite
+                set_statut_comite(p, None)  # Réinitialiser aussi le statut_comite
 
                 action = "Avis rejeté par Présidence SCT"
 
@@ -1202,7 +1225,7 @@ def traiter_project(project_id):
 
             # Si PresidenceComite valide (decision_finale = 'valide'), définir statut_comite = 'recommande_comite'
             if dec == "valide":
-                p.statut_comite = 'recommande_comite'
+                set_statut_comite(p, 'recommande_comite')
                 p.statut = "validé par presidencecomite"
                 action = "Validation par Présidence du Comité - recommandé au Comité (en attente décision finale)"
                 if data.get("commentaires"):
@@ -1482,7 +1505,7 @@ def enregistrer_decision_comite(project_id):
             return jsonify({"error": "Seul le Secrétariat SCT peut enregistrer les décisions du Comité"}), 403
 
         # Vérifier que le projet est bien dans l'état 'recommande_comite'
-        if p.statut_comite != 'recommande_comite':
+        if get_statut_comite(p) != 'recommande_comite':
             return jsonify({"error": "Ce projet n'est pas en attente de décision du Comité"}), 400
 
         # Vérifier la décision
@@ -1491,13 +1514,13 @@ def enregistrer_decision_comite(project_id):
 
         # Mettre à jour le statut_comite
         if decision == 'enterine':
-            p.statut_comite = 'approuve_definitif'
+            set_statut_comite(p, 'approuve_definitif')
             p.statut = "décision finale confirmée"
             action = "Décision du Comité: projet entériné (approuvé définitivement)"
             if commentaires:
                 action += f" - {commentaires}"
         else:  # conteste
-            p.statut_comite = 'en_reevaluation'
+            set_statut_comite(p, 'en_reevaluation')
             p.statut = "en réexamen par le Secrétariat SCT"
             # Réinitialiser les validations pour permettre un nouveau cycle
             p.avis_presidencesct = None
