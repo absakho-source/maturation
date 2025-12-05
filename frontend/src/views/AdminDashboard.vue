@@ -35,9 +35,6 @@
 
       <!-- Onglets -->
       <div class="tabs">
-        <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }" class="tab-btn">
-          👥 Gestion des comptes
-        </button>
         <button @click="activeTab = 'projects'" :class="{ active: activeTab === 'projects' }" class="tab-btn">
           📋 Tous les projets
         </button>
@@ -47,64 +44,6 @@
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
           🗺️ Carte des pôles territoriaux
         </button>
-      </div>
-
-      <!-- ============ ONGLET: GESTION DES UTILISATEURS ============ -->
-      <div v-if="activeTab === 'users'" class="tab-content">
-        <div class="users-section">
-          <!-- Sous-onglets pour la gestion des utilisateurs -->
-          <div class="sub-tabs">
-            <button @click="userSubTab = 'soumissionnaires'" :class="{ active: userSubTab === 'soumissionnaires' }" class="sub-tab-btn">
-              📝 Comptes soumissionnaires
-            </button>
-            <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
-              👥 Tous les utilisateurs
-            </button>
-          </div>
-
-          <div class="section-header">
-            <h3>{{ userSubTab === 'all' ? 'Liste des utilisateurs' : 'Comptes soumissionnaires' }}</h3>
-            <button @click="openCreateModal" class="btn-primary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-              Créer un utilisateur
-            </button>
-          </div>
-
-          <div class="users-grid">
-            <div v-for="user in filteredUsers" :key="user.id" class="user-card">
-              <div class="user-header">
-                <div class="user-avatar" :class="'role-' + user.role">
-                  {{ (user.display_name || user.username).charAt(0).toUpperCase() }}
-                </div>
-                <div class="user-info">
-                  <h4>{{ user.display_name || user.username }}</h4>
-                  <div class="user-username">@{{ user.username }}</div>
-                  <span class="user-role" :class="'badge-' + user.role">{{ getRoleLabel(user.role) }}</span>
-                </div>
-              </div>
-              <div class="user-actions">
-                <button @click="openEditModal(user)" class="btn-edit">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                  Modifier
-                </button>
-                <button @click="deleteUser(user)" class="btn-delete">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3,6 5,6 21,6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                  Supprimer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ============ ONGLET: TOUS LES PROJETS ============ -->
@@ -416,120 +355,6 @@
       <div v-if="activeTab === 'carte'" class="tab-content">
         <CartesPolesComparaison />
       </div>
-
-      <!-- ============ MODAL: CRÉER/ÉDITER UTILISATEUR ============ -->
-      <div v-if="showModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h3>{{ isEditing ? 'Modifier l\'utilisateur' : 'Créer un utilisateur' }}</h3>
-            <button @click="closeModal" class="btn-close">×</button>
-          </div>
-          
-          <div class="modal-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Nom d'utilisateur *</label>
-                <input
-                  v-model="formUser.username"
-                  type="text"
-                  placeholder="Entrez le nom d'utilisateur"
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Nom complet</label>
-                <input
-                  v-model="formUser.display_name"
-                  type="text"
-                  placeholder="Entrez le nom complet (ex: Agent DPSE)"
-                  class="form-input"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Email</label>
-                <input
-                  v-model="formUser.email"
-                  type="email"
-                  placeholder="exemple@domaine.com"
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Téléphone</label>
-                <input
-                  v-model="formUser.telephone"
-                  type="tel"
-                  placeholder="+221 XX XXX XX XX"
-                  class="form-input"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Fonction / Poste</label>
-                <input
-                  v-model="formUser.fonction"
-                  type="text"
-                  placeholder="Ex: Chef de service, Directeur, etc."
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Structure d'appartenance</label>
-                <input
-                  v-model="formUser.nom_structure"
-                  type="text"
-                  placeholder="Ex: DPSE, DGPPE, etc."
-                  class="form-input"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Mot de passe {{ isEditing ? '(laisser vide pour conserver)' : '*' }}</label>
-                <input
-                  v-model="formUser.password"
-                  type="password"
-                  placeholder="Entrez le mot de passe"
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Rôle *</label>
-                <select v-model="formUser.role" class="form-select">
-                  <option value="">-- Choisir un rôle --</option>
-                  <option value="soumissionnaire">Soumissionnaire</option>
-                  <option value="evaluateur">Évaluateur</option>
-                  <option value="secretariatsct">Secrétariat SCT</option>
-                  <option value="presidencesct">Présidence SCT</option>
-                  <option value="presidencecomite">Présidence du Comité</option>
-                  <option value="admin">Administrateur</option>
-                </select>
-              </div>
-            </div>
-
-            <div v-if="errorMessage" class="error-message">
-              {{ errorMessage }}
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button @click="closeModal" class="btn-secondary">Annuler</button>
-            <button @click="saveUser" class="btn-primary">
-              {{ isEditing ? 'Mettre à jour' : 'Créer' }}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </PageWrapper>
 </template>
@@ -547,8 +372,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 'projects', // 'users', 'projects', 'stats' ou 'carte'
-      userSubTab: 'soumissionnaires', // 'all' ou 'soumissionnaires'
+      activeTab: 'projects', // 'projects', 'stats' ou 'carte'
 
       // Métriques de performance
       metrics: {
@@ -564,23 +388,6 @@ export default {
         totalApproved: 0,
         countApproved: 0
       },
-
-      // Gestion des utilisateurs
-      users: [],
-      showModal: false,
-      isEditing: false,
-      formUser: {
-        id: null,
-        username: '',
-        display_name: '',
-        email: '',
-        telephone: '',
-        fonction: '',
-        nom_structure: '',
-        password: '',
-        role: ''
-      },
-      errorMessage: '',
 
       // Gestion des projets (onglet admin)
       allProjects: [],
@@ -663,208 +470,15 @@ export default {
       }
       return pages;
     },
-    filteredUsers() {
-      if (this.userSubTab === 'soumissionnaires') {
-        return this.users.filter(user => user.role === 'soumissionnaire');
-      }
-      return this.users;
-    }
   },
 
   mounted() {
-    // Lire les paramètres de l'URL pour ouvrir le bon onglet
-    this.applyRouteParams();
-
-    this.loadUsers();
     this.loadAllProjects();
     this.loadProjects();
     this.loadMetrics();
   },
 
-  watch: {
-    // Surveiller les changements de route pour mettre à jour les onglets
-    '$route.query': {
-      handler() {
-        this.applyRouteParams();
-      },
-      deep: true
-    }
-  },
-
   methods: {
-    // ============ Gestion des paramètres de route ============
-    applyRouteParams() {
-      const tab = this.$route.query.tab;
-      const subtab = this.$route.query.subtab;
-
-      if (tab) {
-        this.activeTab = tab;
-      }
-
-      if (subtab) {
-        this.userSubTab = subtab;
-      }
-    },
-
-    // ============ Gestion des utilisateurs ============
-    async loadUsers() {
-      try {
-        const res = await fetch("/api/users");
-        if (res.ok) {
-          this.users = await res.json();
-        } else {
-          console.error("Erreur HTTP:", res.status);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des utilisateurs:", error);
-      }
-    },
-    
-    openCreateModal() {
-      this.isEditing = false;
-      this.formUser = {
-        id: null,
-        username: '',
-        display_name: '',
-        email: '',
-        telephone: '',
-        fonction: '',
-        nom_structure: '',
-        password: '',
-        role: ''
-      };
-      this.errorMessage = '';
-      this.showModal = true;
-    },
-
-    openEditModal(user) {
-      this.isEditing = true;
-      this.formUser = {
-        id: user.id,
-        username: user.username,
-        display_name: user.display_name || '',
-        email: user.email || '',
-        telephone: user.telephone || '',
-        fonction: user.fonction || '',
-        nom_structure: user.nom_structure || '',
-        password: '', // Ne pas afficher le mot de passe
-        role: user.role
-      };
-      this.errorMessage = '';
-      this.showModal = true;
-    },
-    
-    closeModal() {
-      this.showModal = false;
-      this.errorMessage = '';
-    },
-    
-    async saveUser() {
-      this.errorMessage = '';
-      
-      // Validation
-      if (!this.formUser.username.trim()) {
-        this.errorMessage = "Le nom d'utilisateur est requis";
-        return;
-      }
-      
-      if (!this.isEditing && !this.formUser.password.trim()) {
-        this.errorMessage = "Le mot de passe est requis pour un nouvel utilisateur";
-        return;
-      }
-      
-      if (!this.formUser.role) {
-        this.errorMessage = "Le rôle est requis";
-        return;
-      }
-      
-      try {
-        let res;
-        if (this.isEditing) {
-          // Mise à jour
-          const payload = {
-            username: this.formUser.username,
-            display_name: this.formUser.display_name,
-            role: this.formUser.role
-          };
-          // Ajouter le mot de passe seulement s'il est fourni
-          if (this.formUser.password.trim()) {
-            payload.password = this.formUser.password;
-          }
-
-          res = await fetch(`/api/users/${this.formUser.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } else {
-          // Création
-          res = await fetch('/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              username: this.formUser.username,
-              display_name: this.formUser.display_name,
-              email: this.formUser.email,
-              telephone: this.formUser.telephone,
-              fonction: this.formUser.fonction,
-              nom_structure: this.formUser.nom_structure,
-              password: this.formUser.password,
-              role: this.formUser.role,
-              created_by_admin: true  // Indique que le compte est créé par l'admin
-            })
-          });
-        }
-        
-        if (res.ok) {
-          await this.loadUsers();
-          this.closeModal();
-          alert(this.isEditing ? 'Utilisateur mis à jour avec succès' : 'Utilisateur créé avec succès');
-        } else {
-          const error = await res.json();
-          this.errorMessage = error.error || 'Une erreur est survenue';
-        }
-      } catch (error) {
-        console.error("Erreur lors de la sauvegarde:", error);
-        this.errorMessage = "Erreur de connexion au serveur";
-      }
-    },
-    
-    async deleteUser(user) {
-      if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${user.username}" ?`)) {
-        return;
-      }
-      
-      try {
-        const res = await fetch(`/api/users/${user.id}`, {
-          method: 'DELETE'
-        });
-        
-        if (res.ok) {
-          await this.loadUsers();
-          alert('Utilisateur supprimé avec succès');
-        } else {
-          const error = await res.json();
-          alert(error.error || 'Erreur lors de la suppression');
-        }
-      } catch (error) {
-        console.error("Erreur lors de la suppression:", error);
-        alert("Erreur de connexion au serveur");
-      }
-    },
-    
-    getRoleLabel(role) {
-      const labels = {
-        'soumissionnaire': 'Soumissionnaire',
-        'evaluateur': 'Évaluateur',
-        'secretariatsct': 'Secrétariat SCT',
-        'presidencesct': 'Présidence SCT',
-        'presidencecomite': 'Présidence du Comité',
-        'admin': 'Administrateur'
-      };
-      return labels[role] || role;
-    },
-    
     // ============ Gestion des projets (admin) ============
     async loadAllProjects() {
       try {
