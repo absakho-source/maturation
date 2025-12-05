@@ -1,199 +1,35 @@
 <template>
   <PageWrapper>
     <div class="secretariat-container">
-      <!-- Tableau de bord statistiques -->
-      <div class="dashboard-section">
-        <div class="header-row">
-          <h2 class="dashboard-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3v5h5"/>
-              <path d="M3 8s2-4 8-4 8 4 8 4"/>
-              <path d="M21 21v-5h-5"/>
-              <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+      <div class="header-row">
+        <h2 class="dashboard-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v5h5"/>
+            <path d="M3 8s2-4 8-4 8 4 8 4"/>
+            <path d="M21 21v-5h-5"/>
+            <path d="M21 16s-2 4-8 4-8-4-8-4"/>
+          </svg>
+          Tableau de bord - Secrétariat SCT
+        </h2>
+        <div class="header-buttons">
+          <button @click="telechargerRapport" class="btn-download-rapport">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Tableau de bord - Secrétariat SCT
-          </h2>
-          <div class="header-buttons">
-            <button @click="$router.push('/admin?tab=users&subtab=soumissionnaires')" class="btn-download-rapport soumissionnaires-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              📝 Gestion des comptes soumissionnaires
-            </button>
-            <button @click="telechargerRapport" class="btn-download-rapport">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Télécharger Rapport
-            </button>
-            <button @click="telechargerRapportElabore" class="btn-download-rapport elabore">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
-              Générer Rapport Élaboré
-            </button>
-          </div>
-        </div>
-        
-        <!-- Statistiques principales -->
-        <div class="stats">
-          <div class="stat primary clickable" @click="filtrerParStatut(null)" :class="{ active: filtreStatut === null }">
-            <span>Total projets</span><strong>{{ allProjects.length }}</strong>
-          </div>
-          <div class="stat info clickable" @click="filtrerParStatut('soumis')" :class="{ active: filtreStatut === 'soumis' }">
-            <span>Nouveaux (soumis)</span><strong>{{ countByStatus('soumis') }}</strong>
-          </div>
-          <div class="stat warning clickable" @click="filtrerParStatut('assigné')" :class="{ active: filtreStatut === 'assigné' }">
-            <span>Assignés</span><strong>{{ countByStatus('assigné') }}</strong>
-          </div>
-          <div class="stat info clickable" @click="filtrerParStatut('évalué')" :class="{ active: filtreStatut === 'évalué' }">
-            <span>Évalués</span><strong>{{ countByStatus('évalué') }}</strong>
-          </div>
-          <div class="stat success clickable" @click="filtrerParStatut('approuvé')" :class="{ active: filtreStatut === 'approuvé' }">
-            <span>Approuvés</span><strong>{{ countByStatus('approuvé') }}</strong>
-          </div>
-          <div class="stat danger clickable" @click="filtrerParStatut('rejeté')" :class="{ active: filtreStatut === 'rejeté' }">
-            <span>Rejetés</span><strong>{{ countByStatus('rejeté') }}</strong>
-          </div>
-          <div class="stat clickable" @click="filtrerParStatut('compléments demandés')" :class="{ active: filtreStatut === 'compléments demandés' }">
-            <span>Compléments demandés</span><strong>{{ countByStatus('compléments demandés') }}</strong>
-          </div>
-          <div class="stat clickable" @click="filtrerParStatut('compléments fournis')" :class="{ active: filtreStatut === 'compléments fournis' }">
-            <span>Compléments fournis</span><strong>{{ countByStatus('compléments fournis') }}</strong>
-          </div>
-          <div class="stat success clickable" @click="filtrerParStatut('validé par secrétariat')" :class="{ active: filtreStatut === 'validé par secrétariat' }">
-            <span>Validés secrétariat</span><strong>{{ countByStatus('validé par secrétariat') }}</strong>
-          </div>
-          <div class="stat warning clickable" @click="filtrerParStatut('en attente validation presidencesct')" :class="{ active: filtreStatut === 'en attente validation presidencesct' }">
-            <span>Attente présidence</span><strong>{{ countByStatus('en attente validation presidencesct') }}</strong>
-          </div>
-          <div class="stat success clickable" @click="filtrerParStatut('validé par presidencesct')" :class="{ active: filtreStatut === 'validé par presidencesct' }">
-            <span>Validés présidence</span><strong>{{ countByStatus('validé par presidencesct') }}</strong>
-          </div>
-        </div>
-
-        <!-- Métriques de performance -->
-        <div class="performance-metrics">
-          <h3>Métriques de performance</h3>
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <div class="metric-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12,6 12,12 16,14"/>
-                </svg>
-                Temps moyen de traitement
-              </div>
-              <div class="metric-value">{{ metrics.averageProcessingTime }}</div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-                Taux de validation
-              </div>
-              <div class="metric-value">{{ metrics.validationRate }}%</div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12,6 12,12 16,14"/>
-                </svg>
-                Délai moyen d'évaluation
-              </div>
-              <div class="metric-value">{{ metrics.averageEvaluationTime }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Volumes de financement -->
-        <div class="financing-volumes">
-          <h3>Volumes de financement</h3>
-          <div class="financing-cards-grid">
-            <div class="financing-card">
-              <div class="financing-header">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <span>Demandes soumises</span>
-              </div>
-              <div class="financing-amount">{{ formatCurrency(financingStats.totalSubmitted) }}</div>
-              <div class="financing-count">{{ financingStats.countSubmitted }} projet(s)</div>
-            </div>
-
-            <div class="financing-card success">
-              <div class="financing-header">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>Décisions favorables (Comité)</span>
-              </div>
-              <div class="financing-amount">{{ formatCurrency(financingStats.totalApproved) }}</div>
-              <div class="financing-count">{{ financingStats.countApproved }} projet(s)</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Flux de traitement -->
-        <div class="workflow-chart">
-          <h3>Flux de traitement des projets</h3>
-          <div class="workflow-steps">
-            <div class="workflow-step">
-              <div class="step-indicator step-new">{{ countByStatus('soumis') }}</div>
-              <div class="step-label">Soumis</div>
-            </div>
-            <div class="step-arrow">→</div>
-            <div class="workflow-step">
-              <div class="step-indicator step-progress">{{ countInEvaluation }}</div>
-              <div class="step-label">En évaluation</div>
-            </div>
-            <div class="step-arrow">→</div>
-            <div class="workflow-step">
-              <div class="step-indicator step-review">{{ countApproved }}</div>
-              <div class="step-label">Avis donnés</div>
-            </div>
-            <div class="step-arrow">→</div>
-            <div class="workflow-step">
-              <div class="step-indicator step-done">{{ countValidatedByComite }}</div>
-              <div class="step-label">Validés Comité</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alertes -->
-        <div v-if="alerts.length > 0" class="alerts-section">
-          <h3>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            Télécharger Rapport
+          </button>
+          <button @click="telechargerRapportElabore" class="btn-download-rapport elabore">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
             </svg>
-            Alertes et notifications
-          </h3>
-          <div class="alerts-list">
-            <div v-for="alert in alerts" :key="alert.id" class="alert-item" :class="alert.type">
-              <div class="alert-content">
-                <span class="alert-message">{{ alert.message }}</span>
-                <span class="alert-time">{{ formatTime(alert.time) }}</span>
-              </div>
-            </div>
-          </div>
+            Générer Rapport Élaboré
+          </button>
         </div>
       </div>
 
@@ -886,6 +722,46 @@
             <span v-if="enregistrementEnCours">⏳ Enregistrement en cours...</span>
             <span v-else>Enregistrer les modifications</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Tableau de bord statistiques déplacé en bas -->
+      <div class="dashboard-section bottom-dashboard">
+        <!-- Statistiques principales -->
+        <div class="stats">
+          <div class="stat primary clickable" @click="filtrerParStatut(null)" :class="{ active: filtreStatut === null }">
+            <span>Total projets</span><strong>{{ allProjects.length }}</strong>
+          </div>
+          <div class="stat info clickable" @click="filtrerParStatut('soumis')" :class="{ active: filtreStatut === 'soumis' }">
+            <span>Nouveaux (soumis)</span><strong>{{ countByStatus('soumis') }}</strong>
+          </div>
+          <div class="stat warning clickable" @click="filtrerParStatut('assigné')" :class="{ active: filtreStatut === 'assigné' }">
+            <span>Assignés</span><strong>{{ countByStatus('assigné') }}</strong>
+          </div>
+          <div class="stat info clickable" @click="filtrerParStatut('évalué')" :class="{ active: filtreStatut === 'évalué' }">
+            <span>Évalués</span><strong>{{ countByStatus('évalué') }}</strong>
+          </div>
+          <div class="stat success clickable" @click="filtrerParStatut('approuvé')" :class="{ active: filtreStatut === 'approuvé' }">
+            <span>Approuvés</span><strong>{{ countByStatus('approuvé') }}</strong>
+          </div>
+          <div class="stat danger clickable" @click="filtrerParStatut('rejeté')" :class="{ active: filtreStatut === 'rejeté' }">
+            <span>Rejetés</span><strong>{{ countByStatus('rejeté') }}</strong>
+          </div>
+          <div class="stat clickable" @click="filtrerParStatut('compléments demandés')" :class="{ active: filtreStatut === 'compléments demandés' }">
+            <span>Compléments demandés</span><strong>{{ countByStatus('compléments demandés') }}</strong>
+          </div>
+          <div class="stat clickable" @click="filtrerParStatut('compléments fournis')" :class="{ active: filtreStatut === 'compléments fournis' }">
+            <span>Compléments fournis</span><strong>{{ countByStatus('compléments fournis') }}</strong>
+          </div>
+          <div class="stat success clickable" @click="filtrerParStatut('validé par secrétariat')" :class="{ active: filtreStatut === 'validé par secrétariat' }">
+            <span>Validés secrétariat</span><strong>{{ countByStatus('validé par secrétariat') }}</strong>
+          </div>
+          <div class="stat warning clickable" @click="filtrerParStatut('en attente validation presidencesct')" :class="{ active: filtreStatut === 'en attente validation presidencesct' }">
+            <span>Attente présidence</span><strong>{{ countByStatus('en attente validation presidencesct') }}</strong>
+          </div>
+          <div class="stat success clickable" @click="filtrerParStatut('validé par presidencesct')" :class="{ active: filtreStatut === 'validé par presidencesct' }">
+            <span>Validés présidence</span><strong>{{ countByStatus('validé par presidencesct') }}</strong>
+          </div>
         </div>
       </div>
     </div>
