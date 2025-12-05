@@ -35,6 +35,9 @@
 
       <!-- Onglets -->
       <div class="tabs">
+        <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }" class="tab-btn">
+          👥 Gestion des comptes
+        </button>
         <button @click="activeTab = 'projects'" :class="{ active: activeTab === 'projects' }" class="tab-btn">
           📋 Tous les projets
         </button>
@@ -51,11 +54,11 @@
         <div class="users-section">
           <!-- Sous-onglets pour la gestion des utilisateurs -->
           <div class="sub-tabs">
-            <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
-              👥 Tous les utilisateurs
-            </button>
             <button @click="userSubTab = 'soumissionnaires'" :class="{ active: userSubTab === 'soumissionnaires' }" class="sub-tab-btn">
               📝 Comptes soumissionnaires
+            </button>
+            <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
+              👥 Tous les utilisateurs
             </button>
           </div>
 
@@ -545,7 +548,7 @@ export default {
   data() {
     return {
       activeTab: 'projects', // 'users', 'projects', 'stats' ou 'carte'
-      userSubTab: 'all', // 'all' ou 'soumissionnaires'
+      userSubTab: 'soumissionnaires', // 'all' ou 'soumissionnaires'
 
       // Métriques de performance
       metrics: {
@@ -670,17 +673,7 @@ export default {
 
   mounted() {
     // Lire les paramètres de l'URL pour ouvrir le bon onglet
-    const urlParams = new URLSearchParams(window.location.search);
-    const tab = urlParams.get('tab');
-    const subtab = urlParams.get('subtab');
-
-    if (tab) {
-      this.activeTab = tab;
-    }
-
-    if (subtab) {
-      this.userSubTab = subtab;
-    }
+    this.applyRouteParams();
 
     this.loadUsers();
     this.loadAllProjects();
@@ -688,7 +681,31 @@ export default {
     this.loadMetrics();
   },
 
+  watch: {
+    // Surveiller les changements de route pour mettre à jour les onglets
+    '$route.query': {
+      handler() {
+        this.applyRouteParams();
+      },
+      deep: true
+    }
+  },
+
   methods: {
+    // ============ Gestion des paramètres de route ============
+    applyRouteParams() {
+      const tab = this.$route.query.tab;
+      const subtab = this.$route.query.subtab;
+
+      if (tab) {
+        this.activeTab = tab;
+      }
+
+      if (subtab) {
+        this.userSubTab = subtab;
+      }
+    },
+
     // ============ Gestion des utilisateurs ============
     async loadUsers() {
       try {
