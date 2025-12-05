@@ -611,21 +611,19 @@
         <h2>Avis à valider</h2>
         <div v-if="projectsToValidate.length === 0" class="empty-state"><p>Aucun avis en attente</p></div>
 
-        <div v-else class="projects-compact-list">
-          <div v-for="p in projectsToValidate" :key="p.id" class="project-compact-item">
-            <!-- Ligne compacte -->
-            <div class="compact-row" @click="toggleProjectExpansion(p.id)">
-              <div class="compact-left">
-                <span class="project-number-badge">{{ p.numero_projet || 'N/A' }}</span>
-                <span class="project-title-compact">{{ p.titre }}</span>
+        <div v-else class="projects-compact-grid">
+          <div v-for="p in projectsToValidate" :key="p.id" class="project-compact-card">
+            <!-- En-tête compacte cliquable -->
+            <div class="compact-card-header" @click="toggleProjectExpansion(p.id)">
+              <div class="compact-card-top">
+                <span class="project-number-badge-small">{{ p.numero_projet || 'N/A' }}</span>
+                <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge-small status-rejected">⚠️ Rejet</span>
+                <span v-else class="badge-small status-evaluated">Évalué</span>
               </div>
-              <div class="compact-right">
-                <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
-                <span v-else class="badge status-evaluated">Évaluation</span>
-                <button class="btn-expand" @click.stop="toggleProjectExpansion(p.id)">
-                  {{ expandedProjects[p.id] ? '▲ Réduire' : '▼ Détails/Actions' }}
-                </button>
-              </div>
+              <h4 class="compact-card-title">{{ p.titre }}</h4>
+              <button class="btn-expand-small" @click.stop="toggleProjectExpansion(p.id)">
+                {{ expandedProjects[p.id] ? '▲' : '▼ Actions' }}
+              </button>
             </div>
 
             <!-- Carte détaillée (expanded) -->
