@@ -1,8 +1,18 @@
 <template>
   <div class="carte-poles-container">
     <h3 class="titre-carte">{{ title }}</h3>
-    
-    <div class="carte-wrapper">
+
+    <!-- Message de chargement -->
+    <div v-if="loading" class="loading-message">
+      Chargement de la carte des pôles territoriaux...
+    </div>
+
+    <!-- Message d'erreur -->
+    <div v-else-if="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <div v-else class="carte-wrapper">
       <!-- Légende des investissements avec seuils dynamiques -->
       <div class="legende-investissement">
         <h4>Investissement Total</h4>
@@ -270,6 +280,8 @@ export default {
       selectedPole: null,
       polesData: null,
       statsParPole: {},
+      loading: true,
+      error: null,
       tooltip: {
         visible: false,
         x: 0,
@@ -361,9 +373,18 @@ export default {
   },
   
   async mounted() {
-    await this.loadGeojsonData()
-    await this.loadRoadsData()
-    await this.loadStats()
+    try {
+      this.loading = true
+      this.error = null
+      await this.loadGeojsonData()
+      await this.loadRoadsData()
+      await this.loadStats()
+      this.loading = false
+    } catch (err) {
+      this.loading = false
+      this.error = 'Erreur lors du chargement de la carte des pôles territoriaux'
+      console.error('❌ Erreur dans mounted():', err)
+    }
   },
 
   methods: {
@@ -1088,5 +1109,27 @@ export default {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Messages de chargement et d'erreur */
+.loading-message,
+.error-message {
+  padding: 3rem 2rem;
+  text-align: center;
+  border-radius: 12px;
+  margin: 2rem 0;
+  font-size: 1.1rem;
+}
+
+.loading-message {
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 2px solid #bae6fd;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 2px solid #fecaca;
 }
 </style>
