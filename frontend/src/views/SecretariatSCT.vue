@@ -620,7 +620,46 @@
         <div v-if="projectsToAssign.length === 0" class="empty-state">
           <p>Aucun projet à assigner</p>
         </div>
-        <div v-else class="projects-grid">
+        <div v-else class="projects-table-container">
+          <table class="projects-table">
+            <thead>
+              <tr>
+                <th>N° Projet</th>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Statut</th>
+                <th>Évaluateur actuel</th>
+                <th>Assignation rapide</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="projet in projectsToAssign" :key="projet.id">
+                <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
+                <td class="project-title">{{ projet.titre }}</td>
+                <td>{{ projet.auteur_nom }}</td>
+                <td><span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span></td>
+                <td>{{ projet.evaluateur_nom ? getEvaluateurLabel(projet.evaluateur_nom) : '-' }}</td>
+                <td>
+                  <select v-model="assignation[projet.id]" class="table-select">
+                    <option value="">--Choisir--</option>
+                    <option value="secretariatsct">Moi-même</option>
+                    <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
+                      {{ evaluateur.display_name || evaluateur.username }}
+                    </option>
+                  </select>
+                  <button class="btn-sm btn-primary" @click="assigner(projet.id)" :disabled="!assignation[projet.id]" style="margin-left: 5px;">
+                    {{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner' : 'Assigner' }}
+                  </button>
+                </td>
+                <td>
+                  <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-if="false" class="projects-grid">
           <div v-for="projet in projectsToAssign" :key="projet.id" class="project-card">
             <div class="card-header">
               <div class="card-title-section">
@@ -824,7 +863,73 @@
       <div v-if="activeTab === 'validation'" class="tab-content">
         <h2>Avis à valider</h2>
         <div v-if="projectsToValidate.length === 0" class="empty-state"><p>Aucun avis en attente</p></div>
-        <div v-else class="projects-grid">
+
+        <!-- Vue TABLEAU (nouvelle version) -->
+        <div v-else class="projects-table-container">
+          <table class="projects-table">
+            <thead>
+              <tr>
+                <th>N° Projet</th>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Évaluateur</th>
+                <th>Type</th>
+                <th>Avis/Proposition</th>
+                <th>Actions rapides</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in projectsToValidate" :key="p.id">
+                <td><strong class="project-number-table">{{ p.numero_projet || 'N/A' }}</strong></td>
+                <td class="project-title">{{ p.titre }}</td>
+                <td>{{ p.auteur_nom }}</td>
+                <td>{{ getEvaluateurLabel(p.evaluateur_nom) }}</td>
+                <td>
+                  <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
+                  <span v-else class="badge status-evaluated">Évaluation</span>
+                </td>
+                <td>
+                  <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="rejection-text">
+                    {{ p.evaluation_prealable_commentaire || p.commentaires || "Aucun commentaire" }}
+                  </span>
+                  <span v-else :class="getAvisClass(p.avis)">{{ p.avis }}</span>
+                </td>
+                <td>
+                  <!-- Actions rapides pour un rejet proposé -->
+                  <div v-if="p.evaluation_prealable === 'dossier_rejete'" style="display: flex; gap: 5px;">
+                    <button class="btn-sm btn-danger" @click="validerRejet(p.id)" title="Valider le rejet">
+                      ✓ Valider
+                    </button>
+                    <button class="btn-sm btn-warning" @click="refuserRejet(p.id)" title="Refuser et réassigner">
+                      ✗ Refuser
+                    </button>
+                  </div>
+                  <!-- Actions rapides pour un avis normal -->
+                  <div v-else>
+                    <button class="btn-sm btn-primary" @click="validerAvis(p.id)" title="Valider l'avis et transmettre à la Présidence SCT">
+                      ✓ Valider ➜ Présidence
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                  <button
+                    v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
+                    @click="ouvrirModalEditionFiche(p)"
+                    class="btn-sm btn-edit-fiche"
+                    style="margin-left: 5px;"
+                  >
+                    ✏️ Éditer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Vue CARTES (ancienne version - conservée pour référence) -->
+        <div v-if="false" class="projects-grid">
           <div v-for="p in projectsToValidate" :key="p.id" class="project-card">
             <div class="card-header">
               <div class="card-title-section">
@@ -3637,5 +3742,14 @@ export default {
 .status-rejeté-par-le-Comité {
   background: #991b1b !important;
   color: white !important;
+}
+
+.rejection-text {
+  font-style: italic;
+  color: #dc2626;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
