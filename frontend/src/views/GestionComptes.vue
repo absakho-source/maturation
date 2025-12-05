@@ -19,6 +19,16 @@
     <!-- Contenu Comptes -->
     <div>
 
+    <!-- Sous-onglets pour filtrer par type d'utilisateur -->
+    <div class="sub-tabs">
+      <button @click="userSubTab = 'soumissionnaires'" :class="{ active: userSubTab === 'soumissionnaires' }" class="sub-tab-btn">
+        📝 Comptes soumissionnaires
+      </button>
+      <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
+        👥 Tous les utilisateurs
+      </button>
+    </div>
+
     <!-- Filtres -->
     <div class="filters-section">
       <div class="filter-group">
@@ -544,7 +554,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import PageWrapper from '../components/PageWrapper.vue'
@@ -559,6 +569,7 @@ const rechercheTexte = ref('')
 const loading = ref(false)
 const error = ref('')
 const actionEnCours = ref(null)
+const userSubTab = ref('soumissionnaires') // 'soumissionnaires' ou 'all'
 const compteSelectionne = ref(null)
 const enregistrementEnCours = ref(false)
 const projetsUtilisateur = ref([])
@@ -639,6 +650,11 @@ onMounted(async () => {
   chargerComptes()
 })
 
+// Watcher pour re-filtrer les comptes quand le sous-onglet change
+watch(userSubTab, () => {
+  filtrerComptes()
+})
+
 // Fonction pour charger les données des listes (régions, départements, communes, ministères)
 async function loadDataLists() {
   try {
@@ -677,7 +693,8 @@ async function chargerComptes() {
     }
 
     const response = await axios.get('/api/admin/users', { params })
-    comptes.value = response.data.filter(u => u.role === 'soumissionnaire' || u.role === 'invite')
+    // Charger tous les utilisateurs, le filtrage se fera dans filtrerComptes()
+    comptes.value = response.data
     filtrerComptes()
   } catch (err) {
     console.error('Erreur lors du chargement des comptes:', err)
@@ -688,13 +705,20 @@ async function chargerComptes() {
 }
 
 function filtrerComptes() {
+  // Filtrer d'abord par sous-onglet
+  let comptesFiltre = comptes.value
+  if (userSubTab.value === 'soumissionnaires') {
+    comptesFiltre = comptes.value.filter(u => u.role === 'soumissionnaire' || u.role === 'invite')
+  }
+
+  // Ensuite filtrer par recherche textuelle
   if (!rechercheTexte.value) {
-    comptesFiltres.value = comptes.value
+    comptesFiltres.value = comptesFiltre
     return
   }
 
   const texte = rechercheTexte.value.toLowerCase()
-  comptesFiltres.value = comptes.value.filter(compte => {
+  comptesFiltres.value = comptesFiltre.filter(compte => {
     return (
       (compte.display_name || '').toLowerCase().includes(texte) ||
       (compte.username || '').toLowerCase().includes(texte) ||
@@ -1204,6 +1228,39 @@ function getTypeInstitutionLabel(type) {
 }
 
 /* Filtres */
+/* Sous-onglets */
+.sub-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+}
+
+.sub-tab-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #718096;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.sub-tab-btn:hover {
+  color: #2c5282;
+  background: #f7fafc;
+}
+
+.sub-tab-btn.active {
+  color: #2c5282;
+  border-bottom-color: #2c5282;
+  font-weight: 600;
+}
+
 .filters-section {
   display: flex;
   gap: 1.5rem;
