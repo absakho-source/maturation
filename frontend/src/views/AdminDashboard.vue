@@ -616,7 +616,7 @@ export default {
 
       // Recherche et pagination
       searchQuery: '',
-      showFilters: false,
+      showFilters: true,
       filterGroupsOpen: {
         years: false,
         secteurs: false,
@@ -1885,6 +1885,7 @@ export default {
 /* ==================== RECHERCHE ET FILTRES ==================== */
 .search-bar {
   margin-bottom: 16px;
+  max-width: 400px;
 }
 
 .search-input {
