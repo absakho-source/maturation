@@ -217,28 +217,6 @@
             </div>
           </div>
 
-          <!-- Filtres -->
-          <div class="filters-container">
-            <div class="filter-group">
-              <label>Statut:</label>
-              <select v-model="filtreStatut" @change="applyFiltersAll">
-                <option value="">Tous les statuts</option>
-                <option value="soumis">Soumis</option>
-                <option value="assigné">Assigné</option>
-                <option value="évalué">Évalué</option>
-                <option value="validé par secrétariat">Validé par secrétariat</option>
-                <option value="validé par presidencesct">Validé par présidence SCT</option>
-                <option value="approuvé">Approuvé</option>
-                <option value="rejeté">Rejeté</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Recherche:</label>
-              <input type="text" v-model="searchQuery" @input="applyFiltersAll" placeholder="Titre, auteur, numéro..." />
-            </div>
-            <button @click="resetFiltersAll" class="btn-reset">Réinitialiser</button>
-          </div>
-
           <!-- Filtres compacts -->
           <div class="filters-compact">
             <button @click="toggleFilters" class="btn-toggle-filters">
