@@ -12,6 +12,15 @@
           Tableau de bord - Administrateur
         </h2>
         <div class="header-buttons">
+          <button @click="activeTab = 'users'" class="btn-download-rapport users-btn" :class="{ active: activeTab === 'users' }">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            👥 Gestion des utilisateurs
+          </button>
           <button @click="telechargerRapport" class="btn-download-rapport">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -113,16 +122,23 @@
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
           🗺️ Carte des pôles territoriaux
         </button>
-        <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }" class="tab-btn">
-          👥 Gestion des utilisateurs
-        </button>
       </div>
 
       <!-- ============ ONGLET: GESTION DES UTILISATEURS ============ -->
       <div v-if="activeTab === 'users'" class="tab-content">
         <div class="users-section">
+          <!-- Sous-onglets pour la gestion des utilisateurs -->
+          <div class="sub-tabs">
+            <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
+              👥 Tous les utilisateurs
+            </button>
+            <button @click="userSubTab = 'soumissionnaires'" :class="{ active: userSubTab === 'soumissionnaires' }" class="sub-tab-btn">
+              📝 Comptes soumissionnaires
+            </button>
+          </div>
+
           <div class="section-header">
-            <h3>Liste des utilisateurs</h3>
+            <h3>{{ userSubTab === 'all' ? 'Liste des utilisateurs' : 'Comptes soumissionnaires' }}</h3>
             <button @click="openCreateModal" class="btn-primary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -134,7 +150,7 @@
           </div>
 
           <div class="users-grid">
-            <div v-for="user in users" :key="user.id" class="user-card">
+            <div v-for="user in filteredUsers" :key="user.id" class="user-card">
               <div class="user-header">
                 <div class="user-avatar" :class="'role-' + user.role">
                   {{ (user.display_name || user.username).charAt(0).toUpperCase() }}
@@ -538,6 +554,7 @@ export default {
   data() {
     return {
       activeTab: 'projects', // 'users', 'projects', 'stats' ou 'carte'
+      userSubTab: 'all', // 'all' ou 'soumissionnaires'
 
       // Métriques de performance
       metrics: {
@@ -651,10 +668,29 @@ export default {
         pages.push(i);
       }
       return pages;
+    },
+    filteredUsers() {
+      if (this.userSubTab === 'soumissionnaires') {
+        return this.users.filter(user => user.role === 'soumissionnaire');
+      }
+      return this.users;
     }
   },
 
   mounted() {
+    // Lire les paramètres de l'URL pour ouvrir le bon onglet
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    const subtab = urlParams.get('subtab');
+
+    if (tab) {
+      this.activeTab = tab;
+    }
+
+    if (subtab) {
+      this.userSubTab = subtab;
+    }
+
     this.loadUsers();
     this.loadAllProjects();
     this.loadProjects();
@@ -1336,12 +1372,62 @@ export default {
   background: rgba(46, 107, 107, 0.1);
 }
 
+/* Bouton Gestion des utilisateurs dans le header */
+.btn-download-rapport.users-btn {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.btn-download-rapport.users-btn:hover {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  transform: translateY(-2px);
+}
+
+.btn-download-rapport.users-btn.active {
+  background: #4338ca;
+  border-color: #4338ca;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
 /* Section utilisateurs */
 .users-section {
   background: white;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Sous-onglets pour la gestion des utilisateurs */
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.sub-tab-btn {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.sub-tab-btn:hover {
+  color: #4f46e5;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.sub-tab-btn.active {
+  color: #4f46e5;
+  border-bottom-color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .section-header {
