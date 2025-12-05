@@ -375,52 +375,29 @@
 
       <!-- Assignation -->
       <div v-if="activeTab === 'assignation'" class="tab-content">
-        <h2>Assignation et Réassignation</h2>
-        <p><strong>Projets à assigner:</strong> {{ projectsToAssign.length }}</p>
-        <div v-if="projectsToAssign.length === 0" class="empty-state">
-          <p>Aucun projet à assigner</p>
+        <h2>Assignation / Réassignation</h2>
+        <div v-if="projetsFiltres.length === 0" class="empty-state">
+          <p>Aucun projet trouvé</p>
         </div>
-        <div v-else class="projects-table-container">
-          <table class="projects-table">
-            <thead>
-              <tr>
-                <th>N° Projet</th>
-                <th>Titre</th>
-                <th>Auteur</th>
-                <th>Statut</th>
-                <th>Évaluateur actuel</th>
-                <th>Assignation rapide</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="projet in projectsToAssign" :key="projet.id">
-                <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
-                <td class="project-title">{{ projet.titre }}</td>
-                <td>{{ projet.auteur_nom }}</td>
-                <td><span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span></td>
-                <td>{{ projet.evaluateur_nom ? getEvaluateurLabel(projet.evaluateur_nom) : '-' }}</td>
-                <td>
-                  <select v-model="assignation[projet.id]" class="table-select">
-                    <option value="">--Choisir--</option>
-                    <option value="secretariatsct">Moi-même</option>
-                    <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
-                      {{ evaluateur.display_name || evaluateur.username }}
-                    </option>
-                  </select>
-                  <button class="btn-sm btn-primary" @click="assigner(projet.id)" :disabled="!assignation[projet.id]" style="margin-left: 5px;">
-                    {{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner' : 'Assigner' }}
-                  </button>
-                </td>
-                <td>
-                  <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view">📋 Détails</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-if="false" class="projects-grid">
-          <div v-for="projet in projectsToAssign" :key="projet.id" class="project-card">
+        <div v-else class="projects-compact-list">
+          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-item">
+            <!-- Ligne compacte -->
+            <div class="compact-row" @click="toggleProjectExpansion(projet.id)">
+              <div class="compact-left">
+                <span class="project-number-badge">{{ projet.numero_projet || 'N/A' }}</span>
+                <span class="project-title-compact">{{ projet.titre }}</span>
+              </div>
+              <div class="compact-right">
+                <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
+                <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'" class="badge status-rejected" style="margin-left: 5px;">⚠️ Rejet proposé</span>
+                <button class="btn-expand" @click.stop="toggleProjectExpansion(projet.id)">
+                  {{ expandedProjects[projet.id] ? '▲ Réduire' : '▼ Détails/Actions' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Carte détaillée (expanded) -->
+            <div v-if="expandedProjects[projet.id]" class="project-card-expanded">
             <div class="card-header">
               <div class="card-title-section">
                 <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
@@ -615,6 +592,7 @@
                 </button>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </div>
@@ -624,73 +602,25 @@
         <h2>Avis à valider</h2>
         <div v-if="projectsToValidate.length === 0" class="empty-state"><p>Aucun avis en attente</p></div>
 
-        <!-- Vue TABLEAU (nouvelle version) -->
-        <div v-else class="projects-table-container">
-          <table class="projects-table">
-            <thead>
-              <tr>
-                <th>N° Projet</th>
-                <th>Titre</th>
-                <th>Auteur</th>
-                <th>Évaluateur</th>
-                <th>Type</th>
-                <th>Avis/Proposition</th>
-                <th>Actions rapides</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="p in projectsToValidate" :key="p.id">
-                <td><strong class="project-number-table">{{ p.numero_projet || 'N/A' }}</strong></td>
-                <td class="project-title">{{ p.titre }}</td>
-                <td>{{ p.auteur_nom }}</td>
-                <td>{{ getEvaluateurLabel(p.evaluateur_nom) }}</td>
-                <td>
-                  <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
-                  <span v-else class="badge status-evaluated">Évaluation</span>
-                </td>
-                <td>
-                  <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="rejection-text">
-                    {{ p.evaluation_prealable_commentaire || p.commentaires || "Aucun commentaire" }}
-                  </span>
-                  <span v-else :class="getAvisClass(p.avis)">{{ p.avis }}</span>
-                </td>
-                <td>
-                  <!-- Actions rapides pour un rejet proposé -->
-                  <div v-if="p.evaluation_prealable === 'dossier_rejete'" style="display: flex; gap: 5px;">
-                    <button class="btn-sm btn-danger" @click="validerRejet(p.id)" title="Valider le rejet">
-                      ✓ Valider
-                    </button>
-                    <button class="btn-sm btn-warning" @click="refuserRejet(p.id)" title="Refuser et réassigner">
-                      ✗ Refuser
-                    </button>
-                  </div>
-                  <!-- Actions rapides pour un avis normal -->
-                  <div v-else>
-                    <button class="btn-sm btn-primary" @click="validerAvis(p.id)" title="Valider l'avis et transmettre à la Présidence SCT">
-                      ✓ Valider ➜ Présidence
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
-                  <button
-                    v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
-                    @click="ouvrirModalEditionFiche(p)"
-                    class="btn-sm btn-edit-fiche"
-                    style="margin-left: 5px;"
-                  >
-                    ✏️ Éditer la fiche
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div v-else class="projects-compact-list">
+          <div v-for="p in projectsToValidate" :key="p.id" class="project-compact-item">
+            <!-- Ligne compacte -->
+            <div class="compact-row" @click="toggleProjectExpansion(p.id)">
+              <div class="compact-left">
+                <span class="project-number-badge">{{ p.numero_projet || 'N/A' }}</span>
+                <span class="project-title-compact">{{ p.titre }}</span>
+              </div>
+              <div class="compact-right">
+                <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
+                <span v-else class="badge status-evaluated">Évaluation</span>
+                <button class="btn-expand" @click.stop="toggleProjectExpansion(p.id)">
+                  {{ expandedProjects[p.id] ? '▲ Réduire' : '▼ Détails/Actions' }}
+                </button>
+              </div>
+            </div>
 
-        <!-- Vue CARTES (ancienne version - conservée pour référence) -->
-        <div v-if="false" class="projects-grid">
-          <div v-for="p in projectsToValidate" :key="p.id" class="project-card">
+            <!-- Carte détaillée (expanded) -->
+            <div v-if="expandedProjects[p.id]" class="project-card-expanded">
             <div class="card-header">
               <div class="card-title-section">
                 <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
@@ -754,6 +684,7 @@
                   <button class="btn-secondary" @click="reassigner(p.id)">Réassigner</button>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -966,6 +897,7 @@ export default {
       refreshInterval: null,
       filtreStatut: null,
       searchQuery: '',
+      expandedProjects: {},
       financingStats: {
         totalSubmitted: 0,
         countSubmitted: 0,
@@ -1008,7 +940,7 @@ export default {
         { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       ],
       // Filtres multi-sélection
-      showFilters: false,
+      showFilters: true,
       selectedYears: [],
       selectedSecteurs: [],
       selectedStatuts: [],
@@ -1209,6 +1141,10 @@ export default {
     }
   },
   methods: {
+    toggleProjectExpansion(projectId) {
+      this.expandedProjects[projectId] = !this.expandedProjects[projectId];
+      this.$forceUpdate(); // Force Vue to re-render
+    },
     toggleFilters() {
       this.showFilters = !this.showFilters;
     },
@@ -3521,7 +3457,8 @@ export default {
 }
 
 .search-bar-container {
-  flex: 1;
+  flex: 0 1 400px;
+  max-width: 400px;
 }
 
 .search-input {
@@ -3544,5 +3481,108 @@ export default {
   gap: 5px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+/* Vue compacte avec expansion */
+.projects-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-compact-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  transition: all 0.2s;
+}
+
+.project-compact-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.compact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: background 0.2s;
+}
+
+.compact-row:hover {
+  background: #f3f4f6;
+}
+
+.compact-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-number-badge {
+  background: var(--dgppe-primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.project-title-compact {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-expand {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-expand:hover {
+  background: var(--dgppe-primary);
+  color: white;
+  border-color: var(--dgppe-primary);
+}
+
+.project-card-expanded {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 2000px;
+  }
 }
 </style>
