@@ -2263,6 +2263,15 @@ function getTypeInstitutionLabel(type) {
   opacity: 0.6;
 }
 
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  justify-content: flex-end;
+}
+
 .detail-row {
   display: flex;
   justify-content: space-between;
