@@ -29,7 +29,7 @@
               </svg>
               Mon Profil
             </router-link>
-            <router-link to="/admin?tab=users" class="dropdown-item" @click="closeDropdown">
+            <a @click="navigateToUsers(); closeDropdown();" class="dropdown-item" style="cursor: pointer;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -37,7 +37,7 @@
                 <path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
               Gestion des comptes
-            </router-link>
+            </a>
             <router-link to="/formulaire-editor" class="dropdown-item" @click="closeDropdown">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -84,7 +84,7 @@
               </svg>
               Mon Profil
             </router-link>
-            <router-link to="/admin?tab=users&subtab=soumissionnaires" class="dropdown-item" @click="closeDropdownSecretary">
+            <a @click="navigateToSoumissionnaires(); closeDropdownSecretary();" class="dropdown-item" style="cursor: pointer;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -92,7 +92,7 @@
                 <path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
               Gestion des comptes soumissionnaires
-            </router-link>
+            </a>
             <router-link to="/formulaire-editor" class="dropdown-item" @click="closeDropdownSecretary">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -189,6 +189,12 @@ export default {
     },
     closeDropdownSecretary() {
       this.dropdownSecretaryOpen = false;
+    },
+    navigateToUsers() {
+      this.$router.push({ path: '/admin', query: { tab: 'users' } });
+    },
+    navigateToSoumissionnaires() {
+      this.$router.push({ path: '/admin', query: { tab: 'users', subtab: 'soumissionnaires' } });
     },
     logout() {
       // Enregistrer la déconnexion (on enregistre comme une "déconnexion" dans les logs)
