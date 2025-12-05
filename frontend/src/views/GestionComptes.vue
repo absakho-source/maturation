@@ -1038,12 +1038,13 @@ async function saveNewUser() {
         admin_username: user?.username
       })
     } else {
-      // Création - envoyer seulement les champs essentiels
+      // Création - envoyer seulement les champs essentiels + forcer changement de mot de passe
       response = await axios.post('/api/register', {
         username: formUser.value.username,
         password: formUser.value.password,
         display_name: formUser.value.display_name,
-        role: formUser.value.role
+        role: formUser.value.role,
+        must_change_password: true  // Forcer le changement de mot de passe à la première connexion
       })
     }
 
