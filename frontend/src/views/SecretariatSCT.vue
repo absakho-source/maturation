@@ -217,10 +217,19 @@
             </div>
           </div>
 
-          <!-- Filtres compacts -->
-          <div class="filters-compact">
+          <!-- Barre de recherche et filtres -->
+          <div class="search-and-filters">
+            <div class="search-bar-container">
+              <input
+                type="text"
+                v-model="searchQuery"
+                @input="applyFiltersAll"
+                placeholder="🔍 Rechercher par titre, auteur ou numéro..."
+                class="search-input"
+              />
+            </div>
             <button @click="toggleFilters" class="btn-toggle-filters">
-              {{ showFilters ? '▲ Masquer les filtres' : '▼ Afficher les filtres' }}
+              {{ showFilters ? '▲ Masquer les filtres avancés' : '▼ Afficher les filtres avancés' }}
             </button>
           </div>
 
@@ -306,14 +315,12 @@
                   <th>Structure soumissionnaire</th>
                   <th>Secteur</th>
                   <th>Statut</th>
-                  <th>Évaluateur</th>
-                  <th>Date</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="projetsFiltres.length === 0">
-                  <td colspan="8" class="empty-state">Aucun projet trouvé</td>
+                  <td colspan="6" class="empty-state">Aucun projet trouvé</td>
                 </tr>
                 <tr v-for="projet in projetsFiltres" :key="projet.id">
                   <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
@@ -325,10 +332,39 @@
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
                           class="badge status-rejected" style="margin-left: 4px;">⚠️</span>
                   </td>
-                  <td>{{ getEvaluateurLabel(projet.evaluateur_nom) || '-' }}</td>
-                  <td>{{ formatDate(projet.date_soumission) }}</td>
                   <td>
-                    <button @click="$router.push(`/project/${projet.id}`)" class="btn-view-small">👁️</button>
+                    <div class="action-buttons">
+                      <!-- Détails - toujours disponible -->
+                      <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋 Détails</button>
+
+                      <!-- Actions selon le statut -->
+                      <button
+                        v-if="['soumis', 'compléments fournis'].includes(projet.statut)"
+                        @click="activeTab = 'assignation'; $nextTick(() => document.getElementById('projet-' + projet.id)?.scrollIntoView({ behavior: 'smooth' }))"
+                        class="btn-sm btn-primary"
+                        title="Assigner à un évaluateur"
+                      >
+                        ➕ Assigner
+                      </button>
+
+                      <button
+                        v-if="projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')"
+                        @click="activeTab = 'validation'"
+                        class="btn-sm btn-warning"
+                        title="Valider l'avis de l'évaluateur"
+                      >
+                        ✓ Valider
+                      </button>
+
+                      <button
+                        v-if="projet.statut === 'rejeté'"
+                        @click="activeTab = 'assignation'"
+                        class="btn-sm btn-secondary"
+                        title="Réassigner pour nouvelle évaluation"
+                      >
+                        🔄 Réassigner
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -898,7 +934,7 @@
                     class="btn-sm btn-edit-fiche"
                     style="margin-left: 5px;"
                   >
-                    ✏️ Éditer
+                    ✏️ Éditer la fiche
                   </button>
                 </td>
               </tr>
@@ -3729,5 +3765,38 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search-and-filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-bar-container {
+  flex: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--dgppe-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 </style>
