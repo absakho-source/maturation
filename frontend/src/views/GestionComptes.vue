@@ -25,7 +25,7 @@
         📝 Comptes soumissionnaires
       </button>
       <button @click="userSubTab = 'all'" :class="{ active: userSubTab === 'all' }" class="sub-tab-btn">
-        👥 Tous les utilisateurs
+        👤 Utilisateurs internes
       </button>
     </div>
 
@@ -183,6 +183,18 @@
 
       <!-- Tableau pour tous les utilisateurs (non-soumissionnaires) -->
       <div v-else-if="userSubTab === 'all'" class="comptes-table-container">
+        <!-- Header avec bouton création -->
+        <div class="table-header-actions">
+          <button @click="openCreateModal" class="btn-create-user">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Créer un utilisateur
+          </button>
+        </div>
+
         <table class="comptes-table">
           <thead>
             <tr>
@@ -232,6 +244,75 @@
       </div>
     </div>
     </div><!-- Fin section Comptes -->
+
+    <!-- Modal création/édition utilisateur -->
+    <div v-if="showCreateModal" class="modal-overlay" @click="closeCreateModal">
+      <div class="modal-content modal-create" @click.stop>
+        <div class="modal-header">
+          <h3>{{ isEditingUser ? 'Modifier l\'utilisateur' : 'Créer un utilisateur' }}</h3>
+          <button @click="closeCreateModal" class="btn-close">×</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Champs simplifiés pour utilisateurs internes -->
+          <div class="form-group-modal">
+            <label>Nom d'utilisateur (email) *</label>
+            <input
+              v-model="formUser.username"
+              type="text"
+              placeholder="Ex: prenom.nom@dgppe.gouv.sn"
+              class="form-input"
+            />
+            <small class="field-hint">Cet identifiant servira à se connecter</small>
+          </div>
+
+          <div class="form-group-modal">
+            <label>Nom complet *</label>
+            <input
+              v-model="formUser.display_name"
+              type="text"
+              placeholder="Ex: Prénom NOM"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group-modal">
+              <label>Mot de passe {{ isEditingUser ? '(laisser vide pour conserver)' : '*' }}</label>
+              <input
+                v-model="formUser.password"
+                type="password"
+                placeholder="Entrez le mot de passe"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group-modal">
+              <label>Rôle *</label>
+              <select v-model="formUser.role" class="form-select">
+                <option value="">-- Choisir un rôle --</option>
+                <option value="evaluateur">Évaluateur</option>
+                <option value="secretariatsct">Secrétariat SCT</option>
+                <option value="presidencesct">Présidence SCT</option>
+                <option value="presidencecomite">Présidence du Comité</option>
+                <option value="admin">Administrateur</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="createErrorMessage" class="error-message-create">
+            {{ createErrorMessage }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeCreateModal" class="btn-modal-cancel">Annuler</button>
+          <button @click="saveNewUser" class="btn-modal-save" :disabled="savingUser">
+            {{ savingUser ? 'Enregistrement...' : (isEditingUser ? 'Mettre à jour' : 'Créer') }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal édition des détails -->
     <div v-if="compteSelectionne" class="modal-overlay" @click.self="fermerDetails">
@@ -628,6 +709,23 @@ const enregistrementEnCours = ref(false)
 const projetsUtilisateur = ref([])
 const chargementProjets = ref(false)
 
+// État pour le modal de création
+const showCreateModal = ref(false)
+const isEditingUser = ref(false)
+const savingUser = ref(false)
+const createErrorMessage = ref('')
+const formUser = ref({
+  id: null,
+  username: '',
+  display_name: '',
+  email: '',
+  telephone: '',
+  fonction: '',
+  nom_structure: '',
+  password: '',
+  role: ''
+})
+
 // Listes de données pour le formulaire hiérarchique
 const regions = ref([])
 const departements = ref({}) // Format: { region: [dept1, dept2, ...] }
@@ -883,7 +981,78 @@ function getRoleLabel(role) {
   return labels[role] || role
 }
 
-// Fonction de création supprimée - la création de comptes se fait via l'interface admin
+// ============ Fonctions pour le modal de création ============
+function openCreateModal() {
+  isEditingUser.value = false
+  formUser.value = {
+    id: null,
+    username: '',
+    display_name: '',
+    email: '',
+    telephone: '',
+    fonction: '',
+    nom_structure: '',
+    password: '',
+    role: ''
+  }
+  createErrorMessage.value = ''
+  showCreateModal.value = true
+}
+
+function closeCreateModal() {
+  showCreateModal.value = false
+  createErrorMessage.value = ''
+}
+
+async function saveNewUser() {
+  // Validation
+  if (!formUser.value.username) {
+    createErrorMessage.value = 'Le nom d\'utilisateur est obligatoire'
+    return
+  }
+  if (!formUser.value.display_name) {
+    createErrorMessage.value = 'Le nom complet est obligatoire'
+    return
+  }
+  if (!formUser.value.role) {
+    createErrorMessage.value = 'Le rôle est obligatoire'
+    return
+  }
+  if (!isEditingUser.value && !formUser.value.password) {
+    createErrorMessage.value = 'Le mot de passe est obligatoire pour un nouvel utilisateur'
+    return
+  }
+
+  savingUser.value = true
+  createErrorMessage.value = ''
+
+  try {
+    let response
+    if (isEditingUser.value) {
+      // Mise à jour
+      response = await axios.put(`/api/users/${formUser.value.id}`, formUser.value)
+    } else {
+      // Création - envoyer seulement les champs essentiels
+      response = await axios.post('/api/register', {
+        username: formUser.value.username,
+        password: formUser.value.password,
+        display_name: formUser.value.display_name,
+        role: formUser.value.role
+      })
+    }
+
+    if (response.status === 200 || response.status === 201) {
+      alert(isEditingUser.value ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès')
+      closeCreateModal()
+      await chargerComptes()
+    }
+  } catch (err) {
+    console.error('Erreur lors de l\'enregistrement:', err)
+    createErrorMessage.value = err.response?.data?.message || 'Erreur lors de l\'enregistrement'
+  } finally {
+    savingUser.value = false
+  }
+}
 
 function voirJustificatif(path) {
   // Gérer les chemins multiples (séparés par virgules)
@@ -1416,6 +1585,39 @@ function getTypeInstitutionLabel(type) {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+}
+
+/* Header avec actions pour créer des utilisateurs */
+.table-header-actions {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-create-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--dgppe-primary, #1e40af);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-create-user:hover {
+  background: var(--dgppe-primary-dark, #1e3a8a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+.btn-create-user svg {
+  flex-shrink: 0;
 }
 
 /* Styles pour le tableau "Tous les utilisateurs" */
@@ -2182,5 +2384,53 @@ function getTypeInstitutionLabel(type) {
 .no-justificatif {
   color: #a0aec0;
   font-style: italic;
+}
+
+/* Styles pour le modal de création/édition d'utilisateur */
+.modal-create {
+  max-width: 700px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.error-message-create {
+  padding: 0.75rem;
+  background: #fed7d7;
+  color: #c53030;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-create {
+    max-width: 95%;
+  }
 }
 </style>
