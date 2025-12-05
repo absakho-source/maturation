@@ -21,17 +21,17 @@ def migrate_database(db_path):
         engine = create_engine(f"sqlite:///{db_path}")
 
         with engine.connect() as conn:
-            # Migration 1: Ajouter la colonne statut_comite à la table projects
+            # Migration 1: Ajouter la colonne statut_comite à la table project (singulier)
             print("[MIGRATION] Vérification de la colonne 'statut_comite'...")
 
             # Récupérer les colonnes existantes
             inspector = inspect(engine)
-            columns = [col['name'] for col in inspector.get_columns('projects')]
+            columns = [col['name'] for col in inspector.get_columns('project')]
 
             if 'statut_comite' not in columns:
                 print("[MIGRATION] Ajout de la colonne 'statut_comite'...")
                 conn.execute(text("""
-                    ALTER TABLE projects
+                    ALTER TABLE project
                     ADD COLUMN statut_comite VARCHAR(50)
                 """))
                 conn.commit()
@@ -40,11 +40,11 @@ def migrate_database(db_path):
                 print("[MIGRATION] ✓ La colonne 'statut_comite' existe déjà")
 
             # Afficher quelques statistiques
-            result = conn.execute(text("SELECT COUNT(*) FROM projects"))
+            result = conn.execute(text("SELECT COUNT(*) FROM project"))
             total_projects = result.scalar()
             print(f"[MIGRATION] Nombre total de projets: {total_projects}")
 
-            result = conn.execute(text("SELECT COUNT(*) FROM projects WHERE statut_comite IS NOT NULL"))
+            result = conn.execute(text("SELECT COUNT(*) FROM project WHERE statut_comite IS NOT NULL"))
             projects_with_status = result.scalar()
             print(f"[MIGRATION] Projets avec statut_comite défini: {projects_with_status}")
 
