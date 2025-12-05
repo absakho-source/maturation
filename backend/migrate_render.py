@@ -2,9 +2,10 @@
 """
 Script de migration pour la base de données
 Exécuté automatiquement au démarrage du backend
+Utilise SQLAlchemy pour éviter les conflits de connexion
 """
 
-import sqlite3
+from sqlalchemy import create_engine, text, inspect
 import os
 
 
@@ -16,39 +17,41 @@ def migrate_database(db_path):
     print(f"[MIGRATION] Connexion à la base de données: {db_path}")
 
     try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        # Utiliser SQLAlchemy au lieu de sqlite3 directement
+        engine = create_engine(f"sqlite:///{db_path}")
 
-        # Migration 1: Ajouter la colonne statut_comite à la table projects
-        print("[MIGRATION] Vérification de la colonne 'statut_comite'...")
-        cursor.execute("PRAGMA table_info(projects)")
-        columns = [column[1] for column in cursor.fetchall()]
+        with engine.connect() as conn:
+            # Migration 1: Ajouter la colonne statut_comite à la table projects
+            print("[MIGRATION] Vérification de la colonne 'statut_comite'...")
 
-        if 'statut_comite' not in columns:
-            print("[MIGRATION] Ajout de la colonne 'statut_comite'...")
-            cursor.execute("""
-                ALTER TABLE projects
-                ADD COLUMN statut_comite TEXT
-            """)
-            conn.commit()
-            print("[MIGRATION] ✓ Colonne 'statut_comite' ajoutée avec succès")
-        else:
-            print("[MIGRATION] ✓ La colonne 'statut_comite' existe déjà")
+            # Récupérer les colonnes existantes
+            inspector = inspect(engine)
+            columns = [col['name'] for col in inspector.get_columns('projects')]
 
-        # Afficher quelques statistiques
-        cursor.execute("SELECT COUNT(*) FROM projects")
-        total_projects = cursor.fetchone()[0]
-        print(f"[MIGRATION] Nombre total de projets: {total_projects}")
+            if 'statut_comite' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'statut_comite'...")
+                conn.execute(text("""
+                    ALTER TABLE projects
+                    ADD COLUMN statut_comite VARCHAR(50)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'statut_comite' ajoutée avec succès")
+            else:
+                print("[MIGRATION] ✓ La colonne 'statut_comite' existe déjà")
 
-        cursor.execute("SELECT COUNT(*) FROM projects WHERE statut_comite IS NOT NULL")
-        projects_with_status = cursor.fetchone()[0]
-        print(f"[MIGRATION] Projets avec statut_comite défini: {projects_with_status}")
+            # Afficher quelques statistiques
+            result = conn.execute(text("SELECT COUNT(*) FROM projects"))
+            total_projects = result.scalar()
+            print(f"[MIGRATION] Nombre total de projets: {total_projects}")
 
-        # Ajouter d'autres migrations ici au besoin
-        # Migration 2: ...
-        # Migration 3: ...
+            result = conn.execute(text("SELECT COUNT(*) FROM projects WHERE statut_comite IS NOT NULL"))
+            projects_with_status = result.scalar()
+            print(f"[MIGRATION] Projets avec statut_comite défini: {projects_with_status}")
 
-        conn.close()
+            # Ajouter d'autres migrations ici au besoin
+            # Migration 2: ...
+            # Migration 3: ...
+
         print("[MIGRATION] ✓ Toutes les migrations ont été appliquées avec succès!")
         return True
 
