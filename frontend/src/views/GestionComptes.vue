@@ -202,7 +202,7 @@
             <div class="user-avatar" :class="'role-' + compte.role">
               {{ (compte.display_name || compte.username).charAt(0).toUpperCase() }}
             </div>
-            <div class="user-info-card">
+            <div class="user-info">
               <h4>{{ compte.display_name || compte.username }}</h4>
               <div class="user-username">@{{ compte.username }}</div>
               <span class="user-role" :class="'badge-' + compte.role">{{ getRoleLabel(compte.role) }}</span>
@@ -1456,91 +1456,96 @@ function getTypeInstitutionLabel(type) {
 
 .users-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem 0;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 .user-card {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e9ecef;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 20px;
+  transition: all 0.3s ease;
 }
 
 .user-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .user-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .user-avatar {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
   color: white;
   flex-shrink: 0;
 }
 
 .user-avatar.role-admin {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ef4444;
 }
 
 .user-avatar.role-soumissionnaire {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #3b82f6;
 }
 
 .user-avatar.role-evaluateur {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #f59e0b;
 }
 
 .user-avatar.role-secretariatsct {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: var(--dgppe-primary);
 }
 
 .user-avatar.role-presidencesct {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: var(--dgppe-secondary);
 }
 
 .user-avatar.role-presidencecomite {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: #8b5cf6;
 }
 
 .user-avatar.role-invite {
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  background: #6b7280;
 }
 
-.user-info-card h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #1a202c;
+.user-info {
+  flex: 1;
+}
+
+.user-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
 }
 
 .user-username {
-  font-size: 0.9rem;
-  color: #718096;
-  margin-top: 0.25rem;
+  font-size: 13px;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 6px;
 }
 
 .user-role {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
-  margin-top: 0.5rem;
+  text-transform: uppercase;
 }
 
 .badge-admin {
@@ -1587,35 +1592,37 @@ function getTypeInstitutionLabel(type) {
 .btn-edit,
 .btn-delete {
   flex: 1;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-edit {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.btn-edit:hover {
   background: #3b82f6;
   color: white;
 }
 
-.btn-edit:hover {
-  background: #2563eb;
-}
-
 .btn-delete {
-  background: #ef4444;
-  color: white;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .btn-delete:hover {
-  background: #dc2626;
+  background: #ef4444;
+  color: white;
 }
 
 .loading,
