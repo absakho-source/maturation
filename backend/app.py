@@ -3014,12 +3014,15 @@ def stats_poles_territorial():
         username = request.args.get('username', '')
         status_filter = request.args.get('filter', '')  # 'favorable_avis' pour filtrer uniquement les projets avec avis favorable
 
+        # Les rôles administratifs voient tous les projets sans filtre d'auteur
+        administrative_roles = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite']
+
         # Filtrer les projets selon le paramètre filter
         # - 'favorable_avis' : uniquement les projets avec avis 'favorable' ou 'favorable sous conditions'
         # - 'all' ou vide : tous les projets soumis
         if status_filter == 'favorable_avis':
             # Carte des projets avec avis favorable
-            if username:
+            if username and role not in administrative_roles:
                 projects = Project.query.filter(
                     Project.auteur_nom == username,
                     Project.avis.in_(['favorable', 'favorable sous conditions'])
@@ -3030,7 +3033,7 @@ def stats_poles_territorial():
                 ).all()
         else:
             # Carte de tous les projets soumis
-            if username:
+            if username and role not in administrative_roles:
                 projects = Project.query.filter_by(auteur_nom=username).all()
             else:
                 projects = Project.query.all()

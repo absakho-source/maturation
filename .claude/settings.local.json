@@ -45,7 +45,8 @@
       "Bash(while read line)",
       "Bash(pip3 install:*)",
       "Bash(git ls-tree:*)",
-      "Bash(/tmp/old_secretariat.vue)"
+      "Bash(/tmp/old_secretariat.vue)",
+      "Bash(/dev/null sleep 2)"
     ],
     "deny": [],
     "ask": []
