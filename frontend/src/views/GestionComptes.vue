@@ -181,51 +181,54 @@
       </table>
       </div>
 
-      <!-- Cartes pour tous les utilisateurs -->
-      <div v-else-if="userSubTab === 'all'">
-        <!-- Bouton créer utilisateur -->
-        <div class="section-header-cards">
-          <h3>Liste des utilisateurs</h3>
-          <button @click="ouvrirModalCreation" class="btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="16"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-            Créer un utilisateur
-          </button>
-        </div>
-
-        <div class="users-grid">
-        <div v-for="compte in comptesFiltres" :key="compte.id" class="user-card">
-          <div class="user-header">
-            <div class="user-avatar" :class="'role-' + compte.role">
-              {{ (compte.display_name || compte.username).charAt(0).toUpperCase() }}
-            </div>
-            <div class="user-info">
-              <h4>{{ compte.display_name || compte.username }}</h4>
-              <div class="user-username">@{{ compte.username }}</div>
-              <span class="user-role" :class="'badge-' + compte.role">{{ getRoleLabel(compte.role) }}</span>
-            </div>
-          </div>
-          <div class="user-actions">
-            <button @click="voirDetails(compte)" class="btn-edit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Modifier
-            </button>
-            <button @click="supprimerCompte(compte)" class="btn-delete">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3,6 5,6 21,6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              </svg>
-              Supprimer
-            </button>
-          </div>
-        </div>
-        </div>
+      <!-- Tableau pour tous les utilisateurs (non-soumissionnaires) -->
+      <div v-else-if="userSubTab === 'all'" class="comptes-table-container">
+        <table class="comptes-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Username</th>
+              <th>Rôle</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="compte in comptesFiltres" :key="compte.id">
+              <td>
+                <div class="user-name-cell">
+                  <div class="user-avatar-small" :class="'role-' + compte.role">
+                    {{ (compte.display_name || compte.username).charAt(0).toUpperCase() }}
+                  </div>
+                  <span>{{ compte.display_name || compte.username }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="username-cell">@{{ compte.username }}</span>
+              </td>
+              <td>
+                <span class="user-role" :class="'badge-' + compte.role">
+                  {{ getRoleLabel(compte.role) }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button @click="voirDetails(compte)" class="btn-action btn-action-edit" title="Modifier">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button @click="supprimerCompte(compte)" class="btn-action btn-action-delete" title="Supprimer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3,6 5,6 21,6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
     </div><!-- Fin section Comptes -->
@@ -880,11 +883,7 @@ function getRoleLabel(role) {
   return labels[role] || role
 }
 
-function ouvrirModalCreation() {
-  // TODO: Implémenter un formulaire de création complet
-  // Pour l'instant, on peut utiliser l'interface admin/gestion-comptes existante
-  alert('La création de nouveaux comptes se fait via l\'interface administrateur. Cette fonctionnalité sera ajoutée prochainement dans cette interface.')
-}
+// Fonction de création supprimée - la création de comptes se fait via l'interface admin
 
 function voirJustificatif(path) {
   // Gérer les chemins multiples (séparés par virgules)
@@ -1419,124 +1418,95 @@ function getTypeInstitutionLabel(type) {
   overflow: hidden;
 }
 
-/* Grille de cartes utilisateurs (pour l'onglet tous) */
-.section-header-cards {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.section-header-cards h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #1a202c;
-}
-
-.btn-primary {
+/* Styles pour le tableau "Tous les utilisateurs" */
+.user-name-cell {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  gap: 12px;
 }
 
-.btn-primary:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
-
-.users-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.user-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.user-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-}
-
-.user-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.user-avatar {
-  width: 56px;
-  height: 56px;
+.user-avatar-small {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 14px;
   font-weight: 700;
   color: white;
   flex-shrink: 0;
 }
 
-.user-avatar.role-admin {
+.user-avatar-small.role-admin {
   background: #ef4444;
 }
 
-.user-avatar.role-soumissionnaire {
+.user-avatar-small.role-soumissionnaire {
   background: #3b82f6;
 }
 
-.user-avatar.role-evaluateur {
+.user-avatar-small.role-evaluateur {
   background: #f59e0b;
 }
 
-.user-avatar.role-secretariatsct {
+.user-avatar-small.role-secretariatsct {
   background: var(--dgppe-primary);
 }
 
-.user-avatar.role-presidencesct {
+.user-avatar-small.role-presidencesct {
   background: var(--dgppe-secondary);
 }
 
-.user-avatar.role-presidencecomite {
+.user-avatar-small.role-presidencecomite {
   background: #8b5cf6;
 }
 
-.user-avatar.role-invite {
+.user-avatar-small.role-invite {
   background: #6b7280;
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-info h4 {
-  margin: 0 0 4px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.user-username {
+.username-cell {
+  font-family: 'Courier New', monospace;
   font-size: 13px;
   color: #6b7280;
-  font-family: 'Courier New', monospace;
-  margin-bottom: 6px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-action {
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action-edit {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.btn-action-edit:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-action-delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.btn-action-delete:hover {
+  background: #ef4444;
+  color: white;
 }
 
 .user-role {
@@ -1581,48 +1551,6 @@ function getTypeInstitutionLabel(type) {
 .badge-invite {
   background: #f3f4f6;
   color: #4b5563;
-}
-
-.user-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.btn-edit,
-.btn-delete {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-edit {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.btn-edit:hover {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-delete {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.btn-delete:hover {
-  background: #ef4444;
-  color: white;
 }
 
 .loading,
