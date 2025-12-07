@@ -58,76 +58,6 @@
         </div>
       </div>
 
-      <!-- Métriques de performance -->
-      <div class="performance-metrics">
-        <h3>Métriques de performance</h3>
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12,6 12,12 16,14"/>
-              </svg>
-              Temps moyen de traitement
-            </div>
-            <div class="metric-value">{{ metrics.averageProcessingTime }}</div>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-              </svg>
-              Taux de validation
-            </div>
-            <div class="metric-value">{{ metrics.validationRate }}%</div>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12,6 12,12 16,14"/>
-              </svg>
-              Délai moyen d'évaluation
-            </div>
-            <div class="metric-value">{{ metrics.averageEvaluationTime }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Volumes de financement -->
-      <div class="financing-volumes">
-        <h3>Volumes de financement</h3>
-        <div class="financing-cards-grid">
-          <div class="financing-card">
-            <div class="financing-header">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>Demandes soumises</span>
-            </div>
-            <div class="financing-amount">{{ formatCurrency(financingStats.totalSubmitted) }}</div>
-            <div class="financing-count">{{ financingStats.countSubmitted }} projet(s)</div>
-          </div>
-
-          <div class="financing-card success">
-            <div class="financing-header">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              <span>Décisions favorables (Comité)</span>
-            </div>
-            <div class="financing-amount">{{ formatCurrency(financingStats.totalApproved) }}</div>
-            <div class="financing-count">{{ financingStats.countApproved }} projet(s)</div>
-          </div>
-        </div>
-      </div>
-      </div>
-
       <div class="tabs">
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous</button>
         <button @click="activeTab = 'validation'" :class="{ active: activeTab === 'validation' }" class="tab-btn">✅ À valider</button>
@@ -218,6 +148,75 @@
       <!-- Onglet Carte des pôles territoriaux -->
       <div v-if="activeTab === 'carte'" class="tab-content">
         <CartesPolesComparaison />
+      </div>
+
+      <!-- Métriques de performance -->
+      <div class="performance-metrics">
+        <h3>Métriques de performance</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+              </svg>
+              Temps moyen de traitement
+            </div>
+            <div class="metric-value">{{ metrics.averageProcessingTime }}</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              Taux de validation
+            </div>
+            <div class="metric-value">{{ metrics.validationRate }}%</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+              </svg>
+              Délai moyen d'évaluation
+            </div>
+            <div class="metric-value">{{ metrics.averageEvaluationTime }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Volumes de financement -->
+      <div class="financing-volumes">
+        <h3>Volumes de financement</h3>
+        <div class="financing-cards-grid">
+          <div class="financing-card">
+            <div class="financing-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>Demandes soumises</span>
+            </div>
+            <div class="financing-amount">{{ formatCurrency(financingStats.totalSubmitted) }}</div>
+            <div class="financing-count">{{ financingStats.countSubmitted }} projet(s)</div>
+          </div>
+
+          <div class="financing-card success">
+            <div class="financing-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <span>Décisions favorables (Comité)</span>
+            </div>
+            <div class="financing-amount">{{ formatCurrency(financingStats.totalApproved) }}</div>
+            <div class="financing-count">{{ financingStats.countApproved }} projet(s)</div>
+          </div>
+        </div>
       </div>
 
     </div>
