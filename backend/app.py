@@ -1219,34 +1219,43 @@ def traiter_project(project_id):
 
                 action = "Avis rejeté par Présidence SCT"
 
-        # Validation Présidence du Comité (recommande au Comité)
+        # Validation Présidence du Comité
         elif "decision_finale" in data:
             dec = data.get("decision_finale")
 
-            # Si PresidenceComite valide (decision_finale = 'valide'), définir statut_comite = 'recommande_comite'
-            if dec == "valide":
-                set_statut_comite(p, 'recommande_comite')
-                p.statut = "validé par presidencecomite"
-                action = "Validation par Présidence du Comité - recommandé au Comité (en attente décision finale)"
+            # PHASE 2: PresidenceComite confirme ou infirme l'avis
+            if dec == "confirme":
+                # PresidenceComite confirme l'avis de l'évaluateur
+                p.decision_finale = dec
+
+                # Cas B1: Avis défavorable confirmé → FIN DE VIE du projet
+                if p.avis == "défavorable":
+                    p.statut = "avis défavorable confirmé"
+                    set_statut_comite(p, None)  # Pas de recommandation au Comité
+                    action = "Décision de la Présidence du Comité : avis défavorable confirmé (fin de vie du projet)"
+
+                # Cas B2: Avis favorable/favorable sous conditions → Recommandation AUTOMATIQUE au Comité
+                elif p.avis in ["favorable", "favorable sous conditions"]:
+                    p.statut = "validé par presidencecomite"
+                    set_statut_comite(p, 'recommande_comite')  # Recommandation automatique
+                    action = "Décision de la Présidence du Comité : avis confirmé - Recommandé automatiquement au Comité"
+
+                else:
+                    # Cas de sécurité si l'avis n'est pas défini
+                    p.statut = "validé par presidencecomite"
+                    action = "Décision de la Présidence du Comité : avis confirmé"
+
                 if data.get("commentaires"):
                     p.commentaires_finaux = data.get("commentaires")
 
-            # Anciennes valeurs 'confirme' et 'infirme' conservées pour compatibilité
-            elif dec == "confirme":
-                # Décision confirmée = avis validé
-                p.decision_finale = dec
-                p.statut = "décision finale confirmée"
-                action = "Décision finale du Comité : avis confirmé"
-                if data.get("commentaires"):
-                    p.commentaires_finaux = data.get("commentaires")
             elif dec == "infirme":
-                # Décision infirmée = retour au Secrétariat SCT pour réexamen
+                # Option A: PresidenceComite infirme l'avis → retour au Secrétariat SCT
                 p.decision_finale = dec
                 p.statut = "en réexamen par le Secrétariat SCT"
                 p.evaluateur_nom = None
                 # Réinitialiser la validation SCT pour forcer un nouveau cycle
                 p.avis_presidencesct = None
-                action = "Décision finale du Comité : avis infirmé, retour au Secrétariat SCT"
+                action = "Décision de la Présidence du Comité : avis infirmé, retour au Secrétariat SCT"
                 if data.get("commentaires"):
                     p.commentaires_finaux = data.get("commentaires")
             else:
@@ -1482,14 +1491,14 @@ def submit_complements(project_id):
 @app.route("/api/projects/<int:project_id>/decision-comite", methods=["POST"])
 def enregistrer_decision_comite(project_id):
     """
-    Endpoint pour enregistrer la décision du Comité.
-    Le Secrétariat SCT enregistre si le Comité a entériné ou contesté la recommandation.
+    PHASE 3: Endpoint pour enregistrer la décision du Comité.
+    Le Secrétariat SCT OU la Présidence Comité enregistre si le Comité a entériné ou contesté.
 
     Paramètres attendus:
     - decision: 'enterine' ou 'conteste'
-    - commentaires: (optionnel) commentaires explicatifs
+    - commentaires: OBLIGATOIRE si decision='conteste', optionnel sinon
     - auteur: username de l'utilisateur qui enregistre la décision
-    - role: rôle de l'utilisateur (doit être secretariatsct ou admin)
+    - role: rôle de l'utilisateur (doit être secretariatsct, presidencecomite ou admin)
     """
     try:
         data = request.json or {}
@@ -1500,9 +1509,9 @@ def enregistrer_decision_comite(project_id):
         decision = data.get("decision", "")  # 'enterine' ou 'conteste'
         commentaires = data.get("commentaires", "").strip()
 
-        # Vérifier les permissions
-        if role not in ['secretariatsct', 'admin']:
-            return jsonify({"error": "Seul le Secrétariat SCT peut enregistrer les décisions du Comité"}), 403
+        # Vérifier les permissions (SecretariatSCT OU PresidenceComite)
+        if role not in ['secretariatsct', 'presidencecomite', 'admin']:
+            return jsonify({"error": "Seuls le Secrétariat SCT et la Présidence Comité peuvent enregistrer les décisions du Comité"}), 403
 
         # Vérifier que le projet est bien dans l'état 'recommande_comite'
         if get_statut_comite(p) != 'recommande_comite':
@@ -1512,10 +1521,14 @@ def enregistrer_decision_comite(project_id):
         if decision not in ['enterine', 'conteste']:
             return jsonify({"error": "Décision invalide. Valeurs acceptées: 'enterine' ou 'conteste'"}), 400
 
+        # IMPORTANT: Commentaires OBLIGATOIRES si le Comité conteste
+        if decision == 'conteste' and not commentaires:
+            return jsonify({"error": "Les commentaires sont obligatoires lorsque le Comité conteste la recommandation"}), 400
+
         # Mettre à jour le statut_comite
         if decision == 'enterine':
             set_statut_comite(p, 'approuve_definitif')
-            p.statut = "décision finale confirmée"
+            p.statut = "approuvé définitivement par le Comité"
             action = "Décision du Comité: projet entériné (approuvé définitivement)"
             if commentaires:
                 action += f" - {commentaires}"
@@ -1524,10 +1537,9 @@ def enregistrer_decision_comite(project_id):
             p.statut = "en réexamen par le Secrétariat SCT"
             # Réinitialiser les validations pour permettre un nouveau cycle
             p.avis_presidencesct = None
+            p.decision_finale = None  # Réinitialiser aussi la décision de PresidenceComite
             p.evaluateur_nom = None
-            action = "Décision du Comité: projet contesté, retour au Secrétariat SCT pour réévaluation"
-            if commentaires:
-                action += f" - {commentaires}"
+            action = f"Décision du Comité: projet contesté, retour au Secrétariat SCT - Motivation: {commentaires}"
 
         # Sauvegarder les commentaires si fournis
         if commentaires:
@@ -1546,6 +1558,17 @@ def enregistrer_decision_comite(project_id):
             role=role
         )
         db.session.add(hist)
+        db.session.commit()
+
+        # Ajouter un log pour la traçabilité
+        log_entry = Log(
+            projet_id=project_id,
+            action="decision_comite",
+            details=action,
+            auteur=auteur,
+            role=role
+        )
+        db.session.add(log_entry)
         db.session.commit()
 
         # Notification au soumissionnaire

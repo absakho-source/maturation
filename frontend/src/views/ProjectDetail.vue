@@ -179,9 +179,13 @@
           </div>
 
           <!-- Section Fiche d'évaluation PDF -->
-          <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && !isSoumissionnaire() && peutVoirEvaluation()">
+          <!-- Visible pour: rôles internes (avec peutVoirEvaluation) OU soumissionnaire (avec soumissionnairePeutVoirFiche) -->
+          <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && ((!isSoumissionnaire() && peutVoirEvaluation()) || (isSoumissionnaire() && soumissionnairePeutVoirFiche()))">
             <h3>📄 Fiche d'évaluation</h3>
-            <p>La fiche d'évaluation a été générée.</p>
+            <p v-if="isSoumissionnaire()" class="info-message">
+              ✅ Votre projet a été validé. Vous pouvez consulter la fiche d'évaluation détaillée ci-dessous.
+            </p>
+            <p v-else>La fiche d'évaluation a été générée.</p>
             <button @click="ouvrirFichePDF" class="btn-primary">
               📄 Voir la fiche d'évaluation (PDF)
             </button>
@@ -583,6 +587,23 @@ export default {
 
       return false;
     },
+    soumissionnairePeutVoirFiche() {
+      // Le soumissionnaire peut voir la fiche d'évaluation dans deux cas:
+      // 1. Avis favorable confirmé par PresidenceComite (decision_finale = 'confirme' + avis favorable)
+      // 2. Projet entériné par le Comité (statut_comite = 'approuve_definitif')
+      if (!this.project) return false;
+
+      // Cas 1: Avis favorable confirmé par PresidenceComite
+      const avisFavorableConfirme =
+        this.project.decision_finale === 'confirme' &&
+        (this.project.avis === 'favorable' || this.project.avis === 'favorable sous conditions');
+
+      // Cas 2: Projet entériné par le Comité
+      const enterineParComite =
+        this.project.statut_comite === 'approuve_definitif';
+
+      return avisFavorableConfirme || enterineParComite;
+    },
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR').format(amount);
     },
@@ -846,6 +867,15 @@ export default {
   margin: 0 0 1rem 0;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #e0f2fe;
+}
+.info-message {
+  padding: 1rem;
+  background: #d1fae5;
+  border-left: 4px solid #10b981;
+  border-radius: 6px;
+  color: #065f46;
+  font-weight: 500;
+  margin-bottom: 1rem;
 }
 .info-row {
   display: grid;

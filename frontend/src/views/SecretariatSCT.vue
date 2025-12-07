@@ -690,6 +690,12 @@
 
               <div class="decision-comite-section">
                 <h4>Enregistrer la décision du Comité</h4>
+
+                <!-- Message d'avertissement important -->
+                <div class="warning-box">
+                  <p style="font-weight: 600; margin-bottom: 0;">⚠️ ATTENTION: À renseigner uniquement après la tenue du Comité (le soumissionnaire sera notifié immédiatement).</p>
+                </div>
+
                 <p class="info-small">Le Comité a-t-il entériné ou contesté la recommandation ?</p>
 
                 <div class="decision-buttons">
@@ -1704,12 +1710,17 @@ export default {
         return;
       }
 
-      // Si on conteste, demander un commentaire optionnel
+      // Si on conteste, demander un commentaire OBLIGATOIRE
       let commentaires = "";
       if (decision === 'conteste') {
-        commentaires = prompt("Commentaires (optionnel) pour justifier la contestation du Comité :");
+        commentaires = prompt("⚠️ Commentaires OBLIGATOIRES pour justifier la contestation du Comité :");
         if (commentaires === null) {
           // L'utilisateur a annulé
+          return;
+        }
+        // Validation : commentaires obligatoires
+        if (!commentaires || commentaires.trim() === '') {
+          alert("❌ Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.");
           return;
         }
       }
@@ -3135,11 +3146,11 @@ export default {
 
 .warning-box {
   padding: 1rem;
-  background: #fef3c7;
-  border-left: 4px solid #f59e0b;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-  color: #92400e;
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #991b1b;
   font-weight: 500;
 }
 

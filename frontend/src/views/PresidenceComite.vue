@@ -259,9 +259,31 @@
               <p v-if="p.avis"><strong>Avis évaluateur:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
               <p v-if="p.avis_presidencesct"><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
               <p><strong>Statut Comité:</strong> <span class="status-comite-text">Recommandé au Comité</span></p>
-              <div class="info-box">
-                <p style="font-style: italic; color: #6b7280;">ℹ️ Ce projet est en attente de décision finale du Comité. Le Secrétariat SCT enregistrera la décision.</p>
+
+              <!-- Message d'avertissement important -->
+              <div class="warning-box">
+                <p style="font-weight: 600; margin-bottom: 0.5rem;">⚠️ ATTENTION: À renseigner uniquement après la tenue du Comité (le soumissionnaire sera notifié immédiatement).</p>
               </div>
+
+              <!-- Boutons de décision du Comité -->
+              <div class="decision-comite-section">
+                <h4 style="margin-bottom: 0.5rem;">Décision du Comité</h4>
+                <textarea
+                  v-model="p.commentaires_comite_temp"
+                  placeholder="Commentaires sur la décision du Comité (obligatoire si contesté)"
+                  rows="3"
+                  class="commentaires-comite"
+                ></textarea>
+                <div class="decision-buttons">
+                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-approve">
+                    ✅ Entérine
+                  </button>
+                  <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-reject">
+                    ❌ Conteste
+                  </button>
+                </div>
+              </div>
+
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails complets</button>
             </div>
           </div>
@@ -484,6 +506,58 @@ export default {
         console.error('Erreur téléchargement rapport élaboré:', error);
         alert('Erreur lors du téléchargement du rapport élaboré');
       }
+    },
+    enregistrerDecisionComite(projectId, decision, commentaires) {
+      // Validation : commentaires obligatoires si contesté
+      if (decision === 'conteste' && (!commentaires || commentaires.trim() === '')) {
+        alert('❌ Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.');
+        return;
+      }
+
+      // Confirmation avant enregistrement
+      const actionMessage = decision === 'enterine'
+        ? "Êtes-vous sûr de vouloir ENTÉRINER cette recommandation ? Le soumissionnaire sera notifié immédiatement."
+        : "Êtes-vous sûr de vouloir CONTESTER cette recommandation ? Le projet retournera au Secrétariat SCT et le soumissionnaire sera notifié.";
+
+      if (!confirm(actionMessage)) {
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      fetch(`/api/projects/${projectId}/decision-comite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          decision: decision,
+          commentaires: commentaires ? commentaires.trim() : '',
+          auteur: user.username,
+          role: user.role
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(err.error || 'Erreur lors de l\'enregistrement');
+          });
+        }
+        return response.json();
+      })
+      .then(() => {
+        const message = decision === 'enterine'
+          ? '✅ Décision du Comité enregistrée : Projet ENTÉRINÉ'
+          : '✅ Décision du Comité enregistrée : Projet CONTESTÉ (retour au Secrétariat SCT)';
+        alert(message);
+
+        // Recharger la page pour afficher les changements
+        this.$router.push('/presidencecomite').then(() => {
+          window.location.reload();
+        });
+      })
+      .catch(error => {
+        console.error('Erreur lors de l\'enregistrement de la décision:', error);
+        alert(`❌ Erreur : ${error.message}`);
+      });
     }
   }
 };
@@ -703,6 +777,92 @@ export default {
   background: #fef3c7;
   border: 1px solid #fde68a;
   border-radius: 6px;
+}
+
+/* Warning box pour décisions Comité */
+.warning-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  color: #991b1b;
+}
+
+/* Section décision Comité */
+.decision-comite-section {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.decision-comite-section h4 {
+  color: var(--dgppe-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Textarea pour commentaires Comité */
+.commentaires-comite {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.commentaires-comite:focus {
+  outline: none;
+  border-color: var(--dgppe-primary);
+  box-shadow: 0 0 0 3px rgba(46, 107, 107, 0.1);
+}
+
+/* Boutons de décision Comité */
+.decision-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.decision-buttons .btn-approve,
+.decision-buttons .btn-reject {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.decision-buttons .btn-approve {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.decision-buttons .btn-approve:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.decision-buttons .btn-reject {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.decision-buttons .btn-reject:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Métriques de performance */
