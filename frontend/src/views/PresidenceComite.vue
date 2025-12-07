@@ -132,6 +132,7 @@
       <div class="tabs">
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous les projets</button>
         <button @click="activeTab = 'decision'" :class="{ active: activeTab === 'decision' }" class="tab-btn">⚖️ Décision finale</button>
+        <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
       </div>
@@ -231,6 +232,42 @@
         </div>
       </div>
 
+      <!-- Onglet Décisions du Comité -->
+      <div v-if="activeTab === 'decisions-comite'" class="tab-content">
+        <h2>🏛️ Décisions du Comité (suivi)</h2>
+        <p class="info-text">Projets que vous avez recommandés au Comité. Cette vue vous permet de suivre l'évolution des décisions du Comité.</p>
+
+        <div v-if="projectsDecisionsComite.length === 0" class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>Aucun projet recommandé au Comité pour le moment</p>
+        </div>
+
+        <div v-else class="projects-grid">
+          <div v-for="p in projectsDecisionsComite" :key="p.id" class="project-card">
+            <div class="card-header">
+              <div class="card-title-section">
+                <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
+                <h3>{{ p.titre }}</h3>
+              </div>
+              <span class="badge status-comite">🟡 En attente Comité</span>
+            </div>
+            <div class="card-body">
+              <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
+              <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
+              <p v-if="p.avis"><strong>Avis évaluateur:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+              <p v-if="p.avis_presidencesct"><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
+              <p><strong>Statut Comité:</strong> <span class="status-comite-text">Recommandé au Comité</span></p>
+              <div class="info-box">
+                <p style="font-style: italic; color: #6b7280;">ℹ️ Ce projet est en attente de décision finale du Comité. Le Secrétariat SCT enregistrera la décision.</p>
+              </div>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails complets</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Onglet Statistiques -->
       <div v-if="activeTab === 'stats'" class="tab-content">
         <StatsDashboard 
@@ -287,6 +324,10 @@ export default {
     },
     projectsToDecide() {
       return this.allProjects.filter(p => p.statut === 'validé par presidencesct' && !p.decision_finale);
+    },
+    projectsDecisionsComite() {
+      // Projets recommandés au Comité par PresidenceComite (avec statut_comite = 'recommande_comite')
+      return this.allProjects.filter(p => p.statut_comite === 'recommande_comite');
     }
   },
   mounted() {
@@ -611,6 +652,7 @@ export default {
 .status-validated { background: #10b981; color: white; }
 .status-complement { background: #f97316; color: white; }
 .status-confirmed { background: #06b6d4; color: white; }
+.status-comite { background: #f59e0b; color: white; }
 .status-default { background: #6b7280; color: white; }
 .card-body { padding: 1.5rem; }
 .card-body p { margin: 0.5rem 0; color: #555; font-size: 0.95rem; }
@@ -635,6 +677,33 @@ export default {
 .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
 .btn-danger { padding: 0.85rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
 .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+
+/* Styles pour onglet Décisions du Comité */
+.info-text {
+  margin: -1rem 0 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background: #e0f2fe;
+  border-left: 4px solid #0284c7;
+  border-radius: 6px;
+  color: #0c4a6e;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.status-comite-text {
+  color: #f59e0b;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.info-box {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+}
 
 /* Métriques de performance */
 .performance-metrics h3 {
