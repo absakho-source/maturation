@@ -4743,6 +4743,47 @@ def migrate_approuve_definitif_endpoint():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/fix-fiche-visible", methods=["POST"])
+def fix_fiche_visible():
+    """
+    Endpoint pour corriger manuellement fiche_evaluation_visible
+    Met à jour tous les projets avec decision_finale='confirme'
+    """
+    try:
+        print("[ADMIN] Correction de fiche_evaluation_visible...")
+
+        # Trouver tous les projets avec decision_finale='confirme' mais fiche_evaluation_visible=False
+        projects = Project.query.filter_by(decision_finale='confirme').all()
+
+        updated = []
+        for p in projects:
+            if not p.fiche_evaluation_visible:
+                p.fiche_evaluation_visible = True
+                updated.append({
+                    'id': p.id,
+                    'numero': p.numero_projet,
+                    'titre': p.titre,
+                    'statut': p.statut
+                })
+
+        db.session.commit()
+
+        print(f"[ADMIN] ✅ {len(updated)} projet(s) mis à jour")
+        for u in updated:
+            print(f"  - [{u['numero']}] {u['titre']}")
+
+        return jsonify({
+            "message": f"{len(updated)} projet(s) mis à jour avec fiche_evaluation_visible=True",
+            "updated": len(updated),
+            "projects": updated
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
 
