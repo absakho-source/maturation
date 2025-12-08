@@ -273,7 +273,7 @@
         <!-- Identifiants de connexion -->
         <div class="form-section">
           <h3>Identifiants de connexion</h3>
-          <input v-model="username" placeholder="Adresse email *" type="email" required />
+          <input v-model="username" placeholder="Adresse email professionnelle (de préférence) *" type="email" required />
           <input v-model="password" placeholder="Mot de passe (min. 6 caractères) *" type="password" required minlength="6" />
           <input v-model="passwordConfirm" placeholder="Confirmer le mot de passe *" type="password" required minlength="6" />
         </div>
