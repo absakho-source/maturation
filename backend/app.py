@@ -4784,6 +4784,46 @@ def fix_fiche_visible():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/delete-test-projects", methods=["POST"])
+def delete_test_projects():
+    """
+    Endpoint pour supprimer manuellement les projets de test
+    """
+    try:
+        print("[ADMIN] Suppression des projets de test...")
+
+        # IDs des projets de test à supprimer
+        test_project_ids = [1, 2, 4, 9, 13, 14, 15, 16, 18, 19]
+
+        deleted = []
+        for pid in test_project_ids:
+            project = Project.query.get(pid)
+            if project:
+                deleted.append({
+                    'id': project.id,
+                    'numero': project.numero_projet,
+                    'titre': project.titre
+                })
+                db.session.delete(project)
+
+        db.session.commit()
+
+        print(f"[ADMIN] ✅ {len(deleted)} projet(s) de test supprimé(s)")
+        for d in deleted:
+            print(f"  - [{d['numero'] or f'ID-{d[\"id\"]}'}] {d['titre']}")
+
+        return jsonify({
+            "message": f"{len(deleted)} projet(s) de test supprimé(s)",
+            "deleted": len(deleted),
+            "projects": deleted
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
 
