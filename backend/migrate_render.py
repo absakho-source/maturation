@@ -48,9 +48,58 @@ def migrate_database(db_path):
             projects_with_status = result.scalar()
             print(f"[MIGRATION] Projets avec statut_comite défini: {projects_with_status}")
 
-            # Ajouter d'autres migrations ici au besoin
-            # Migration 2: ...
-            # Migration 3: ...
+            # Migration 2: Ajouter la colonne fiche_evaluation_visible
+            print("[MIGRATION] Vérification de la colonne 'fiche_evaluation_visible'...")
+
+            columns = [col['name'] for col in inspector.get_columns('project')]
+
+            if 'fiche_evaluation_visible' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'fiche_evaluation_visible'...")
+                conn.execute(text("""
+                    ALTER TABLE project
+                    ADD COLUMN fiche_evaluation_visible BOOLEAN DEFAULT 0
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'fiche_evaluation_visible' ajoutée avec succès")
+            else:
+                print("[MIGRATION] ✓ La colonne 'fiche_evaluation_visible' existe déjà")
+
+            # Migration 3: Mettre à jour fiche_evaluation_visible pour les projets entérinés
+            print("[MIGRATION] Mise à jour de fiche_evaluation_visible pour les projets entérinés...")
+            result = conn.execute(text("""
+                UPDATE project
+                SET fiche_evaluation_visible = 1
+                WHERE decision_finale = 'confirme'
+                AND (fiche_evaluation_visible = 0 OR fiche_evaluation_visible IS NULL)
+            """))
+            conn.commit()
+            count_updated = result.rowcount
+            if count_updated > 0:
+                print(f"[MIGRATION] ✓ {count_updated} projet(s) mis à jour avec fiche_evaluation_visible = True")
+            else:
+                print("[MIGRATION] ✓ Aucun projet à mettre à jour")
+
+            # Migration 4: Supprimer les projets de test
+            print("[MIGRATION] Suppression des projets de test...")
+            test_project_ids = [1, 2, 4, 9, 13, 14, 15, 16, 18, 19]
+            placeholders = ','.join(['?'] * len(test_project_ids))
+
+            # Vérifier combien de projets vont être supprimés
+            result = conn.execute(
+                text(f"SELECT COUNT(*) FROM project WHERE id IN ({placeholders})"),
+                test_project_ids
+            )
+            count_to_delete = result.scalar()
+
+            if count_to_delete > 0:
+                result = conn.execute(
+                    text(f"DELETE FROM project WHERE id IN ({placeholders})"),
+                    test_project_ids
+                )
+                conn.commit()
+                print(f"[MIGRATION] ✓ {count_to_delete} projet(s) de test supprimé(s)")
+            else:
+                print("[MIGRATION] ✓ Aucun projet de test à supprimer")
 
         print("[MIGRATION] ✓ Toutes les migrations ont été appliquées avec succès!")
         return True
