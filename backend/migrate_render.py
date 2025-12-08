@@ -82,24 +82,171 @@ def migrate_database(db_path):
             # Migration 4: Supprimer les projets de test
             print("[MIGRATION] Suppression des projets de test...")
             test_project_ids = [1, 2, 4, 9, 13, 14, 15, 16, 18, 19]
-            placeholders = ','.join(['?'] * len(test_project_ids))
+            ids_str = ','.join(map(str, test_project_ids))
 
             # Vérifier combien de projets vont être supprimés
             result = conn.execute(
-                text(f"SELECT COUNT(*) FROM project WHERE id IN ({placeholders})"),
-                test_project_ids
+                text(f"SELECT COUNT(*) FROM project WHERE id IN ({ids_str})")
             )
             count_to_delete = result.scalar()
 
             if count_to_delete > 0:
                 result = conn.execute(
-                    text(f"DELETE FROM project WHERE id IN ({placeholders})"),
-                    test_project_ids
+                    text(f"DELETE FROM project WHERE id IN ({ids_str})")
                 )
                 conn.commit()
                 print(f"[MIGRATION] ✓ {count_to_delete} projet(s) de test supprimé(s)")
             else:
                 print("[MIGRATION] ✓ Aucun projet de test à supprimer")
+
+            # Migration 5: Ajouter les colonnes pour l'édition et le masquage des messages
+            print("[MIGRATION] Vérification des colonnes pour l'édition des messages...")
+
+            # Vérifier les colonnes de messages_projet
+            try:
+                columns = [col['name'] for col in inspector.get_columns('messages_projet')]
+            except:
+                columns = []
+
+            # Ajouter modifie_par
+            if 'modifie_par' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'modifie_par'...")
+                conn.execute(text("""
+                    ALTER TABLE messages_projet
+                    ADD COLUMN modifie_par VARCHAR(100)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'modifie_par' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'modifie_par' existe déjà")
+
+            # Ajouter masque
+            if 'masque' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'masque'...")
+                conn.execute(text("""
+                    ALTER TABLE messages_projet
+                    ADD COLUMN masque BOOLEAN DEFAULT 0
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'masque' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'masque' existe déjà")
+
+            # Ajouter masque_par
+            if 'masque_par' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'masque_par'...")
+                conn.execute(text("""
+                    ALTER TABLE messages_projet
+                    ADD COLUMN masque_par VARCHAR(100)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'masque_par' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'masque_par' existe déjà")
+
+            # Ajouter masque_raison
+            if 'masque_raison' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'masque_raison'...")
+                conn.execute(text("""
+                    ALTER TABLE messages_projet
+                    ADD COLUMN masque_raison TEXT
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'masque_raison' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'masque_raison' existe déjà")
+
+            # Ajouter date_masquage
+            if 'date_masquage' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'date_masquage'...")
+                conn.execute(text("""
+                    ALTER TABLE messages_projet
+                    ADD COLUMN date_masquage DATETIME
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'date_masquage' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'date_masquage' existe déjà")
+
+            # Migration 6: Créer la table historique_messages si elle n'existe pas
+            print("[MIGRATION] Vérification de la table 'historique_messages'...")
+
+            try:
+                # Vérifier si la table existe
+                conn.execute(text("SELECT 1 FROM historique_messages LIMIT 1"))
+                print("[MIGRATION] ✓ La table 'historique_messages' existe déjà")
+            except:
+                print("[MIGRATION] Création de la table 'historique_messages'...")
+                conn.execute(text("""
+                    CREATE TABLE historique_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        message_id INTEGER NOT NULL,
+                        project_id INTEGER NOT NULL,
+                        contenu_avant TEXT,
+                        contenu_apres TEXT,
+                        modifie_par VARCHAR(100) NOT NULL,
+                        date_modification DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        type_modification VARCHAR(50) NOT NULL,
+                        raison TEXT,
+                        FOREIGN KEY (message_id) REFERENCES messages_projet(id),
+                        FOREIGN KEY (project_id) REFERENCES project(id)
+                    )
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Table 'historique_messages' créée avec succès")
+
+            # Migration 7: Ajouter les nouveaux champs au projet (nouveauté, priorité, financement)
+            print("[MIGRATION] Vérification des nouveaux champs projet...")
+
+            columns = [col['name'] for col in inspector.get_columns('project')]
+
+            # Ajouter nouveaute
+            if 'nouveaute' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'nouveaute'...")
+                conn.execute(text("""
+                    ALTER TABLE project
+                    ADD COLUMN nouveaute VARCHAR(50)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'nouveaute' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'nouveaute' existe déjà")
+
+            # Ajouter projet_initial_ref
+            if 'projet_initial_ref' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'projet_initial_ref'...")
+                conn.execute(text("""
+                    ALTER TABLE project
+                    ADD COLUMN projet_initial_ref VARCHAR(50)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'projet_initial_ref' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'projet_initial_ref' existe déjà")
+
+            # Ajouter niveau_priorite
+            if 'niveau_priorite' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'niveau_priorite'...")
+                conn.execute(text("""
+                    ALTER TABLE project
+                    ADD COLUMN niveau_priorite VARCHAR(50)
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'niveau_priorite' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'niveau_priorite' existe déjà")
+
+            # Ajouter type_financement
+            if 'type_financement' not in columns:
+                print("[MIGRATION] Ajout de la colonne 'type_financement'...")
+                conn.execute(text("""
+                    ALTER TABLE project
+                    ADD COLUMN type_financement TEXT
+                """))
+                conn.commit()
+                print("[MIGRATION] ✓ Colonne 'type_financement' ajoutée")
+            else:
+                print("[MIGRATION] ✓ La colonne 'type_financement' existe déjà")
 
         print("[MIGRATION] ✓ Toutes les migrations ont été appliquées avec succès!")
         return True

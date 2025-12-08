@@ -15,6 +15,7 @@ from datetime import datetime
 from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
+import email_service
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
@@ -1349,6 +1350,26 @@ def traiter_project(project_id):
             print(f"[NOTIFICATION] Erreur lors de la création des notifications: {notif_error}")
             # Ne pas bloquer le traitement principal si les notifications échouent
 
+        # ============ ENVOI D'EMAILS ============
+        # Envoyer des emails au soumissionnaire selon le changement de statut
+        try:
+            if p.auteur_nom:
+                soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+                if soumissionnaire and soumissionnaire.email:
+                    # Déterminer si on doit envoyer un email selon le statut
+                    statuts_avec_email = ["assigné", "en évaluation", "compléments demandés", "évalué",
+                                         "favorable", "favorable sous conditions", "défavorable"]
+
+                    if p.statut in statuts_avec_email:
+                        email_service.send_status_change_email(
+                            project=p,
+                            user_email=soumissionnaire.email,
+                            user_name=soumissionnaire.nom or soumissionnaire.username
+                        )
+        except Exception as email_error:
+            print(f"[EMAIL] Erreur lors de l'envoi d'email: {email_error}")
+            # Ne pas bloquer le traitement principal si l'email échoue
+
         return jsonify({"message": "Traitement effectué"}), 200
 
     except Exception as e:
@@ -1606,6 +1627,22 @@ def enregistrer_decision_comite(project_id):
                 )
         except Exception as notif_error:
             print(f"[NOTIFICATION] Erreur lors de la création de la notification: {notif_error}")
+
+        # ============ ENVOI D'EMAILS ============
+        # Envoyer un email au soumissionnaire si le Comité a entériné le projet
+        try:
+            if decision == 'enterine' and p.auteur_nom:
+                soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+                if soumissionnaire and soumissionnaire.email:
+                    # Statut final du projet après entérinement (favorable, défavorable, etc.)
+                    email_service.send_status_change_email(
+                        project=p,
+                        user_email=soumissionnaire.email,
+                        user_name=soumissionnaire.nom or soumissionnaire.username
+                    )
+        except Exception as email_error:
+            print(f"[EMAIL] Erreur lors de l'envoi d'email: {email_error}")
+            # Ne pas bloquer le traitement principal si l'email échoue
 
         return jsonify({"message": "Décision du Comité enregistrée avec succès"}), 200
 
@@ -3751,6 +3788,21 @@ def add_project_message(project_id):
         except Exception as notif_error:
             print(f"[NOTIFICATION] Erreur message: {notif_error}")
 
+        # ============ ENVOI D'EMAIL POUR NOUVEAU MESSAGE ============
+        try:
+            # Envoyer un email si le personnel DGPPE envoie un message au soumissionnaire
+            if auteur_role != "soumissionnaire" and project.auteur_nom:
+                soumissionnaire = User.query.filter_by(username=project.auteur_nom).first()
+                if soumissionnaire and soumissionnaire.email:
+                    email_service.send_new_message_email(
+                        project=project,
+                        user_email=soumissionnaire.email,
+                        user_name=soumissionnaire.nom or soumissionnaire.username,
+                        message_author=auteur_nom
+                    )
+        except Exception as email_error:
+            print(f"[EMAIL] Erreur lors de l'envoi d'email pour nouveau message: {email_error}")
+
         return jsonify({
             "message": "Message ajouté avec succès",
             "data": message.to_dict()
@@ -3762,42 +3814,231 @@ def add_project_message(project_id):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/projects/<int:project_id>/messages/<int:message_id>", methods=["DELETE"])
-def delete_project_message(project_id, message_id):
-    """Supprimer un message (auteur uniquement ou admin)"""
+@app.route("/api/projects/<int:project_id>/messages/<int:message_id>", methods=["PUT"])
+def edit_project_message(project_id, message_id):
+    """Éditer un message (auteur uniquement, dans les 15 minutes)"""
     try:
+        from models import MessageProjet, HistoriqueMessage
+        from datetime import datetime, timedelta
+
         # Récupérer le message
         message = MessageProjet.query.filter_by(id=message_id, project_id=project_id).first_or_404()
 
-        # Vérifier les permissions
-        auteur_nom = request.args.get("auteur_nom")
-        role = request.args.get("role", "").lower()
+        # Récupérer les données
+        data = request.get_json()
+        auteur_nom = data.get("auteur_nom")
+        nouveau_contenu = data.get("contenu", "").strip()
 
-        # Seul l'admin ou l'auteur du message peut le supprimer
-        if role != "admin" and auteur_nom != message.auteur_nom:
-            return jsonify({"error": "Vous n'avez pas la permission de supprimer ce message"}), 403
+        # Vérifications
+        if not auteur_nom or not nouveau_contenu:
+            return jsonify({"error": "Données manquantes"}), 400
 
-        # Supprimer le message
-        db.session.delete(message)
-        db.session.commit()
+        # Seul l'auteur peut éditer son message
+        if auteur_nom != message.auteur_nom:
+            return jsonify({"error": "Seul l'auteur peut éditer son message"}), 403
 
-        # Ajouter une entrée dans l'historique
-        hist = Historique(
+        # Vérifier que le message n'est pas masqué
+        if message.masque:
+            return jsonify({"error": "Impossible d'éditer un message masqué"}), 403
+
+        # Vérifier la fenêtre de 15 minutes
+        temps_ecoule = datetime.utcnow() - message.date_creation
+        if temps_ecoule > timedelta(minutes=15):
+            return jsonify({"error": "Vous ne pouvez plus éditer ce message (délai de 15 minutes dépassé)"}), 403
+
+        # Sauvegarder l'historique
+        historique = HistoriqueMessage(
+            message_id=message.id,
             project_id=project_id,
-            action=f"Message supprimé de la discussion",
-            auteur=auteur_nom,
-            role=role
+            contenu_avant=message.contenu,
+            contenu_apres=nouveau_contenu,
+            modifie_par=auteur_nom,
+            type_modification='edition'
         )
-        db.session.add(hist)
+        db.session.add(historique)
+
+        # Mettre à jour le message
+        message.contenu = nouveau_contenu
+        message.date_modification = datetime.utcnow()
+        message.modifie_par = auteur_nom
+
         db.session.commit()
 
-        return jsonify({"message": "Message supprimé avec succès"}), 200
+        return jsonify({
+            "message": "Message modifié avec succès",
+            "data": message.to_dict()
+        }), 200
 
     except Exception as e:
         db.session.rollback()
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/projects/<int:project_id>/messages/<int:message_id>/mask", methods=["POST"])
+def mask_project_message(project_id, message_id):
+    """Masquer un message (admin/secrétariat uniquement)"""
+    try:
+        from models import MessageProjet, HistoriqueMessage
+        from datetime import datetime
+
+        # Récupérer le message
+        message = MessageProjet.query.filter_by(id=message_id, project_id=project_id).first_or_404()
+
+        # Récupérer les données
+        data = request.get_json()
+        auteur_nom = data.get("auteur_nom")
+        role = data.get("role", "").lower()
+        raison = data.get("raison", "").strip()
+
+        # Vérifications
+        if not auteur_nom or not raison:
+            return jsonify({"error": "Username et raison obligatoires"}), 400
+
+        # Seuls les admins et le secrétariat peuvent masquer
+        roles_autorises = ["admin", "secretariatsct", "secretariatcomite"]
+        if role not in roles_autorises:
+            return jsonify({"error": "Vous n'avez pas la permission de masquer des messages"}), 403
+
+        # Vérifier que le message n'est pas déjà masqué
+        if message.masque:
+            return jsonify({"error": "Ce message est déjà masqué"}), 400
+
+        # Sauvegarder l'historique
+        historique = HistoriqueMessage(
+            message_id=message.id,
+            project_id=project_id,
+            contenu_avant=message.contenu,
+            contenu_apres="[Message masqué]",
+            modifie_par=auteur_nom,
+            type_modification='masquage',
+            raison=raison
+        )
+        db.session.add(historique)
+
+        # Masquer le message
+        message.masque = True
+        message.masque_par = auteur_nom
+        message.masque_raison = raison
+        message.date_masquage = datetime.utcnow()
+
+        # Ajouter une entrée dans l'historique du projet
+        hist = Historique(
+            project_id=project_id,
+            action=f"Message masqué par {role}: {raison[:100]}",
+            auteur=auteur_nom,
+            role=role
+        )
+        db.session.add(hist)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Message masqué avec succès",
+            "data": message.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/projects/<int:project_id>/messages/<int:message_id>/unmask", methods=["POST"])
+def unmask_project_message(project_id, message_id):
+    """Démasquer un message (admin/secrétariat uniquement)"""
+    try:
+        from models import MessageProjet, HistoriqueMessage
+        from datetime import datetime
+
+        # Récupérer le message
+        message = MessageProjet.query.filter_by(id=message_id, project_id=project_id).first_or_404()
+
+        # Récupérer les données
+        data = request.get_json()
+        auteur_nom = data.get("auteur_nom")
+        role = data.get("role", "").lower()
+        raison = data.get("raison", "").strip()
+
+        # Vérifications
+        if not auteur_nom:
+            return jsonify({"error": "Username obligatoire"}), 400
+
+        # Seuls les admins et le secrétariat peuvent démasquer
+        roles_autorises = ["admin", "secretariatsct", "secretariatcomite"]
+        if role not in roles_autorises:
+            return jsonify({"error": "Vous n'avez pas la permission de démasquer des messages"}), 403
+
+        # Vérifier que le message est masqué
+        if not message.masque:
+            return jsonify({"error": "Ce message n'est pas masqué"}), 400
+
+        # Sauvegarder l'historique
+        historique = HistoriqueMessage(
+            message_id=message.id,
+            project_id=project_id,
+            contenu_avant="[Message masqué]",
+            contenu_apres=message.contenu,
+            modifie_par=auteur_nom,
+            type_modification='demasquage',
+            raison=raison or "Démasquage par l'administration"
+        )
+        db.session.add(historique)
+
+        # Démasquer le message
+        message.masque = False
+        message.masque_par = None
+        message.masque_raison = None
+        message.date_masquage = None
+
+        # Ajouter une entrée dans l'historique du projet
+        hist = Historique(
+            project_id=project_id,
+            action=f"Message démasqué par {role}",
+            auteur=auteur_nom,
+            role=role
+        )
+        db.session.add(hist)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Message démasqué avec succès",
+            "data": message.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/projects/<int:project_id>/messages/<int:message_id>/history", methods=["GET"])
+def get_message_history(project_id, message_id):
+    """Récupérer l'historique des modifications d'un message"""
+    try:
+        from models import HistoriqueMessage
+
+        # Vérifier que le message existe
+        message = MessageProjet.query.filter_by(id=message_id, project_id=project_id).first_or_404()
+
+        # Récupérer l'historique
+        historique = HistoriqueMessage.query.filter_by(message_id=message_id).order_by(HistoriqueMessage.date_modification.desc()).all()
+
+        return jsonify({
+            "message": message.to_dict(),
+            "historique": [h.to_dict() for h in historique]
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/projects/<int:project_id>/messages/<int:message_id>", methods=["DELETE"])
+def delete_project_message(project_id, message_id):
+    """Supprimer un message - OBSOLÈTE - utiliser le masquage à la place"""
+    return jsonify({"error": "La suppression de messages est désactivée. Utilisez le masquage à la place."}), 403
 
 # ============ Route des métriques de performance ============
 @app.route('/api/metrics', methods=['GET'])

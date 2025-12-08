@@ -90,6 +90,12 @@ class Project(db.Model):
     # Motivation pour la resoumission après rejet (nullable pour compatibilité)
     motivation_resoumission = db.Column(db.Text, nullable=True)
 
+    # Nouveaux champs (Décembre 2025)
+    nouveaute = db.Column(db.String(50), nullable=True)  # "projet_initial" ou "phase_2"
+    projet_initial_ref = db.Column(db.String(50), nullable=True)  # Référence au projet initial si phase 2
+    niveau_priorite = db.Column(db.String(50), nullable=True)  # "prioritaire_ant" ou "standard"
+    type_financement = db.Column(db.Text, nullable=True)  # JSON: liste des types de financement
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auteur = db.Column(db.String(100))
@@ -498,6 +504,13 @@ class MessageProjet(db.Model):
     fichier_joint_taille = db.Column(db.Integer, nullable=True)  # Taille du fichier - DEPRECATED
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     date_modification = db.Column(db.DateTime, nullable=True)  # Si le message est modifié
+    modifie_par = db.Column(db.String(100), nullable=True)  # Username de qui a modifié (si différent de l'auteur)
+
+    # Masquage administratif
+    masque = db.Column(db.Boolean, default=False)  # Si le message est masqué
+    masque_par = db.Column(db.String(100), nullable=True)  # Username de qui a masqué
+    masque_raison = db.Column(db.Text, nullable=True)  # Raison du masquage
+    date_masquage = db.Column(db.DateTime, nullable=True)  # Quand le message a été masqué
 
     # Relation avec le projet
     project = db.relationship('Project', backref=db.backref('messages_discussion', lazy=True))
@@ -527,7 +540,12 @@ class MessageProjet(db.Model):
             'fichier_joint_taille': self.fichier_joint_taille,
             'fichiers': [f.to_dict() for f in self.fichiers] if self.fichiers else [],
             'date_creation': self.date_creation.isoformat() if self.date_creation else None,
-            'date_modification': self.date_modification.isoformat() if self.date_modification else None
+            'date_modification': self.date_modification.isoformat() if self.date_modification else None,
+            'modifie_par': self.modifie_par,
+            'masque': self.masque,
+            'masque_par': self.masque_par,
+            'masque_raison': self.masque_raison,
+            'date_masquage': self.date_masquage.isoformat() if self.date_masquage else None
         }
 
 class FichierMessage(db.Model):
@@ -549,6 +567,37 @@ class FichierMessage(db.Model):
             'nom_original': self.nom_original,
             'taille_fichier': self.taille_fichier,
             'date_ajout': self.date_ajout.isoformat() if self.date_ajout else None
+        }
+
+class HistoriqueMessage(db.Model):
+    """Modèle pour tracker l'historique des modifications des messages"""
+    __tablename__ = "historique_messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('messages_projet.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+
+    # Contenu avant modification
+    contenu_avant = db.Column(db.Text, nullable=True)
+    contenu_apres = db.Column(db.Text, nullable=True)
+
+    # Métadonnées
+    modifie_par = db.Column(db.String(100), nullable=False)  # Username de qui a modifié
+    date_modification = db.Column(db.DateTime, default=datetime.utcnow)
+    type_modification = db.Column(db.String(50), nullable=False)  # 'edition', 'masquage', 'demasquage'
+    raison = db.Column(db.Text, nullable=True)  # Raison de la modification (obligatoire pour masquage)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message_id': self.message_id,
+            'project_id': self.project_id,
+            'contenu_avant': self.contenu_avant,
+            'contenu_apres': self.contenu_apres,
+            'modifie_par': self.modifie_par,
+            'date_modification': self.date_modification.isoformat() if self.date_modification else None,
+            'type_modification': self.type_modification,
+            'raison': self.raison
         }
 
 class FormulaireConfig(db.Model):

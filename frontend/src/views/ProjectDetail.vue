@@ -72,6 +72,33 @@
               <span class="label">Coût estimatif:</span>
               <span class="value">{{ formatCurrency(project.cout_estimatif) }} FCFA</span>
             </div>
+            <div class="info-row" v-if="project.type_financement">
+              <span class="label">Type de financement:</span>
+              <span class="value">{{ formatTypeFinancement(project.type_financement) }}</span>
+            </div>
+          </div>
+
+          <!-- Nouveaux champs (Décembre 2025) -->
+          <div class="info-card" v-if="project.nouveaute || project.niveau_priorite">
+            <h3>Caractéristiques du projet</h3>
+            <div class="info-row" v-if="project.nouveaute">
+              <span class="label">Nouveauté:</span>
+              <span class="value">
+                <span v-if="project.nouveaute === 'projet_initial'" class="badge badge-initial">📌 Projet initial</span>
+                <span v-else-if="project.nouveaute === 'phase_2'" class="badge badge-phase2">🔄 Phase II</span>
+              </span>
+            </div>
+            <div class="info-row" v-if="project.nouveaute === 'phase_2' && project.projet_initial_ref">
+              <span class="label">Référence Phase I:</span>
+              <span class="value">{{ project.projet_initial_ref }}</span>
+            </div>
+            <div class="info-row" v-if="project.niveau_priorite">
+              <span class="label">Niveau de priorité:</span>
+              <span class="value">
+                <span v-if="project.niveau_priorite === 'prioritaire_ant'" class="badge badge-prioritaire">⭐ Prioritaire ANT Sénégal2050</span>
+                <span v-else class="badge badge-standard">📋 Projet standard</span>
+              </span>
+            </div>
           </div>
 
           <div class="info-card" v-if="project.description">
@@ -626,6 +653,18 @@ export default {
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR').format(amount);
     },
+    formatTypeFinancement(typeFinancementJSON) {
+      if (!typeFinancementJSON) return '';
+      try {
+        const types = JSON.parse(typeFinancementJSON);
+        if (Array.isArray(types) && types.length > 0) {
+          return types.join(', ');
+        }
+      } catch (e) {
+        console.error('Erreur parsing type_financement:', e);
+      }
+      return 'Non spécifié';
+    },
     formatLieuSoumission() {
       if (!this.project) return '';
       const parts = [];
@@ -926,6 +965,45 @@ export default {
 /* Badges personnalisés pour soumissionnaires */
 .status-pending-comite { background: #f59e0b !important; color: white !important; }
 .status-processing { background: #0ea5e9 !important; color: white !important; }
+
+/* Nouveaux badges pour caractéristiques du projet (Décembre 2025) */
+.badge-initial {
+  background: #e0f2fe !important;
+  color: #075985 !important;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+.badge-phase2 {
+  background: #ddd6fe !important;
+  color: #5b21b6 !important;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+.badge-prioritaire {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+.badge-standard {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
 .detail-content h1 {
   color: #1a4d7a;
   font-size: 2rem;

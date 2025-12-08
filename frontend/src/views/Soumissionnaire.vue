@@ -31,6 +31,49 @@
             <input type="text" v-model="nouveauProjet.titre" required />
           </div>
 
+          <!-- Nouveauté -->
+          <div class="form-group">
+            <label>Nouveauté du projet *</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" v-model="nouveauProjet.nouveaute" value="projet_initial" required />
+                Projet initial
+              </label>
+              <label class="radio-label">
+                <input type="radio" v-model="nouveauProjet.nouveaute" value="phase_2" />
+                Phase II d'un projet
+              </label>
+            </div>
+          </div>
+
+          <!-- Référence au projet initial (si Phase II) -->
+          <div v-if="nouveauProjet.nouveaute === 'phase_2'" class="form-group">
+            <label>Référence du projet initial (Phase I) *</label>
+            <input
+              type="text"
+              v-model="nouveauProjet.projet_initial_ref"
+              placeholder="Ex: DGPPE-24-001"
+              required
+            />
+            <small>Indiquez le numéro du projet initial dont celui-ci est la continuation</small>
+          </div>
+
+          <!-- Niveau de priorité -->
+          <div class="form-group">
+            <label>Niveau de priorité *</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" v-model="nouveauProjet.niveau_priorite" value="standard" required />
+                Projet standard
+              </label>
+              <label class="radio-label">
+                <input type="radio" v-model="nouveauProjet.niveau_priorite" value="prioritaire_ant" />
+                Projet prioritaire ANT Sénégal2050 (étude accélérée)
+              </label>
+            </div>
+            <small>Les projets prioritaires ANT bénéficient d'une étude accélérée</small>
+          </div>
+
           <div class="form-group">
             <label>Description du projet</label>
             <textarea
@@ -238,6 +281,38 @@
             />
           </div>
 
+          <!-- Type de financement -->
+          <div class="form-group">
+            <label>Type de financement * (plusieurs choix possibles)</label>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.ppp" />
+                Partenariat Public-Privé (PPP)
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.public" />
+                Financement public (État)
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.prive" />
+                Financement privé pur
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.collectivite" />
+                Collectivités territoriales
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.international" />
+                Financement international (bailleurs, banques de développement)
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.mixte" />
+                Financement mixte
+              </label>
+            </div>
+            <small>Sélectionnez au moins un type de financement envisagé</small>
+          </div>
+
           <div class="form-group">
             <label>Pièces jointes</label>
             <input
@@ -380,6 +455,17 @@ export default {
         poles: "",
         cout_estimatif: "",
         pieces_jointes: "",
+        nouveaute: "projet_initial", // Valeur par défaut
+        projet_initial_ref: "",
+        niveau_priorite: "standard", // Valeur par défaut
+      },
+      typesFinancement: {
+        ppp: false,
+        public: false,
+        prive: false,
+        collectivite: false,
+        international: false,
+        mixte: false
       },
       fichiers: [],
       projets: [],
@@ -620,6 +706,26 @@ export default {
       formData.append("cout_estimatif", this.nouveauProjet.cout_estimatif);
       formData.append("auteur_nom", this.soumissionnaire);
 
+      // Nouveaux champs (Décembre 2025)
+      formData.append("nouveaute", this.nouveauProjet.nouveaute);
+      if (this.nouveauProjet.nouveaute === 'phase_2' && this.nouveauProjet.projet_initial_ref) {
+        formData.append("projet_initial_ref", this.nouveauProjet.projet_initial_ref);
+      }
+      formData.append("niveau_priorite", this.nouveauProjet.niveau_priorite);
+
+      // Type de financement (JSON array)
+      const typesFinancementArray = [];
+      if (this.typesFinancement.ppp) typesFinancementArray.push('PPP');
+      if (this.typesFinancement.public) typesFinancementArray.push('Public');
+      if (this.typesFinancement.prive) typesFinancementArray.push('Privé');
+      if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivités');
+      if (this.typesFinancement.international) typesFinancementArray.push('International');
+      if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
+
+      if (typesFinancementArray.length > 0) {
+        formData.append("type_financement", JSON.stringify(typesFinancementArray));
+      }
+
       // Ajouter les coordonnées GPS si disponibles
       if (gpsCoordinates) {
         formData.append("gps_coordinates", JSON.stringify(gpsCoordinates));
@@ -792,6 +898,19 @@ export default {
         secteur: "",
         poles: "",
         cout_estimatif: "",
+        nouveaute: "projet_initial",
+        projet_initial_ref: "",
+        niveau_priorite: "standard",
+      };
+
+      // Réinitialiser les types de financement
+      this.typesFinancement = {
+        ppp: false,
+        public: false,
+        prive: false,
+        collectivite: false,
+        international: false,
+        mixte: false
       };
 
       // Réinitialiser les champs de l'organisme de tutelle
@@ -860,6 +979,37 @@ label {
   display: block;
   font-weight: bold;
   margin-bottom: 5px;
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.radio-label,
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
 }
 
 input,
