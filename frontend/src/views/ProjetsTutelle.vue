@@ -508,70 +508,88 @@ function shouldShowAvis(projet) {
 }
 
 .badge-statut.soumis {
-  background: #3b82f6;
-  color: white;
+  background: #3b82f6 !important;
+  color: white !important;
 }
 
-.badge-statut.assigné,
+.badge-statut.assigné {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
 .badge-statut.en_evaluation,
-.badge-statut.en-instruction {
-  background: #f59e0b;
-  color: white;
+.badge-statut.en-instruction,
+.badge-statut.en-évaluation {
+  background: #0ea5e9 !important;
+  color: white !important;
 }
 
 .badge-statut.évalué {
-  background: #8b5cf6;
-  color: white;
+  background: #8b5cf6 !important;
+  color: white !important;
 }
 
 .badge-statut.en-attente-comite,
 .badge-statut.en-traitement {
-  background: #f59e0b;
-  color: white;
+  background: #f59e0b !important;
+  color: white !important;
 }
 
 .badge-statut.compléments-demandés {
-  background: #f97316;
-  color: white;
+  background: #f97316 !important;
+  color: white !important;
 }
 
 .badge-statut.compléments-soumis,
 .badge-statut.compléments-fournis {
-  background: #06b6d4;
-  color: white;
+  background: #3b82f6 !important;
+  color: white !important;
 }
 
 .badge-statut.en-attente-validation,
-.badge-statut.en-attente-présidence-sct {
-  background: #8b5cf6;
-  color: white;
+.badge-statut.en-attente-présidence-sct,
+.badge-statut.en-attente-validation-presidencesct {
+  background: #8b5cf6 !important;
+  color: white !important;
 }
 
 .badge-statut.validé-par-présidence-sct,
-.badge-statut.validé-sct {
-  background: #06b6d4;
-  color: white;
+.badge-statut.validé-sct,
+.badge-statut.validé-par-presidencesct {
+  background: #22c55e !important;
+  color: white !important;
 }
 
 .badge-statut.validé,
 .badge-statut.validé-par-présidence-comité,
+.badge-statut.validé-par-presidencecomite,
 .badge-statut.approuvé,
-.badge-statut.favorable,
+.badge-statut.approuvé-définitivement-par-le-Comité {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.badge-statut.favorable {
+  background: #10b981 !important;
+  color: white !important;
+}
+
 .badge-statut.favorable-sous-conditions {
-  background: #10b981;
-  color: white;
+  background: #f59e0b !important;
+  color: white !important;
 }
 
 .badge-statut.rejeté,
 .badge-statut.défavorable,
 .badge-statut.avis-défavorable-confirmé {
-  background: #ef4444;
-  color: white;
+  background: #ef4444 !important;
+  color: white !important;
 }
 
-.badge-statut.en-réexamen-sct {
-  background: #f59e0b;
-  color: white;
+.badge-statut.en-réexamen-sct,
+.badge-statut.en-réexamen-par-le-Secrétariat-SCT {
+  background: #0ea5e9 !important;
+  color: white !important;
 }
 
 .projet-titre {

@@ -98,7 +98,17 @@
                   <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
                 </td>
                 <td>
-                  <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                  <div class="action-buttons-table">
+                    <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                    <button
+                      v-if="p.statut === 'évalué' && p.validation_secretariat === 'valide'"
+                      @click="activeTab = 'validation'"
+                      class="btn-sm btn-success"
+                      title="Valider l'avis"
+                    >
+                      ✅ Valider
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -327,7 +337,28 @@ export default {
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
     getEvaluateurLabel(ev){ return ({evaluateur1:"Évaluateur 1", evaluateur2:"Évaluateur 2", secretariatsct:"Secrétariat SCT"}[ev]||ev); },
-    getStatusClass(s){ const m={"soumis":"status-new","assigné":"status-assigned","évalué":"status-evaluated","en attente validation presidencesct":"status-pending","validé par presidencesct":"status-validated"}; return m[s]||"status-default"; },
+    getStatusClass(s){
+      const m={
+        "soumis":"status-new",
+        "assigné":"status-assigned",
+        "en instruction":"status-processing",
+        "en évaluation":"status-processing",
+        "évalué":"status-evaluated",
+        "compléments demandés":"status-complement",
+        "compléments fournis":"status-info",
+        "en attente validation presidencesct":"status-pending",
+        "validé par presidencesct":"status-validated-sec",
+        "validé par presidencecomite":"status-validated",
+        "favorable":"status-favorable",
+        "favorable sous conditions":"status-conditions",
+        "défavorable":"status-defavorable",
+        "approuvé définitivement par le Comité":"status-validated",
+        "rejeté":"status-defavorable",
+        "avis défavorable confirmé":"status-defavorable",
+        "en réexamen par le Secrétariat SCT":"status-processing"
+      };
+      return m[s]||"status-default";
+    },
     getAvisClass(a){ const m={"favorable":"avis-favorable","favorable sous conditions":"avis-conditions","défavorable":"avis-defavorable","compléments demandés":"avis-complement"}; return m[a]||""; },
     calculateFinancingStats() {
       // Tous les projets soumis
@@ -561,6 +592,22 @@ export default {
   transform: translateY(-1px);
 }
 
+.btn-sm.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-sm.btn-success:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.action-buttons-table {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -595,7 +642,19 @@ export default {
   line-height: 1.4;
 }
 .badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; }
-.status-new{background:#3b82f6;color:#fff}.status-assigned{background:#f59e0b;color:#fff}.status-evaluated{background:#8b5cf6;color:#fff}.status-pending{background:#7c3aed;color:#fff}.status-validated{background:#10b981;color:#fff}.status-default{background:#6b7280;color:#fff}
+.status-new { background: #3b82f6 !important; color: white !important; }
+.status-assigned { background: #f59e0b !important; color: white !important; }
+.status-processing { background: #0ea5e9 !important; color: white !important; }
+.status-evaluated { background: #8b5cf6 !important; color: white !important; }
+.status-complement { background: #f97316 !important; color: white !important; }
+.status-info { background: #3b82f6 !important; color: white !important; }
+.status-pending { background: #8b5cf6 !important; color: white !important; }
+.status-validated-sec { background: #22c55e !important; color: white !important; }
+.status-validated { background: #10b981 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-conditions { background: #f59e0b !important; color: white !important; }
+.status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-default { background: #6b7280 !important; color: white !important; }
 .card-body { padding: 1rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
 .btn-view { width: 100%; margin-top: .75rem; padding: .6rem; background: #6b7280; color: #fff; border: none; border-radius: 8px; }

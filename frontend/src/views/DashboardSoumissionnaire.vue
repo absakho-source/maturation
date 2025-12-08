@@ -1638,20 +1638,19 @@ export default {
 .project-card { background:white; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
 .card-header { padding: 1rem; background:#f0f9ff; border-bottom:2px solid #2563eb; display:flex; justify-content:space-between; align-items:center; }
 .badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; }
-.status-new{background:#3b82f6;color:#fff}
-.status-assigned{background:#f59e0b;color:#fff}
-.status-processing{background:#f59e0b;color:#fff}
-.status-evaluated{background:#8b5cf6;color:#fff}
-.status-pending{background:#8b5cf6;color:#fff}
-.status-pending-comite{background:#f59e0b;color:#fff}
-.status-validated-sec{background:#06b6d4;color:#fff}
-.status-validated{background:#10b981;color:#fff}
-.status-complement{background:#f97316;color:#fff}
-.status-info{background:#06b6d4;color:#fff}
-.status-favorable{background:#10b981;color:#fff}
-.status-conditions{background:#eab308;color:#fff}
-.status-defavorable{background:#ef4444;color:#fff}
-.status-default{background:#6b7280;color:#fff}
+.status-new { background: #3b82f6 !important; color: white !important; }
+.status-assigned { background: #f59e0b !important; color: white !important; }
+.status-processing { background: #0ea5e9 !important; color: white !important; }
+.status-evaluated { background: #8b5cf6 !important; color: white !important; }
+.status-complement { background: #f97316 !important; color: white !important; }
+.status-info { background: #3b82f6 !important; color: white !important; }
+.status-pending { background: #8b5cf6 !important; color: white !important; }
+.status-validated-sec { background: #22c55e !important; color: white !important; }
+.status-validated { background: #10b981 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-conditions { background: #f59e0b !important; color: white !important; }
+.status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-default { background: #6b7280 !important; color: white !important; }
 .card-body { padding: 1rem; }
 .avis-favorable{color:#10b981;font-weight:600}.avis-conditions{color:#f59e0b;font-weight:600}.avis-defavorable{color:#ef4444;font-weight:600}.avis-complement{color:#f97316;font-weight:600}
 .complements-box { margin-top: .75rem; padding: 1rem; background:#f9fafb; border:1px dashed #e5e7eb; border-radius:8px; }

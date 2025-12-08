@@ -101,7 +101,25 @@
                   <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
                 </td>
                 <td>
-                  <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                  <div class="action-buttons-table">
+                    <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                    <button
+                      v-if="p.statut === 'validé par presidencesct' && p.avis_presidencesct === 'valide' && !p.decision_finale"
+                      @click="activeTab = 'decision'"
+                      class="btn-sm btn-warning"
+                      title="Prendre décision finale"
+                    >
+                      ⚖️ Décider
+                    </button>
+                    <button
+                      v-if="(p.statut_comite === 'recommande_comite' || (p.statut === 'validé par presidencecomite' && !p.decision_finale))"
+                      @click="activeTab = 'decisions-comite'"
+                      class="btn-sm btn-comite"
+                      title="Décision du Comité"
+                    >
+                      🏛️ Comité
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -424,12 +442,21 @@ export default {
       const map = {
         "soumis": "status-new",
         "assigné": "status-assigned",
+        "en instruction": "status-processing",
+        "en évaluation": "status-processing",
         "évalué": "status-evaluated",
-        "validé par secrétariat": "status-validated-sec",
-        "en attente validation presidencesct": "status-pending",
-        "validé par presidencesct": "status-validated",
         "compléments demandés": "status-complement",
-        "décision finale confirmée": "status-confirmed"
+        "compléments fournis": "status-info",
+        "en attente validation presidencesct": "status-pending",
+        "validé par presidencesct": "status-validated-sec",
+        "validé par presidencecomite": "status-validated",
+        "favorable": "status-favorable",
+        "favorable sous conditions": "status-conditions",
+        "défavorable": "status-defavorable",
+        "approuvé définitivement par le Comité": "status-validated",
+        "rejeté": "status-defavorable",
+        "avis défavorable confirmé": "status-defavorable",
+        "en réexamen par le Secrétariat SCT": "status-processing"
       };
       return map[statut] || "status-default";
     },
@@ -761,6 +788,32 @@ export default {
   transform: translateY(-1px);
 }
 
+.btn-sm.btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-sm.btn-warning:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.btn-sm.btn-comite {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-sm.btn-comite:hover {
+  background: #7c3aed;
+  transform: translateY(-1px);
+}
+
+.action-buttons-table {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .projects-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 .project-card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
 .project-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
@@ -790,16 +843,21 @@ export default {
   line-height: 1.4;
 }
 .badge { display: inline-block; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-.status-new { background: #3b82f6; color: white; }
-.status-assigned { background: #f59e0b; color: white; }
-.status-evaluated { background: #8b5cf6; color: white; }
-.status-validated-sec { background: #06b6d4; color: white; }
-.status-pending { background: #8b5cf6; color: white; }
-.status-validated { background: #10b981; color: white; }
-.status-complement { background: #f97316; color: white; }
-.status-confirmed { background: #06b6d4; color: white; }
-.status-comite { background: #f59e0b; color: white; }
-.status-default { background: #6b7280; color: white; }
+.status-new { background: #3b82f6 !important; color: white !important; }
+.status-assigned { background: #f59e0b !important; color: white !important; }
+.status-processing { background: #0ea5e9 !important; color: white !important; }
+.status-evaluated { background: #8b5cf6 !important; color: white !important; }
+.status-complement { background: #f97316 !important; color: white !important; }
+.status-info { background: #3b82f6 !important; color: white !important; }
+.status-pending { background: #8b5cf6 !important; color: white !important; }
+.status-validated-sec { background: #22c55e !important; color: white !important; }
+.status-validated { background: #10b981 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-conditions { background: #f59e0b !important; color: white !important; }
+.status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-confirmed { background: #06b6d4 !important; color: white !important; }
+.status-comite { background: #f59e0b !important; color: white !important; }
+.status-default { background: #6b7280 !important; color: white !important; }
 .card-body { padding: 1.5rem; }
 .card-body p { margin: 0.5rem 0; color: #555; font-size: 0.95rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }

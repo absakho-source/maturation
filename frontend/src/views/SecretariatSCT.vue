@@ -2289,24 +2289,39 @@ export default {
 }
 .badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; display: inline-block; }
 
-/* Statuts principaux */
-.status-soumis { background: #3b82f6; color: #fff; }
-.status-assigné { background: #f59e0b; color: #fff; }
-.status-évalué { background: #8b5cf6; color: #fff; }
-.status-validé-par-secrétariat { background: #06b6d4; color: #fff; }
-.status-validé-par-presidencesct { background: #10b981; color: #fff; }
-.status-approuvé { background: #10b981; color: #fff; }
-.status-rejeté { background: #ef4444; color: #fff; }
-.status-compléments-demandés { background: #f97316; color: #fff; }
-.status-compléments-fournis { background: #0ea5e9; color: #fff; }
+/* Classes de statuts uniformisées */
+.status-new { background: #3b82f6 !important; color: white !important; }
+.status-assigned { background: #f59e0b !important; color: white !important; }
+.status-processing { background: #0ea5e9 !important; color: white !important; }
+.status-evaluated { background: #8b5cf6 !important; color: white !important; }
+.status-complement { background: #f97316 !important; color: white !important; }
+.status-info { background: #3b82f6 !important; color: white !important; }
+.status-pending { background: #8b5cf6 !important; color: white !important; }
+.status-validated-sec { background: #22c55e !important; color: white !important; }
+.status-validated { background: #10b981 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-conditions { background: #f59e0b !important; color: white !important; }
+.status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-default { background: #6b7280 !important; color: white !important; }
 
-/* Anciens status pour compatibilité */
-.status-new{background:#3b82f6;color:#fff}
-.status-assigned{background:#f59e0b;color:#fff}
-.status-info{background:#06b6d4;color:#fff}
-.status-complement{background:#f97316;color:#fff}
-.status-evaluated{background:#8b5cf6;color:#fff}
-.status-default{background:#6b7280;color:#fff}
+/* Statuts avec tirets (pour compatibilité avec replace) */
+.status-soumis { background: #3b82f6 !important; color: white !important; }
+.status-assigné { background: #f59e0b !important; color: white !important; }
+.status-en-instruction { background: #0ea5e9 !important; color: white !important; }
+.status-en-évaluation { background: #0ea5e9 !important; color: white !important; }
+.status-évalué { background: #8b5cf6 !important; color: white !important; }
+.status-compléments-demandés { background: #f97316 !important; color: white !important; }
+.status-compléments-fournis { background: #3b82f6 !important; color: white !important; }
+.status-en-attente-validation-presidencesct { background: #8b5cf6 !important; color: white !important; }
+.status-validé-par-presidencesct { background: #22c55e !important; color: white !important; }
+.status-validé-par-presidencecomite { background: #10b981 !important; color: white !important; }
+.status-favorable { background: #10b981 !important; color: white !important; }
+.status-favorable-sous-conditions { background: #f59e0b !important; color: white !important; }
+.status-défavorable { background: #ef4444 !important; color: white !important; }
+.status-approuvé-définitivement-par-le-Comité { background: #10b981 !important; color: white !important; }
+.status-rejeté { background: #ef4444 !important; color: white !important; }
+.status-avis-défavorable-confirmé { background: #ef4444 !important; color: white !important; }
+.status-en-réexamen-par-le-Secrétariat-SCT { background: #0ea5e9 !important; color: white !important; }
 .card-body { padding: 1rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
 .btn-primary{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
@@ -3500,70 +3515,7 @@ export default {
   background: #047857;
 }
 
-.status-favorable {
-  background: #10b981 !important;
-  color: white !important;
-}
-
-.status-favorable-sous-conditions {
-  background: #f59e0b !important;
-  color: white !important;
-}
-
-.status-defavorable {
-  background: #ef4444 !important;
-  color: white !important;
-}
-
-.status-Défavorable {
-  background: #ef4444 !important;
-  color: white !important;
-}
-
-.status-en-évaluation {
-  background: #8b5cf6 !important;
-  color: white !important;
-}
-
-.status-validé-par-presidencesct {
-  background: #10b981 !important;
-  color: white !important;
-}
-
-.status-valide_sct {
-  background: #06b6d4 !important;
-  color: white !important;
-}
-
-.status-en-réexamen-par-le-Secrétariat-SCT {
-  background: #f59e0b !important;
-  color: white !important;
-}
-
-.status-en-attente-validation-presidencesct {
-  background: #fbbf24 !important;
-  color: #78350f !important;
-}
-
-.status-en-attente-validation-demande-compléments {
-  background: #fb923c !important;
-  color: white !important;
-}
-
-.status-décision-finale-confirmée {
-  background: #10b981 !important;
-  color: white !important;
-}
-
-.status-décision-finale-infirmée {
-  background: #ef4444 !important;
-  color: white !important;
-}
-
-.status-rejeté-par-le-Comité {
-  background: #991b1b !important;
-  color: white !important;
-}
+/* Ces classes sont déjà définies plus haut - supprimées pour éviter les doublons */
 
 .rejection-text {
   font-style: italic;
@@ -3863,19 +3815,19 @@ export default {
 }
 
 .status-comite {
-  background: #fef3c7;
-  color: #92400e;
+  background: #f59e0b !important;
+  color: white !important;
 }
 
 .status-approved-final {
-  background: #d1fae5;
-  color: #065f46;
+  background: #10b981 !important;
+  color: white !important;
   font-weight: 600;
 }
 
 .status-reevaluation {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #0ea5e9 !important;
+  color: white !important;
 }
 
 .info-text {
