@@ -309,6 +309,10 @@
                 <input type="checkbox" v-model="typesFinancement.mixte" />
                 Financement mixte
               </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="typesFinancement.presume" />
+                Présumé
+              </label>
             </div>
             <small>Sélectionnez au moins un type de financement envisagé</small>
           </div>
@@ -465,7 +469,8 @@ export default {
         prive: false,
         collectivite: false,
         international: false,
-        mixte: false
+        mixte: false,
+        presume: false
       },
       fichiers: [],
       projets: [],
@@ -721,6 +726,7 @@ export default {
       if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivités');
       if (this.typesFinancement.international) typesFinancementArray.push('International');
       if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
+      if (this.typesFinancement.presume) typesFinancementArray.push('Présumé');
 
       if (typesFinancementArray.length > 0) {
         formData.append("type_financement", JSON.stringify(typesFinancementArray));
@@ -910,7 +916,8 @@ export default {
         prive: false,
         collectivite: false,
         international: false,
-        mixte: false
+        mixte: false,
+        presume: false
       };
 
       // Réinitialiser les champs de l'organisme de tutelle
