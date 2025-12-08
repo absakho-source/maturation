@@ -236,13 +236,29 @@ function retourDashboard() {
 
 function formatStatut(statut) {
   const labels = {
-    soumis: 'Soumis',
-    assigné: 'Assigné',
-    en_evaluation: 'En évaluation',
-    évalué: 'Évalué',
-    validé: 'Validé',
-    rejeté: 'Rejeté',
-    compléments_requis: 'Compléments requis'
+    'soumis': 'Soumis',
+    'assigné': 'Assigné',
+    'en évaluation': 'En évaluation',
+    'en_evaluation': 'En évaluation',
+    'en instruction': 'En instruction',
+    'évalué': 'Évalué',
+    'compléments demandés': 'Compléments demandés',
+    'compléments soumis': 'Compléments soumis',
+    'compléments fournis': 'Compléments fournis',
+    'compléments_requis': 'Compléments requis',
+    'en attente validation demande compléments': 'En attente validation',
+    'en attente validation presidencesct': 'En attente Présidence SCT',
+    'validé par presidencesct': 'Validé par Présidence SCT',
+    'validé par presidencecomite': 'Validé par Présidence Comité',
+    'favorable': 'Favorable',
+    'favorable sous conditions': 'Favorable sous conditions',
+    'défavorable': 'Défavorable',
+    'validé': 'Validé',
+    'approuvé': 'Approuvé',
+    'rejeté': 'Rejeté',
+    'avis défavorable confirmé': 'Avis défavorable confirmé',
+    'en réexamen par le Secrétariat SCT': 'En réexamen SCT',
+    'valide_sct': 'Validé SCT'
   }
   return labels[statut] || statut
 }
@@ -498,27 +514,68 @@ function shouldShowAvis(projet) {
 }
 
 .badge-statut.soumis {
-  background: #bee3f8;
-  color: #2c5282;
+  background: #3b82f6;
+  color: white;
 }
 
 .badge-statut.assigné,
-.badge-statut.en_evaluation {
-  background: #feebc8;
-  color: #c05621;
-}
-
-.badge-statut.évalué {
-  background: #c6f6d5;
-  color: #276749;
-}
-
-.badge-statut.en-attente-comite {
+.badge-statut.en_evaluation,
+.badge-statut.en-instruction {
   background: #f59e0b;
   color: white;
 }
 
+.badge-statut.évalué {
+  background: #8b5cf6;
+  color: white;
+}
+
+.badge-statut.en-attente-comite,
 .badge-statut.en-traitement {
+  background: #f59e0b;
+  color: white;
+}
+
+.badge-statut.compléments-demandés {
+  background: #f97316;
+  color: white;
+}
+
+.badge-statut.compléments-soumis,
+.badge-statut.compléments-fournis {
+  background: #06b6d4;
+  color: white;
+}
+
+.badge-statut.en-attente-validation,
+.badge-statut.en-attente-présidence-sct {
+  background: #8b5cf6;
+  color: white;
+}
+
+.badge-statut.validé-par-présidence-sct,
+.badge-statut.validé-sct {
+  background: #06b6d4;
+  color: white;
+}
+
+.badge-statut.validé,
+.badge-statut.validé-par-présidence-comité,
+.badge-statut.approuvé,
+.badge-statut.favorable,
+.badge-statut.favorable-sous-conditions {
+  background: #10b981;
+  color: white;
+}
+
+.badge-statut.rejeté,
+.badge-statut.défavorable,
+.badge-statut.avis-défavorable-confirmé {
+  background: #ef4444;
+  color: white;
+}
+
+.badge-statut.en-réexamen-sct {
   background: #f59e0b;
   color: white;
 }

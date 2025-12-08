@@ -1424,14 +1424,28 @@ export default {
     formatCurrency(a) { return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'XOF',minimumFractionDigits:0}).format(a); },
     labelEval(ev) { return ({evaluateur1:"Évaluateur 1", evaluateur2:"Évaluateur 2", secretariatsct:"Secrétariat SCT"}[ev]||ev); },
     getStatusClass(s) {
-      const m = { 
+      const m = {
         "soumis":"status-new",
+        "assigné":"status-assigned",
         "en instruction":"status-processing",
+        "en évaluation":"status-processing",
+        "en_evaluation":"status-processing",
+        "évalué":"status-evaluated",
         "compléments demandés":"status-complement",
         "compléments soumis":"status-info",
+        "compléments fournis":"status-info",
+        "en attente validation demande compléments":"status-pending",
+        "en attente validation presidencesct":"status-pending",
+        "validé par presidencesct":"status-validated-sec",
+        "validé par presidencecomite":"status-validated",
         "favorable":"status-favorable",
-        "favorable sous conditions":"status-conditions", 
-        "défavorable":"status-defavorable"
+        "favorable sous conditions":"status-conditions",
+        "défavorable":"status-defavorable",
+        "approuvé":"status-validated",
+        "rejeté":"status-defavorable",
+        "avis défavorable confirmé":"status-defavorable",
+        "en réexamen par le Secrétariat SCT":"status-processing",
+        "valide_sct":"status-validated-sec"
       };
       return m[s]||"status-default";
     },
@@ -1629,8 +1643,13 @@ export default {
 .card-header { padding: 1rem; background:#f0f9ff; border-bottom:2px solid #2563eb; display:flex; justify-content:space-between; align-items:center; }
 .badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; }
 .status-new{background:#3b82f6;color:#fff}
+.status-assigned{background:#f59e0b;color:#fff}
 .status-processing{background:#f59e0b;color:#fff}
+.status-evaluated{background:#8b5cf6;color:#fff}
+.status-pending{background:#8b5cf6;color:#fff}
 .status-pending-comite{background:#f59e0b;color:#fff}
+.status-validated-sec{background:#06b6d4;color:#fff}
+.status-validated{background:#10b981;color:#fff}
 .status-complement{background:#f97316;color:#fff}
 .status-info{background:#06b6d4;color:#fff}
 .status-favorable{background:#10b981;color:#fff}
