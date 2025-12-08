@@ -185,7 +185,7 @@
               <div class="status-icon">⏳</div>
               <div class="status-content">
                 <h4>En attente de décision du Comité</h4>
-                <p>Votre projet a reçu un avis favorable et est actuellement en cours d'examen par le Comité de Maturation.</p>
+                <p>Votre projet est actuellement en cours d'examen par le Comité de Maturation.</p>
                 <p>Vous serez informé une fois que le Comité aura statué sur votre projet.</p>
               </div>
             </div>
