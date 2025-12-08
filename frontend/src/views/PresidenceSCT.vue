@@ -218,6 +218,7 @@
           </div>
         </div>
       </div>
+      </div><!-- Fin dashboard-section -->
 
     </div>
   </PageWrapper>
