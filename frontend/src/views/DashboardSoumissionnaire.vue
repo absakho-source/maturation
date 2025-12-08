@@ -1459,11 +1459,19 @@ export default {
       const statutsMasques = [
         'validé par presidencecomite',
         'en attente validation presidencesct',
-        'validé par presidencesct',
-        'favorable',
-        'favorable sous conditions',
-        'défavorable'
+        'validé par presidencesct'
       ];
+
+      // Pour les avis finaux (favorable, défavorable), afficher seulement si la fiche est visible
+      const avisFinals = ['favorable', 'favorable sous conditions', 'défavorable'];
+      if (avisFinals.includes(project.statut)) {
+        // Si la fiche d'évaluation est visible, afficher l'avis final
+        if (project.fiche_evaluation_visible) {
+          return project.statut;
+        }
+        // Sinon masquer avec "En cours de traitement"
+        return "En cours de traitement";
+      }
 
       if (statutsMasques.includes(project.statut)) {
         return "En cours de traitement";
@@ -1482,11 +1490,17 @@ export default {
       const statutsMasques = [
         'validé par presidencecomite',
         'en attente validation presidencesct',
-        'validé par presidencesct',
-        'favorable',
-        'favorable sous conditions',
-        'défavorable'
+        'validé par presidencesct'
       ];
+
+      // Pour les avis finaux, utiliser la classe appropriée si la fiche est visible
+      const avisFinals = ['favorable', 'favorable sous conditions', 'défavorable'];
+      if (avisFinals.includes(project.statut)) {
+        if (project.fiche_evaluation_visible) {
+          return this.getStatusClass(project.statut);
+        }
+        return "status-processing";
+      }
 
       if (statutsMasques.includes(project.statut)) {
         return "status-processing";

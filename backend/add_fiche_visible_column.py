@@ -37,6 +37,23 @@ def add_fiche_visible_column():
         """)
         print("✅ Colonne 'fiche_evaluation_visible' ajoutée avec succès")
 
+    # Mettre à jour les projets existants qui devraient avoir la fiche visible
+    print("\nMise à jour des projets existants...")
+
+    # Cas 1: Projets avec decision_finale='confirme' (entérinés par le Comité)
+    cursor.execute("""
+        UPDATE project
+        SET fiche_evaluation_visible = 1
+        WHERE decision_finale = 'confirme'
+        AND fiche_evaluation_visible = 0
+    """)
+    count1 = cursor.rowcount
+    if count1 > 0:
+        print(f"✅ {count1} projet(s) avec décision_finale='confirme' mis à jour")
+
+    # Cas 2: Projets avec avis défavorable confirmé (decision_finale='confirme' ET avis='défavorable')
+    # (déjà inclus dans le cas 1, mais on pourrait affiner si nécessaire)
+
     conn.commit()
     conn.close()
 
