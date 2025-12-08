@@ -4810,7 +4810,8 @@ def delete_test_projects():
 
         print(f"[ADMIN] ✅ {len(deleted)} projet(s) de test supprimé(s)")
         for d in deleted:
-            print(f"  - [{d['numero'] or f'ID-{d[\"id\"]}'}] {d['titre']}")
+            numero_display = d['numero'] or f"ID-{d['id']}"
+            print(f"  - [{numero_display}] {d['titre']}")
 
         return jsonify({
             "message": f"{len(deleted)} projet(s) de test supprimé(s)",
