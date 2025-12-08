@@ -1727,7 +1727,12 @@ export default {
       if (projet.statut_comite === 'recommande_comite') {
         return { text: '🟡 En attente décision Comité', class: 'status-comite' };
       } else if (projet.statut_comite === 'approuve_definitif') {
-        return { text: '✅ Approuvé définitivement', class: 'status-approved-final' };
+        // Afficher l'avis réel au lieu de "Approuvé définitivement"
+        const avisFinal = projet.statut || projet.avis || 'Entériné par le Comité';
+        const avisClass = avisFinal === 'favorable' ? 'status-favorable' :
+                         avisFinal === 'favorable sous conditions' ? 'status-conditions' :
+                         'status-approved-final';
+        return { text: avisFinal, class: avisClass };
       } else if (projet.statut_comite === 'en_reevaluation') {
         return { text: '🔄 En réévaluation', class: 'status-reevaluation' };
       }
