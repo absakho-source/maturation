@@ -533,7 +533,7 @@
                 <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
                 <h4>{{ p.titre }}</h4>
               </div>
-              <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
+              <span class="badge" :class="getProjectStatusBadgeClass(p)">{{ getProjectStatusBadgeText(p) }}</span>
             </div>
             <div class="card-body">
               <p v-if="p.secteur"><strong>Secteur:</strong> {{ p.secteur }}</p>
@@ -1439,6 +1439,52 @@ export default {
       const m = { "favorable":"avis-favorable","favorable sous conditions":"avis-conditions","défavorable":"avis-defavorable","compléments demandés":"avis-complement" };
       return m[a]||"";
     },
+    getProjectStatusBadgeText(project) {
+      // Masquer les statuts pour les projets en attente de décision du Comité
+      if (project.statut_comite === 'recommande_comite') {
+        return "En attente Comité";
+      }
+
+      // Masquer certains statuts intermédiaires
+      const statutsMasques = [
+        'validé par presidencecomite',
+        'en attente validation presidencesct',
+        'validé par presidencesct',
+        'favorable',
+        'favorable sous conditions',
+        'défavorable'
+      ];
+
+      if (statutsMasques.includes(project.statut)) {
+        return "En cours de traitement";
+      }
+
+      // Afficher le statut normal pour les autres cas
+      return project.statut;
+    },
+    getProjectStatusBadgeClass(project) {
+      // Classe spéciale pour "En attente Comité"
+      if (project.statut_comite === 'recommande_comite') {
+        return "status-pending-comite";
+      }
+
+      // Classe spéciale pour les statuts masqués
+      const statutsMasques = [
+        'validé par presidencecomite',
+        'en attente validation presidencesct',
+        'validé par presidencesct',
+        'favorable',
+        'favorable sous conditions',
+        'défavorable'
+      ];
+
+      if (statutsMasques.includes(project.statut)) {
+        return "status-processing";
+      }
+
+      // Classe normale pour les autres statuts
+      return this.getStatusClass(project.statut);
+    },
     cancelSubmission() {
       this.showSubmissionForm = false;
       // Réinitialiser le formulaire
@@ -1584,6 +1630,7 @@ export default {
 .badge { padding:.25rem .6rem; border-radius:999px; font-size:.8rem; font-weight:700; }
 .status-new{background:#3b82f6;color:#fff}
 .status-processing{background:#f59e0b;color:#fff}
+.status-pending-comite{background:#f59e0b;color:#fff}
 .status-complement{background:#f97316;color:#fff}
 .status-info{background:#06b6d4;color:#fff}
 .status-favorable{background:#10b981;color:#fff}

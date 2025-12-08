@@ -82,7 +82,7 @@
           <div v-for="projet in projetsFiltres" :key="projet.id" class="projet-card">
             <div class="projet-header">
               <span class="projet-numero">{{ projet.numero_projet }}</span>
-              <span :class="['badge-statut', projet.statut]">{{ formatStatut(projet.statut) }}</span>
+              <span :class="['badge-statut', getStatutBadgeClass(projet)]">{{ getStatutBadgeText(projet) }}</span>
             </div>
             <h3 class="projet-titre">{{ projet.titre }}</h3>
             <div class="projet-meta">
@@ -102,7 +102,8 @@
                 <span class="meta-label">Coût :</span>
                 <span class="meta-value">{{ formatMontant(projet.cout_estimatif) }}</span>
               </div>
-              <div v-if="projet.avis" class="meta-item">
+              <!-- Masquer l'avis si le projet est en attente de décision du Comité ou si l'avis n'est pas définitif -->
+              <div v-if="shouldShowAvis(projet)" class="meta-item">
                 <span class="meta-label">Avis :</span>
                 <span :class="['avis-badge', projet.avis]">{{ projet.avis }}</span>
               </div>
@@ -263,6 +264,70 @@ function formatMontant(montant) {
     currency: 'XOF',
     maximumFractionDigits: 0
   }).format(montant)
+}
+
+// Masquer les statuts pour les projets en attente de décision du Comité
+function getStatutBadgeText(projet) {
+  // Si le projet est recommandé au Comité mais pas encore décidé
+  if (projet.statut_comite === 'recommande_comite') {
+    return "En attente Comité";
+  }
+
+  // Masquer certains statuts intermédiaires
+  const statutsMasques = [
+    'validé par presidencecomite',
+    'en attente validation presidencesct',
+    'validé par presidencesct',
+    'favorable',
+    'favorable sous conditions',
+    'défavorable'
+  ];
+
+  if (statutsMasques.includes(projet.statut)) {
+    return "En cours de traitement";
+  }
+
+  // Afficher le statut formaté normalement
+  return formatStatut(projet.statut);
+}
+
+function getStatutBadgeClass(projet) {
+  // Si le projet est recommandé au Comité mais pas encore décidé
+  if (projet.statut_comite === 'recommande_comite') {
+    return "en-attente-comite";
+  }
+
+  // Statuts masqués
+  const statutsMasques = [
+    'validé par presidencecomite',
+    'en attente validation presidencesct',
+    'validé par presidencesct',
+    'favorable',
+    'favorable sous conditions',
+    'défavorable'
+  ];
+
+  if (statutsMasques.includes(projet.statut)) {
+    return "en-traitement";
+  }
+
+  // Retourner le statut brut pour la classe CSS
+  return projet.statut;
+}
+
+function shouldShowAvis(projet) {
+  // Ne pas afficher l'avis si le projet est en attente de décision du Comité
+  if (projet.statut_comite === 'recommande_comite') {
+    return false;
+  }
+
+  // Ne pas afficher l'avis s'il n'est pas définitif (approuvé par le Comité)
+  if (projet.statut_comite !== 'approuve_definitif') {
+    return false;
+  }
+
+  // Afficher l'avis seulement s'il existe
+  return !!projet.avis;
 }
 </script>
 
@@ -446,6 +511,16 @@ function formatMontant(montant) {
 .badge-statut.évalué {
   background: #c6f6d5;
   color: #276749;
+}
+
+.badge-statut.en-attente-comite {
+  background: #f59e0b;
+  color: white;
+}
+
+.badge-statut.en-traitement {
+  background: #f59e0b;
+  color: white;
 }
 
 .projet-titre {
