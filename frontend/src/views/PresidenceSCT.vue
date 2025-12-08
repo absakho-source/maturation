@@ -66,43 +66,43 @@
       </div>
 
       <div v-if="activeTab === 'all'" class="tab-content">
-        <h2>Vue d'ensemble</h2>
+        <h2>📋 Tous les projets</h2>
         <!-- Badge de filtre actif -->
         <div v-if="filtreStatut" class="filtre-actif">
           <span>Filtre actif: <strong>{{ filtreStatut }}</strong></span>
           <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
         </div>
-        <div v-if="projetsFiltres.length === 0" class="empty-state">
-          <p>Aucun projet{{ filtreStatut ? ' pour ce filtre' : '' }}</p>
-        </div>
-        <div v-else class="projects-grid">
-          <div v-for="p in projetsFiltres" :key="p.id" class="project-card">
-            <div class="card-header">
-              <div class="card-title-section">
-                <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
-                <h3>{{ p.titre }}</h3>
-              </div>
-              <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
-            </div>
-            <div class="card-body">
-              <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
-              <p v-if="p.evaluateur_nom" class="highlight-assigned"><strong>Assigné à:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
-              <p v-if="p.avis && p.validation_secretariat === 'valide'"><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-              <p v-if="p.commentaires && p.validation_secretariat === 'valide'"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
-              <p v-if="p.validation_secretariat"><strong>Validation secrétariat:</strong> {{ p.validation_secretariat }}</p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
 
-              <!-- Actions de validation pour projets en attente -->
-              <div v-if="p.statut === 'validé secretariat' && p.validation_secretariat === 'valide'" class="decision-section">
-                <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
-                <button @click="valider(p.id, 'valide')" class="btn-success">✓ Valider</button>
-                <button @click="valider(p.id, 'rejete')" class="btn-danger">✗ Rejeter</button>
-              </div>
-              <div v-else-if="p.statut === 'validé secretariat' && p.validation_secretariat !== 'valide'" class="validation-pending">
-                <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
-              </div>
-            </div>
-          </div>
+        <div class="projects-table-container">
+          <table class="projects-table">
+            <thead>
+              <tr>
+                <th>N° Projet</th>
+                <th>Titre</th>
+                <th>Structure soumissionnaire</th>
+                <th>Secteur</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="projetsFiltres.length === 0">
+                <td colspan="6" class="empty-state">Aucun projet{{ filtreStatut ? ' pour ce filtre' : '' }}</td>
+              </tr>
+              <tr v-for="p in projetsFiltres" :key="p.id">
+                <td><strong class="project-number-table">{{ p.numero_projet || 'N/A' }}</strong></td>
+                <td class="project-title">{{ p.titre }}</td>
+                <td>{{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || 'N/A' }}</td>
+                <td>{{ p.secteur || 'N/A' }}</td>
+                <td>
+                  <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
+                </td>
+                <td>
+                  <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -480,9 +480,93 @@ export default {
 .stat.info{background:linear-gradient(135deg, #d1ecf1 0%, #ecfeff 100%);border-color:#a5f3fc}
 .stat.success{background:linear-gradient(135deg, #d1f2eb 0%, #ecfdf5 100%);border-color:#a7f3d0}
 .stat.primary{background:linear-gradient(135deg, rgba(46, 107, 107, 0.1) 0%, rgba(72, 181, 181, 0.1) 100%);border-color:var(--dgppe-accent)}
-.tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; }
-.tab-btn { padding: .75rem 1.25rem; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #6b7280; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid #e5e7eb; }
+.tab-btn { padding: 1rem 2rem; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 1rem; font-weight: 600; color: #6b7280; transition: all 0.3s; }
+.tab-btn:hover { color: #2563eb; background: #f0f9ff; }
 .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #f0f9ff; }
+.tab-content h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
+
+/* Tableau des projets */
+.projects-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.projects-table thead {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.projects-table th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.projects-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.projects-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.projects-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.project-number-table {
+  color: var(--dgppe-accent);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.project-title {
+  font-weight: 500;
+  color: #111827;
+  max-width: 300px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-sm.btn-view {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.btn-sm.btn-view:hover {
+  background: var(--dgppe-secondary);
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #7f8c8d;
+}
+
 .projects-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 .project-card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
 .card-header { padding: 1rem; background: #f0f9ff; border-bottom: 2px solid #2563eb; display:flex; justify-content:space-between; align-items:flex-start; }
