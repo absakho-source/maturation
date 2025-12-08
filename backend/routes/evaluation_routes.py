@@ -81,6 +81,19 @@ def get_project_presentation(project_id):
 def get_fiche_evaluation(project_id):
     """Récupération de la fiche d'évaluation d'un projet"""
     try:
+        # Vérifier que le projet existe
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Projet non trouvé'}), 404
+
+        # Vérifier si l'utilisateur est un soumissionnaire et si la fiche est visible
+        user_role = request.headers.get('X-Role', request.args.get('role', ''))
+        if user_role == 'soumissionnaire':
+            # Vérifier si la fiche est visible pour le soumissionnaire
+            fiche_visible = getattr(project, 'fiche_evaluation_visible', False)
+            if not fiche_visible:
+                return jsonify({'error': 'La fiche d\'évaluation n\'est pas encore disponible'}), 403
+
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
 
         if not fiche:
@@ -487,6 +500,14 @@ def generate_fiche_evaluation_pdf(project_id):
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
 
+        # Vérifier si l'utilisateur est un soumissionnaire et si la fiche est visible
+        user_role = request.headers.get('X-Role', request.args.get('role', ''))
+        if user_role == 'soumissionnaire':
+            # Vérifier si la fiche est visible pour le soumissionnaire
+            fiche_visible = getattr(project, 'fiche_evaluation_visible', False)
+            if not fiche_visible:
+                return jsonify({'error': 'La fiche d\'évaluation n\'est pas encore disponible'}), 403
+
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
@@ -579,12 +600,25 @@ def generate_fiche_evaluation_pdf(project_id):
 def download_fiche_evaluation_pdf(project_id, filename):
     """Téléchargement d'un PDF de fiche d'évaluation existant"""
     try:
+        # Vérifier que le projet existe
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Projet non trouvé'}), 404
+
+        # Vérifier si l'utilisateur est un soumissionnaire et si la fiche est visible
+        user_role = request.headers.get('X-Role', request.args.get('role', ''))
+        if user_role == 'soumissionnaire':
+            # Vérifier si la fiche est visible pour le soumissionnaire
+            fiche_visible = getattr(project, 'fiche_evaluation_visible', False)
+            if not fiche_visible:
+                return jsonify({'error': 'La fiche d\'évaluation n\'est pas encore disponible'}), 403
+
         # Vérifier que la fiche existe
         fiche = FicheEvaluation.query.filter_by(
             project_id=project_id,
             fichier_pdf=filename
         ).first()
-        
+
         if not fiche:
             return jsonify({'error': 'Fiche d\'évaluation non trouvée'}), 404
         

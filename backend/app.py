@@ -571,7 +571,8 @@ def projects():
                             "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
                             "evaluation_prealable_commentaires": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",  # Alias pour compatibilité frontend
                             "pieces_jointes": pieces_jointes,
-                            "date_soumission": date_soumission
+                            "date_soumission": date_soumission,
+                            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False
                         })
                 except Exception as err:
                     import traceback
@@ -763,7 +764,8 @@ def get_project(project_id):
             "lieu_soumission_region": p.lieu_soumission_region,
             "organisme_tutelle": p.organisme_tutelle,
             "organisme_tutelle_data": p.organisme_tutelle_data,
-            "structure_soumissionnaire": p.structure_soumissionnaire
+            "structure_soumissionnaire": p.structure_soumissionnaire,
+            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -1222,6 +1224,8 @@ def traiter_project(project_id):
                 if p.avis == "défavorable":
                     p.statut = "avis défavorable confirmé"
                     set_statut_comite(p, None)  # Pas de recommandation au Comité
+                    # Rendre la fiche d'évaluation visible pour le soumissionnaire
+                    p.fiche_evaluation_visible = True
                     action = "Décision de la Présidence du Comité : avis défavorable confirmé (fin de vie du projet)"
 
                 # Cas B2: Avis favorable/favorable sous conditions → Recommandation AUTOMATIQUE au Comité
@@ -1526,6 +1530,8 @@ def enregistrer_decision_comite(project_id):
         # Mettre à jour le statut_comite
         if decision == 'enterine':
             set_statut_comite(p, 'approuve_definitif')
+            # Rendre la fiche d'évaluation visible pour le soumissionnaire
+            p.fiche_evaluation_visible = True
             # Garder l'avis de l'évaluateur comme statut final
             # L'avis peut être: favorable, favorable sous conditions, ou défavorable
             if p.avis:
