@@ -2134,6 +2134,12 @@ export default {
 }
 
 /* Métriques de performance */
+.performance-metrics {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e5e7eb;
+}
+
 .performance-metrics h3 {
   color: var(--dgppe-primary);
   margin-bottom: 16px;
