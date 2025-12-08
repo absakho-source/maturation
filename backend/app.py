@@ -4804,6 +4804,14 @@ def delete_test_projects():
                     'numero': project.numero_projet,
                     'titre': project.titre
                 })
+
+                # Supprimer les relations d'abord (fiches, historique, etc.)
+                FicheEvaluation.query.filter_by(project_id=project.id).delete()
+                Historique.query.filter_by(project_id=project.id).delete()
+                DocumentProjet.query.filter_by(project_id=project.id).delete()
+                MessageProjet.query.filter_by(project_id=project.id).delete()
+
+                # Puis supprimer le projet
                 db.session.delete(project)
 
         db.session.commit()
