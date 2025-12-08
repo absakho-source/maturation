@@ -1102,9 +1102,6 @@ export default {
       // Projets recommandés au Comité (validés par Présidence SCT) avec statut_comite = 'recommande_comite'
       return this.allProjects.filter(p => p.statut_comite === 'recommande_comite');
     },
-    demandesComplementsEnAttente() {
-      return this.allProjects.filter(p => p.statut === 'en attente validation demande compléments');
-    },
     myProjects() {
       // Projets assignés à l'équipe secretariatsct (basé sur est_assigne_a_moi calculé par le backend)
       // Tous les secretariatsct avec le même rôle voient les projets assignés à n'importe quel membre
@@ -1504,39 +1501,6 @@ export default {
       this.loadProjects();
     },
 
-    async validerDemandeComplements(id) {
-      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const confirmation = confirm("Voulez-vous approuver cette demande de compléments et la transmettre au soumissionnaire ?");
-      if (!confirmation) return;
-      
-      await fetch(`/api/projects/${id}/traiter`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          statut_action: "valider_demande_complements",
-          auteur: user.username, 
-          role: user.role 
-        })
-      });
-      alert("Demande de compléments approuvée et transmise"); 
-      this.loadProjects();
-    },
-
-    async rejeterDemandeComplements(id) {
-      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const confirmation = confirm("Voulez-vous rejeter cette demande de compléments et réassigner le projet ?");
-      if (!confirmation) return;
-      
-      await fetch(`/api/projects/${id}/traiter`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          statut_action: "rejeter_demande_complements",
-          auteur: user.username, 
-          role: user.role 
-        })
-      });
-      alert("Demande de compléments rejetée, projet réassigné"); 
-      this.loadProjects();
-    },
 
     parseComplementsFiles(filesString) {
       if (!filesString) return [];
@@ -1679,7 +1643,7 @@ export default {
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          statut_action: "rejeter_demande_complements", // Utiliser cette action qui réinitialise tout
+          statut_action: "reinitialiser_evaluation", // Réinitialise le projet pour réévaluation
           auteur: user.username,
           role: user.role
         })

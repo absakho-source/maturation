@@ -239,26 +239,20 @@ function formatStatut(statut) {
     'soumis': 'Soumis',
     'assigné': 'Assigné',
     'en évaluation': 'En évaluation',
-    'en_evaluation': 'En évaluation',
     'en instruction': 'En instruction',
     'évalué': 'Évalué',
     'compléments demandés': 'Compléments demandés',
-    'compléments soumis': 'Compléments soumis',
     'compléments fournis': 'Compléments fournis',
-    'compléments_requis': 'Compléments requis',
-    'en attente validation demande compléments': 'En attente validation',
     'en attente validation presidencesct': 'En attente Présidence SCT',
     'validé par presidencesct': 'Validé par Présidence SCT',
     'validé par presidencecomite': 'Validé par Présidence Comité',
     'favorable': 'Favorable',
     'favorable sous conditions': 'Favorable sous conditions',
     'défavorable': 'Défavorable',
-    'validé': 'Validé',
-    'approuvé': 'Approuvé',
+    'approuvé définitivement par le Comité': 'Approuvé par le Comité',
     'rejeté': 'Rejeté',
     'avis défavorable confirmé': 'Avis défavorable confirmé',
-    'en réexamen par le Secrétariat SCT': 'En réexamen SCT',
-    'valide_sct': 'Validé SCT'
+    'en réexamen par le Secrétariat SCT': 'En réexamen SCT'
   }
   return labels[statut] || statut
 }

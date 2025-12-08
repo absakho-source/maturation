@@ -951,16 +951,10 @@ def traiter_project(project_id):
                 p.evaluateur_nom = "secretariatsct"
 
             if avis == "compléments demandés":
-                # Si c'est un évaluateur qui demande des compléments, ça doit être validé par le secrétariat d'abord
-                if role in ["evaluateur1", "evaluateur2"]:
-                    p.statut = "en attente validation demande compléments"
-                    p.complements_demande_message = commentaires
-                    action = "Demande de compléments en attente de validation secrétariat"
-                else:
-                    # Si c'est le secrétariat qui demande directement
-                    p.statut = "compléments demandés"
-                    p.complements_demande_message = commentaires
-                    action = "Compléments demandés au soumissionnaire"
+                # Demande de compléments transmise directement au soumissionnaire
+                p.statut = "compléments demandés"
+                p.complements_demande_message = commentaires
+                action = "Compléments demandés au soumissionnaire"
                 # on efface une éventuelle réponse précédente
                 p.complements_reponse_message = None
                 p.complements_reponse_pieces = None
@@ -1002,21 +996,17 @@ def traiter_project(project_id):
                 p.avis = data.get("avis", "favorable")
                 p.commentaires = data.get("commentaires", "Compléments validés")
                 action = "Compléments validés directement par le secrétariat"
-            elif statut_action == "valider_demande_complements":
-                p.statut = "compléments demandés"
-                action = "Demande de compléments validée - transmise au soumissionnaire"
-            elif statut_action == "rejeter_demande_complements":
+            elif statut_action == "reinitialiser_evaluation":
+                # Réinitialiser complètement le projet pour une nouvelle évaluation
                 p.statut = "assigné"
                 p.avis = None
                 p.commentaires = None
                 p.complements_demande_message = None
-
                 # Réinitialiser l'évaluation préalable
                 p.evaluation_prealable = None
                 p.evaluation_prealable_date = None
                 p.evaluation_prealable_commentaire = None
-
-                action = "Demande de compléments rejetée - projet réassigné"
+                action = "Projet réinitialisé - réassigné pour réévaluation"
             elif statut_action == "reassigner_rejete":
                 # Réassignation d'un projet avec avis rejeté avec préservation de l'historique
                 if p.statut != "rejeté":

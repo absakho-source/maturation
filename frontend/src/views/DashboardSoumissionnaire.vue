@@ -1429,23 +1429,19 @@ export default {
         "assigné":"status-assigned",
         "en instruction":"status-processing",
         "en évaluation":"status-processing",
-        "en_evaluation":"status-processing",
         "évalué":"status-evaluated",
         "compléments demandés":"status-complement",
-        "compléments soumis":"status-info",
         "compléments fournis":"status-info",
-        "en attente validation demande compléments":"status-pending",
         "en attente validation presidencesct":"status-pending",
         "validé par presidencesct":"status-validated-sec",
         "validé par presidencecomite":"status-validated",
         "favorable":"status-favorable",
         "favorable sous conditions":"status-conditions",
         "défavorable":"status-defavorable",
-        "approuvé":"status-validated",
+        "approuvé définitivement par le Comité":"status-validated",
         "rejeté":"status-defavorable",
         "avis défavorable confirmé":"status-defavorable",
-        "en réexamen par le Secrétariat SCT":"status-processing",
-        "valide_sct":"status-validated-sec"
+        "en réexamen par le Secrétariat SCT":"status-processing"
       };
       return m[s]||"status-default";
     },
