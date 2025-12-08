@@ -9,7 +9,7 @@
           </svg>
           Retour
         </button>
-        <span class="badge" :class="getStatusClass(project.statut)">{{ project.statut }}</span>
+        <span class="badge" :class="getStatusBadgeClass()">{{ getStatusBadgeText() }}</span>
       </div>
 
       <div class="detail-content">
@@ -659,7 +659,53 @@ export default {
       };
       return map[avis] || "";
     },
-    
+
+    getStatusBadgeText() {
+      // Si soumissionnaire et projet en attente de décision du Comité
+      if (this.isSoumissionnaire() && this.project.statut_comite === 'recommande_comite') {
+        return "En attente Comité";
+      }
+
+      // Masquer certains statuts intermédiaires pour le soumissionnaire
+      if (this.isSoumissionnaire()) {
+        const statutsMasques = [
+          'validé par presidencecomite',
+          'en attente validation presidencesct',
+          'validé par presidencesct'
+        ];
+
+        if (statutsMasques.includes(this.project.statut)) {
+          return "En cours de traitement";
+        }
+      }
+
+      // Sinon afficher le statut normal
+      return this.project.statut;
+    },
+
+    getStatusBadgeClass() {
+      // Si soumissionnaire et projet en attente de décision du Comité
+      if (this.isSoumissionnaire() && this.project.statut_comite === 'recommande_comite') {
+        return "status-pending-comite";
+      }
+
+      // Si statut masqué pour soumissionnaire
+      if (this.isSoumissionnaire()) {
+        const statutsMasques = [
+          'validé par presidencecomite',
+          'en attente validation presidencesct',
+          'validé par presidencesct'
+        ];
+
+        if (statutsMasques.includes(this.project.statut)) {
+          return "status-processing";
+        }
+      }
+
+      // Sinon utiliser la classe normale
+      return this.getStatusClass(this.project.statut);
+    },
+
     parseComplementsFiles(filesString) {
       if (!filesString) return [];
       return filesString.split(',').map(f => f.trim()).filter(f => f.length > 0);
@@ -864,6 +910,10 @@ export default {
 .status-defavorable { background: #ef4444 !important; color: white !important; }
 .status-rejected { background: #dc2626 !important; color: white !important; }
 .status-default { background: #6b7280 !important; color: white !important; }
+
+/* Badges personnalisés pour soumissionnaires */
+.status-pending-comite { background: #f59e0b !important; color: white !important; }
+.status-processing { background: #0ea5e9 !important; color: white !important; }
 .detail-content h1 {
   color: #1a4d7a;
   font-size: 2rem;
