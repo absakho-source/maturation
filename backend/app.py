@@ -4676,6 +4676,67 @@ def run_migrations_endpoint():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/migrate-approuve-definitif", methods=["POST"])
+def migrate_approuve_definitif_endpoint():
+    """Endpoint pour migrer 'approuvé définitivement' vers l'avis réel"""
+    try:
+        print("[API] Démarrage de la migration 'approuvé définitivement' → avis réel")
+
+        # Compter les projets concernés
+        projets = Project.query.filter_by(statut="approuvé définitivement par le Comité").all()
+        count = len(projets)
+
+        if count == 0:
+            return jsonify({
+                "message": "Aucun projet avec le statut 'approuvé définitivement par le Comité'",
+                "migrated": 0
+            }), 200
+
+        migrated = 0
+        details = []
+
+        for p in projets:
+            old_statut = p.statut
+            if p.avis:
+                p.statut = p.avis
+                details.append({
+                    "id": p.id,
+                    "numero": p.numero_projet,
+                    "titre": p.titre,
+                    "old_statut": old_statut,
+                    "new_statut": p.avis
+                })
+                migrated += 1
+            else:
+                # Fallback si pas d'avis
+                p.statut = "validé par presidencecomite"
+                details.append({
+                    "id": p.id,
+                    "numero": p.numero_projet,
+                    "titre": p.titre,
+                    "old_statut": old_statut,
+                    "new_statut": "validé par presidencecomite (fallback)"
+                })
+                migrated += 1
+
+        db.session.commit()
+
+        print(f"[API] ✅ Migration terminée: {migrated} projet(s) migré(s)")
+        for d in details:
+            print(f"  - [{d['numero']}] {d['old_statut']} → {d['new_statut']}")
+
+        return jsonify({
+            "message": f"Migration réussie: {migrated} projet(s) migré(s)",
+            "migrated": migrated,
+            "details": details
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     import os
 
