@@ -178,6 +178,19 @@
             </div>
           </div>
 
+          <!-- Section Statut pour soumissionnaire: En attente décision Comité -->
+          <div class="info-card" v-if="isSoumissionnaire() && project.statut_comite === 'recommande_comite'">
+            <h3>📋 Statut de votre projet</h3>
+            <div class="status-box status-pending-comite">
+              <div class="status-icon">⏳</div>
+              <div class="status-content">
+                <h4>En attente de décision du Comité</h4>
+                <p>Votre projet a reçu un avis favorable et est actuellement en cours d'examen par le Comité de Maturation.</p>
+                <p>Vous serez informé une fois que le Comité aura statué sur votre projet.</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Section Fiche d'évaluation PDF -->
           <!-- Visible pour: rôles internes (avec peutVoirEvaluation) OU soumissionnaire (avec soumissionnairePeutVoirFiche) -->
           <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && ((!isSoumissionnaire() && peutVoirEvaluation()) || (isSoumissionnaire() && soumissionnairePeutVoirFiche()))">
@@ -590,8 +603,14 @@ export default {
     soumissionnairePeutVoirFiche() {
       // Le soumissionnaire peut voir la fiche d'évaluation dans deux cas:
       // 1. Avis favorable confirmé par PresidenceComite (decision_finale = 'confirme' + avis favorable)
+      //    MAIS PAS si le projet est en attente de décision du Comité (statut_comite = 'recommande_comite')
       // 2. Projet entériné par le Comité (statut_comite = 'approuve_definitif')
       if (!this.project) return false;
+
+      // Si le projet est recommandé au Comité mais pas encore décidé, NE PAS afficher la fiche
+      if (this.project.statut_comite === 'recommande_comite') {
+        return false;
+      }
 
       // Cas 1: Avis favorable confirmé par PresidenceComite
       const avisFavorableConfirme =
@@ -877,6 +896,44 @@ export default {
   font-weight: 500;
   margin-bottom: 1rem;
 }
+
+/* Status box pour "En attente décision Comité" */
+.status-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.status-pending-comite {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 2px solid #f97316;
+}
+
+.status-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.status-content h4 {
+  color: #c2410c;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.status-content p {
+  color: #7c2d12;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.status-content p:last-child {
+  margin-bottom: 0;
+}
+
 .info-row {
   display: grid;
   grid-template-columns: 200px 1fr;
