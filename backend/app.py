@@ -1503,9 +1503,17 @@ def enregistrer_decision_comite(project_id):
         if role not in ['secretariatsct', 'presidencecomite', 'admin']:
             return jsonify({"error": "Seuls le Secrétariat SCT et la Présidence Comité peuvent enregistrer les décisions du Comité"}), 403
 
-        # Vérifier que le projet est bien dans l'état 'recommande_comite'
-        if get_statut_comite(p) != 'recommande_comite':
-            return jsonify({"error": "Ce projet n'est pas en attente de décision du Comité"}), 400
+        # Vérifier que le projet est bien recommandé au Comité
+        # Accepter soit les projets avec statut_comite='recommande_comite'
+        # soit les anciens projets validés par la Présidence Comité (avant l'implémentation de statut_comite)
+        statut_comite_actuel = get_statut_comite(p)
+
+        if statut_comite_actuel != 'recommande_comite':
+            # Permettre aussi les anciens projets "validé par presidencecomite" sans statut_comite
+            if p.statut != 'validé par presidencecomite' or p.decision_finale:
+                return jsonify({"error": "Ce projet n'est pas en attente de décision du Comité"}), 400
+            # Pour les anciens projets, initialiser le statut_comite
+            set_statut_comite(p, 'recommande_comite')
 
         # Vérifier la décision
         if decision not in ['enterine', 'conteste']:
@@ -1518,8 +1526,14 @@ def enregistrer_decision_comite(project_id):
         # Mettre à jour le statut_comite
         if decision == 'enterine':
             set_statut_comite(p, 'approuve_definitif')
-            p.statut = "approuvé définitivement par le Comité"
-            action = "Décision du Comité: projet entériné (approuvé définitivement)"
+            # Garder l'avis de l'évaluateur comme statut final
+            # L'avis peut être: favorable, favorable sous conditions, ou défavorable
+            if p.avis:
+                p.statut = p.avis
+            else:
+                # Fallback si pas d'avis (ne devrait pas arriver)
+                p.statut = "validé par presidencecomite"
+            action = f"Décision du Comité: projet entériné - Avis final confirmé: {p.avis}"
             if commentaires:
                 action += f" - {commentaires}"
         else:  # conteste

@@ -349,8 +349,13 @@ export default {
       return this.allProjects.filter(p => p.statut === 'validé par presidencesct' && !p.decision_finale);
     },
     projectsDecisionsComite() {
-      // Projets recommandés au Comité par PresidenceComite (avec statut_comite = 'recommande_comite')
-      return this.allProjects.filter(p => p.statut_comite === 'recommande_comite');
+      // Projets recommandés au Comité:
+      // 1. Nouveaux projets avec statut_comite = 'recommande_comite'
+      // 2. Anciens projets "validé par presidencecomite" sans decision_finale (compatibilité)
+      return this.allProjects.filter(p =>
+        p.statut_comite === 'recommande_comite' ||
+        (p.statut === 'validé par presidencecomite' && !p.decision_finale)
+      );
     }
   },
   mounted() {
