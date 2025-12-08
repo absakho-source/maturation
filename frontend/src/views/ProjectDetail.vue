@@ -640,13 +640,21 @@ export default {
       const map = {
         "soumis": "status-new",
         "assigné": "status-assigned",
-        "en attente validation presidencesct": "status-pending",
-        "validé par presidencesct": "status-validated",
+        "en instruction": "status-processing",
+        "en évaluation": "status-processing",
+        "évalué": "status-evaluated",
         "compléments demandés": "status-complement",
-        "décision finale confirmée": "status-confirmed",
-        "évalué positivement": "status-favorable",
-        "évalué négativement": "status-defavorable",
-        "rejeté": "status-rejected"
+        "compléments fournis": "status-info",
+        "en attente validation presidencesct": "status-pending",
+        "validé par presidencesct": "status-validated-sec",
+        "validé par presidencecomite": "status-validated",
+        "favorable": "status-favorable",
+        "favorable sous conditions": "status-conditions",
+        "défavorable": "status-defavorable",
+        "approuvé définitivement par le Comité": "status-validated",
+        "rejeté": "status-defavorable",
+        "avis défavorable confirmé": "status-defavorable",
+        "en réexamen par le Secrétariat SCT": "status-processing"
       };
       return map[statut] || "status-default";
     },
@@ -904,11 +912,15 @@ export default {
 .status-assigned { background: #f59e0b !important; color: white !important; }
 .status-pending { background: #8b5cf6 !important; color: white !important; }
 .status-validated { background: #10b981 !important; color: white !important; }
+.status-validated-sec { background: #22c55e !important; color: white !important; }
 .status-complement { background: #f97316 !important; color: white !important; }
+.status-info { background: #3b82f6 !important; color: white !important; }
 .status-confirmed { background: #06b6d4 !important; color: white !important; }
 .status-favorable { background: #10b981 !important; color: white !important; }
+.status-conditions { background: #f59e0b !important; color: white !important; }
 .status-defavorable { background: #ef4444 !important; color: white !important; }
 .status-rejected { background: #dc2626 !important; color: white !important; }
+.status-evaluated { background: #8b5cf6 !important; color: white !important; }
 .status-default { background: #6b7280 !important; color: white !important; }
 
 /* Badges personnalisés pour soumissionnaires */

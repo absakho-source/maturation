@@ -69,16 +69,13 @@
 
       <!-- Tous les projets -->
       <div v-if="activeTab === 'all'" class="tab-content">
-        <h2>Tous les projets (vue d'ensemble)</h2>
+        <h2>Vue d'ensemble</h2>
         <!-- Badge de filtre actif -->
         <div v-if="filtreStatut" class="filtre-actif">
           <span>Filtre actif: <strong>{{ filtreStatut }}</strong></span>
           <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
         </div>
         <div v-if="projetsFiltres.length === 0" class="empty-state">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
           <p>Aucun projet{{ filtreStatut ? ' pour ce filtre' : '' }}</p>
         </div>
         <div v-else class="projects-grid">
@@ -93,22 +90,22 @@
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
               <p v-if="p.evaluateur_nom" class="highlight-assigned"><strong>Assigné à:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
-              <p v-if="p.avis && p.validation_secretariat === 'valide'"><strong>Avis évaluateur:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-              <p v-if="p.avis_presidencesct"><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
+              <p v-if="p.avis && p.validation_secretariat === 'valide'"><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+              <p v-if="p.commentaires && p.validation_secretariat === 'valide'"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
+              <p v-if="p.validation_secretariat"><strong>Validation secrétariat:</strong> {{ p.validation_secretariat }}</p>
+              <p v-if="p.avis_presidencesct"><strong>Validation Présidence SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
               <p v-if="p.decision_finale"><strong>Décision finale:</strong> <span :class="p.decision_finale === 'confirme' ? 'decision-confirme' : 'decision-infirme'">{{ p.decision_finale === 'confirme' ? 'Avis confirmé' : 'Avis infirmé' }}</span></p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
 
               <!-- Actions de décision finale pour projets validés par la présidence SCT -->
               <div v-if="p.statut === 'validé presidenceSCT' && p.avis_presidencesct === 'valide' && !p.decision_finale" class="final-section">
                 <h4>Votre décision finale</h4>
                 <p class="instruction">Confirmez-vous l'avis de l'évaluateur ou souhaitez-vous l'infirmer ?</p>
+                <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
                 <div class="decision-buttons">
                   <button @click="confirmer(p.id, 'confirme')" class="btn-success">✓ Confirmer l'avis</button>
                   <button @click="confirmer(p.id, 'infirme')" class="btn-danger">✗ Infirmer l'avis</button>
                 </div>
-                <label>Commentaires (optionnel):
-                  <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..."></textarea>
-                </label>
               </div>
               <div v-else-if="p.statut === 'validé presidenceSCT' && p.validation_secretariat !== 'valide'" class="validation-pending">
                 <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
