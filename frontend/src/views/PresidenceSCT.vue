@@ -661,7 +661,7 @@ export default {
 .decision-section { display:flex; gap:.5rem; margin-top:.5rem; }
 .btn-success{background:#10b981;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
 .btn-danger{background:#ef4444;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
-.avis-favorable{color:#10b981;font-weight:600}.avis-conditions{color:#f59e0b;font-weight:600}.avis-defavorable{color:#ef4444;font-weight:600}.avis-complement{color:#f97316;font-weight:600}
+.avis-favorable{color:#10b981 !important;font-weight:600 !important}.avis-conditions{color:#f59e0b !important;font-weight:600 !important}.avis-defavorable{color:#ef4444 !important;font-weight:600 !important}.avis-complement{color:#f97316 !important;font-weight:600 !important}
 
 /* Badge filtre actif */
 .filtre-actif {

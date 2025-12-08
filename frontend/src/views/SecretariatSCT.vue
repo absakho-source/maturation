@@ -2333,7 +2333,7 @@ export default {
 .reassign { display:flex; gap:.5rem; align-items:center; margin-top:.5rem; flex-wrap: wrap; }
 .reassign button { flex-shrink: 0; white-space: nowrap; }
 .reassign select { min-width: 150px; max-width: 250px; }
-.avis-favorable{color:#10b981;font-weight:600}.avis-conditions{color:#f59e0b;font-weight:600}.avis-defavorable{color:#ef4444;font-weight:600}.avis-complement{color:#f97316;font-weight:600}
+.avis-favorable{color:#10b981 !important;font-weight:600 !important}.avis-conditions{color:#f59e0b !important;font-weight:600 !important}.avis-defavorable{color:#ef4444 !important;font-weight:600 !important}.avis-complement{color:#f97316 !important;font-weight:600 !important}
 
 /* Styles pour les compléments */
 .complements-info {

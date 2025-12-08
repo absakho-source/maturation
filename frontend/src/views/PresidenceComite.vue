@@ -861,10 +861,10 @@ export default {
 .card-body { padding: 1.5rem; }
 .card-body p { margin: 0.5rem 0; color: #555; font-size: 0.95rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
-.avis-favorable { color: #10b981; font-weight: 600; }
-.avis-conditions { color: #f59e0b; font-weight: 600; }
-.avis-defavorable { color: #ef4444; font-weight: 600; }
-.avis-complement { color: #f97316; font-weight: 600; }
+.avis-favorable { color: #10b981 !important; font-weight: 600 !important; }
+.avis-conditions { color: #f59e0b !important; font-weight: 600 !important; }
+.avis-defavorable { color: #ef4444 !important; font-weight: 600 !important; }
+.avis-complement { color: #f97316 !important; font-weight: 600 !important; }
 .validated { color: #10b981; font-weight: 600; text-transform: capitalize; }
 .decision-confirme { color: #10b981; font-weight: 600; }
 .decision-infirme { color: #ef4444; font-weight: 600; }

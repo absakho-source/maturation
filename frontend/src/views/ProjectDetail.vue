@@ -1061,10 +1061,10 @@ export default {
   margin: 0;
   white-space: pre-wrap;
 }
-.avis-favorable { color: #10b981; font-weight: 600; }
-.avis-conditions { color: #f59e0b; font-weight: 600; }
-.avis-defavorable { color: #ef4444; font-weight: 600; }
-.avis-complement { color: #f97316; font-weight: 600; }
+.avis-favorable { color: #10b981 !important; font-weight: 600 !important; }
+.avis-conditions { color: #f59e0b !important; font-weight: 600 !important; }
+.avis-defavorable { color: #ef4444 !important; font-weight: 600 !important; }
+.avis-complement { color: #f97316 !important; font-weight: 600 !important; }
 .validated { color: #10b981; font-weight: 600; text-transform: capitalize; }
 .files-list {
   display: flex;

@@ -1652,7 +1652,7 @@ export default {
 .status-defavorable { background: #ef4444 !important; color: white !important; }
 .status-default { background: #6b7280 !important; color: white !important; }
 .card-body { padding: 1rem; }
-.avis-favorable{color:#10b981;font-weight:600}.avis-conditions{color:#f59e0b;font-weight:600}.avis-defavorable{color:#ef4444;font-weight:600}.avis-complement{color:#f97316;font-weight:600}
+.avis-favorable{color:#10b981 !important;font-weight:600 !important}.avis-conditions{color:#f59e0b !important;font-weight:600 !important}.avis-defavorable{color:#ef4444 !important;font-weight:600 !important}.avis-complement{color:#f97316 !important;font-weight:600 !important}
 .complements-box { margin-top: .75rem; padding: 1rem; background:#f9fafb; border:1px dashed #e5e7eb; border-radius:8px; }
 .stats { display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:1rem; }
 .stat { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:.5rem .75rem; }

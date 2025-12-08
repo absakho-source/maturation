@@ -415,10 +415,10 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
 .eval-done { padding: 1.5rem; background: #f0fdf4; border-top: 1px solid #bbf7d0; }
 .eval-done p { margin: 0.5rem 0; color: #166534; font-size: 0.95rem; }
-.avis-favorable { color: #10b981; font-weight: 600; }
-.avis-conditions { color: #f59e0b; font-weight: 600; }
-.avis-defavorable { color: #ef4444; font-weight: 600; }
-.avis-complement { color: #f97316; font-weight: 600; }
+.avis-favorable { color: #10b981 !important; font-weight: 600 !important; }
+.avis-conditions { color: #f59e0b !important; font-weight: 600 !important; }
+.avis-defavorable { color: #ef4444 !important; font-weight: 600 !important; }
+.avis-complement { color: #f97316 !important; font-weight: 600 !important; }
 
 /* Évaluation Préalable */
 .eval-prealable h4 {
