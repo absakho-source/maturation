@@ -1232,7 +1232,7 @@ def traiter_project(project_id):
                 elif p.avis in ["favorable", "favorable sous conditions"]:
                     p.statut = "validé par presidencecomite"
                     set_statut_comite(p, 'recommande_comite')  # Recommandation automatique
-                    action = "Décision de la Présidence du Comité : avis confirmé - Recommandé automatiquement au Comité"
+                    action = "Décision de la Présidence du Comité : avis confirmé - Recommandé au Comité"
 
                 else:
                     # Cas de sécurité si l'avis n'est pas défini
