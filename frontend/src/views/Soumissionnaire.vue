@@ -1,4 +1,5 @@
 <template>
+  <!-- Version 1.0.4 - Nouveaux champs: nouveauté, priorité, financement + Présumé -->
   <PageWrapper>
     <div class="container">
       <!-- Tableau de bord -->
