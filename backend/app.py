@@ -538,7 +538,10 @@ def projects():
                             "secteur": str(p.secteur) if p.secteur else "",
                             "poles": str(p.poles) if p.poles else "",
                             "statut": str(statut_affiche) if statut_affiche else "",
-                            "date_soumission": date_soumission
+                            "date_soumission": date_soumission,
+                            "nouveaute": str(p.nouveaute) if p.nouveaute else "",
+                            "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
+                            "type_financement": str(p.type_financement) if p.type_financement else ""
                         })
                     else:
                         # Correction : conversion systématique des champs pour éviter les erreurs de type
@@ -573,7 +576,11 @@ def projects():
                             "evaluation_prealable_commentaires": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",  # Alias pour compatibilité frontend
                             "pieces_jointes": pieces_jointes,
                             "date_soumission": date_soumission,
-                            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False
+                            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
+                            "nouveaute": str(p.nouveaute) if p.nouveaute else "",
+                            "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
+                            "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
+                            "type_financement": str(p.type_financement) if p.type_financement else ""
                         })
                 except Exception as err:
                     import traceback
@@ -610,6 +617,12 @@ def projects():
         organisme_tutelle = request.form.get("organisme_tutelle")
         organisme_tutelle_data = request.form.get("organisme_tutelle_data")  # JSON structuré
         structure_soumissionnaire = request.form.get("structure_soumissionnaire")
+
+        # Nouveaux champs (Décembre 2025)
+        nouveaute = request.form.get("nouveaute")
+        projet_initial_ref = request.form.get("projet_initial_ref")
+        niveau_priorite = request.form.get("niveau_priorite")
+        type_financement = request.form.get("type_financement")  # JSON array
 
         # Récupérer tous les fichiers catégorisés
         files = []
@@ -685,7 +698,11 @@ def projects():
             lieu_soumission_region=lieu_region,
             gps_latitude=gps_latitude,
             gps_longitude=gps_longitude,
-            gps_accuracy=gps_accuracy
+            gps_accuracy=gps_accuracy,
+            nouveaute=nouveaute,
+            projet_initial_ref=projet_initial_ref,
+            niveau_priorite=niveau_priorite,
+            type_financement=type_financement
         )
         db.session.add(project)
         db.session.commit()
@@ -766,7 +783,11 @@ def get_project(project_id):
             "organisme_tutelle": p.organisme_tutelle,
             "organisme_tutelle_data": p.organisme_tutelle_data,
             "structure_soumissionnaire": p.structure_soumissionnaire,
-            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False
+            "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
+            "nouveaute": p.nouveaute,
+            "projet_initial_ref": p.projet_initial_ref,
+            "niveau_priorite": p.niveau_priorite,
+            "type_financement": p.type_financement
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()

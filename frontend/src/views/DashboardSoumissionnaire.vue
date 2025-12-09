@@ -406,7 +406,7 @@
               <div class="radio-group">
                 <label class="radio-label">
                   <input type="radio" v-model="form.niveau_priorite" value="prioritaire_ant" required />
-                  Prioritaire ANT (Agenda National de Transformation)
+                  Prioritaire (Agenda National de Transformation)
                 </label>
                 <label class="radio-label">
                   <input type="radio" v-model="form.niveau_priorite" value="standard" required />
@@ -445,10 +445,6 @@
                 <label class="checkbox-label">
                   <input type="checkbox" v-model="typesFinancement.mixte" />
                   Mixte
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="typesFinancement.presume" />
-                  Présumé
                 </label>
               </div>
               <small>Sélectionnez au moins un type de financement envisagé</small>
@@ -696,8 +692,7 @@ export default {
         prive: false,
         collectivite: false,
         international: false,
-        mixte: false,
-        presume: false
+        mixte: false
       },
       coutFormate: "", // Pour afficher le coût avec séparateur de milliers
       files: [],
@@ -1424,7 +1419,6 @@ export default {
         if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivité territoriale');
         if (this.typesFinancement.international) typesFinancementArray.push('International');
         if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
-        if (this.typesFinancement.presume) typesFinancementArray.push('Présumé');
 
         if (typesFinancementArray.length > 0) {
           formData.append("type_financement", JSON.stringify(typesFinancementArray));
@@ -1497,8 +1491,7 @@ export default {
           prive: false,
           collectivite: false,
           international: false,
-          mixte: false,
-          presume: false
+          mixte: false
         };
         // Réinitialiser les champs hiérarchiques
         this.typeOrganisme = "";
@@ -1673,8 +1666,7 @@ export default {
         prive: false,
         collectivite: false,
         international: false,
-        mixte: false,
-        presume: false
+        mixte: false
       };
       // Réinitialiser les champs hiérarchiques
       this.typeOrganisme = "";
