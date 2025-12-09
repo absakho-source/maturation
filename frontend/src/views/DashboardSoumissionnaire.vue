@@ -2319,4 +2319,28 @@ select:disabled, input:disabled {
     justify-content: center;
   }
 }
+
+/* Styles pour les nouveaux champs radio et checkbox */
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.radio-label,
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
 </style>
