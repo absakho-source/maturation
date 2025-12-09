@@ -368,6 +368,93 @@
             </div>
           </div>
 
+          <!-- Nouveauté du projet -->
+          <div class="form-section-title">Nouveauté du projet</div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label>Ce projet est-il * :</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" v-model="form.nouveaute" value="projet_initial" required />
+                  Un projet initial (jamais soumis auparavant)
+                </label>
+                <label class="radio-label">
+                  <input type="radio" v-model="form.nouveaute" value="phase_2" required />
+                  Une phase 2 d'un projet déjà soumis/financé
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="form.nouveaute === 'phase_2'" class="form-row">
+            <div class="form-group full-width">
+              <label>Référence du projet initial</label>
+              <input
+                v-model="form.projet_initial_ref"
+                type="text"
+                placeholder="Ex: Numéro ou intitulé du projet initial"
+              />
+              <small class="hint">Indiquez le numéro ou l'intitulé du projet initial</small>
+            </div>
+          </div>
+
+          <!-- Niveau de priorité -->
+          <div class="form-section-title">Niveau de priorité</div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label>Niveau de priorité du projet * :</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" v-model="form.niveau_priorite" value="prioritaire_ant" required />
+                  Prioritaire ANT
+                </label>
+                <label class="radio-label">
+                  <input type="radio" v-model="form.niveau_priorite" value="standard" required />
+                  Standard
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Type de financement envisagé -->
+          <div class="form-section-title">Type de financement envisagé</div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label>Sélectionnez le(s) type(s) de financement envisagé(s) * :</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.ppp" />
+                  PPP
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.public" />
+                  Public
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.prive" />
+                  Privé
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.collectivite" />
+                  Collectivité territoriale
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.international" />
+                  International
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.mixte" />
+                  Mixte
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="typesFinancement.presume" />
+                  Présumé
+                </label>
+              </div>
+              <small>Sélectionnez au moins un type de financement envisagé</small>
+            </div>
+          </div>
+
           <!-- Pièces jointes -->
           <div class="form-section-title">Pièces jointes</div>
           <p class="file-info">📎 Formats autorisés : .pdf, .docx, .xlsx, .pptx, .jpg, .png — Taille max. 10 Mo / fichier</p>
@@ -594,11 +681,23 @@ export default {
         point_focal_telephone: "",
         point_focal_email: "",
         // lieu_soumission_* : Géolocalisation automatique côté backend (pas de champs manuels)
+        nouveaute: "",
+        projet_initial_ref: "",
+        niveau_priorite: "",
         certification: false,
         lettre_soumission: [],
         note_conceptuelle: [],
         etudes_plans: [],
         autres_pieces: []
+      },
+      typesFinancement: {
+        ppp: false,
+        public: false,
+        prive: false,
+        collectivite: false,
+        international: false,
+        mixte: false,
+        presume: false
       },
       coutFormate: "", // Pour afficher le coût avec séparateur de milliers
       files: [],
@@ -1312,6 +1411,25 @@ export default {
         formData.append("point_focal_email", this.form.point_focal_email || "");
         // lieu_soumission_* : Géolocalisation automatique côté backend
 
+        // Nouveaux champs (Décembre 2025)
+        formData.append("nouveaute", this.form.nouveaute || "");
+        formData.append("projet_initial_ref", this.form.projet_initial_ref || "");
+        formData.append("niveau_priorite", this.form.niveau_priorite || "");
+
+        // Type de financement (JSON array)
+        const typesFinancementArray = [];
+        if (this.typesFinancement.ppp) typesFinancementArray.push('PPP');
+        if (this.typesFinancement.public) typesFinancementArray.push('Public');
+        if (this.typesFinancement.prive) typesFinancementArray.push('Privé');
+        if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivité territoriale');
+        if (this.typesFinancement.international) typesFinancementArray.push('International');
+        if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
+        if (this.typesFinancement.presume) typesFinancementArray.push('Présumé');
+
+        if (typesFinancementArray.length > 0) {
+          formData.append("type_financement", JSON.stringify(typesFinancementArray));
+        }
+
         // Utiliser l'organisme de tutelle construit
         formData.append("organisme_tutelle", organismeTutelle);
 
@@ -1363,11 +1481,24 @@ export default {
           point_focal_telephone: "",
           point_focal_email: "",
           // lieu_soumission_* : Géolocalisation automatique côté backend
+          nouveaute: "",
+          projet_initial_ref: "",
+          niveau_priorite: "",
           certification: false,
           lettre_soumission: [],
           note_conceptuelle: [],
           etudes_plans: [],
           autres_pieces: []
+        };
+        // Réinitialiser les types de financement
+        this.typesFinancement = {
+          ppp: false,
+          public: false,
+          prive: false,
+          collectivite: false,
+          international: false,
+          mixte: false,
+          presume: false
         };
         // Réinitialiser les champs hiérarchiques
         this.typeOrganisme = "";
@@ -1526,11 +1657,24 @@ export default {
         point_focal_fonction: "",
         point_focal_telephone: "",
         point_focal_email: "",
+        nouveaute: "",
+        projet_initial_ref: "",
+        niveau_priorite: "",
         certification: false,
         lettre_soumission: [],
         note_conceptuelle: [],
         etudes_plans: [],
         autres_pieces: []
+      };
+      // Réinitialiser les types de financement
+      this.typesFinancement = {
+        ppp: false,
+        public: false,
+        prive: false,
+        collectivite: false,
+        international: false,
+        mixte: false,
+        presume: false
       };
       // Réinitialiser les champs hiérarchiques
       this.typeOrganisme = "";
