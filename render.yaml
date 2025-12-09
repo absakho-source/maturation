@@ -23,7 +23,7 @@ services:
     name: maturation-frontend
     env: node
     region: oregon
-    buildCommand: "cd frontend && rm -rf dist node_modules/.vite && npm install && npm run build"
+    buildCommand: "cd frontend && bash build.sh"
     startCommand: "cd frontend && node server.js"
     envVars:
       - key: NODE_VERSION
