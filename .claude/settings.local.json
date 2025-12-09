@@ -49,7 +49,8 @@
       "Bash(/dev/null sleep 2)",
       "Bash(DATA_DIR=\".\" python3:*)",
       "Bash(timeout 10 python3:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(timeout 60 ssh:*)"
     ],
     "deny": [],
     "ask": []

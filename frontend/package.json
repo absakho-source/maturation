@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.5",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE",
+  "version": "1.0.6",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - REBUILD FORCE",
   "type": "module",
   "private": true,
   "scripts": {

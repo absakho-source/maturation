@@ -16,14 +16,15 @@ app.use((req, res, next) => {
 
 // Serve static files from the dist directory with proper MIME types
 app.use(express.static(path.join(__dirname, 'dist'), {
-  maxAge: '1d',
+  maxAge: 0, // DISABLE CACHE - force fresh files
   setHeaders: (res, filePath) => {
+    // Disable cache for ALL files to ensure fresh content
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     if (filePath.endsWith('.html')) {
       res.setHeader('Content-Type', 'text/html');
-      // Disable cache for HTML files to ensure fresh content
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
     } else if (filePath.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
     } else if (filePath.endsWith('.css')) {
