@@ -406,7 +406,7 @@
               <div class="radio-group">
                 <label class="radio-label">
                   <input type="radio" v-model="form.niveau_priorite" value="prioritaire_ant" required />
-                  Prioritaire ANT
+                  Prioritaire ANT (Agenda National de Transformation)
                 </label>
                 <label class="radio-label">
                   <input type="radio" v-model="form.niveau_priorite" value="standard" required />
