@@ -1,5 +1,5 @@
 <template>
-  <!-- Version 1.0.4 - Nouveaux champs: nouveauté, priorité, financement + Présumé -->
+  <!-- Version 1.0.5 - DEPLOY 2025-12-09 19:20 - Force rebuild avec Présumé -->
   <PageWrapper>
     <div class="container">
       <!-- Tableau de bord -->
