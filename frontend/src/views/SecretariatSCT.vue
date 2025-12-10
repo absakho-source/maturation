@@ -256,7 +256,7 @@
                       class="badge-small status-warning"
                       style="margin-left: 4px;"
                       title="Le compte du soumissionnaire n'est pas encore vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé.">
-                  🔒
+                  🔒 Compte non vérifié
                 </span>
               </div>
               <h4 class="compact-card-title">{{ projet.titre }}</h4>

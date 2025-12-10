@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.9",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Optimisation chargement cartes",
+  "version": "1.0.10",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Ajout texte badge compte non vérifié",
   "type": "module",
   "private": true,
   "scripts": {
