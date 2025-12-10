@@ -295,7 +295,7 @@ export default {
       selectedPole: null,
       polesData: null,
       statsParPole: {},
-      loading: true,
+      loading: false,  // CRITICAL: Never show loading message
       error: null,
       tooltip: {
         visible: false,
@@ -388,8 +388,7 @@ export default {
   },
   
   mounted() {
-    // Afficher la carte IMMÉDIATEMENT (pas de loading)
-    this.loading = false
+    // Carte visible IMMÉDIATEMENT - loading=false par défaut dans data()
     this.error = null
 
     // Charger TOUT en arrière-plan (GeoJSON, stats, routes)
