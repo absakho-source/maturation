@@ -5117,13 +5117,14 @@ def creer_projets_exemple():
     try:
         from datetime import datetime
 
-        # Liste des projets à créer
+        # Liste des projets à créer (8 pôles territoriaux officiels)
+        # Dakar, Thiès, Diourbel-Louga, Centre, Nord, Nord-Est, Sud-Est, Sud
         PROJETS_DATA = [
             {
                 "titre": "Construction d'un centre de formation agricole moderne à Kaolack",
                 "description": "Projet visant à créer un centre de formation équipé pour former 500 jeunes par an aux techniques agricoles modernes, à l'agro-écologie et à l'entrepreneuriat agricole. Le centre comprendra des salles de classe, un laboratoire, des champs d'application et un incubateur d'entreprises agricoles.",
                 "secteur": "agriculture-élevage-pêche",
-                "poles": "Kaolack-Kaffrine",
+                "poles": "Centre",
                 "cout_estimatif": 2500000000,
                 "structure_soumissionnaire": "Direction Régionale du Développement Rural de Kaolack"
             },
@@ -5131,7 +5132,7 @@ def creer_projets_exemple():
                 "titre": "Aménagement hydro-agricole de la vallée du Saloum",
                 "description": "Aménagement de 1000 hectares de terres agricoles avec système d'irrigation moderne, construction de digues anti-sel, et création de pistes de production. Le projet bénéficiera à 800 producteurs et permettra 3 cycles de culture par an.",
                 "secteur": "agriculture-élevage-pêche",
-                "poles": "Fatick-Kaolack",
+                "poles": "Centre",
                 "cout_estimatif": 8500000000,
                 "structure_soumissionnaire": "Agence Nationale d'Aménagement du Territoire"
             },
@@ -5139,7 +5140,7 @@ def creer_projets_exemple():
                 "titre": "Électrification rurale par énergie solaire - Zone Nord",
                 "description": "Installation de mini-centrales solaires et réseaux de distribution dans 45 villages de la zone Nord (Saint-Louis et Louga). Le projet vise à électrifier 15000 ménages et 200 équipements communautaires (écoles, centres de santé, mosquées).",
                 "secteur": "énergie",
-                "poles": "Saint-Louis-Louga",
+                "poles": "Nord",
                 "cout_estimatif": 12000000000,
                 "structure_soumissionnaire": "Agence Sénégalaise d'Électrification Rurale"
             },
@@ -5147,7 +5148,7 @@ def creer_projets_exemple():
                 "titre": "Construction de 10 collèges de proximité en zone rurale",
                 "description": "Construction de 10 collèges d'enseignement moyen dans les zones rurales mal desservies de Tambacounda et Kédougou. Chaque établissement comprendra 12 salles de classe, un laboratoire, une bibliothèque, des logements pour enseignants et un terrain de sport. Capacité totale: 5000 élèves.",
                 "secteur": "éducation-formation",
-                "poles": "Tambacounda-Kédougou",
+                "poles": "Sud-Est",
                 "cout_estimatif": 15000000000,
                 "structure_soumissionnaire": "Ministère de l'Éducation Nationale"
             },
@@ -5155,7 +5156,7 @@ def creer_projets_exemple():
                 "titre": "Modernisation du réseau d'adduction d'eau potable de Thiès",
                 "description": "Réhabilitation et extension du réseau d'eau potable de la ville de Thiès: construction d'un nouveau réservoir de 10000m³, remplacement de 50km de canalisations vétustes, installation de 3000 nouveaux branchements sociaux, et mise en place d'un système de télégestion.",
                 "secteur": "eau-assainissement",
-                "poles": "Dakar-Thiès",
+                "poles": "Thiès",
                 "cout_estimatif": 6800000000,
                 "structure_soumissionnaire": "Société Nationale des Eaux du Sénégal"
             },
@@ -5163,7 +5164,7 @@ def creer_projets_exemple():
                 "titre": "Centre hospitalier régional spécialisé de Ziguinchor",
                 "description": "Construction d'un centre hospitalier de 200 lits avec services de chirurgie, maternité, pédiatrie, réanimation et imagerie médicale. Le projet inclut la formation de 150 personnels de santé et l'acquisition d'équipements médicaux de pointe.",
                 "secteur": "santé-action-sociale",
-                "poles": "Ziguinchor-Sédhiou-Kolda",
+                "poles": "Sud",
                 "cout_estimatif": 18500000000,
                 "structure_soumissionnaire": "Ministère de la Santé et de l'Action Sociale"
             },
@@ -5179,7 +5180,7 @@ def creer_projets_exemple():
                 "titre": "Bitumage de la route Tambacounda - Kédougou",
                 "description": "Réhabilitation et bitumage de 150km de route nationale reliant Tambacounda à Kédougou, avec construction de 8 ponts, aménagement de passages pour le bétail, éclairage des traversées de villages, et création d'aires de repos. Durée des travaux: 24 mois.",
                 "secteur": "transport-désenclavement",
-                "poles": "Tambacounda-Kédougou",
+                "poles": "Sud-Est",
                 "cout_estimatif": 45000000000,
                 "structure_soumissionnaire": "Agence des Travaux et de Gestion des Routes"
             },
@@ -5187,7 +5188,7 @@ def creer_projets_exemple():
                 "titre": "Projet d'assainissement urbain de Saint-Louis",
                 "description": "Construction d'un réseau d'assainissement des eaux usées et pluviales pour 25000 ménages, réalisation d'une station d'épuration de 15000m³/jour, aménagement de caniveaux et bassins de rétention. Le projet inclut un volet sensibilisation à l'hygiène et à l'environnement.",
                 "secteur": "eau-assainissement",
-                "poles": "Saint-Louis-Louga",
+                "poles": "Nord",
                 "cout_estimatif": 16500000000,
                 "structure_soumissionnaire": "Office National de l'Assainissement du Sénégal"
             },
@@ -5195,9 +5196,17 @@ def creer_projets_exemple():
                 "titre": "Centre de formation professionnelle aux métiers du numérique",
                 "description": "Construction et équipement d'un centre de formation de 400 places aux métiers du numérique (développement web, cybersécurité, data science, design graphique). Le centre disposera de salles informatiques équipées, d'espaces de coworking, d'un incubateur de startups et d'une connexion internet haut débit. Partenariats avec entreprises du secteur.",
                 "secteur": "télécommunications-TIC",
-                "poles": "Dakar-Thiès",
+                "poles": "Dakar",
                 "cout_estimatif": 3200000000,
                 "structure_soumissionnaire": "Agence de l'Informatique de l'État"
+            },
+            {
+                "titre": "Programme de développement de l'aquaculture à Matam",
+                "description": "Création de 50 bassins piscicoles modernes et formation de 200 pisciculteurs. Installation d'unités de transformation et de conservation du poisson. Construction d'un centre de recherche sur l'aquaculture en zone sahélienne. Impact: création de 300 emplois directs et amélioration de la sécurité alimentaire.",
+                "secteur": "agriculture-élevage-pêche",
+                "poles": "Nord-Est",
+                "cout_estimatif": 4200000000,
+                "structure_soumissionnaire": "Agence Nationale de l'Aquaculture"
             }
         ]
 
