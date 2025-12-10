@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.21 - 2025-12-10 16:00 - Fast map load with background roads
+// Build version: 1.0.22 - 2025-12-10 17:30 - Instant map display (GeoJSON only blocks)
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

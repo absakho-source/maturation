@@ -1,4 +1,5 @@
 <template>
+  <!-- Build: v1.0.21 - 2025-12-10 17:30 - Carte avec chargement non-bloquant -->
   <div class="carte-poles-container">
     <h3 class="titre-carte">{{ title }}</h3>
 
@@ -391,16 +392,17 @@ export default {
       this.loading = true
       this.error = null
 
-      // Charger les données essentielles en priorité (GeoJSON et stats)
-      await Promise.all([
-        this.loadGeojsonData(),
-        this.loadStats()
-      ])
+      // Charger UNIQUEMENT le GeoJSON (local, rapide)
+      await this.loadGeojsonData()
 
-      // Afficher la carte immédiatement
+      // Afficher la carte immédiatement avec les frontières
       this.loading = false
 
-      // Charger les routes en arrière-plan (non bloquant)
+      // Charger les stats et routes en arrière-plan (non bloquant)
+      this.loadStats().catch(err => {
+        console.warn('⚠️ Stats non chargées, carte affichée sans statistiques:', err)
+      })
+
       this.loadRoadsData().catch(err => {
         console.warn('⚠️ Routes non chargées, carte affichée sans routes:', err)
       })

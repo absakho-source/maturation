@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script de build avec nettoyage du cache Vite
 # Force un rebuild complet pour Render
-# Build version: 1.0.21 - 2025-12-10 - Fast map load with background roads
+# Build version: 1.0.22 - 2025-12-10 17:30 - Instant map display
 
 echo "🧹 Nettoyage du cache Vite et du dossier dist..."
 rm -rf dist

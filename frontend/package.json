@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.21",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fast map load + background roads",
+  "version": "1.0.22",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Instant map display",
   "type": "module",
   "private": true,
   "scripts": {
