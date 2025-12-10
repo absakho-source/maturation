@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.6 - 2025-12-09 19:30 - FORCE CLEAN BUILD
+// Build version: 1.0.7 - 2025-12-10 09:20 - Fix compte non vérifié buttons
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
