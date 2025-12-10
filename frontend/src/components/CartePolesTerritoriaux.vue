@@ -419,12 +419,20 @@ export default {
     },
 
     async loadRoadsData() {
+      console.log('🔄 Début chargement routes...')
       try {
         // Utiliser le fichier sample optimisé (596KB au lieu de 6.7MB)
         const response = await fetch('/senegal_roads_sample.json')
+        console.log('📡 Réponse fetch routes:', response.status, response.ok)
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
         const roads = await response.json()
         this.roadSegments = roads
-        console.log(`✅ ${roads.length} routes chargées (version optimisée)`)
+        console.log(`✅ ${roads.length} routes chargées et assignées à roadSegments`)
+        console.log('📊 Exemple route:', roads[0])
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []
