@@ -438,22 +438,22 @@ export default {
 
     getRoadWidth(type) {
       const widths = {
-        'autoroute': 2.5,
-        'nationale': 2,
-        'departementale': 1,
-        'locale': 0.5
+        'autoroute': 3,
+        'nationale': 2.5,
+        'departementale': 1.5,
+        'locale': 1
       }
-      return widths[type] || 0.5
+      return widths[type] || 1
     },
 
     getRoadOpacity(type) {
       const opacities = {
-        'autoroute': 0.8,
-        'nationale': 0.7,
-        'departementale': 0.5,
-        'locale': 0.3
+        'autoroute': 0.9,
+        'nationale': 0.8,
+        'departementale': 0.7,
+        'locale': 0.6
       }
-      return opacities[type] || 0.3
+      return opacities[type] || 0.6
     },
 
     async loadStats() {
