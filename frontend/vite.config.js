@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.10 - 2025-12-10 11:05 - Ajout texte badge compte non vérifié
+// Build version: 1.0.11 - 2025-12-10 11:10 - Badge compte non vérifié sur ligne séparée
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

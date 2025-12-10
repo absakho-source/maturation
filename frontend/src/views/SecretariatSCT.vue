@@ -252,14 +252,15 @@
               <div class="compact-card-top">
                 <span class="project-number-badge-small">{{ projet.numero_projet || 'N/A' }}</span>
                 <span :class="'badge-small status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
-                <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'"
-                      class="badge-small status-warning"
-                      style="margin-left: 4px;"
+              </div>
+              <h4 class="compact-card-title">{{ projet.titre }}</h4>
+              <!-- Badge compte non vérifié sur une ligne séparée pour plus de clarté -->
+              <div v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="warning-badge-row">
+                <span class="badge-small status-warning"
                       title="Le compte du soumissionnaire n'est pas encore vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé.">
                   🔒 Compte non vérifié
                 </span>
               </div>
-              <h4 class="compact-card-title">{{ projet.titre }}</h4>
               <button class="btn-expand-small" @click.stop="toggleProjectExpansion(projet.id)">
                 {{ expandedProjects[projet.id] ? '▲' : '▼ Actions' }}
               </button>
@@ -3885,5 +3886,12 @@ tr.compte-non-verifie:hover {
   border-radius: 4px;
   font-size: 11px;
   white-space: nowrap;
+}
+
+/* Ligne séparée pour le badge d'avertissement compte non vérifié */
+.warning-badge-row {
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
 }
 </style>
