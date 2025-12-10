@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.18 - 2025-12-10 11:52 - Simplification texte évaluateur
+// Build version: 1.0.19 - 2025-12-10 14:30 - Restore routes display
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

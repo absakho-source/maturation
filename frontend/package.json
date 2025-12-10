@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.18",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Simplification texte évaluateur",
+  "version": "1.0.19",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Restore routes display",
   "type": "module",
   "private": true,
   "scripts": {
