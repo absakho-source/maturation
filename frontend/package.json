@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.22",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Instant map display",
+  "version": "1.0.23",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Zero loading time map",
   "type": "module",
   "private": true,
   "scripts": {

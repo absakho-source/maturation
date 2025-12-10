@@ -1,5 +1,5 @@
 <template>
-  <!-- Build: v1.0.21 - 2025-12-10 17:30 - Carte avec chargement non-bloquant -->
+  <!-- Build: v1.0.23 - 2025-12-10 18:00 - Zero loading time -->
   <div class="carte-poles-container">
     <h3 class="titre-carte">{{ title }}</h3>
 
@@ -387,31 +387,24 @@ export default {
     }
   },
   
-  async mounted() {
-    try {
-      this.loading = true
-      this.error = null
+  mounted() {
+    // Afficher la carte IMMÉDIATEMENT (pas de loading)
+    this.loading = false
+    this.error = null
 
-      // Charger UNIQUEMENT le GeoJSON (local, rapide)
-      await this.loadGeojsonData()
+    // Charger TOUT en arrière-plan (GeoJSON, stats, routes)
+    this.loadGeojsonData().catch(err => {
+      console.error('❌ Erreur chargement GeoJSON:', err)
+      this.error = 'Erreur lors du chargement de la carte'
+    })
 
-      // Afficher la carte immédiatement avec les frontières
-      this.loading = false
+    this.loadStats().catch(err => {
+      console.warn('⚠️ Stats non chargées, carte affichée sans statistiques:', err)
+    })
 
-      // Charger les stats et routes en arrière-plan (non bloquant)
-      this.loadStats().catch(err => {
-        console.warn('⚠️ Stats non chargées, carte affichée sans statistiques:', err)
-      })
-
-      this.loadRoadsData().catch(err => {
-        console.warn('⚠️ Routes non chargées, carte affichée sans routes:', err)
-      })
-
-    } catch (err) {
-      this.loading = false
-      this.error = 'Erreur lors du chargement de la carte des pôles territoriaux'
-      console.error('❌ Erreur dans mounted():', err)
-    }
+    this.loadRoadsData().catch(err => {
+      console.warn('⚠️ Routes non chargées, carte affichée sans routes:', err)
+    })
   },
 
   methods: {
