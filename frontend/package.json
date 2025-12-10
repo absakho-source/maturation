@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.16",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Amélioration visibilité routes carte",
+  "version": "1.0.17",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix affichage évaluateur projets équipe",
   "type": "module",
   "private": true,
   "scripts": {

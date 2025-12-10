@@ -123,7 +123,7 @@
               </div>
               <div class="card-body">
                 <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
-                <p><strong>Évaluateur assigné:</strong> {{ p.evaluateur_display_name || p.evaluateur_nom || 'Non assigné' }}</p>
+                <p><strong>Évaluateur assigné:</strong> {{ getEvaluateurDisplay(p) }}</p>
                 <p><strong>Secteur:</strong> {{ p.secteur }}</p>
                 <p v-if="p.poles"><strong>Zones:</strong> {{ p.poles }}</p>
                 <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
@@ -263,6 +263,25 @@ export default {
         'dossier_rejete': 'decision-rejete'
       };
       return map[decision] || '';
+    },
+    getEvaluateurDisplay(project) {
+      // Si evaluateur_display_name existe, l'utiliser
+      if (project.evaluateur_display_name) {
+        return project.evaluateur_display_name;
+      }
+
+      // Si evaluateur_nom existe, l'utiliser
+      if (project.evaluateur_nom) {
+        return project.evaluateur_nom;
+      }
+
+      // Si le projet a un avis mais pas d'évaluateur assigné,
+      // c'est probablement une évaluation directe par le Secrétariat SCT
+      if (project.avis) {
+        return 'Secrétariat SCT (évaluation directe)';
+      }
+
+      return 'Non assigné';
     },
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);

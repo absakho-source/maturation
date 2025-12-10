@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.16 - 2025-12-10 11:45 - Amélioration visibilité routes carte
+// Build version: 1.0.17 - 2025-12-10 11:50 - Fix affichage évaluateur projets équipe
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
