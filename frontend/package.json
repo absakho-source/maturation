@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.12",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix superposition badge lecture seule",
+  "version": "1.0.13",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Amélioration layout badge lecture seule",
   "type": "module",
   "private": true,
   "scripts": {

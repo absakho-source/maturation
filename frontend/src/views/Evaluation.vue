@@ -609,9 +609,9 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   background: #fafafa;
 }
 
-/* Ajouter de l'espace pour le badge lecture seule */
+/* Déplacer le titre vers le bas pour éviter la superposition avec le badge */
 .project-card-other .card-header h3 {
-  padding-right: 150px; /* Espace pour le badge "🔒 Lecture seule" */
+  margin-top: 1.5rem; /* Espace pour le badge au-dessus */
 }
 
 .readonly-badge {
@@ -625,7 +625,7 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   font-size: 0.75rem;
   font-weight: 600;
   backdrop-filter: blur(4px);
-  z-index: 10; /* S'assurer que le badge est au-dessus */
+  z-index: 10;
 }
 
 .btn-view-readonly {

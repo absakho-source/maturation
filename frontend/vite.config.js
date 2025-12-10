@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.12 - 2025-12-10 11:15 - Fix superposition badge lecture seule
+// Build version: 1.0.13 - 2025-12-10 11:20 - Amélioration layout badge lecture seule
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
