@@ -276,9 +276,9 @@ export default {
       }
 
       // Si le projet a un avis mais pas d'évaluateur assigné,
-      // c'est probablement une évaluation directe par le Secrétariat SCT
+      // c'est probablement une évaluation par le Secrétariat SCT
       if (project.avis) {
-        return 'Secrétariat SCT (évaluation directe)';
+        return 'Secrétariat SCT';
       }
 
       return 'Non assigné';

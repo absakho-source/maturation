@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.17 - 2025-12-10 11:50 - Fix affichage évaluateur projets équipe
+// Build version: 1.0.18 - 2025-12-10 11:52 - Simplification texte évaluateur
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
