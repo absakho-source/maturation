@@ -454,6 +454,7 @@ def projects():
                 items = Project.query.all()
 
             # Filter out projects from suspended accounts
+            # Note: Projects from non-verified accounts ARE visible but will be marked with soumissionnaire_statut_compte
             if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'admin']:
                 # These roles should not see projects from suspended accounts in their workflow
                 # Get list of suspended user IDs
@@ -507,6 +508,13 @@ def projects():
                             evaluateur_display_name = evaluateur.display_name or evaluateur.username
                             evaluateur_role = evaluateur.role or ""
 
+                    # Récupérer le statut de compte du soumissionnaire
+                    soumissionnaire_statut_compte = ""
+                    if p.auteur_nom:
+                        soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+                        if soumissionnaire:
+                            soumissionnaire_statut_compte = soumissionnaire.statut_compte or ""
+
                     # Conversion de evaluation_prealable_date
                     evaluation_prealable_date = None
                     if hasattr(p, "evaluation_prealable_date") and p.evaluation_prealable_date:
@@ -541,7 +549,8 @@ def projects():
                             "date_soumission": date_soumission,
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
-                            "type_financement": str(p.type_financement) if p.type_financement else ""
+                            "type_financement": str(p.type_financement) if p.type_financement else "",
+                            "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte)
                         })
                     else:
                         # Correction : conversion systématique des champs pour éviter les erreurs de type
@@ -580,7 +589,8 @@ def projects():
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
-                            "type_financement": str(p.type_financement) if p.type_financement else ""
+                            "type_financement": str(p.type_financement) if p.type_financement else "",
+                            "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte)
                         })
                 except Exception as err:
                     import traceback
@@ -597,14 +607,11 @@ def projects():
         auteur_nom = request.form.get("auteur_nom")
 
         # Vérifier le statut du compte de l'utilisateur
+        # Les comptes non vérifiés PEUVENT soumettre, mais leurs projets seront "grisés" jusqu'à validation
         if auteur_nom:
             user = User.query.filter_by(username=auteur_nom).first()
             if user:
-                if user.statut_compte == 'non_verifie':
-                    return jsonify({
-                        "error": "Votre compte n'a pas encore été vérifié. Veuillez attendre la validation de votre compte avant de soumettre un projet."
-                    }), 403
-                elif user.statut_compte == 'suspendu':
+                if user.statut_compte == 'suspendu':
                     return jsonify({
                         "error": "Votre compte est suspendu. Vous ne pouvez pas soumettre de projet."
                     }), 403
@@ -753,6 +760,13 @@ def get_project(project_id):
             if evaluateur:
                 evaluateur_display_name = evaluateur.display_name or evaluateur.username
 
+        # Récupérer le statut de compte du soumissionnaire
+        soumissionnaire_statut_compte = ""
+        if p.auteur_nom:
+            soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+            if soumissionnaire:
+                soumissionnaire_statut_compte = soumissionnaire.statut_compte or ""
+
         return jsonify({
             "id": p.id,
             "numero_projet": p.numero_projet,
@@ -787,7 +801,8 @@ def get_project(project_id):
             "nouveaute": p.nouveaute,
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
-            "type_financement": p.type_financement
+            "type_financement": p.type_financement,
+            "soumissionnaire_statut_compte": soumissionnaire_statut_compte
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()
