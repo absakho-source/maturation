@@ -246,12 +246,18 @@
           <p>Aucun projet trouvé</p>
         </div>
         <div v-else class="projects-compact-grid">
-          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-card">
+          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-card" :class="{ 'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie' }">
             <!-- En-tête compacte cliquable -->
             <div class="compact-card-header" @click="toggleProjectExpansion(projet.id)">
               <div class="compact-card-top">
                 <span class="project-number-badge-small">{{ projet.numero_projet || 'N/A' }}</span>
                 <span :class="'badge-small status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
+                <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'"
+                      class="badge-small status-warning"
+                      style="margin-left: 4px;"
+                      title="Le compte du soumissionnaire n'est pas encore vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé.">
+                  🔒
+                </span>
               </div>
               <h4 class="compact-card-title">{{ projet.titre }}</h4>
               <button class="btn-expand-small" @click.stop="toggleProjectExpansion(projet.id)">
@@ -278,10 +284,10 @@
                 <div class="current-assignment">
                   Actuellement assigné à : <strong>{{ getEvaluateurLabel(projet.evaluateur_nom) }}</strong>
                 </div>
-                <p class="reassign-note">Vous pouvez réassigner ce projet à un autre évaluateur ou l'évaluer vous-même.</p>
-                
-                <!-- Section d'évaluation directe pour le secrétariat -->
-                <div v-if="projet.evaluateur_nom === 'secretariatsct'" class="direct-evaluation">
+                <p v-if="projet.soumissionnaire_statut_compte !== 'non_verifie'" class="reassign-note">Vous pouvez réassigner ce projet à un autre évaluateur ou l'évaluer vous-même.</p>
+
+                <!-- Section d'évaluation directe pour le secrétariat - masquée pour comptes non vérifiés -->
+                <div v-if="projet.evaluateur_nom === 'secretariatsct' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="direct-evaluation">
                   <h4>✍️ Évaluer directement :</h4>
                   <div class="eval-section compact">
                     <label>Mon évaluation:</label>
@@ -307,13 +313,13 @@
                 <div v-if="!projet.complements_reponse_message" class="complements-message no-message">
                   Aucun message fourni
                 </div>
-                
+
                 <!-- Pièces jointes cliquables -->
                 <div v-if="projet.complements_reponse_pieces" class="complements-files">
                   <p><strong>📎 Nouvelles pièces :</strong></p>
                   <div class="files-list">
-                    <span v-for="(fichier, index) in parseComplementsFiles(projet.complements_reponse_pieces)" 
-                          :key="index" 
+                    <span v-for="(fichier, index) in parseComplementsFiles(projet.complements_reponse_pieces)"
+                          :key="index"
                           class="file-link"
                           @click="ouvrirFichier(projet.id, fichier)">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -330,9 +336,9 @@
                 <div v-if="!projet.complements_reponse_pieces" class="no-files">
                   Aucun fichier fourni
                 </div>
-                
-                <!-- Actions pour traiter les compléments -->
-                <div class="complements-actions">
+
+                <!-- Actions pour traiter les compléments - masquées pour comptes non vérifiés -->
+                <div v-if="projet.soumissionnaire_statut_compte !== 'non_verifie'" class="complements-actions">
                   <button @click="reassignerComplementsPourEvaluation(projet.id)" class="btn-success">
                     ✓ Réassigner pour réévaluation
                   </button>
@@ -345,7 +351,7 @@
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
               <!-- Actions pour projets rejetés - Présentation contextuelle -->
-              <div v-if="projet.statut === 'rejeté'" class="project-actions rejected-actions">
+              <div v-if="projet.statut === 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
                     <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par présidence -->
@@ -434,7 +440,7 @@
               </div>
 
               <!-- Actions pour assigner (projets non rejetés) -->
-              <div v-if="projet.statut !== 'rejeté'" class="assign-section">
+              <div v-if="projet.statut !== 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="assign-section">
                 <label>{{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
@@ -3855,6 +3861,18 @@ tr.compte-non-verifie {
 }
 
 tr.compte-non-verifie:hover {
+  background-color: #fde68a !important;
+  opacity: 0.85;
+}
+
+/* Style pour les cartes compactes avec compte non vérifié */
+.project-compact-card.compte-non-verifie {
+  background-color: #fef3c7 !important;
+  opacity: 0.7;
+  border-color: #fbbf24 !important;
+}
+
+.project-compact-card.compte-non-verifie:hover {
   background-color: #fde68a !important;
   opacity: 0.85;
 }

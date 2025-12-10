@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.7",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix compte non vérifié",
+  "version": "1.0.8",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix onglet Assignation compte non vérifié",
   "type": "module",
   "private": true,
   "scripts": {
