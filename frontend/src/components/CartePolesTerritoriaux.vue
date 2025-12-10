@@ -390,23 +390,24 @@ export default {
     }
   },
   
-  mounted() {
-    // Carte visible IMMÉDIATEMENT - loading=false par défaut dans data()
-    this.error = null
+  async mounted() {
+    try {
+      this.loading = true
+      this.error = null
 
-    // Charger TOUT en arrière-plan (GeoJSON, stats, routes)
-    this.loadGeojsonData().catch(err => {
-      console.error('❌ Erreur chargement GeoJSON:', err)
-      this.error = 'Erreur lors du chargement de la carte'
-    })
+      // Charger toutes les données en parallèle (VERSION FONCTIONNELLE RESTAURÉE)
+      await Promise.all([
+        this.loadGeojsonData(),
+        this.loadRoadsData(),
+        this.loadStats()
+      ])
 
-    this.loadStats().catch(err => {
-      console.warn('⚠️ Stats non chargées, carte affichée sans statistiques:', err)
-    })
-
-    this.loadRoadsData().catch(err => {
-      console.warn('⚠️ Routes non chargées, carte affichée sans routes:', err)
-    })
+      this.loading = false
+    } catch (err) {
+      this.loading = false
+      this.error = 'Erreur lors du chargement de la carte des pôles territoriaux'
+      console.error('❌ Erreur dans mounted():', err)
+    }
   },
 
   methods: {
