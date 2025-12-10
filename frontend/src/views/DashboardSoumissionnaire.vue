@@ -6,8 +6,8 @@
         <div class="banner-icon">⏳</div>
         <div class="banner-content">
           <h3>Compte en attente de vérification</h3>
-          <p>Votre compte n'a pas encore été vérifié par l'administration. Vous ne pouvez pas soumettre de projet tant que votre compte n'a pas été validé.</p>
-          <p class="banner-note">Veuillez patienter ou contacter l'administration si cela prend trop de temps.</p>
+          <p>Votre compte n'a pas encore été vérifié par l'administration. <strong>Vous pouvez soumettre des projets</strong>, mais ils resteront en attente et ne seront pas traités tant que votre compte n'a pas été validé.</p>
+          <p class="banner-note">Vos projets seront automatiquement pris en compte une fois votre compte vérifié. Veuillez patienter ou contacter l'administration si cela prend trop de temps.</p>
         </div>
       </div>
 
@@ -774,8 +774,9 @@ export default {
     },
 
     canSubmitProject() {
-      // L'utilisateur peut soumettre un projet seulement si son compte est vérifié
-      return this.userAccountStatus === 'verifie';
+      // L'utilisateur peut soumettre un projet sauf si son compte est suspendu
+      // Les comptes non_verifie peuvent soumettre, mais leurs projets seront en attente
+      return this.userAccountStatus !== 'suspendu';
     },
 
     isPointFocal() {
@@ -859,9 +860,8 @@ export default {
     },
 
     showBlockedMessage() {
-      if (this.userAccountStatus === 'non_verifie') {
-        alert("Votre compte n'a pas encore été vérifié. Veuillez attendre la validation de votre compte avant de soumettre un projet.");
-      } else if (this.userAccountStatus === 'suspendu') {
+      // Seuls les comptes suspendus sont bloqués pour la soumission
+      if (this.userAccountStatus === 'suspendu') {
         alert("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.");
       }
     },
