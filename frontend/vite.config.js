@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.19 - 2025-12-10 14:30 - Restore routes display
+// Build version: 1.0.20 - 2025-12-10 15:45 - Improved routes with boundary clipping
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

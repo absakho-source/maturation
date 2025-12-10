@@ -45,12 +45,26 @@
       </div>
 
       <!-- SVG de la carte avec vraies coordonnées GeoJSON -->
-      <svg 
+      <svg
         ref="mapSvg"
-        class="carte-svg" 
+        class="carte-svg"
         :viewBox="`0 0 ${mapWidth} ${mapHeight}`"
         @mouseleave="clearTooltip"
       >
+        <!-- Définitions: masques et clips -->
+        <defs>
+          <!-- Masque pour clipper les routes aux frontières du Sénégal -->
+          <clipPath id="senegal-boundaries">
+            <g v-for="(pole, index) in polesWithGeometry" :key="'clip-pole-' + index">
+              <path
+                v-for="(pathData, pIndex) in pole.paths"
+                :key="'clip-path-' + pIndex"
+                :d="pathData"
+              />
+            </g>
+          </clipPath>
+        </defs>
+
         <!-- COUCHE 1: Régions individuelles (fond avec contours pointillés) -->
         <g class="regions-layer">
           <g 
@@ -119,8 +133,8 @@
         </g>
 
         <!-- COUCHE 3: Routes principales (AVANT les contours et labels) -->
-        <g class="roads-layer">
-          <!-- Routes (nationales, départementales, locales) -->
+        <g class="roads-layer" clip-path="url(#senegal-boundaries)">
+          <!-- Routes (nationales, départementales, locales) clippées aux frontières -->
           <g v-for="road in roadSegments" :key="road.id">
             <polyline
               :points="getRoadPolylinePoints(road.coordinates)"
@@ -406,11 +420,30 @@ export default {
 
     async loadRoadsData() {
       try {
-        // Utiliser le fichier sample (596KB) au lieu du full (6.7MB) pour de meilleures performances
-        const response = await fetch('/senegal_roads_sample.json')
-        const roads = await response.json()
-        this.roadSegments = roads
-        console.log(`✅ ${roads.length} routes chargées (version optimisée)`)
+        // Charger le fichier complet des routes
+        const response = await fetch('/senegal_roads_full.json')
+        const allRoads = await response.json()
+
+        // Filtrer pour ne garder que les routes importantes (nationales et départementales)
+        // et réduire la densité des routes locales
+        const filteredRoads = allRoads.filter(road => {
+          // Garder toutes les autoroutes et routes nationales
+          if (road.type === 'autoroute' || road.type === 'nationale') {
+            return true
+          }
+          // Garder les routes départementales
+          if (road.type === 'departementale') {
+            return true
+          }
+          // Garder seulement 1 route locale sur 3 pour réduire la densité
+          if (road.type === 'locale') {
+            return Math.random() < 0.33
+          }
+          return false
+        })
+
+        this.roadSegments = filteredRoads
+        console.log(`✅ ${filteredRoads.length} routes chargées sur ${allRoads.length} (filtrées intelligemment)`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []
