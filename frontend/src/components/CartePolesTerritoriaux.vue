@@ -135,8 +135,11 @@
 
         <!-- COUCHE 3: Routes principales (AVANT les contours et labels) -->
         <g class="roads-layer" clip-path="url(#senegal-boundaries)">
+          <!-- DEBUG: Afficher nombre de routes -->
+          <title>{{ roadSegments.length }} routes chargées</title>
+
           <!-- Routes (nationales, départementales, locales) clippées aux frontières -->
-          <g v-for="road in roadSegments" :key="road.id">
+          <g v-for="(road, index) in roadSegments" :key="road.id || `road-${index}`">
             <polyline
               :points="getRoadPolylinePoints(road.coordinates)"
               :stroke="getRoadColor(road.type)"
@@ -442,10 +445,25 @@ export default {
     // Helper methods pour le rendu des routes
     getRoadPolylinePoints(coordinates) {
       // Convertir les coordonnées [lon, lat] en points SVG "x1,y1 x2,y2 ..."
-      if (!coordinates || coordinates.length === 0) return ''
-      return coordinates.map(([lon, lat]) =>
+      if (!coordinates || coordinates.length === 0) {
+        console.warn('⚠️ Coordonnées vides pour une route')
+        return ''
+      }
+
+      const points = coordinates.map(([lon, lat]) =>
         `${this.lonToX(lon)},${this.latToY(lat)}`
       ).join(' ')
+
+      // Log seulement pour la première route
+      if (!this._firstRoadLogged) {
+        console.log('🛣️ Première route rendue:', {
+          nbPoints: coordinates.length,
+          pointsPreview: points.substring(0, 100) + '...'
+        })
+        this._firstRoadLogged = true
+      }
+
+      return points
     },
 
     getRoadColor(type) {
