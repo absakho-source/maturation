@@ -391,14 +391,20 @@ export default {
       this.loading = true
       this.error = null
 
-      // Charger toutes les données en parallèle pour un chargement plus rapide
+      // Charger les données essentielles en priorité (GeoJSON et stats)
       await Promise.all([
         this.loadGeojsonData(),
-        this.loadRoadsData(),
         this.loadStats()
       ])
 
+      // Afficher la carte immédiatement
       this.loading = false
+
+      // Charger les routes en arrière-plan (non bloquant)
+      this.loadRoadsData().catch(err => {
+        console.warn('⚠️ Routes non chargées, carte affichée sans routes:', err)
+      })
+
     } catch (err) {
       this.loading = false
       this.error = 'Erreur lors du chargement de la carte des pôles territoriaux'
@@ -420,30 +426,11 @@ export default {
 
     async loadRoadsData() {
       try {
-        // Charger le fichier complet des routes
-        const response = await fetch('/senegal_roads_full.json')
-        const allRoads = await response.json()
-
-        // Filtrer pour ne garder que les routes importantes (nationales et départementales)
-        // et réduire la densité des routes locales
-        const filteredRoads = allRoads.filter(road => {
-          // Garder toutes les autoroutes et routes nationales
-          if (road.type === 'autoroute' || road.type === 'nationale') {
-            return true
-          }
-          // Garder les routes départementales
-          if (road.type === 'departementale') {
-            return true
-          }
-          // Garder seulement 1 route locale sur 3 pour réduire la densité
-          if (road.type === 'locale') {
-            return Math.random() < 0.33
-          }
-          return false
-        })
-
-        this.roadSegments = filteredRoads
-        console.log(`✅ ${filteredRoads.length} routes chargées sur ${allRoads.length} (filtrées intelligemment)`)
+        // Utiliser le fichier sample optimisé (596KB au lieu de 6.7MB)
+        const response = await fetch('/senegal_roads_sample.json')
+        const roads = await response.json()
+        this.roadSegments = roads
+        console.log(`✅ ${roads.length} routes chargées (version optimisée)`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []

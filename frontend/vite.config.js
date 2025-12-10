@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.20 - 2025-12-10 15:45 - Improved routes with boundary clipping
+// Build version: 1.0.21 - 2025-12-10 16:00 - Fast map load with background roads
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
