@@ -134,12 +134,9 @@
         </g>
 
         <!-- COUCHE 3: Routes principales (AVANT les contours et labels) -->
-        <g class="roads-layer" clip-path="url(#senegal-boundaries)">
-          <!-- DEBUG: Afficher nombre de routes -->
-          <title>{{ roadSegments.length }} routes chargées</title>
-
-          <!-- Routes (nationales, départementales, locales) clippées aux frontières -->
-          <g v-for="(road, index) in roadSegments" :key="road.id || `road-${index}`">
+        <g class="roads-layer">
+          <!-- Routes (nationales, départementales, locales) -->
+          <g v-for="road in roadSegments" :key="road.id">
             <polyline
               :points="getRoadPolylinePoints(road.coordinates)"
               :stroke="getRoadColor(road.type)"

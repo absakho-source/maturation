@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.26",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Restore working routes v1 week ago",
+  "version": "1.0.27",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Remove clip-path from roads",
   "type": "module",
   "private": true,
   "scripts": {
