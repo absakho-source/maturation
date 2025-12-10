@@ -5064,32 +5064,32 @@ def fix_fiche_visible():
 @app.route("/api/admin/delete-test-projects", methods=["POST"])
 def delete_test_projects():
     """
-    Endpoint pour supprimer manuellement les projets de test
+    Endpoint pour supprimer tous les projets soumis par 'soumissionnaire' sans numéro
     """
     try:
-        print("[ADMIN] Suppression des projets de test...")
+        print("[ADMIN] Suppression des projets de test (soumissionnaire sans numéro)...")
 
-        # IDs des projets de test à supprimer
-        test_project_ids = [1, 2, 4, 9, 13, 14, 15, 16, 18, 19]
+        # Trouver tous les projets soumis par 'soumissionnaire' sans numéro
+        projects = Project.query.filter_by(auteur_nom='soumissionnaire').filter(
+            (Project.numero_projet == None) | (Project.numero_projet == '')
+        ).all()
 
         deleted = []
-        for pid in test_project_ids:
-            project = Project.query.get(pid)
-            if project:
-                deleted.append({
-                    'id': project.id,
-                    'numero': project.numero_projet,
-                    'titre': project.titre
-                })
+        for project in projects:
+            deleted.append({
+                'id': project.id,
+                'numero': project.numero_projet,
+                'titre': project.titre
+            })
 
-                # Supprimer les relations d'abord (fiches, historique, etc.)
-                FicheEvaluation.query.filter_by(project_id=project.id).delete()
-                Historique.query.filter_by(project_id=project.id).delete()
-                DocumentProjet.query.filter_by(project_id=project.id).delete()
-                MessageProjet.query.filter_by(project_id=project.id).delete()
+            # Supprimer les relations d'abord (fiches, historique, etc.)
+            FicheEvaluation.query.filter_by(project_id=project.id).delete()
+            Historique.query.filter_by(project_id=project.id).delete()
+            DocumentProjet.query.filter_by(project_id=project.id).delete()
+            MessageProjet.query.filter_by(project_id=project.id).delete()
 
-                # Puis supprimer le projet
-                db.session.delete(project)
+            # Puis supprimer le projet
+            db.session.delete(project)
 
         db.session.commit()
 
