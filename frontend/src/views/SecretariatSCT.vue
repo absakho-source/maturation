@@ -268,13 +268,6 @@
 
             <!-- Carte détaillée (expanded) -->
             <div v-if="expandedProjects[projet.id]" class="project-card-expanded">
-            <div class="card-header">
-              <div class="card-title-section">
-                <div class="project-number">{{ projet.numero_projet || 'N/A' }}</div>
-                <h3>{{ projet.titre }}</h3>
-              </div>
-              <span :class="'badge status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
-            </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
               <p v-if="projet.secteur"><strong>Secteur:</strong> {{ projet.secteur }}</p>

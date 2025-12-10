@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.14",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Correction texte et suppression icônes caractéristiques",
+  "version": "1.0.15",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix double en-tête onglet Assignation",
   "type": "module",
   "private": true,
   "scripts": {

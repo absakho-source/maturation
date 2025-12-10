@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.14 - 2025-12-10 11:35 - Correction texte et suppression icônes caractéristiques
+// Build version: 1.0.15 - 2025-12-10 11:40 - Fix double en-tête onglet Assignation
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
