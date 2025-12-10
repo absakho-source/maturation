@@ -5213,6 +5213,9 @@ def creer_projets_exemple():
         projets_crees = 0
 
         for projet_data in PROJETS_DATA:
+            # Générer un numéro de projet unique
+            numero_projet = generer_numero_projet()
+
             projet = Project(
                 titre=projet_data["titre"],
                 description=projet_data["description"],
@@ -5222,12 +5225,14 @@ def creer_projets_exemple():
                 structure_soumissionnaire=projet_data["structure_soumissionnaire"],
                 auteur_nom="soumissionnaire",
                 statut="soumis",
+                numero_projet=numero_projet,
                 date_soumission=datetime.utcnow(),
                 niveau_priorite="standard",
                 nouveaute="projet_initial"
             )
 
             db.session.add(projet)
+            db.session.flush()  # Flush pour que le numéro soit pris en compte pour le prochain
             projets_crees += 1
 
         db.session.commit()
