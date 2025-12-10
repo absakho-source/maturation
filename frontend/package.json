@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.27",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Remove clip-path from roads",
+  "version": "1.0.28",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use sample roads file",
   "type": "module",
   "private": true,
   "scripts": {

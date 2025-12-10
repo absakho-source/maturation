@@ -1,19 +1,8 @@
 <template>
-  <!-- Build: v1.0.23 - 2025-12-10 18:00 - Zero loading time -->
   <div class="carte-poles-container">
     <h3 class="titre-carte">{{ title }}</h3>
-
-    <!-- Message de chargement -->
-    <div v-if="loading" class="loading-message">
-      Chargement de la carte des pôles territoriaux...
-    </div>
-
-    <!-- Message d'erreur -->
-    <div v-else-if="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <div v-else class="carte-wrapper">
+    
+    <div class="carte-wrapper">
       <!-- Légende des investissements avec seuils dynamiques -->
       <div class="legende-investissement">
         <h4>Investissement Total</h4>
@@ -46,26 +35,12 @@
       </div>
 
       <!-- SVG de la carte avec vraies coordonnées GeoJSON -->
-      <svg
+      <svg 
         ref="mapSvg"
-        class="carte-svg"
+        class="carte-svg" 
         :viewBox="`0 0 ${mapWidth} ${mapHeight}`"
         @mouseleave="clearTooltip"
       >
-        <!-- Définitions: masques et clips -->
-        <defs>
-          <!-- Masque pour clipper les routes aux frontières du Sénégal -->
-          <clipPath id="senegal-boundaries">
-            <g v-for="(pole, index) in polesWithGeometry" :key="'clip-pole-' + index">
-              <path
-                v-for="(pathData, pIndex) in pole.paths"
-                :key="'clip-path-' + pIndex"
-                :d="pathData"
-              />
-            </g>
-          </clipPath>
-        </defs>
-
         <!-- COUCHE 1: Régions individuelles (fond avec contours pointillés) -->
         <g class="regions-layer">
           <g 
@@ -262,7 +237,7 @@
               <div class="projet-titre">{{ projet.titre }}</div>
               <div class="projet-meta-row">
                 <span class="projet-cout">{{ formatAmount(projet.cout_estimatif || 0) }}</span>
-                <span :class="['projet-statut', projet.avis || projet.statut]">{{ formatStatut(projet.avis || projet.statut) }}</span>
+                <span :class="['projet-statut', projet.statut]">{{ formatStatut(projet.statut) }}</span>
               </div>
             </div>
           </div>
@@ -280,8 +255,8 @@ export default {
   props: {
     statusFilter: {
       type: String,
-      default: 'all', // 'all' ou 'favorable_avis'
-      validator: (value) => ['all', 'favorable_avis'].includes(value)
+      default: 'all', // 'all' ou 'approved'
+      validator: (value) => ['all', 'approved'].includes(value)
     },
     title: {
       type: String,
@@ -295,7 +270,6 @@ export default {
       selectedPole: null,
       polesData: null,
       statsParPole: {},
-      error: null,
       tooltip: {
         visible: false,
         x: 0,
@@ -406,11 +380,10 @@ export default {
 
     async loadRoadsData() {
       try {
-        const response = await fetch('/senegal_roads_full.json')
+        const response = await fetch('/senegal_roads_sample.json')
         const roads = await response.json()
         this.roadSegments = roads
-        console.log(`✅ ${roads.length} routes chargées et assignées à roadSegments`)
-        console.log('📊 Exemple route:', roads[0])
+        console.log(`✅ ${roads.length} routes chargées`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []
@@ -420,25 +393,10 @@ export default {
     // Helper methods pour le rendu des routes
     getRoadPolylinePoints(coordinates) {
       // Convertir les coordonnées [lon, lat] en points SVG "x1,y1 x2,y2 ..."
-      if (!coordinates || coordinates.length === 0) {
-        console.warn('⚠️ Coordonnées vides pour une route')
-        return ''
-      }
-
-      const points = coordinates.map(([lon, lat]) =>
+      if (!coordinates || coordinates.length === 0) return ''
+      return coordinates.map(([lon, lat]) =>
         `${this.lonToX(lon)},${this.latToY(lat)}`
       ).join(' ')
-
-      // Log seulement pour la première route
-      if (!this._firstRoadLogged) {
-        console.log('🛣️ Première route rendue:', {
-          nbPoints: coordinates.length,
-          pointsPreview: points.substring(0, 100) + '...'
-        })
-        this._firstRoadLogged = true
-      }
-
-      return points
     },
 
     getRoadColor(type) {
@@ -453,30 +411,30 @@ export default {
 
     getRoadWidth(type) {
       const widths = {
-        'autoroute': 3,
-        'nationale': 2.5,
-        'departementale': 1.5,
-        'locale': 1
+        'autoroute': 2.5,
+        'nationale': 2,
+        'departementale': 1,
+        'locale': 0.5
       }
-      return widths[type] || 1
+      return widths[type] || 0.5
     },
 
     getRoadOpacity(type) {
       const opacities = {
-        'autoroute': 0.9,
-        'nationale': 0.8,
-        'departementale': 0.7,
-        'locale': 0.6
+        'autoroute': 0.8,
+        'nationale': 0.7,
+        'departementale': 0.5,
+        'locale': 0.3
       }
-      return opacities[type] || 0.6
+      return opacities[type] || 0.3
     },
 
     async loadStats() {
       try {
         // Construire l'URL avec le filtre de statut si nécessaire
         let url = '/api/stats/poles'
-        if (this.statusFilter === 'favorable_avis') {
-          url += '?filter=favorable_avis'
+        if (this.statusFilter === 'approved') {
+          url += '?filter=approved'
         }
 
         console.log(`\n${'='.repeat(80)}`)
@@ -762,9 +720,8 @@ export default {
     },
 
     shouldHideRegionLabel(regionName) {
-      // Masquer les étiquettes des régions pour éviter superposition avec pôles
-      // - Saint-Louis et Matam : ont des pôles "Nord" et "Nord-Est"
-      // - Dakar et Thiès : pôles mono-région avec même nom
+      // Masquer les étiquettes des régions pour certaines régions 
+      // où on préfère afficher l'étiquette du pôle
       const regionsToHide = ['Saint-Louis', 'Matam', 'Dakar', 'Thiès']
       return regionsToHide.includes(regionName)
     },
@@ -781,9 +738,7 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'FATICK': [-0.30, 0],      // Décaler très loin à gauche
-        'KOLDA': [-0.30, 0],       // Décaler très loin à gauche
-        'ZIGUINCHOR': [-0.03, 0],  // Décaler légèrement vers la gauche
+        'FATICK': [-0.05, 0], // Décaler légèrement vers la gauche
         // Ajouter d'autres ajustements si nécessaire
       }
 
@@ -797,10 +752,8 @@ export default {
     getPoleAdjustedPosition(poleName, originalCenter) {
       // Ajustements spécifiques pour les étiquettes des pôles afin d'éviter les superpositions
       const poleAdjustments = {
-        'Nord': [0.08, -0.15],       // Saint-Louis : décaler encore plus bas
-        'Nord-Est': [-0.06, -0.15],  // Matam : décaler encore plus bas
-        'Dakar': [0, -0.10],          // Dakar : décaler un peu vers le bas
-        'Thiès': [0, 0.05]            // Thiès : décaler un peu vers le haut
+        'Nord': [0.08, 0.03], // Décaler Nord (Saint-Louis) légèrement vers la droite et le bas
+        'Nord-Est': [-0.06, 0.04] // Décaler Nord-Est (Matam) légèrement vers la gauche et le bas
       }
 
       const adjustment = poleAdjustments[poleName] || [0, 0]
@@ -892,19 +845,19 @@ export default {
 }
 
 .region-label-bg {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   fill: white;
   stroke: white;
-  stroke-width: 4;
+  stroke-width: 3;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0.9;
 }
 
 .region-label {
-  font-size: 13px;
-  font-weight: 700;
-  fill: #1a1a1a;
+  font-size: 12px;
+  font-weight: 600;
+  fill: #2c3e50;
   pointer-events: none;
   opacity: 1;
 }
@@ -1130,27 +1083,5 @@ export default {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* Messages de chargement et d'erreur */
-.loading-message,
-.error-message {
-  padding: 3rem 2rem;
-  text-align: center;
-  border-radius: 12px;
-  margin: 2rem 0;
-  font-size: 1.1rem;
-}
-
-.loading-message {
-  background: #f0f9ff;
-  color: #0369a1;
-  border: 2px solid #bae6fd;
-}
-
-.error-message {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 2px solid #fecaca;
 }
 </style>
