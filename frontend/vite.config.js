@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.8 - 2025-12-10 10:45 - Fix onglet Assignation compte non vérifié
+// Build version: 1.0.9 - 2025-12-10 11:00 - Optimisation chargement cartes
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

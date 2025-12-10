@@ -376,9 +376,14 @@ export default {
     try {
       this.loading = true
       this.error = null
-      await this.loadGeojsonData()
-      await this.loadRoadsData()
-      await this.loadStats()
+
+      // Charger toutes les données en parallèle pour un chargement plus rapide
+      await Promise.all([
+        this.loadGeojsonData(),
+        this.loadRoadsData(),
+        this.loadStats()
+      ])
+
       this.loading = false
     } catch (err) {
       this.loading = false
@@ -401,10 +406,11 @@ export default {
 
     async loadRoadsData() {
       try {
-        const response = await fetch('/senegal_roads_full.json')
+        // Utiliser le fichier sample (596KB) au lieu du full (6.7MB) pour de meilleures performances
+        const response = await fetch('/senegal_roads_sample.json')
         const roads = await response.json()
         this.roadSegments = roads
-        console.log(`✅ ${roads.length} routes chargées`)
+        console.log(`✅ ${roads.length} routes chargées (version optimisée)`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []
