@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.13",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Amélioration layout badge lecture seule",
+  "version": "1.0.14",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Correction texte et suppression icônes caractéristiques",
   "type": "module",
   "private": true,
   "scripts": {

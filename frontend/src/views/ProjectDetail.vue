@@ -93,8 +93,8 @@
             <div class="info-row" v-if="project.nouveaute">
               <span class="label">Nouveauté:</span>
               <span class="value">
-                <span v-if="project.nouveaute === 'projet_initial'" class="badge badge-initial">📌 Projet initial</span>
-                <span v-else-if="project.nouveaute === 'phase_2'" class="badge badge-phase2">🔄 Phase II</span>
+                <span v-if="project.nouveaute === 'projet_initial'" class="badge badge-initial">Projet initial</span>
+                <span v-else-if="project.nouveaute === 'phase_2'" class="badge badge-phase2">Phase II</span>
               </span>
             </div>
             <div class="info-row" v-if="project.nouveaute === 'phase_2' && project.projet_initial_ref">
@@ -104,8 +104,8 @@
             <div class="info-row" v-if="project.niveau_priorite">
               <span class="label">Niveau de priorité:</span>
               <span class="value">
-                <span v-if="project.niveau_priorite === 'prioritaire_ant'" class="badge badge-prioritaire">⭐ Prioritaire ANT Sénégal2050</span>
-                <span v-else class="badge badge-standard">📋 Projet standard</span>
+                <span v-if="project.niveau_priorite === 'prioritaire_ant'" class="badge badge-prioritaire">PROJET PRIORITAIRE Agenda National de Transformation</span>
+                <span v-else class="badge badge-standard">Projet standard</span>
               </span>
             </div>
           </div>
