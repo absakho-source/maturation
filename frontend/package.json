@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.11",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Badge compte non vérifié sur ligne séparée",
+  "version": "1.0.12",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix superposition badge lecture seule",
   "type": "module",
   "private": true,
   "scripts": {
