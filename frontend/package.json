@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.24",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Zero loading time map",
+  "version": "1.0.26",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Restore working routes v1 week ago",
   "type": "module",
   "private": true,
   "scripts": {

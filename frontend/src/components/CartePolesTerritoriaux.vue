@@ -298,7 +298,6 @@ export default {
       selectedPole: null,
       polesData: null,
       statsParPole: {},
-      loading: false,  // CRITICAL: Never show loading message
       error: null,
       tooltip: {
         visible: false,
@@ -391,23 +390,9 @@ export default {
   },
   
   async mounted() {
-    try {
-      this.loading = true
-      this.error = null
-
-      // Charger toutes les données en parallèle (VERSION FONCTIONNELLE RESTAURÉE)
-      await Promise.all([
-        this.loadGeojsonData(),
-        this.loadRoadsData(),
-        this.loadStats()
-      ])
-
-      this.loading = false
-    } catch (err) {
-      this.loading = false
-      this.error = 'Erreur lors du chargement de la carte des pôles territoriaux'
-      console.error('❌ Erreur dans mounted():', err)
-    }
+    await this.loadGeojsonData()
+    await this.loadRoadsData()
+    await this.loadStats()
   },
 
   methods: {
@@ -423,16 +408,8 @@ export default {
     },
 
     async loadRoadsData() {
-      console.log('🔄 Début chargement routes...')
       try {
-        // Utiliser le fichier sample optimisé (596KB au lieu de 6.7MB)
-        const response = await fetch('/senegal_roads_sample.json')
-        console.log('📡 Réponse fetch routes:', response.status, response.ok)
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
+        const response = await fetch('/senegal_roads_full.json')
         const roads = await response.json()
         this.roadSegments = roads
         console.log(`✅ ${roads.length} routes chargées et assignées à roadSegments`)
