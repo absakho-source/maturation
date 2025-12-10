@@ -168,9 +168,17 @@
                 <tr v-if="projetsFiltres.length === 0">
                   <td colspan="6" class="empty-state">Aucun projet trouvé</td>
                 </tr>
-                <tr v-for="projet in projetsFiltres" :key="projet.id">
+                <tr v-for="projet in projetsFiltres" :key="projet.id" :class="{ 'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie' }">
                   <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
-                  <td class="project-title">{{ projet.titre }}</td>
+                  <td class="project-title">
+                    {{ projet.titre }}
+                    <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'"
+                          class="badge status-warning"
+                          style="margin-left: 8px; font-size: 11px;"
+                          title="Le compte du soumissionnaire n'est pas encore vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé.">
+                      🔒 Compte non vérifié
+                    </span>
+                  </td>
                   <td>{{ projet.structure_soumissionnaire || projet.organisme_tutelle || projet.auteur_nom || 'N/A' }}</td>
                   <td>{{ projet.secteur || 'N/A' }}</td>
                   <td>
@@ -185,7 +193,7 @@
 
                       <!-- Assigner : projets soumis ou compléments fournis -->
                       <button
-                        v-if="['soumis', 'compléments fournis'].includes(projet.statut)"
+                        v-if="['soumis', 'compléments fournis'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-primary"
                         title="Assigner à un évaluateur"
@@ -195,7 +203,7 @@
 
                       <!-- Réassigner : projets assignés ou en évaluation -->
                       <button
-                        v-if="['assigné', 'en évaluation'].includes(projet.statut)"
+                        v-if="['assigné', 'en évaluation'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-secondary"
                         title="Réassigner à un autre évaluateur"
@@ -205,7 +213,7 @@
 
                       <!-- Valider : projets évalués ou rejet proposé -->
                       <button
-                        v-if="projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')"
+                        v-if="(projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'validation'"
                         class="btn-sm btn-success"
                         title="Valider l'avis de l'évaluateur"
@@ -215,7 +223,7 @@
 
                       <!-- Réassigner : projets rejetés -->
                       <button
-                        v-if="projet.statut === 'rejeté'"
+                        v-if="projet.statut === 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-warning"
                         title="Réassigner pour nouvelle évaluation"
@@ -3838,5 +3846,26 @@ export default {
   border-radius: 4px;
   color: #075985;
   font-size: 0.9rem;
+}
+
+/* Style pour les projets dont le compte soumissionnaire n'est pas vérifié */
+tr.compte-non-verifie {
+  background-color: #fef3c7 !important;
+  opacity: 0.7;
+}
+
+tr.compte-non-verifie:hover {
+  background-color: #fde68a !important;
+  opacity: 0.85;
+}
+
+.status-warning {
+  background: #fbbf24 !important;
+  color: #78350f !important;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 </style>

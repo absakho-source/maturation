@@ -14,7 +14,16 @@
 
       <div class="detail-content">
         <h1>{{ project.titre }}</h1>
-        
+
+        <!-- Avertissement si le compte soumissionnaire n'est pas vérifié -->
+        <div v-if="project.soumissionnaire_statut_compte === 'non_verifie'" class="warning-banner">
+          <div class="warning-icon">🔒</div>
+          <div class="warning-content">
+            <h3>Compte non vérifié</h3>
+            <p>Le compte du soumissionnaire de ce projet n'a pas encore été vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé par un administrateur.</p>
+          </div>
+        </div>
+
         <div class="info-grid">
           <div class="info-card">
             <h3>Informations générales</h3>
@@ -1835,5 +1844,41 @@ export default {
     min-width: auto;
     margin-bottom: var(--dgppe-spacing-1);
   }
+}
+
+/* Bannière d'avertissement pour compte non vérifié */
+.warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.warning-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-content h3 {
+  margin: 0 0 8px 0;
+  color: #78350f;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.warning-content p {
+  margin: 0;
+  color: #92400e;
+  font-size: 14px;
+  line-height: 1.6;
 }
 </style>
