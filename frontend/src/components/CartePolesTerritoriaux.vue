@@ -368,9 +368,11 @@ export default {
   },
   
   async mounted() {
+    // Charger d'abord les données essentielles (pôles et stats)
     await this.loadGeojsonData()
-    await this.loadRoadsData()
     await this.loadStats()
+    // Charger les routes en différé pour ne pas bloquer l'affichage
+    setTimeout(() => this.loadRoadsData(), 100)
   },
 
   methods: {
@@ -723,15 +725,15 @@ export default {
 
     shouldShowPoleLabel(pole) {
       // Afficher les étiquettes des pôles pour :
-      // - Les pôles multi-régions (comme avant)
-      // - Saint-Louis (Nord) et Matam (Nord-Est) car leurs noms diffèrent des régions
-      const specialPoles = ['Nord', 'Nord-Est']
-      return (pole.regions && pole.regions.length > 1) || specialPoles.includes(pole.name)
+      // - Les pôles mono-région: Dakar, Thiès, Nord (Saint-Louis), Nord-Est (Matam)
+      // - Les pôles multi-régions
+      const monoRegionPoles = ['Dakar', 'Thiès', 'Nord', 'Nord-Est']
+      return (pole.regions && pole.regions.length > 1) || monoRegionPoles.includes(pole.name)
     },
 
     shouldHideRegionLabel(regionName) {
-      // Masquer les étiquettes des régions pour certaines régions 
-      // où on préfère afficher l'étiquette du pôle
+      // Masquer les étiquettes des régions pour les pôles mono-région
+      // car on affiche le nom du pôle à la place
       const regionsToHide = ['Saint-Louis', 'Matam', 'Dakar', 'Thiès']
       return regionsToHide.includes(regionName)
     },
@@ -855,19 +857,19 @@ export default {
 }
 
 .region-label-bg {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   fill: white;
   stroke: white;
-  stroke-width: 3;
+  stroke-width: 4;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .region-label {
-  font-size: 12px;
-  font-weight: 600;
-  fill: #2c3e50;
+  font-size: 14px;
+  font-weight: 700;
+  fill: #1a1a1a;
   pointer-events: none;
   opacity: 1;
 }

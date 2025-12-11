@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.31",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Clip roads to map bounds",
+  "version": "1.0.32",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Improve labels visibility and loading performance",
   "type": "module",
   "private": true,
   "scripts": {
