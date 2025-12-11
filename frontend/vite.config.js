@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.37 - 2025-12-11 - Move Fatick label right & Thiès pole left
+// Build version: 1.0.38 - 2025-12-11 - Fatick label right 0.10 (matches Thiès -0.10)
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',

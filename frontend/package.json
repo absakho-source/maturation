@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.37",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Move Fatick label right and Thiès pole left",
+  "version": "1.0.38",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Adjust Fatick offset to match Thiès",
   "type": "module",
   "private": true,
   "scripts": {
