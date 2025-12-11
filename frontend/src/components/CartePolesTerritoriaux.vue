@@ -41,10 +41,17 @@
         :viewBox="`0 0 ${mapWidth} ${mapHeight}`"
         @mouseleave="clearTooltip"
       >
-        <!-- Définition du clip-path pour limiter les routes aux bounds du Sénégal -->
+        <!-- Définition du clip-path pour limiter les routes aux frontières du Sénégal -->
         <defs>
           <clipPath id="senegal-bounds">
-            <rect :width="mapWidth" :height="mapHeight" />
+            <!-- Utiliser les contours réels de toutes les régions pour un clip précis -->
+            <template v-for="(region, index) in regionsWithGeometry" :key="'clip-region-' + index">
+              <path
+                v-for="(pathData, pIndex) in region.paths"
+                :key="'clip-' + index + '-' + pIndex"
+                :d="pathData"
+              />
+            </template>
           </clipPath>
         </defs>
 
@@ -750,8 +757,14 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'FATICK': [-0.05, 0], // Décaler légèrement vers la gauche
-        // Ajouter d'autres ajustements si nécessaire
+        'Fatick': [-0.15, 0], // Décaler 3x plus vers la gauche
+        'FATICK': [-0.15, 0], // Décaler 3x plus vers la gauche
+        'Ziguinchor': [-0.05, 0], // Décaler légèrement vers la gauche
+        'ZIGUINCHOR': [-0.05, 0], // Décaler légèrement vers la gauche
+        'Saint-Louis': [0, -0.15], // Décaler vers le bas pour éviter superposition avec pôle Nord
+        'SAINT-LOUIS': [0, -0.15], // Décaler vers le bas
+        'Matam': [0, -0.15], // Décaler vers le bas pour éviter superposition avec pôle Nord-Est
+        'MATAM': [0, -0.15] // Décaler vers le bas
       }
 
       const adjustment = adjustments[regionName] || [0, 0]

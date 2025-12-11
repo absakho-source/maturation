@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.32",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Improve labels visibility and loading performance",
+  "version": "1.0.33",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Adjust label positions and improve clip-path",
   "type": "module",
   "private": true,
   "scripts": {
