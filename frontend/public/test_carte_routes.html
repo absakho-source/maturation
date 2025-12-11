@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Carte Routes Sénégal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c5282;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .stat-item {
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+            border-left: 3px solid #4299e1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-top: 5px;
+        }
+        .map-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        svg {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            display: block;
+            margin: 0 auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #4a5568;
+            font-size: 16px;
+        }
+        .error {
+            background: #fed7d7;
+            color: #9b2c2c;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+        }
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-line {
+            width: 40px;
+            height: 3px;
+        }
+        .legend-text {
+            font-size: 14px;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Carte des Routes - Sénégal</h1>
+
+        <div id="error-container"></div>
+
+        <div class="stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Routes chargées</div>
+                    <div class="stat-value" id="total-routes">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Routes nationales</div>
+                    <div class="stat-value" id="routes-nationales">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Routes départementales</div>
+                    <div class="stat-value" id="routes-departementales">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Routes locales</div>
+                    <div class="stat-value" id="routes-locales">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Points de coordonnées</div>
+                    <div class="stat-value" id="total-points">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="loading" class="loading">Chargement des routes...</div>
+            <svg id="map" width="1200" height="800" viewBox="0 0 1200 800" style="display: none;"></svg>
+
+            <div class="legend">
+                <div class="legend-title">Légende</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #2d3748; height: 2.5px; opacity: 1;"></div>
+                        <span class="legend-text">Autoroutes (largeur 2.5px, opacité 100%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #2d3748; height: 2px; opacity: 0.9;"></div>
+                        <span class="legend-text">Routes nationales (largeur 2px, opacité 90%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #4a5568; height: 1.5px; opacity: 0.8;"></div>
+                        <span class="legend-text">Routes départementales (largeur 1.5px, opacité 80%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #718096; height: 1px; opacity: 0.6;"></div>
+                        <span class="legend-text">Routes locales (largeur 1px, opacité 60%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Bounds du Sénégal
+        const BOUNDS = {
+            minLon: -17.5,
+            maxLon: -11.3,
+            minLat: 12.3,
+            maxLat: 16.7
+        };
+
+        const MAP_WIDTH = 1200;
+        const MAP_HEIGHT = 800;
+
+        function lonToX(lon) {
+            return ((lon - BOUNDS.minLon) / (BOUNDS.maxLon - BOUNDS.minLon)) * MAP_WIDTH;
+        }
+
+        function latToY(lat) {
+            return MAP_HEIGHT - ((lat - BOUNDS.minLat) / (BOUNDS.maxLat - BOUNDS.minLat)) * MAP_HEIGHT;
+        }
+
+        function getRoadColor(type) {
+            const colors = {
+                'autoroute': '#2d3748',
+                'nationale': '#2d3748',
+                'departementale': '#4a5568',
+                'locale': '#718096'
+            };
+            return colors[type] || '#718096';
+        }
+
+        function getRoadWidth(type) {
+            const widths = {
+                'autoroute': 2.5,
+                'nationale': 2,
+                'departementale': 1.5,
+                'locale': 1
+            };
+            return widths[type] || 1;
+        }
+
+        function getRoadOpacity(type) {
+            const opacities = {
+                'autoroute': 1,
+                'nationale': 0.9,
+                'departementale': 0.8,
+                'locale': 0.6
+            };
+            return opacities[type] || 0.6;
+        }
+
+        async function loadAndRenderRoads() {
+            const loadingDiv = document.getElementById('loading');
+            const svg = document.getElementById('map');
+            const errorContainer = document.getElementById('error-container');
+
+            try {
+                loadingDiv.textContent = 'Chargement du fichier JSON...';
+
+                const response = await fetch('/senegal_roads_sample.json');
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+
+                const roads = await response.json();
+
+                // Statistiques
+                let totalPoints = 0;
+                const typeCount = {
+                    autoroute: 0,
+                    nationale: 0,
+                    departementale: 0,
+                    locale: 0
+                };
+
+                roads.forEach(road => {
+                    if (road.coordinates) {
+                        totalPoints += road.coordinates.length;
+                    }
+                    if (road.type && typeCount.hasOwnProperty(road.type)) {
+                        typeCount[road.type]++;
+                    }
+                });
+
+                // Mise à jour des stats
+                document.getElementById('total-routes').textContent = roads.length;
+                document.getElementById('routes-nationales').textContent = typeCount.nationale;
+                document.getElementById('routes-departementales').textContent = typeCount.departementale;
+                document.getElementById('routes-locales').textContent = typeCount.locale;
+                document.getElementById('total-points').textContent = totalPoints.toLocaleString();
+
+                loadingDiv.textContent = `Rendu de ${roads.length} routes...`;
+
+                // Rendu des routes
+                let rendered = 0;
+                roads.forEach(road => {
+                    if (!road.coordinates || road.coordinates.length === 0) return;
+
+                    const points = road.coordinates
+                        .map(([lon, lat]) => `${lonToX(lon)},${latToY(lat)}`)
+                        .join(' ');
+
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    polyline.setAttribute('points', points);
+                    polyline.setAttribute('stroke', getRoadColor(road.type));
+                    polyline.setAttribute('stroke-width', getRoadWidth(road.type));
+                    polyline.setAttribute('stroke-opacity', getRoadOpacity(road.type));
+                    polyline.setAttribute('fill', 'none');
+                    polyline.setAttribute('stroke-linecap', 'round');
+                    polyline.setAttribute('stroke-linejoin', 'round');
+
+                    svg.appendChild(polyline);
+                    rendered++;
+                });
+
+                // Afficher la carte
+                loadingDiv.style.display = 'none';
+                svg.style.display = 'block';
+
+                console.log(`✅ ${rendered} routes rendues sur ${roads.length}`);
+                console.log(`📊 Points totaux: ${totalPoints}`);
+                console.log(`📈 Détail par type:`, typeCount);
+
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                loadingDiv.style.display = 'none';
+                errorContainer.innerHTML = `
+                    <div class="error">
+                        <strong>Erreur de chargement:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Lancer le chargement au démarrage
+        loadAndRenderRoads();
+    </script>
+</body>
+</html>
