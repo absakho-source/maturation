@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script de build avec nettoyage du cache Vite
 # Force un rebuild complet pour Render
-# Build version: 1.0.26 - 2025-12-10 19:30 - Restore working routes from 1 week ago
+# Build version: 1.0.28 - 2025-12-10 20:15 - Fix build with sample roads
 
 echo "🧹 Nettoyage du cache Vite et du dossier dist..."
 rm -rf dist

@@ -2,13 +2,15 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// Build version: 1.0.23 - 2025-12-10 18:00 - ZERO loading time (everything loads in background)
+// Build version: 1.0.28 - 2025-12-10 20:15 - Fix build with sample roads
 export default defineConfig({
   plugins: [vue()],
   publicDir: 'public',
   build: {
     // Force complete rebuild from source
-    emptyOutDir: true
+    emptyOutDir: true,
+    // Increase chunk size warning limit for large JSON files
+    chunkSizeWarningLimit: 10000
   },
   resolve: {
     alias: {
