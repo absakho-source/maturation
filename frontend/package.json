@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.28",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use sample roads file",
+  "version": "1.0.29",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix routes visibility with higher opacity",
   "type": "module",
   "private": true,
   "scripts": {

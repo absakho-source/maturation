@@ -382,8 +382,13 @@ export default {
       try {
         const response = await fetch('/senegal_roads_sample.json')
         const roads = await response.json()
-        this.roadSegments = roads
+        // Force Vue reactivity by creating a new array reference
+        this.roadSegments = [...roads]
         console.log(`✅ ${roads.length} routes chargées`)
+        console.log(`📊 roadSegments.length = ${this.roadSegments.length}`)
+        // Force re-render
+        await this.$nextTick()
+        console.log(`🔄 nextTick terminé, DOM devrait être à jour`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []
@@ -401,32 +406,32 @@ export default {
 
     getRoadColor(type) {
       const colors = {
-        'autoroute': '#4a5568',      // Gris foncé
-        'nationale': '#4a5568',       // Gris foncé
-        'departementale': '#718096',  // Gris moyen
-        'locale': '#a0aec0'           // Gris clair
+        'autoroute': '#2d3748',      // Gris très foncé - plus visible
+        'nationale': '#2d3748',       // Gris très foncé - plus visible
+        'departementale': '#4a5568',  // Gris foncé
+        'locale': '#718096'           // Gris moyen
       }
-      return colors[type] || '#a0aec0'
+      return colors[type] || '#718096'
     },
 
     getRoadWidth(type) {
       const widths = {
         'autoroute': 2.5,
         'nationale': 2,
-        'departementale': 1,
-        'locale': 0.5
+        'departementale': 1.5,
+        'locale': 1
       }
-      return widths[type] || 0.5
+      return widths[type] || 1
     },
 
     getRoadOpacity(type) {
       const opacities = {
-        'autoroute': 0.8,
-        'nationale': 0.7,
-        'departementale': 0.5,
-        'locale': 0.3
+        'autoroute': 1,
+        'nationale': 0.9,
+        'departementale': 0.8,
+        'locale': 0.6
       }
-      return opacities[type] || 0.3
+      return opacities[type] || 0.6
     },
 
     async loadStats() {
