@@ -757,8 +757,8 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'Fatick': [-0.30, -0.30], // Décaler 3x plus vers la gauche
-        'FATICK': [-0.30, -0.30], // Décaler 3x plus vers la gauche
+        'Fatick': [0.30, -0.30], // Décaler 3x plus vers la gauche
+        'FATICK': [0.30, -0.30], // Décaler 3x plus vers la gauche
         'Ziguinchor': [-0.05, 0], // Décaler légèrement vers la gauche
         'ZIGUINCHOR': [-0.05, 0], // Décaler légèrement vers la gauche
         'Saint-Louis': [0, -0.15], // Décaler vers le bas pour éviter superposition avec pôle Nord
@@ -778,7 +778,8 @@ export default {
       // Ajustements spécifiques pour les étiquettes des pôles afin d'éviter les superpositions
       const poleAdjustments = {
         'Nord': [0.08, 0.03], // Décaler Nord (Saint-Louis) légèrement vers la droite et le bas
-        'Nord-Est': [-0.06, 0.04] // Décaler Nord-Est (Matam) légèrement vers la gauche et le bas
+        'Nord-Est': [-0.06, 0.04], // Décaler Nord-Est (Matam) légèrement vers la gauche et le bas
+        'Thiès': [-0.10, 0] // Décaler Thiès vers la gauche
       }
 
       const adjustment = poleAdjustments[poleName] || [0, 0]

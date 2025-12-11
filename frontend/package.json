@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.36",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Add downward offset to Fatick label",
+  "version": "1.0.37",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Move Fatick label right and Thiès pole left",
   "type": "module",
   "private": true,
   "scripts": {

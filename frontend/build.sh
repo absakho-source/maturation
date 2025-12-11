@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script de build avec nettoyage du cache Vite
 # Force un rebuild complet pour Render
-# Build version: 1.0.29 - 2025-12-11 - Fix routes visibility with higher opacity
+# Build version: 1.0.37 - 2025-12-11 - Move Fatick label right & Thiès pole left
 
 echo "🧹 Nettoyage du cache Vite et du dossier dist..."
 rm -rf dist
