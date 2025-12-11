@@ -51,7 +51,7 @@ SECTEURS = [
 PROJETS_DATA = [
     {
         "titre": "Construction d'un centre de formation agricole moderne à Kaolack",
-        "description": "Projet visant à créer un centre de formation équipé pour former 500 jeunes par an aux techniques agricoles modernes, à l'agro-écologie et à l'entrepreneuriat agricole. Le centre comprendra des salles de classe, un laboratoire, des champs d'application et un incubateur d'entreprises agricoles.",
+        "description": "Projet visant à créer un centre de formation équipé pour former 500 jeunes par an aux techniques agricoles modernes, à l'agro-écologie et à l'entrepreneuriat agricole. Le centre, basé à Kaolack, accueillera des jeunes de tout le pôle Centre (Kaolack, Fatick, Kaffrine) et comprendra des salles de classe, un laboratoire, des champs d'application et un incubateur d'entreprises agricoles.",
         "secteur": "agriculture-élevage-pêche",
         "poles": "Centre (Kaolack, Fatick, Kaffrine)",
         "cout_estimatif": 2500000000,
@@ -59,7 +59,7 @@ PROJETS_DATA = [
     },
     {
         "titre": "Aménagement hydro-agricole de la vallée du Saloum",
-        "description": "Aménagement de 1000 hectares de terres agricoles avec système d'irrigation moderne, construction de digues anti-sel, et création de pistes de production. Le projet bénéficiera à 800 producteurs et permettra 3 cycles de culture par an.",
+        "description": "Aménagement de 1000 hectares de terres agricoles dans la vallée du Saloum (régions de Fatick et Kaolack) avec système d'irrigation moderne, construction de digues anti-sel, et création de pistes de production. Le projet bénéficiera à 800 producteurs et permettra 3 cycles de culture par an.",
         "secteur": "agriculture-élevage-pêche",
         "poles": "Centre (Kaolack, Fatick, Kaffrine)",
         "cout_estimatif": 8500000000,
@@ -67,9 +67,9 @@ PROJETS_DATA = [
     },
     {
         "titre": "Électrification rurale par énergie solaire - Zone Nord",
-        "description": "Installation de mini-centrales solaires et réseaux de distribution dans 45 villages de la zone Nord (Saint-Louis et Louga). Le projet vise à électrifier 15000 ménages et 200 équipements communautaires (écoles, centres de santé, mosquées).",
+        "description": "Installation de mini-centrales solaires et réseaux de distribution dans 45 villages des régions de Saint-Louis, Louga et Diourbel. Le projet vise à électrifier 15000 ménages et 200 équipements communautaires (écoles, centres de santé, mosquées).",
         "secteur": "énergies-mines",
-        "poles": "Nord (Saint-Louis)",
+        "poles": "Nord (Saint-Louis), Diourbel-Louga",
         "cout_estimatif": 12000000000,
         "structure_soumissionnaire": "Agence Sénégalaise d'Électrification Rurale"
     },
@@ -91,7 +91,7 @@ PROJETS_DATA = [
     },
     {
         "titre": "Centre hospitalier régional spécialisé de Ziguinchor",
-        "description": "Construction d'un centre hospitalier de 200 lits avec services de chirurgie, maternité, pédiatrie, réanimation et imagerie médicale. Le projet inclut la formation de 150 personnels de santé et l'acquisition d'équipements médicaux de pointe.",
+        "description": "Construction d'un centre hospitalier régional de 200 lits à Ziguinchor pour desservir tout le pôle Sud (Ziguinchor, Sédhiou, Kolda). Le centre comprendra des services de chirurgie, maternité, pédiatrie, réanimation et imagerie médicale. Le projet inclut la formation de 150 personnels de santé et l'acquisition d'équipements médicaux de pointe.",
         "secteur": "santé-action sociale",
         "poles": "Sud (Ziguinchor, Sédhiou, Kolda)",
         "cout_estimatif": 18500000000,
