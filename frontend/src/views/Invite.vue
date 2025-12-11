@@ -219,13 +219,73 @@ export default {
       return [...new Set(this.projects.map(p => p.secteur).filter(Boolean))].sort();
     },
     availablePoles() {
-      return [...new Set(this.projects.map(p => p.poles).filter(Boolean))].sort();
+      // Mapper les régions vers les pôles territoriaux
+      const regionToPole = {
+        'Dakar': 'Dakar-Thiès',
+        'Thiès': 'Dakar-Thiès',
+        'Diourbel': 'Diourbel-Louga',
+        'Louga': 'Diourbel-Louga',
+        'Saint-Louis': 'Nord (Saint-Louis)',
+        'Matam': 'Nord-Est (Matam)',
+        'Fatick': 'Centre (Fatick, Kaolack)',
+        'Kaolack': 'Centre (Fatick, Kaolack)',
+        'Kaffrine': 'Centre (Fatick, Kaolack)',
+        'Tambacounda': 'Sud-Est (Tambacounda, Kédougou)',
+        'Kédougou': 'Sud-Est (Tambacounda, Kédougou)',
+        'Ziguinchor': 'Sud (Ziguinchor, Sédhiou, Kolda)',
+        'Sédhiou': 'Sud (Ziguinchor, Sédhiou, Kolda)',
+        'Kolda': 'Sud (Ziguinchor, Sédhiou, Kolda)'
+      };
+
+      const poles = new Set();
+      this.projects.forEach(p => {
+        if (p.poles) {
+          // Si c'est déjà un pôle territorial (contient un tiret ou des parenthèses), l'utiliser tel quel
+          if (p.poles.includes('-') || p.poles.includes('(')) {
+            poles.add(p.poles);
+          } else {
+            // Sinon, mapper la région vers son pôle territorial
+            const pole = regionToPole[p.poles] || p.poles;
+            poles.add(pole);
+          }
+        }
+      });
+
+      return [...poles].sort();
     },
     filteredProjects() {
+      // Mapping des régions vers les pôles territoriaux (doit être identique à availablePoles)
+      const regionToPole = {
+        'Dakar': 'Dakar-Thiès',
+        'Thiès': 'Dakar-Thiès',
+        'Diourbel': 'Diourbel-Louga',
+        'Louga': 'Diourbel-Louga',
+        'Saint-Louis': 'Nord (Saint-Louis)',
+        'Matam': 'Nord-Est (Matam)',
+        'Fatick': 'Centre (Fatick, Kaolack)',
+        'Kaolack': 'Centre (Fatick, Kaolack)',
+        'Kaffrine': 'Centre (Fatick, Kaolack)',
+        'Tambacounda': 'Sud-Est (Tambacounda, Kédougou)',
+        'Kédougou': 'Sud-Est (Tambacounda, Kédougou)',
+        'Ziguinchor': 'Sud (Ziguinchor, Sédhiou, Kolda)',
+        'Sédhiou': 'Sud (Ziguinchor, Sédhiou, Kolda)',
+        'Kolda': 'Sud (Ziguinchor, Sédhiou, Kolda)'
+      };
+
       return this.projects.filter(project => {
         if (this.filters.statut && project.statut !== this.filters.statut) return false;
         if (this.filters.secteur && project.secteur !== this.filters.secteur) return false;
-        if (this.filters.pole && project.poles !== this.filters.pole) return false;
+
+        if (this.filters.pole && project.poles) {
+          // Convertir le pôle du projet en pôle territorial pour la comparaison
+          let projectPole = project.poles;
+          if (!projectPole.includes('-') && !projectPole.includes('(')) {
+            // C'est une région simple, la mapper vers son pôle territorial
+            projectPole = regionToPole[projectPole] || projectPole;
+          }
+          if (projectPole !== this.filters.pole) return false;
+        }
+
         return true;
       });
     },
