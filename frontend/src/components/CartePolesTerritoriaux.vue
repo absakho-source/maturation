@@ -380,15 +380,13 @@ export default {
 
     async loadRoadsData() {
       try {
-        const response = await fetch('/senegal_roads_sample.json')
+        const response = await fetch('/senegal_roads_full.json')
         const roads = await response.json()
         // Force Vue reactivity by creating a new array reference
         this.roadSegments = [...roads]
-        console.log(`✅ ${roads.length} routes chargées`)
-        console.log(`📊 roadSegments.length = ${this.roadSegments.length}`)
+        console.log(`✅ ${roads.length} routes chargées (fichier complet)`)
         // Force re-render
         await this.$nextTick()
-        console.log(`🔄 nextTick terminé, DOM devrait être à jour`)
       } catch (error) {
         console.error('❌ Erreur chargement routes:', error)
         this.roadSegments = []

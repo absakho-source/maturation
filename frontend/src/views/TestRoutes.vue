@@ -120,7 +120,7 @@ export default {
         this.loading = true
         this.error = null
 
-        const response = await fetch('/senegal_roads_sample.json')
+        const response = await fetch('/senegal_roads_full.json')
         if (!response.ok) {
           throw new Error(`Erreur HTTP ${response.status}`)
         }

@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.29",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Fix routes visibility with higher opacity",
+  "version": "1.0.30",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use full roads file for complete network",
   "type": "module",
   "private": true,
   "scripts": {
