@@ -19,12 +19,14 @@ import EditionFichePopup from '../views/EditionFichePopup.vue';
 import LogsConnexion from '../views/LogsConnexion.vue';
 import Contact from '../views/Contact.vue';
 import ProjetsTutelle from '../views/ProjetsTutelle.vue';
+import TestRoutes from '../views/TestRoutes.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/contact', name: 'Contact', component: Contact },
+  { path: '/test-routes', name: 'TestRoutes', component: TestRoutes },
   { path: '/mon-profil', name: 'MonProfil', component: MonProfil, meta: { requiresAuth: true } },
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },
   { path: '/projets-tutelle', name: 'ProjetsTutelle', component: ProjetsTutelle, meta: { requiresAuth: true } },
