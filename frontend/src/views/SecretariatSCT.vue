@@ -191,9 +191,9 @@
                       <!-- Détails - toujours disponible -->
                       <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋 Détails</button>
 
-                      <!-- Assigner : projets soumis ou compléments fournis -->
+                      <!-- Assigner : projets soumis ou compléments fournis (sans statut définitif) -->
                       <button
-                        v-if="['soumis', 'compléments fournis'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
+                        v-if="['soumis', 'compléments fournis'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-primary"
                         title="Assigner à un évaluateur"
@@ -201,9 +201,9 @@
                         ➕ Assigner
                       </button>
 
-                      <!-- Réassigner : projets assignés ou en évaluation -->
+                      <!-- Réassigner : projets assignés ou en évaluation (sans statut définitif) -->
                       <button
-                        v-if="['assigné', 'en évaluation'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
+                        v-if="['assigné', 'en évaluation'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-secondary"
                         title="Réassigner à un autre évaluateur"
@@ -1188,6 +1188,21 @@ export default {
     }
   },
   methods: {
+    estProjetAssignable(projet) {
+      // Un projet est assignable uniquement s'il n'a PAS de statut définitif
+      // Statuts définitifs : avis confirmé par le Comité ou avis final validé
+      const statutsDefinitifs = ['favorable', 'favorable sous conditions', 'défavorable'];
+      const aStatutDefinitif = statutsDefinitifs.includes(projet.statut) || statutsDefinitifs.includes(projet.avis);
+      const aDecisionConfirmee = projet.decision_finale === 'confirme';
+      const estApprouveDefinitif = projet.statut_comite === 'approuve_definitif';
+
+      // Ne PAS permettre l'assignation si le projet a un statut définitif
+      if (aStatutDefinitif || aDecisionConfirmee || estApprouveDefinitif) {
+        return false;
+      }
+
+      return true;
+    },
     toggleProjectExpansion(projectId) {
       this.expandedProjects[projectId] = !this.expandedProjects[projectId];
       this.$forceUpdate(); // Force Vue to re-render

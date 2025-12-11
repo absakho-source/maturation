@@ -891,6 +891,14 @@ def traiter_project(project_id):
         if ("evaluateur_nom" in data and "avis" not in data and data.get("validation_secretariat") != "reassigne"
             and data.get("statut_action") != "reassigner_rejete"):
 
+            # Vérifier que le projet n'a pas de statut définitif
+            statuts_definitifs = ['favorable', 'favorable sous conditions', 'défavorable']
+            if (p.statut in statuts_definitifs or p.avis in statuts_definitifs or
+                p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif'):
+                return jsonify({
+                    "error": "Impossible d'assigner un projet ayant déjà un avis définitif ou une décision du Comité"
+                }), 403
+
             nouveau_evaluateur = data["evaluateur_nom"]
 
             # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
