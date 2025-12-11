@@ -757,8 +757,8 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'Fatick': [-0.15, -0.30], // Décaler vers la gauche et vers le bas
-        'FATICK': [-0.15, -0.30], // Décaler vers la gauche et vers le bas
+        'Fatick': [-0.25, -0.30], // Décaler plus vers la gauche et vers le bas
+        'FATICK': [-0.25, -0.30], // Décaler plus vers la gauche et vers le bas
         'Ziguinchor': [-0.05, 0], // Décaler légèrement vers la gauche
         'ZIGUINCHOR': [-0.05, 0], // Décaler légèrement vers la gauche
         'Saint-Louis': [0, -0.15], // Décaler vers le bas pour éviter superposition avec pôle Nord

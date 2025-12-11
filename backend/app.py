@@ -3058,7 +3058,13 @@ def get_stats_overview():
     # Répartition par statut
     statuts = {}
     for project in projects:
-        statut = project.statut or 'non défini'
+        # Pour les projets avec décision finale confirmée, utiliser l'avis au lieu du statut
+        if project.decision_finale == 'confirme' and project.avis:
+            statut = project.avis  # favorable, défavorable, favorable sous conditions
+        elif project.decision_finale == 'infirme':
+            statut = 'en réexamen par le Secrétariat SCT'
+        else:
+            statut = project.statut or 'non défini'
         statuts[statut] = statuts.get(statut, 0) + 1
     
     # Répartition par secteur
