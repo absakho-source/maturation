@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.35",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use full roads with 500ms defer for complete network",
+  "version": "1.0.36",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Add downward offset to Fatick label",
   "type": "module",
   "private": true,
   "scripts": {
