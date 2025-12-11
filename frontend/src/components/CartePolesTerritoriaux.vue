@@ -396,7 +396,7 @@ export default {
 
     async loadRoadsData() {
       try {
-        const response = await fetch('/senegal_roads_full.json')
+        const response = await fetch('/senegal_roads_sample.json')
         const roads = await response.json()
         // Force Vue reactivity by creating a new array reference
         this.roadSegments = [...roads]
@@ -757,8 +757,8 @@ export default {
     getAdjustedLabelPosition(regionName, originalCenter) {
       // Ajustements spécifiques pour certaines régions
       const adjustments = {
-        'Fatick': [-0.15, 0], // Décaler 3x plus vers la gauche
-        'FATICK': [-0.15, 0], // Décaler 3x plus vers la gauche
+        'Fatick': [-0.30, 0], // Décaler 3x plus vers la gauche
+        'FATICK': [-0.30, 0], // Décaler 3x plus vers la gauche
         'Ziguinchor': [-0.05, 0], // Décaler légèrement vers la gauche
         'ZIGUINCHOR': [-0.05, 0], // Décaler légèrement vers la gauche
         'Saint-Louis': [0, -0.15], // Décaler vers le bas pour éviter superposition avec pôle Nord

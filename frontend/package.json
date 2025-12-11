@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.33",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Adjust label positions and improve clip-path",
+  "version": "1.0.34",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Double Fatick offset + use sample roads for performance",
   "type": "module",
   "private": true,
   "scripts": {
