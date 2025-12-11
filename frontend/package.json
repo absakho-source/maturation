@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.34",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Double Fatick offset + use sample roads for performance",
+  "version": "1.0.35",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use full roads with 500ms defer for complete network",
   "type": "module",
   "private": true,
   "scripts": {

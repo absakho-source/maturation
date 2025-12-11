@@ -379,7 +379,7 @@ export default {
     await this.loadGeojsonData()
     await this.loadStats()
     // Charger les routes en différé pour ne pas bloquer l'affichage
-    setTimeout(() => this.loadRoadsData(), 100)
+    setTimeout(() => this.loadRoadsData(), 500)
   },
 
   methods: {
@@ -396,7 +396,7 @@ export default {
 
     async loadRoadsData() {
       try {
-        const response = await fetch('/senegal_roads_sample.json')
+        const response = await fetch('/senegal_roads_full.json')
         const roads = await response.json()
         // Force Vue reactivity by creating a new array reference
         this.roadSegments = [...roads]
