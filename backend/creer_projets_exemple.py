@@ -55,7 +55,9 @@ PROJETS_DATA = [
         "secteur": "agriculture-élevage-pêche",
         "poles": "Centre (Kaolack, Fatick, Kaffrine)",
         "cout_estimatif": 2500000000,
-        "structure_soumissionnaire": "Direction Régionale du Développement Rural de Kaolack"
+        "structure_soumissionnaire": "Direction Régionale du Développement Rural de Kaolack",
+        "niveau_priorite": "haute_priorite",
+        "nouveaute": "projet_initial"
     },
     {
         "titre": "Aménagement hydro-agricole de la vallée du Saloum",
@@ -63,7 +65,9 @@ PROJETS_DATA = [
         "secteur": "agriculture-élevage-pêche",
         "poles": "Centre (Kaolack, Fatick, Kaffrine)",
         "cout_estimatif": 8500000000,
-        "structure_soumissionnaire": "Agence Nationale d'Aménagement du Territoire"
+        "structure_soumissionnaire": "Agence Nationale d'Aménagement du Territoire",
+        "niveau_priorite": "urgence",
+        "nouveaute": "projet_initial"
     },
     {
         "titre": "Électrification rurale par énergie solaire - Zone Nord",
@@ -71,7 +75,9 @@ PROJETS_DATA = [
         "secteur": "énergies-mines",
         "poles": "Nord (Saint-Louis), Diourbel-Louga",
         "cout_estimatif": 12000000000,
-        "structure_soumissionnaire": "Agence Sénégalaise d'Électrification Rurale"
+        "structure_soumissionnaire": "Agence Sénégalaise d'Électrification Rurale",
+        "niveau_priorite": "standard",
+        "nouveaute": "amelioration"
     },
     {
         "titre": "Construction de 10 collèges de proximité en zone rurale",
@@ -79,7 +85,9 @@ PROJETS_DATA = [
         "secteur": "éducation-formation-recherche",
         "poles": "Sud-Est (Tambacounda, Kédougou)",
         "cout_estimatif": 15000000000,
-        "structure_soumissionnaire": "Ministère de l'Éducation Nationale"
+        "structure_soumissionnaire": "Ministère de l'Éducation Nationale",
+        "niveau_priorite": "haute_priorite",
+        "nouveaute": "complement"
     },
     {
         "titre": "Modernisation du réseau d'adduction d'eau potable de Thiès",
@@ -87,7 +95,9 @@ PROJETS_DATA = [
         "secteur": "environnement-eau-assainissement",
         "poles": "Thiès",
         "cout_estimatif": 6800000000,
-        "structure_soumissionnaire": "Société Nationale des Eaux du Sénégal"
+        "structure_soumissionnaire": "Société Nationale des Eaux du Sénégal",
+        "niveau_priorite": "standard",
+        "nouveaute": "projet_initial"
     },
     {
         "titre": "Centre hospitalier régional spécialisé de Ziguinchor",
@@ -95,7 +105,9 @@ PROJETS_DATA = [
         "secteur": "santé-action sociale",
         "poles": "Sud (Ziguinchor, Sédhiou, Kolda)",
         "cout_estimatif": 18500000000,
-        "structure_soumissionnaire": "Ministère de la Santé et de l'Action Sociale"
+        "structure_soumissionnaire": "Ministère de la Santé et de l'Action Sociale",
+        "niveau_priorite": "urgence",
+        "nouveaute": "amelioration"
     },
     {
         "titre": "Plateforme industrielle de transformation agroalimentaire de Diourbel",
@@ -103,7 +115,9 @@ PROJETS_DATA = [
         "secteur": "industrie-artisanat",
         "poles": "Diourbel-Louga",
         "cout_estimatif": 25000000000,
-        "structure_soumissionnaire": "Agence de Promotion des Investissements et des Grands Travaux"
+        "structure_soumissionnaire": "Agence de Promotion des Investissements et des Grands Travaux",
+        "niveau_priorite": "standard",
+        "nouveaute": "complement"
     },
     {
         "titre": "Bitumage de la route Tambacounda - Kédougou",
@@ -111,7 +125,9 @@ PROJETS_DATA = [
         "secteur": "transports-infrastructures",
         "poles": "Sud-Est (Tambacounda, Kédougou)",
         "cout_estimatif": 45000000000,
-        "structure_soumissionnaire": "Agence des Travaux et de Gestion des Routes"
+        "structure_soumissionnaire": "Agence des Travaux et de Gestion des Routes",
+        "niveau_priorite": "haute_priorite",
+        "nouveaute": "projet_initial"
     },
     {
         "titre": "Projet d'assainissement urbain de Saint-Louis",
@@ -119,7 +135,9 @@ PROJETS_DATA = [
         "secteur": "environnement-eau-assainissement",
         "poles": "Nord (Saint-Louis)",
         "cout_estimatif": 16500000000,
-        "structure_soumissionnaire": "Office National de l'Assainissement du Sénégal"
+        "structure_soumissionnaire": "Office National de l'Assainissement du Sénégal",
+        "niveau_priorite": "urgence",
+        "nouveaute": "complement"
     },
     {
         "titre": "Centre de formation professionnelle aux métiers du numérique",
@@ -127,7 +145,9 @@ PROJETS_DATA = [
         "secteur": "postes-communication-télécommunications-économie numérique",
         "poles": "Dakar",
         "cout_estimatif": 3200000000,
-        "structure_soumissionnaire": "Agence de l'Informatique de l'État"
+        "structure_soumissionnaire": "Agence de l'Informatique de l'État",
+        "niveau_priorite": "standard",
+        "nouveaute": "amelioration"
     }
 ]
 
@@ -153,9 +173,9 @@ def creer_projets():
                     auteur_nom="soumissionnaire",
                     statut="soumis",
                     date_soumission=datetime.utcnow(),
-                    # Données par défaut
-                    niveau_priorite="standard",
-                    nouveaute="projet_initial"
+                    # Données de priorité et nouveauté
+                    niveau_priorite=projet_data["niveau_priorite"],
+                    nouveaute=projet_data["nouveaute"]
                 )
 
                 db.session.add(projet)

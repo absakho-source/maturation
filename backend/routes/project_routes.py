@@ -6,6 +6,7 @@ from flask import request, jsonify
 import traceback
 import os
 import sys
+from workflow_validator import WorkflowValidator
 
 # FORCE RELOAD MARKER - Ne pas supprimer - TIMESTAMP: 2025-12-04T12:00:00
 _MODULE_VERSION = "2025-12-04-12:00-ROLE-FIX-CRITICAL"
@@ -204,6 +205,11 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
 
             # Vérifier que le projet existe
             project = Project.query.get_or_404(project_id)
+
+            # Vérifier si la fiche peut être modifiée
+            peut, erreur = WorkflowValidator.peut_modifier_fiche_evaluation(project, role)
+            if not peut:
+                return jsonify({"error": erreur}), 403
             
             # Chercher une fiche existante
             fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()

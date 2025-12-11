@@ -9,6 +9,7 @@ from db import db
 from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion
 from flask_cors import CORS
 from utils.archivage import archiver_fiche
+from workflow_validator import WorkflowValidator
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
@@ -948,6 +949,11 @@ def traiter_project(project_id):
 
         # Réassignation explicite (via validation_secretariat: "reassigne")
         elif data.get("validation_secretariat") == "reassigne":
+            # AJOUT: Vérifier que le projet peut être réassigné
+            peut, erreur = WorkflowValidator.peut_etre_assigne(p)
+            if not peut:
+                return jsonify({"error": erreur}), 403
+
             nouveau_evaluateur = data["evaluateur_nom"]
 
             # Archiver et supprimer la fiche d'évaluation existante
@@ -1116,6 +1122,12 @@ def traiter_project(project_id):
         # Validation secrétariat
         elif "validation_secretariat" in data:
             v = data.get("validation_secretariat")
+
+            # Vérifier que le projet peut être validé
+            peut, erreur = WorkflowValidator.peut_etre_valide_par_secretariat(p)
+            if not peut:
+                return jsonify({"error": erreur}), 403
+
             if v == "valide":
                 p.validation_secretariat = "valide"
                 p.statut = "en attente validation presidencesct"
@@ -1193,6 +1205,11 @@ def traiter_project(project_id):
 
         # Validation Présidence SCT
         elif "avis_presidencesct" in data:
+            # Vérifier que la Présidence SCT peut valider
+            peut, erreur = WorkflowValidator.peut_etre_valide_par_presidence_sct(p)
+            if not peut:
+                return jsonify({"error": erreur}), 403
+
             p.avis_presidencesct = data["avis_presidencesct"]
             if data["avis_presidencesct"] == "valide":
                 p.statut = "validé par presidencesct"
@@ -1259,6 +1276,11 @@ def traiter_project(project_id):
         # Validation Présidence du Comité
         elif "decision_finale" in data:
             dec = data.get("decision_finale")
+
+            # Vérifier que la Présidence du Comité peut décider
+            peut, erreur = WorkflowValidator.peut_etre_decide_par_presidence_comite(p)
+            if not peut:
+                return jsonify({"error": erreur}), 403
 
             # PHASE 2: PresidenceComite confirme ou infirme l'avis
             if dec == "confirme":
@@ -1426,6 +1448,12 @@ def evaluation_prealable(project_id):
     try:
         data = request.json or {}
         p = Project.query.get_or_404(project_id)
+
+        # Vérifier que le projet peut être évalué
+        peut, erreur = WorkflowValidator.peut_etre_evalue(p, include_prealable=True)
+        if not peut:
+            return jsonify({"error": erreur}), 403
+
         auteur = data.get("auteur", "")
         role = data.get("role", "")
 
@@ -1499,6 +1527,12 @@ def evaluation_prealable(project_id):
 def submit_complements(project_id):
     try:
         p = Project.query.get_or_404(project_id)
+
+        # Vérifier que le projet peut recevoir des compléments
+        peut, erreur = WorkflowValidator.peut_recevoir_complements(p)
+        if not peut:
+            return jsonify({"error": erreur}), 403
+
         message = (request.form.get("message") or "").strip()
         files = request.files.getlist("files")
         
@@ -1576,6 +1610,17 @@ def enregistrer_decision_comite(project_id):
         # Accepter soit les projets avec statut_comite='recommande_comite'
         # soit les anciens projets validés par la Présidence Comité (avant l'implémentation de statut_comite)
         statut_comite_actuel = get_statut_comite(p)
+
+        # Bloquer si déjà entériné
+        if statut_comite_actuel == 'approuve_definitif':
+            return jsonify({
+                "error": "Ce projet a déjà été entériné par le Comité. Aucune modification n'est possible."
+            }), 403
+
+        # Vérifier que le Comité peut décider
+        peut, erreur = WorkflowValidator.peut_recevoir_decision_comite(p)
+        if not peut:
+            return jsonify({"error": erreur}), 403
 
         if statut_comite_actuel != 'recommande_comite':
             # Permettre aussi les anciens projets "validé par presidencecomite" sans statut_comite
