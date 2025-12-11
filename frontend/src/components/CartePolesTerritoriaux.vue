@@ -35,12 +35,19 @@
       </div>
 
       <!-- SVG de la carte avec vraies coordonnées GeoJSON -->
-      <svg 
+      <svg
         ref="mapSvg"
-        class="carte-svg" 
+        class="carte-svg"
         :viewBox="`0 0 ${mapWidth} ${mapHeight}`"
         @mouseleave="clearTooltip"
       >
+        <!-- Définition du clip-path pour limiter les routes aux bounds du Sénégal -->
+        <defs>
+          <clipPath id="senegal-bounds">
+            <rect :width="mapWidth" :height="mapHeight" />
+          </clipPath>
+        </defs>
+
         <!-- COUCHE 1: Régions individuelles (fond avec contours pointillés) -->
         <g class="regions-layer">
           <g 
@@ -109,7 +116,7 @@
         </g>
 
         <!-- COUCHE 3: Routes principales (AVANT les contours et labels) -->
-        <g class="roads-layer">
+        <g class="roads-layer" clip-path="url(#senegal-bounds)">
           <!-- Routes (nationales, départementales, locales) -->
           <g v-for="road in roadSegments" :key="road.id">
             <polyline

@@ -1,7 +1,7 @@
 {
   "name": "frontend",
-  "version": "1.0.30",
-  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Use full roads file for complete network",
+  "version": "1.0.31",
+  "description": "Plateforme de Maturation des Projets Publics - DGPPE - Clip roads to map bounds",
   "type": "module",
   "private": true,
   "scripts": {
