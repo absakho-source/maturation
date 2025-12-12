@@ -47,45 +47,12 @@
             </div>
           </div>
 
-          <!-- Évaluation Préalable (pour projets assignés sans évaluation préalable) -->
-          <div class="eval-section eval-prealable" v-else-if="needsEvaluationPrealable(p)">
-            <h4>🔍 Évaluation Préalable du Dossier</h4>
-            <p class="eval-prealable-description">
-              Avant de procéder à l'évaluation détaillée, veuillez vérifier si le dossier est complet et évaluable.
-            </p>
-
-            <label>Commentaires:
-              <textarea
-                v-model="evaluationPrealableCommentaires[p.id]"
-                rows="3"
-                placeholder="Commentaires (obligatoire si des compléments sont requis)"
-              ></textarea>
-            </label>
-
-            <div class="eval-prealable-buttons">
-              <button
-                @click="soumettreEvaluationPrealable(p.id, 'dossier_evaluable')"
-                class="btn-success"
-                :disabled="envoiEvaluationPrealable[p.id]"
-              >
-                ✅ Dossier évaluable
-              </button>
-              <button
-                @click="soumettreEvaluationPrealable(p.id, 'complements_requis')"
-                class="btn-warning"
-                :disabled="envoiEvaluationPrealable[p.id] || !evaluationPrealableCommentaires[p.id]?.trim()"
-              >
-                📝 Compléments requis
-              </button>
-              <button
-                @click="soumettreEvaluationPrealable(p.id, 'dossier_rejete')"
-                class="btn-danger"
-                :disabled="envoiEvaluationPrealable[p.id] || !evaluationPrealableCommentaires[p.id]?.trim()"
-              >
-                ❌ Dossier rejeté
-              </button>
-            </div>
-          </div>
+          <!-- Matrice d'évaluation préalable (pour projets assignés sans évaluation préalable) -->
+          <MatriceEvaluationPrealable
+            v-else-if="needsEvaluationPrealable(p)"
+            :projectId="p.id"
+            @evaluation-submitted="handleEvaluationPrealableSubmitted"
+          />
 
           <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
           <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable === 'dossier_rejete'">
@@ -142,10 +109,11 @@
 
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
+import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
 
 export default {
   name: "Evaluation",
-  components: { PageWrapper },
+  components: { PageWrapper, MatriceEvaluationPrealable },
   data() {
     return {
       projects: [],
@@ -247,6 +215,11 @@ export default {
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
+    },
+    // Méthode appelée par le composant MatriceEvaluationPrealable
+    async handleEvaluationPrealableSubmitted() {
+      // Recharger la page complètement pour forcer l'actualisation
+      window.location.reload();
     },
     getEvaluationPrealableText(decision) {
       const map = {

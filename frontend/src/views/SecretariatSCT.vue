@@ -555,15 +555,8 @@
 
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
-              <!-- Matrice d'évaluation préalable -->
-              <MatriceEvaluationPrealable
-                v-if="!projet.evaluation_prealable"
-                :projectId="projet.id"
-                @evaluation-submitted="handleEvaluationPrealableSubmitted"
-              />
-
               <!-- Résultat de l'évaluation préalable -->
-              <div class="eval-section eval-prealable-result" v-else-if="projet.evaluation_prealable">
+              <div class="eval-section eval-prealable-result" v-if="projet.evaluation_prealable">
                 <h4>🔍 Évaluation Préalable</h4>
                 <p>
                   <strong>Décision:</strong>
@@ -878,11 +871,10 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
-import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
 
 export default {
   name: "SecretariatSCT",
-  components: { PageWrapper, StatsDashboard, CartesPolesComparaison, MatriceEvaluationPrealable },
+  components: { PageWrapper, StatsDashboard, CartesPolesComparaison },
   data() {
     return {
       allProjects: [],
