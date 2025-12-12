@@ -278,24 +278,7 @@
                 <div class="current-assignment">
                   Actuellement assigné à : <strong>{{ getEvaluateurLabel(projet.evaluateur_nom) }}</strong>
                 </div>
-                <p v-if="projet.soumissionnaire_statut_compte !== 'non_verifie'" class="reassign-note">Vous pouvez réassigner ce projet à un autre évaluateur ou l'évaluer vous-même.</p>
-
-                <!-- Section d'évaluation directe pour le secrétariat - masquée pour comptes non vérifiés -->
-                <div v-if="projet.evaluateur_nom === 'secretariatsct' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="direct-evaluation">
-                  <h4>✍️ Évaluer directement :</h4>
-                  <div class="eval-section compact">
-                    <label>Mon évaluation:</label>
-                    <select v-model="avis[projet.id]">
-                      <option value="">--Choisir--</option>
-                      <option value="favorable">Favorable</option>
-                      <option value="favorable sous conditions">Favorable sous conditions</option>
-                      <option value="défavorable">Défavorable</option>
-                      <option value="compléments demandés">Compléments demandés</option>
-                    </select>
-                    <textarea v-model="commentaires[projet.id]" rows="2" placeholder="Commentaire obligatoire pour justifier votre décision"></textarea>
-                    <button class="btn-primary" @click="soumettre(projet.id)">Soumettre mon avis</button>
-                  </div>
-                </div>
+                <p v-if="projet.soumissionnaire_statut_compte !== 'non_verifie'" class="reassign-note">Vous pouvez réassigner ce projet à un autre évaluateur.</p>
               </div>
               
               <!-- Compléments fournis -->
@@ -937,8 +920,6 @@ export default {
       assignation: {},
       motivations: {},
       motivationsResoumission: {},
-      avis: {},
-      commentaires: {},
       activeTab: 'all',
       refreshInterval: null,
       filtreStatut: null,
@@ -1673,17 +1654,6 @@ export default {
       });
       alert("Rejet refusé. Le dossier a été renvoyé en assignation pour réévaluation.");
       this.loadProjects();
-    },
-    async soumettre(id) {
-      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const av = this.avis[id]; const com = (this.commentaires[id] || "").trim();
-      if (!av) return alert("Choisir un avis");
-      if (!com) return alert("Commentaire obligatoire pour justifier votre décision");
-      await fetch(`/api/projects/${id}/traiter`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avis: av, commentaires: com, auteur: user.username, role: user.role })
-      });
-      alert("Avis soumis"); this.loadProjects();
     },
     async enregistrerDecisionComite(projectId, decision) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
