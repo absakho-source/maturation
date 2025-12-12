@@ -47,12 +47,20 @@
             </div>
           </div>
 
-          <!-- Matrice d'évaluation préalable (pour projets assignés sans évaluation préalable) -->
-          <MatriceEvaluationPrealable
-            v-else-if="needsEvaluationPrealable(p)"
-            :projectId="p.id"
-            @evaluation-submitted="handleEvaluationPrealableSubmitted"
-          />
+          <!-- Matrice d'évaluation préalable (collapsible pour réduire la longueur) -->
+          <div v-else-if="needsEvaluationPrealable(p)" class="eval-prealable-container">
+            <button
+              @click="toggleEvalPrealable(p.id)"
+              class="btn-toggle-eval-prealable"
+            >
+              {{ expandedEvalPrealable[p.id] ? '▲ Masquer l\'évaluation préalable' : '▼ Afficher l\'évaluation préalable' }}
+            </button>
+            <MatriceEvaluationPrealable
+              v-if="expandedEvalPrealable[p.id]"
+              :projectId="p.id"
+              @evaluation-submitted="handleEvaluationPrealableSubmitted"
+            />
+          </div>
 
           <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
           <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable === 'dossier_rejete'">
@@ -120,7 +128,8 @@ export default {
       avis: {},
       commentaires: {},
       evaluationPrealableCommentaires: {},
-      envoiEvaluationPrealable: {}
+      envoiEvaluationPrealable: {},
+      expandedEvalPrealable: {} // Pour gérer l'affichage collapsible de la matrice
     };
   },
   computed: {
@@ -220,6 +229,10 @@ export default {
     async handleEvaluationPrealableSubmitted() {
       // Recharger la page complètement pour forcer l'actualisation
       window.location.reload();
+    },
+    // Toggle pour afficher/masquer la matrice d'évaluation préalable
+    toggleEvalPrealable(projectId) {
+      this.$set(this.expandedEvalPrealable, projectId, !this.expandedEvalPrealable[projectId]);
     },
     getEvaluationPrealableText(decision) {
       const map = {
@@ -627,5 +640,33 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
 
 .btn-view-readonly:hover {
   background: #4b5563;
+}
+
+/* Section collapsible pour l'évaluation préalable */
+.eval-prealable-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-toggle-eval-prealable {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  margin-bottom: 15px;
+}
+
+.btn-toggle-eval-prealable:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 </style>

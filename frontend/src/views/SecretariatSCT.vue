@@ -555,8 +555,23 @@
 
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
+              <!-- Matrice d'évaluation préalable (collapsible pour réduire la longueur) -->
+              <div v-if="needsEvaluationPrealable(projet)" class="eval-prealable-container">
+                <button
+                  @click="toggleEvalPrealableSct(projet.id)"
+                  class="btn-toggle-eval-prealable"
+                >
+                  {{ expandedEvalPrealableSct[projet.id] ? '▲ Masquer l\'évaluation préalable' : '▼ Afficher l\'évaluation préalable' }}
+                </button>
+                <MatriceEvaluationPrealable
+                  v-if="expandedEvalPrealableSct[projet.id]"
+                  :projectId="projet.id"
+                  @evaluation-submitted="handleEvaluationPrealableSubmitted"
+                />
+              </div>
+
               <!-- Résultat de l'évaluation préalable -->
-              <div class="eval-section eval-prealable-result" v-if="projet.evaluation_prealable">
+              <div class="eval-section eval-prealable-result" v-else-if="projet.evaluation_prealable">
                 <h4>🔍 Évaluation Préalable</h4>
                 <p>
                   <strong>Décision:</strong>
@@ -871,10 +886,11 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
+import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
 
 export default {
   name: "SecretariatSCT",
-  components: { PageWrapper, StatsDashboard, CartesPolesComparaison },
+  components: { PageWrapper, StatsDashboard, CartesPolesComparaison, MatriceEvaluationPrealable },
   data() {
     return {
       allProjects: [],
@@ -902,6 +918,7 @@ export default {
       // Évaluation préalable
       evaluationPrealableCommentaires: {},
       envoiEvaluationPrealable: {},
+      expandedEvalPrealableSct: {}, // Pour gérer l'affichage collapsible de la matrice dans "Mes évaluations"
       // Édition de fiche
       showModalEdition: false,
       projetEnEdition: {},
@@ -1919,6 +1936,31 @@ export default {
         'dossier_rejete': 'decision-rejete'
       };
       return map[decision] || '';
+    },
+
+    // Détermine si un projet nécessite une évaluation préalable
+    needsEvaluationPrealable(project) {
+      // Afficher l'interface d'évaluation préalable si:
+      // - Le projet est assigné ET aucune évaluation préalable n'a été faite
+      // OU
+      // - Des compléments ont été demandés ET le soumissionnaire a répondu
+      const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
+      const hasReceivedComplements = project.evaluation_prealable === "complements_requis" &&
+                                     project.complements_reponse_message &&
+                                     project.complements_reponse_message.trim() !== "";
+
+      return isInitialAssignment || hasReceivedComplements;
+    },
+
+    // Toggle pour afficher/masquer la matrice d'évaluation préalable dans "Mes évaluations"
+    toggleEvalPrealableSct(projectId) {
+      this.$set(this.expandedEvalPrealableSct, projectId, !this.expandedEvalPrealableSct[projectId]);
+    },
+
+    // Méthode appelée après soumission de la matrice d'évaluation préalable
+    async handleEvaluationPrealableSubmitted() {
+      // Recharger la page complètement pour forcer l'actualisation
+      window.location.reload();
     },
 
     commencerEvaluation(projetId) {
@@ -3839,5 +3881,34 @@ tr.compte-non-verifie:hover {
   margin: 6px 0;
   display: flex;
   align-items: center;
+}
+
+/* Section collapsible pour l'évaluation préalable */
+.eval-prealable-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  margin-top: 1rem;
+}
+
+.btn-toggle-eval-prealable {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  margin-bottom: 15px;
+}
+
+.btn-toggle-eval-prealable:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 </style>
