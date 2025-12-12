@@ -304,7 +304,6 @@ export default {
 
 table {
   width: 100%;
-  min-width: 800px;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
