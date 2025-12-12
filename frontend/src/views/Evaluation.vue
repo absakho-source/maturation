@@ -232,7 +232,7 @@ export default {
     },
     // Toggle pour afficher/masquer la matrice d'évaluation préalable
     toggleEvalPrealable(projectId) {
-      this.$set(this.expandedEvalPrealable, projectId, !this.expandedEvalPrealable[projectId]);
+      this.expandedEvalPrealable[projectId] = !this.expandedEvalPrealable[projectId];
     },
     getEvaluationPrealableText(decision) {
       const map = {

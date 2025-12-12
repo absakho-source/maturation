@@ -1940,7 +1940,7 @@ export default {
 
     // Toggle pour afficher/masquer la matrice d'évaluation préalable dans "Mes évaluations"
     toggleEvalPrealableSct(projectId) {
-      this.$set(this.expandedEvalPrealableSct, projectId, !this.expandedEvalPrealableSct[projectId]);
+      this.expandedEvalPrealableSct[projectId] = !this.expandedEvalPrealableSct[projectId];
     },
 
     // Méthode appelée après soumission de la matrice d'évaluation préalable
