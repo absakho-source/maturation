@@ -47,19 +47,25 @@
             </div>
           </div>
 
-          <!-- Matrice d'évaluation préalable (collapsible pour réduire la longueur) -->
+          <!-- Matrice d'évaluation préalable (en modal pour avoir toute la largeur) -->
           <div v-else-if="needsEvaluationPrealable(p)" class="eval-prealable-container">
             <button
-              @click="toggleEvalPrealable(p.id)"
+              @click="openEvalPrealableModal(p.id)"
               class="btn-toggle-eval-prealable"
             >
-              {{ expandedEvalPrealable[p.id] ? '▲ Masquer l\'évaluation préalable' : '▼ Afficher l\'évaluation préalable' }}
+              📋 Ouvrir l'évaluation préalable
             </button>
-            <MatriceEvaluationPrealable
-              v-if="expandedEvalPrealable[p.id]"
-              :projectId="p.id"
-              @evaluation-submitted="handleEvaluationPrealableSubmitted"
-            />
+          </div>
+
+          <!-- Modal pour l'évaluation préalable -->
+          <div v-if="modalEvalPrealableId === p.id" class="modal-overlay" @click="closeEvalPrealableModal">
+            <div class="modal-content" @click.stop>
+              <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
+              <MatriceEvaluationPrealable
+                :projectId="p.id"
+                @evaluation-submitted="handleEvaluationPrealableSubmitted"
+              />
+            </div>
           </div>
 
           <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
@@ -129,7 +135,7 @@ export default {
       commentaires: {},
       evaluationPrealableCommentaires: {},
       envoiEvaluationPrealable: {},
-      expandedEvalPrealable: {} // Pour gérer l'affichage collapsible de la matrice
+      modalEvalPrealableId: null // ID du projet dont le modal est ouvert
     };
   },
   computed: {
@@ -227,12 +233,17 @@ export default {
     },
     // Méthode appelée par le composant MatriceEvaluationPrealable
     async handleEvaluationPrealableSubmitted() {
-      // Recharger la page complètement pour forcer l'actualisation
+      // Fermer le modal et recharger la page
+      this.modalEvalPrealableId = null;
       window.location.reload();
     },
-    // Toggle pour afficher/masquer la matrice d'évaluation préalable
-    toggleEvalPrealable(projectId) {
-      this.expandedEvalPrealable[projectId] = !this.expandedEvalPrealable[projectId];
+    // Ouvrir le modal d'évaluation préalable
+    openEvalPrealableModal(projectId) {
+      this.modalEvalPrealableId = projectId;
+    },
+    // Fermer le modal d'évaluation préalable
+    closeEvalPrealableModal() {
+      this.modalEvalPrealableId = null;
     },
     getEvaluationPrealableText(decision) {
       const map = {
@@ -642,7 +653,7 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   background: #4b5563;
 }
 
-/* Section collapsible pour l'évaluation préalable */
+/* Section pour le bouton d'ouverture de l'évaluation préalable */
 .eval-prealable-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -661,12 +672,61 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  margin-bottom: 15px;
 }
 
 .btn-toggle-eval-prealable:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Modal overlay pour l'évaluation préalable */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 1400px;
+  width: 100%;
+  max-height: 95vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: sticky;
+  top: 10px;
+  right: 10px;
+  float: right;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close:hover {
+  background: #dc2626;
+  transform: scale(1.1);
 }
 </style>
