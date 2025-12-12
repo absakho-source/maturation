@@ -110,7 +110,7 @@ PROJETS_DATA = [
         "nouveaute": "amelioration"
     },
     {
-        "titre": "Plateforme industrielle de transformation agroalimentaire de Diourbel",
+        "titre": "Plateforme industrielle de Touba (Darou salam Typ)",
         "description": "Création d'une zone industrielle dédiée à la transformation des produits agricoles (arachide, mil, sorgho). Infrastructure comprenant: unités de transformation, entrepôts frigorifiques, laboratoire de contrôle qualité, station de traitement des eaux, et centre de formation. Création de 800 emplois directs.",
         "secteur": "industrie-artisanat",
         "poles": "Diourbel-Louga",

@@ -127,7 +127,7 @@ def register_admin_routes(app, db):
                     "nouveaute": "amelioration"
                 },
                 {
-                    "titre": "Plateforme industrielle de transformation agroalimentaire de Diourbel",
+                    "titre": "Plateforme industrielle de Touba (Darou salam Typ)",
                     "description": "Création d'une zone industrielle dédiée à la transformation des produits agricoles.",
                     "secteur": "industrie-artisanat",
                     "poles": "Diourbel-Louga",
