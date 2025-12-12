@@ -304,6 +304,7 @@ export default {
 
 table {
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
@@ -330,19 +331,19 @@ th {
 }
 
 .col-document {
-  width: 45%;
-  min-width: 300px;
+  width: 50%;
+  min-width: 400px;
 }
 
 .col-checkbox {
-  width: 12%;
-  min-width: 100px;
+  width: 15%;
+  min-width: 130px;
   text-align: center;
 }
 
 .col-statut {
-  width: 18%;
-  min-width: 140px;
+  width: 20%;
+  min-width: 160px;
   text-align: center;
 }
 
