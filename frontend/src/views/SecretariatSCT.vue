@@ -555,43 +555,12 @@
 
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
-              <!-- Évaluation préalable -->
-              <div v-if="!projet.evaluation_prealable" class="eval-section eval-prealable">
-                <h4>🔍 Évaluation Préalable</h4>
-                <p class="eval-prealable-description">Vérifier la recevabilité du dossier avant l'évaluation détaillée</p>
-
-                <div class="eval-prealable-buttons">
-                  <button
-                    @click="soumettreEvaluationPrealable(projet.id, 'dossier_evaluable')"
-                    class="btn-success"
-                    :disabled="envoiEvaluationPrealable[projet.id]"
-                  >
-                    ✅ Dossier évaluable
-                  </button>
-                  <button
-                    @click="soumettreEvaluationPrealable(projet.id, 'complements_requis')"
-                    class="btn-warning"
-                    :disabled="envoiEvaluationPrealable[projet.id] || !evaluationPrealableCommentaires[projet.id]?.trim()"
-                  >
-                    📝 Compléments requis
-                  </button>
-                  <button
-                    @click="soumettreEvaluationPrealable(projet.id, 'dossier_rejete')"
-                    class="btn-danger"
-                    :disabled="envoiEvaluationPrealable[projet.id] || !evaluationPrealableCommentaires[projet.id]?.trim()"
-                  >
-                    ❌ Dossier rejeté
-                  </button>
-                </div>
-
-                <label class="commentaire-label">Commentaires (obligatoire pour compléments/rejet):</label>
-                <textarea
-                  v-model="evaluationPrealableCommentaires[projet.id]"
-                  rows="3"
-                  placeholder="Justification de la décision (obligatoire si compléments requis ou dossier rejeté)"
-                  class="commentaire-textarea"
-                ></textarea>
-              </div>
+              <!-- Matrice d'évaluation préalable -->
+              <MatriceEvaluationPrealable
+                v-if="!projet.evaluation_prealable"
+                :projectId="projet.id"
+                @evaluation-submitted="handleEvaluationPrealableSubmitted"
+              />
 
               <!-- Résultat de l'évaluation préalable -->
               <div class="eval-section eval-prealable-result" v-else-if="projet.evaluation_prealable">
@@ -909,10 +878,11 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
+import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
 
 export default {
   name: "SecretariatSCT",
-  components: { PageWrapper, StatsDashboard, CartesPolesComparaison },
+  components: { PageWrapper, StatsDashboard, CartesPolesComparaison, MatriceEvaluationPrealable },
   data() {
     return {
       allProjects: [],
@@ -1895,6 +1865,12 @@ export default {
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
+    },
+
+    // Méthode appelée par le composant MatriceEvaluationPrealable
+    async handleEvaluationPrealableSubmitted() {
+      // Recharger la liste des projets après soumission
+      await this.loadProjects();
     },
 
     // Méthode pour valider un rejet proposé par l'évaluateur

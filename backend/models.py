@@ -86,6 +86,7 @@ class Project(db.Model):
     evaluation_prealable = db.Column(db.String(50), nullable=True)  # "dossier_evaluable" ou "complements_requis"
     evaluation_prealable_date = db.Column(db.DateTime, nullable=True)
     evaluation_prealable_commentaire = db.Column(db.Text, nullable=True)
+    evaluation_prealable_matrice = db.Column(db.Text, nullable=True)  # JSON: {documents: [{nom, requis, transmis}], commentaires_globaux}
 
     # Motivation pour la resoumission après rejet (nullable pour compatibilité)
     motivation_resoumission = db.Column(db.Text, nullable=True)

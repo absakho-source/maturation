@@ -1460,6 +1460,8 @@ def evaluation_prealable(project_id):
         decision = data.get("decision")  # "dossier_evaluable", "complements_requis", ou "dossier_rejete"
         # Le frontend envoie "commentaire" (sans s) - accepter les deux formats
         commentaires = data.get("commentaire", data.get("commentaires", "")).strip()
+        # Récupérer la matrice d'évaluation (JSON stringifié)
+        matrice = data.get("matrice")
 
 
         if not decision or decision not in ["dossier_evaluable", "complements_requis", "dossier_rejete"]:
@@ -1472,6 +1474,9 @@ def evaluation_prealable(project_id):
         p.evaluation_prealable = decision
         p.evaluation_prealable_date = datetime.utcnow()
         p.evaluation_prealable_commentaire = commentaires
+        # Enregistrer la matrice d'évaluation si fournie
+        if matrice:
+            p.evaluation_prealable_matrice = matrice
 
         # Changer le statut en fonction de la décision
         action = ""
