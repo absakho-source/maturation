@@ -57,17 +57,6 @@
             </button>
           </div>
 
-          <!-- Modal pour l'évaluation préalable -->
-          <div v-if="modalEvalPrealableId === p.id" class="modal-overlay" @click="closeEvalPrealableModal">
-            <div class="modal-content" @click.stop>
-              <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
-              <MatriceEvaluationPrealable
-                :projectId="p.id"
-                @evaluation-submitted="handleEvaluationPrealableSubmitted"
-              />
-            </div>
-          </div>
-
           <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
           <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable === 'dossier_rejete'">
             <h4>🔍 Évaluation Préalable</h4>
@@ -116,6 +105,17 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal pour l'évaluation préalable - Placé au niveau racine pour affichage correct -->
+    <div v-if="modalEvalPrealableId" class="modal-overlay" @click="closeEvalPrealableModal">
+      <div class="modal-content" @click.stop>
+        <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
+        <MatriceEvaluationPrealable
+          :projectId="modalEvalPrealableId"
+          @evaluation-submitted="handleEvaluationPrealableSubmitted"
+        />
       </div>
     </div>
   </PageWrapper>
