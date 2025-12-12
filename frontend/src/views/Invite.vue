@@ -189,6 +189,7 @@
 
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
+import { POLES_TERRITORIAUX, normalizePole } from '../config/polesConfig.js';
 
 export default {
   name: 'Invite',
@@ -219,96 +220,28 @@ export default {
       return [...new Set(this.projects.map(p => p.secteur).filter(Boolean))].sort();
     },
     availablePoles() {
-      // Mapper les valeurs de la DB vers les pôles territoriaux de la carte (identique au backend)
-      const poleMapping = {
-        // Centre regroupe Fatick, Kaolack, Kaffrine
-        'Centre (Fatick)': 'Centre',
-        'Centre (Kaolack)': 'Centre',
-        'Centre (Kaffrine)': 'Centre',
-        'Fatick': 'Centre',
-        'Kaolack': 'Centre',
-        'Kaffrine': 'Centre',
-        // Sud regroupe Ziguinchor, Sedhiou, Kolda
-        'Sud (Ziguinchor)': 'Sud',
-        'Sud (Sedhiou)': 'Sud',
-        'Sud (Kolda)': 'Sud',
-        'Ziguinchor': 'Sud',
-        'Sédhiou': 'Sud',
-        'Kolda': 'Sud',
-        'Ziguinchor-Sédhiou-Kolda': 'Sud',
-        // Sud-Est regroupe Tambacounda, Kédougou
-        'Sud-Est (Tambacounda)': 'Sud-Est',
-        'Sud-Est (Kedougou)': 'Sud-Est',
-        'Tambacounda': 'Sud-Est',
-        'Kédougou': 'Sud-Est',
-        'Tambacounda-Kédougou': 'Sud-Est',
-        // Diourbel-Louga
-        'Diourbel': 'Diourbel-Louga',
-        'Louga': 'Diourbel-Louga',
-        'Diourbel-Louga': 'Diourbel-Louga',
-        // Dakar et Thiès
-        'Dakar-Thiès': 'Dakar',
-        'Dakar': 'Dakar',
-        'Thiès': 'Thiès',
-        // Pôles mono-région
-        'Nord (Saint-Louis)': 'Nord',
-        'Saint-Louis': 'Nord',
-        'Saint-Louis-Louga': 'Nord',
-        'Nord-Est (Matam)': 'Nord-Est',
-        'Matam': 'Nord-Est'
-      };
-
+      // Utiliser la fonction centralisée pour normaliser les pôles
       const poles = new Set();
       this.projects.forEach(p => {
         if (p.poles) {
-          const pole = poleMapping[p.poles] || p.poles;
-          poles.add(pole);
+          const normalized = normalizePole(p.poles);
+          if (normalized) {
+            poles.add(normalized);
+          }
         }
       });
 
       return [...poles].sort();
     },
     filteredProjects() {
-      // Mapping identique à availablePoles
-      const poleMapping = {
-        'Centre (Fatick)': 'Centre',
-        'Centre (Kaolack)': 'Centre',
-        'Centre (Kaffrine)': 'Centre',
-        'Fatick': 'Centre',
-        'Kaolack': 'Centre',
-        'Kaffrine': 'Centre',
-        'Sud (Ziguinchor)': 'Sud',
-        'Sud (Sedhiou)': 'Sud',
-        'Sud (Kolda)': 'Sud',
-        'Ziguinchor': 'Sud',
-        'Sédhiou': 'Sud',
-        'Kolda': 'Sud',
-        'Ziguinchor-Sédhiou-Kolda': 'Sud',
-        'Sud-Est (Tambacounda)': 'Sud-Est',
-        'Sud-Est (Kedougou)': 'Sud-Est',
-        'Tambacounda': 'Sud-Est',
-        'Kédougou': 'Sud-Est',
-        'Tambacounda-Kédougou': 'Sud-Est',
-        'Diourbel': 'Diourbel-Louga',
-        'Louga': 'Diourbel-Louga',
-        'Diourbel-Louga': 'Diourbel-Louga',
-        'Dakar-Thiès': 'Dakar',
-        'Dakar': 'Dakar',
-        'Thiès': 'Thiès',
-        'Nord (Saint-Louis)': 'Nord',
-        'Saint-Louis': 'Nord',
-        'Saint-Louis-Louga': 'Nord',
-        'Nord-Est (Matam)': 'Nord-Est',
-        'Matam': 'Nord-Est'
-      };
-
       return this.projects.filter(project => {
         if (this.filters.statut && project.statut !== this.filters.statut) return false;
         if (this.filters.secteur && project.secteur !== this.filters.secteur) return false;
 
         if (this.filters.pole && project.poles) {
-          const projectPole = poleMapping[project.poles] || project.poles;
-          if (projectPole !== this.filters.pole) return false;
+          // Normaliser le pôle du projet et le comparer au filtre
+          const normalizedProjectPole = normalizePole(project.poles);
+          if (normalizedProjectPole !== this.filters.pole) return false;
         }
 
         return true;

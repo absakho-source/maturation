@@ -887,6 +887,7 @@ import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
 import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
+import { POLES_TERRITORIAUX } from '../config/polesConfig.js';
 
 export default {
   name: "SecretariatSCT",
@@ -976,22 +977,7 @@ export default {
         'Transport et Mobilité urbaine',
         'Urbanisme et Habitat'
       ],
-      polesList: [
-        'Dakar',
-        'Thiès',
-        'Diourbel',
-        'Kaolack',
-        'Fatick',
-        'Kaffrine',
-        'Louga',
-        'Matam',
-        'Saint-Louis',
-        'Tambacounda',
-        'Kédougou',
-        'Kolda',
-        'Sédhiou',
-        'Ziguinchor'
-      ]
+      polesList: POLES_TERRITORIAUX
     };
   },
   computed: {
