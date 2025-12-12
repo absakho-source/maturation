@@ -280,6 +280,8 @@ export default {
   border-radius: 12px;
   padding: 1.5rem;
   margin: 1rem 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .matrice-evaluation-prealable h3 {
@@ -297,19 +299,18 @@ export default {
 
 /* Table styles */
 .matrice-table {
-  overflow-x: auto;
   margin-bottom: 1rem;
-  max-width: 100%;
+  width: 100%;
 }
 
 table {
   width: 100%;
-  min-width: 900px;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  table-layout: fixed;
 }
 
 thead {
@@ -322,6 +323,7 @@ th {
   text-align: left;
   font-weight: 600;
   font-size: 0.9rem;
+  word-wrap: break-word;
 }
 
 .sub-label {
@@ -331,19 +333,16 @@ th {
 }
 
 .col-document {
-  width: 50%;
-  min-width: 400px;
+  width: 45%;
 }
 
 .col-checkbox {
-  width: 15%;
-  min-width: 130px;
+  width: 17.5%;
   text-align: center;
 }
 
 .col-statut {
   width: 20%;
-  min-width: 160px;
   text-align: center;
 }
 
@@ -362,6 +361,7 @@ tbody tr.missing-doc {
 
 td {
   padding: 0.75rem;
+  word-wrap: break-word;
 }
 
 .doc-name {
