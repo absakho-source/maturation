@@ -18,16 +18,13 @@
           <tr v-for="(doc, index) in documents" :key="index" :class="{ 'missing-doc': doc.requis && !doc.transmis }">
             <td class="doc-name">
               <input
-                v-if="doc.custom"
                 v-model="doc.nom"
                 type="text"
                 class="custom-doc-input"
                 placeholder="Nom du document..."
               />
-              <span v-else>{{ doc.nom }}</span>
               <button
-                v-if="doc.custom"
-                @click="removeCustomDocument(index)"
+                @click="removeDocument(index)"
                 class="btn-remove-doc"
                 title="Supprimer ce document"
               >
@@ -195,7 +192,7 @@ export default {
         custom: true
       })
     },
-    removeCustomDocument(index) {
+    removeDocument(index) {
       this.documents.splice(index, 1)
       this.updateStatut()
     },
