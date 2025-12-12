@@ -270,7 +270,8 @@
             <div v-if="expandedProjects[projet.id]" class="project-card-expanded">
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
-              <p v-if="projet.secteur"><strong>Secteur:</strong> {{ projet.secteur }}</p>
+              <p v-if="projet.secteur"><strong>Secteur de planification:</strong> {{ projet.secteur }}</p>
+              <p v-if="projet.poles"><strong>Pôle(s) territorial(aux):</strong> {{ projet.poles }}</p>
               
               <!-- Projets déjà assignés ou en évaluation -->
               <div v-if="projet.statut === 'assigné' || projet.statut === 'en évaluation'" class="reassign-info">

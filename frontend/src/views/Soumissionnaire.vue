@@ -351,7 +351,8 @@
           <span class="badge status-complement">Compléments demandés</span>
         </div>
         <div class="card-body">
-          <p><strong>Secteur:</strong> {{ projet.secteur }}</p>
+          <p><strong>Secteur de planification:</strong> {{ projet.secteur }}</p>
+          <p v-if="projet.poles"><strong>Pôle(s) territorial(aux):</strong> {{ projet.poles }}</p>
           <p><strong>Commentaires de l'évaluateur:</strong></p>
           <div class="evaluator-comment">{{ projet.commentaires || "Aucun commentaire spécifique" }}</div>
           

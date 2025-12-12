@@ -619,8 +619,8 @@
               <span class="badge" :class="getProjectStatusBadgeClass(p)">{{ getProjectStatusBadgeText(p) }}</span>
             </div>
             <div class="card-body">
-              <p v-if="p.secteur"><strong>Secteur:</strong> {{ p.secteur }}</p>
-              <p v-if="p.poles"><strong>Pôles:</strong> {{ p.poles }}</p>
+              <p v-if="p.secteur"><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
+              <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
               <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
               <p v-if="p.evaluateur_nom"><strong>Assigné à:</strong> {{ labelEval(p.evaluateur_nom) }}</p>
               <p v-if="p.statut === 'compléments demandés' && p.complements_demande_message">

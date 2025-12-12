@@ -33,8 +33,8 @@
           </div>
           <div class="card-body">
             <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
-            <p><strong>Secteur:</strong> {{ p.secteur }}</p>
-            <p v-if="p.poles"><strong>Zones:</strong> {{ p.poles }}</p>
+            <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
+            <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
             <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
             <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir les détails complets</button>
           </div>
@@ -94,8 +94,8 @@
               <div class="card-body">
                 <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
                 <p><strong>Évaluateur assigné:</strong> {{ getEvaluateurDisplay(p) }}</p>
-                <p><strong>Secteur:</strong> {{ p.secteur }}</p>
-                <p v-if="p.poles"><strong>Zones:</strong> {{ p.poles }}</p>
+                <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
+                <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
                 <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
                 <button @click="$router.push(`/project/${p.id}`)" class="btn-view btn-view-readonly">👁️ Voir les détails (lecture seule)</button>
               </div>

@@ -175,8 +175,12 @@
                     <span class="info-value">{{ project.structure_soumissionnaire || project.organisme_tutelle || project.auteur_nom || 'N/A' }}</span>
                   </div>
                   <div class="card-info-row">
-                    <span class="info-label">Secteur:</span>
+                    <span class="info-label">Secteur de planification:</span>
                     <span class="info-value">{{ project.secteur || 'N/A' }}</span>
+                  </div>
+                  <div class="card-info-row" v-if="project.poles">
+                    <span class="info-label">Pôle(s) territorial(aux):</span>
+                    <span class="info-value">{{ project.poles }}</span>
                   </div>
                   <div class="card-info-row">
                     <span class="info-label">Coût:</span>
