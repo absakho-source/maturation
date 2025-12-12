@@ -195,7 +195,7 @@
           </div>
 
           <!-- Section Évaluation Préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
-          <div class="info-card" v-if="project.evaluation_prealable === 'dossier_rejete'">
+          <div class="info-card" v-if="project.evaluation_prealable">
             <h3>🔍 Évaluation Préalable</h3>
             <div class="evaluation-prealable-resultat">
               <div :class="['decision-badge',
@@ -205,12 +205,19 @@
                    project.evaluation_prealable === 'dossier_rejete' ? '❌ Dossier rejeté' :
                    '📝 Compléments requis' }}
               </div>
-              <p v-if="project.evaluation_prealable_commentaire" class="commentaire">
-                <strong>Commentaire:</strong> {{ project.evaluation_prealable_commentaire }}
-              </p>
-              <p class="date-evaluation">
-                Évaluation effectuée le {{ formatDateTime(project.evaluation_prealable_date) }}
-              </p>
+
+              <!-- Afficher la matrice d'évaluation si elle existe -->
+              <MatriceEvaluationPrealableReadOnly v-if="evaluationPrealableMatrice" :matrice="evaluationPrealableMatrice" />
+
+              <!-- Sinon, afficher le commentaire simple (ancien format) -->
+              <template v-else>
+                <p v-if="project.evaluation_prealable_commentaire" class="commentaire">
+                  <strong>Commentaire:</strong> {{ project.evaluation_prealable_commentaire }}
+                </p>
+                <p class="date-evaluation" v-if="project.evaluation_prealable_date">
+                  Évaluation effectuée le {{ formatDateTime(project.evaluation_prealable_date) }}
+                </p>
+              </template>
             </div>
           </div>
 
@@ -314,10 +321,11 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import DocumenthequeProjet from '../components/DocumenthequeProjet.vue';
 import DiscussionProjet from '../components/DiscussionProjet.vue';
+import MatriceEvaluationPrealableReadOnly from '../components/MatriceEvaluationPrealableReadOnly.vue';
 
 export default {
   name: "ProjectDetail",
-  components: { PageWrapper, DocumenthequeProjet, DiscussionProjet },
+  components: { PageWrapper, DocumenthequeProjet, DiscussionProjet, MatriceEvaluationPrealableReadOnly },
   data() {
     return {
       project: null,
@@ -434,6 +442,19 @@ export default {
         return hierarchy.length > 0 ? hierarchy : null;
       } catch (e) {
         console.error('[ProjectDetail] Erreur lors du parsing de organisme_tutelle_data:', e);
+        return null;
+      }
+    },
+    evaluationPrealableMatrice() {
+      // Parse la matrice JSON si elle existe
+      if (!this.project || !this.project.evaluation_prealable_matrice) {
+        return null;
+      }
+
+      try {
+        return JSON.parse(this.project.evaluation_prealable_matrice);
+      } catch (e) {
+        console.error('[ProjectDetail] Erreur lors du parsing de evaluation_prealable_matrice:', e);
         return null;
       }
     }
