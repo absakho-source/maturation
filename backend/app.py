@@ -4891,6 +4891,14 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import versioning routes: {e}")
 
+# Import and register admin routes
+try:
+    from routes.admin_routes import register_admin_routes
+    register_admin_routes(app, db)
+    print("Admin routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import admin routes: {e}")
+
 @app.route("/api/version", methods=["GET"])
 def get_version():
     """Retourne la version du code backend déployé"""
