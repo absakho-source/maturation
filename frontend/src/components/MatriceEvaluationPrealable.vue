@@ -299,10 +299,12 @@ export default {
 .matrice-table {
   overflow-x: auto;
   margin-bottom: 1rem;
+  max-width: 100%;
 }
 
 table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
@@ -329,16 +331,19 @@ th {
 }
 
 .col-document {
-  width: 50%;
+  width: 45%;
+  min-width: 300px;
 }
 
 .col-checkbox {
-  width: 15%;
+  width: 12%;
+  min-width: 100px;
   text-align: center;
 }
 
 .col-statut {
-  width: 20%;
+  width: 18%;
+  min-width: 140px;
   text-align: center;
 }
 
