@@ -3918,11 +3918,12 @@ tr.compte-non-verifie:hover {
   bottom: 0;
   background: rgba(0, 0, 0, 0.75);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9999;
   padding: 20px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-content {
@@ -3930,10 +3931,10 @@ tr.compte-non-verifie:hover {
   border-radius: 12px;
   max-width: 1400px;
   width: 100%;
-  max-height: 95vh;
-  overflow-y: auto;
+  max-height: none;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
 }
 
 .modal-close {

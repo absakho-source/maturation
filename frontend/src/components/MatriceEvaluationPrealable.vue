@@ -397,12 +397,16 @@ td {
 /* Checkbox styling */
 .checkbox-cell {
   text-align: center;
+  vertical-align: middle;
 }
 
 .checkbox-container {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  padding-left: 28px;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
   user-select: none;
 }
@@ -411,12 +415,16 @@ td {
   position: absolute;
   opacity: 0;
   cursor: pointer;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 }
 
 .checkmark {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   height: 20px;
   width: 20px;
   background-color: #e2e8f0;
