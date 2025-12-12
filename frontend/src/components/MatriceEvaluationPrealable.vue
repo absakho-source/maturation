@@ -84,17 +84,6 @@
           </div>
         </div>
       </div>
-      <div class="resume-decision">
-        <span v-if="documentsRequis === 0" class="decision-badge indetermine">
-          Statut indéterminé
-        </span>
-        <span v-else-if="documentsManquants === 0" class="decision-badge evaluable">
-          ✓ Dossier évaluable
-        </span>
-        <span v-else class="decision-badge incomplet">
-          ⚠️ Dossier incomplet
-        </span>
-      </div>
     </div>
 
     <!-- Commentaires et suite à donner -->
