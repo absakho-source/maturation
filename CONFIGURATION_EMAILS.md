@@ -52,25 +52,70 @@ Demander à l'admin IT de :
 - Désactiver MFA pour ce compte de service
 - Ou autoriser "Authentification de base" (Basic Auth) pour SMTP
 
-## Configuration Production (Render)
+## 🚀 Configuration Production (Render)
 
-### Variables d'Environnement à Ajouter
+### Étape 1 : Accéder aux Variables d'Environnement
 
-Dans le dashboard Render → Service backend → Environment :
+1. Connectez-vous sur https://dashboard.render.com
+2. Sélectionnez votre service backend
+3. Allez dans l'onglet **Environment**
+4. Cliquez sur **Add Environment Variable**
 
+### Étape 2 : Ajouter les Variables (une par une)
+
+**Configuration recommandée - Test 1 : Serveur Exchange interne**
+
+| Key | Value |
+|-----|-------|
+| `SMTP_SERVER` | `mail.economie.gouv.sn` |
+| `SMTP_PORT` | `587` |
+| `SMTP_USERNAME` | `economie\maturation.dgppe` |
+| `SMTP_PASSWORD` | `Maturationdgppe1` |
+| `FROM_EMAIL` | `maturation.dgppe@economie.gouv.sn` |
+| `FROM_NAME` | `Maturation DGPPE` |
+| `EMAIL_ENABLED` | `true` |
+| `EMAIL_DEBUG_MODE` | `true` |
+| `PLATFORM_URL` | `https://maturation-dgppe.onrender.com` |
+
+**Si le Test 1 échoue - Test 2 : Office 365**
+
+Changez seulement ces variables :
+
+| Key | Value |
+|-----|-------|
+| `SMTP_SERVER` | `smtp.office365.com` |
+| `SMTP_USERNAME` | `maturation.dgppe@economie.gouv.sn` |
+
+### Étape 3 : Redéployer le Service
+
+1. Cliquez sur **Manual Deploy** → **Deploy latest commit**
+2. Attendez la fin du déploiement (2-3 minutes)
+
+### Étape 4 : Tester l'Envoi d'Email
+
+Une fois déployé, testez en production :
+
+1. Connectez-vous à la plateforme en production
+2. Assignez un projet à un évaluateur
+3. Vérifiez si l'email est reçu
+
+**OU** utilisez SSH pour tester directement :
+
+```bash
+ssh root@164.92.255.58
+cd /root/maturation/backend
+source venv/bin/activate
+python3 test_email_simple.py votre-email@test.com
 ```
-SMTP_SERVER=smtp.office365.com
-SMTP_PORT=587
-SMTP_USERNAME=maturation.dgppe@economie.gouv.sn
-SMTP_PASSWORD=Maturationdgppe1
-FROM_EMAIL=maturation.dgppe@economie.gouv.sn
-FROM_NAME=Maturation DGPPE
-EMAIL_ENABLED=true
-EMAIL_DEBUG_MODE=false
-PLATFORM_URL=https://maturation-dgppe.onrender.com
-```
 
-**Note** : Utilisez le **mot de passe d'application** si MFA est activé
+### Étape 5 : Vérifier les Logs
+
+En cas d'échec, consultez les logs dans Render :
+
+1. Dashboard → Service backend → **Logs**
+2. Recherchez `[EMAIL]` pour voir les messages de debug
+
+**Note importante** : Le mode `EMAIL_DEBUG_MODE=true` affichera tous les détails de connexion SMTP dans les logs.
 
 ## Test Local
 
@@ -98,10 +143,36 @@ Les emails sont envoyés automatiquement pour :
 - ✅ `backend/test_email_simple.py` - Script de test
 - ✅ `backend/requirements.txt` - python-dotenv ajouté (à faire)
 
-## Prochaines Étapes
+## 📊 Résumé de l'Implémentation
 
-1. ⏳ Résoudre l'authentification Office365/Exchange
-2. ⏳ Ajouter `python-dotenv` au requirements.txt
-3. ⏳ Configurer les variables sur Render
-4. ⏳ Tester l'envoi depuis la production
+### ✅ Code Complété
+
+- [x] Service d'envoi d'emails avec templates HTML professionnels
+- [x] Support des variables d'environnement via `.env`
+- [x] Flag `EMAIL_ENABLED` pour activer/désactiver les emails
+- [x] Mode debug `EMAIL_DEBUG_MODE` pour troubleshooting
+- [x] python-dotenv ajouté au requirements.txt
+- [x] Script de test [test_email_simple.py](backend/test_email_simple.py)
+- [x] Documentation complète
+
+### 🔄 Prochaines Étapes (À FAIRE)
+
+1. **Configurer les variables d'environnement sur Render** (voir section ci-dessus)
+2. **Redéployer le service backend**
+3. **Tester l'envoi d'email en production**
+4. **Si échec** : Vérifier avec l'admin IT que SMTP AUTH est activé pour le compte
+5. **Une fois fonctionnel** : Désactiver `EMAIL_DEBUG_MODE` en production
+
+### 🎯 Notifications Automatiques (Déjà Implémentées)
+
+Les emails seront envoyés automatiquement dès que `EMAIL_ENABLED=true` :
+
+- ✅ Projet assigné à un évaluateur
+- ✅ Projet mis en évaluation
+- ✅ Compléments demandés (avec matrice des documents)
+- ✅ Évaluation terminée
+- ✅ Décision finale (favorable/défavorable/sous conditions)
+- ✅ Nouveau message dans la discussion
+
+**Tout le code est prêt, il suffit d'activer les emails en production !**
 
