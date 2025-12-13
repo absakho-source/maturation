@@ -2822,6 +2822,7 @@ def get_user(user_id):
         return jsonify({"error": str(e)}), 404
 
 @app.route("/api/users", methods=["POST"])
+@app.route("/api/register", methods=["POST"])  # Alias pour compatibilité frontend
 def create_user():
     """Créer un nouvel utilisateur (inscription enrichie avec validation)"""
     try:
