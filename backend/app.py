@@ -865,12 +865,15 @@ def delete_project(project_id):
 @app.route("/api/projects/<int:project_id>/traiter", methods=["POST"])
 def traiter_project(project_id):
     try:
+        print(f"[TRAITER_DEBUG] Fonction traiter_project appelée pour projet {project_id}")
         data = request.json or {}
         p = Project.query.get_or_404(project_id)
+        print(f"[TRAITER_DEBUG] Projet trouvé: {p.titre}, Statut actuel: {p.statut}, Auteur: {p.auteur_nom}")
         auteur = data.get("auteur", "")
         role = data.get("role", "")
         username = data.get("username", auteur)
         action = ""
+        print(f"[TRAITER_DEBUG] Data reçue: {data}")
 
         # Vérifier que l'utilisateur a le rôle nécessaire pour traiter le projet
         # Seuls secretariatsct, presidencesct, presidencecomite, evaluateur et admin peuvent traiter
@@ -1424,6 +1427,9 @@ def traiter_project(project_id):
         except Exception as notif_error:
             print(f"[NOTIFICATION] Erreur lors de la création des notifications: {notif_error}")
             # Ne pas bloquer le traitement principal si les notifications échouent
+
+        print(f"[TRAITER_DEBUG] Fin du traitement - Action effectuée: {action}")
+        print(f"[TRAITER_DEBUG] Statut final du projet: {p.statut}")
 
         # ============ ENVOI D'EMAILS ============
         # Envoyer des emails au soumissionnaire selon le changement de statut
