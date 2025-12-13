@@ -27,6 +27,9 @@ EMAIL_DEBUG_MODE = os.environ.get('EMAIL_DEBUG_MODE', 'false').lower() == 'true'
 # URL de la plateforme
 PLATFORM_URL = os.environ.get('PLATFORM_URL', 'https://maturation-dgppe.onrender.com')
 
+# Log de debug pour vérifier le chargement des variables
+print(f"[EMAIL_CONFIG] EMAIL_ENABLED={EMAIL_ENABLED}, SMTP_SERVER={SMTP_SERVER}, SMTP_USERNAME={SMTP_USERNAME[:10] if SMTP_USERNAME else 'EMPTY'}...")
+
 
 def send_email(to_email, subject, html_content, text_content=None):
     """
