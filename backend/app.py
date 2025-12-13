@@ -1428,21 +1428,32 @@ def traiter_project(project_id):
         # ============ ENVOI D'EMAILS ============
         # Envoyer des emails au soumissionnaire selon le changement de statut
         try:
+            print(f"[EMAIL_DEBUG] Tentative d'envoi d'email - Projet: {project_id}, Statut: {p.statut}, Auteur: {p.auteur_nom}")
             if p.auteur_nom:
                 soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
+                print(f"[EMAIL_DEBUG] Soumissionnaire trouvé: {soumissionnaire.username if soumissionnaire else 'None'}, Email: {soumissionnaire.email if soumissionnaire else 'None'}")
                 if soumissionnaire and soumissionnaire.email:
                     # Déterminer si on doit envoyer un email selon le statut
                     statuts_avec_email = ["assigné", "en évaluation", "compléments demandés", "évalué",
                                          "favorable", "favorable sous conditions", "défavorable"]
 
                     if p.statut in statuts_avec_email:
+                        print(f"[EMAIL_DEBUG] Envoi d'email à {soumissionnaire.email} pour le statut '{p.statut}'")
                         email_service.send_status_change_email(
                             project=p,
                             user_email=soumissionnaire.email,
                             user_name=soumissionnaire.nom or soumissionnaire.username
                         )
+                    else:
+                        print(f"[EMAIL_DEBUG] Statut '{p.statut}' non dans la liste des statuts avec email")
+                else:
+                    print(f"[EMAIL_DEBUG] Pas d'envoi d'email - Soumissionnaire ou email manquant")
+            else:
+                print(f"[EMAIL_DEBUG] Pas d'envoi d'email - Pas d'auteur_nom sur le projet")
         except Exception as email_error:
             print(f"[EMAIL] Erreur lors de l'envoi d'email: {email_error}")
+            import traceback
+            traceback.print_exc()
             # Ne pas bloquer le traitement principal si l'email échoue
 
         return jsonify({"message": "Traitement effectué"}), 200
