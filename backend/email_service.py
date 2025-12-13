@@ -9,6 +9,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 # Configuration SMTP (à définir dans les variables d'environnement)
 SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
@@ -17,6 +21,8 @@ SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
 SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@dgppe.sn')
 FROM_NAME = os.environ.get('FROM_NAME', 'Plateforme DGPPE')
+EMAIL_ENABLED = os.environ.get('EMAIL_ENABLED', 'false').lower() == 'true'
+EMAIL_DEBUG_MODE = os.environ.get('EMAIL_DEBUG_MODE', 'false').lower() == 'true'
 
 # URL de la plateforme
 PLATFORM_URL = os.environ.get('PLATFORM_URL', 'https://maturation-dgppe.onrender.com')
@@ -35,9 +41,14 @@ def send_email(to_email, subject, html_content, text_content=None):
     Returns:
         bool: True si envoyé avec succès, False sinon
     """
+    # Vérifier si les emails sont activés
+    if not EMAIL_ENABLED:
+        print(f"[EMAIL] Service désactivé - Email non envoyé à {to_email}: {subject}")
+        return False
+
     # Si pas de configuration SMTP, ne pas envoyer (mode développement)
     if not SMTP_USERNAME or not SMTP_PASSWORD:
-        print(f"[EMAIL] Mode dev - Email non envoyé à {to_email}: {subject}")
+        print(f"[EMAIL] Configuration SMTP manquante - Email non envoyé à {to_email}: {subject}")
         return False
 
     try:

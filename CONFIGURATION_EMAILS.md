@@ -1,194 +1,107 @@
-# Configuration des Emails - PLASMAP
+# Configuration des Emails - Plateforme DGPPE
 
-## Vue d'ensemble
+## ✅ Ce qui a été fait
 
-Le système de notifications par email permet d'envoyer automatiquement des emails aux utilisateurs lors d'événements importants sur la plateforme.
+1. **Service d'envoi d'emails configuré** ([email_service.py](backend/email_service.py))
+2. **Templates HTML professionnels** pour tous les types de notifications
+3. **Support des variables d'environnement** via fichier `.env`
+4. **Script de test** ([test_email_simple.py](backend/test_email_simple.py))
+5. **python-dotenv installé** dans le venv
 
-## Variables d'environnement
+## ⚠️ Problème Actuel - Authentification Exchange
 
-### Configuration SMTP (Requises pour l'envoi d'emails)
+### Erreur rencontrée
 
-```bash
-# Activer/Désactiver les emails
-EMAIL_ENABLED=true              # false par défaut - Activer pour envoyer des emails réels
-
-# Mode debug (affiche les emails dans les logs au lieu de les envoyer)
-EMAIL_DEBUG_MODE=false          # true par défaut - Mettre à false en production
-
-# Configuration du serveur SMTP
-SMTP_HOST=smtp.gmail.com        # Serveur SMTP (Gmail par défaut)
-SMTP_PORT=587                   # Port SMTP (587 pour TLS)
-SMTP_USERNAME=votre.email@gmail.com      # Email d'authentification
-SMTP_PASSWORD=votre_mot_de_passe_app     # Mot de passe d'application
-
-# Informations de l'expéditeur
-SMTP_FROM_EMAIL=noreply@dgppe.sn         # Email affiché comme expéditeur
-SMTP_FROM_NAME=PLASMAP - DGPPE           # Nom affiché comme expéditeur
-
-# URL du frontend (pour les liens dans les emails)
-FRONTEND_URL=https://maturation-frontend.onrender.com
+```
+SMTPAuthenticationError: (535, '5.7.3 Authentication unsuccessful')
 ```
 
-## Configuration Gmail
+### Cause probable
 
-Pour utiliser Gmail comme serveur SMTP :
+Le compte `maturation.dgppe@economie.gouv.sn` :
+- A peut-être un mot de passe incorrect
+- OU a l'authentification multifacteur (MFA/2FA) activée
+- OU l'authentification SMTP de base est désactivée
 
-1. **Activer l'authentification à deux facteurs** sur votre compte Gmail
-2. **Créer un mot de passe d'application** :
-   - Allez dans https://myaccount.google.com/security
-   - Cliquez sur "Mots de passe d'application"
-   - Sélectionnez "Autre" et nommez-le "PLASMAP"
-   - Copiez le mot de passe généré (16 caractères)
-   - Utilisez ce mot de passe dans `SMTP_PASSWORD`
+## Solutions à Tester
 
-3. **Configuration recommandée** :
-```bash
-SMTP_HOST=smtp.gmail.com
+### 1. Vérifier les Identifiants
+
+**Testez la connexion** sur https://outlook.office.com avec :
+- Email: `maturation.dgppe@economie.gouv.sn`
+- Mot de passe: `Maturationdgppe1`
+
+Si la connexion échoue → le mot de passe est incorrect
+
+### 2. Créer un Mot de Passe d'Application (si MFA activé)
+
+Si MFA est activé sur le compte :
+
+1. Se connecter sur https://account.microsoft.com/security
+2. Aller dans **Sécurité** → **Options de sécurité avancées** 
+3. Cliquer sur **Créer un mot de passe d'application**
+4. Remplacer dans `.env` :
+   ```env
+   SMTP_PASSWORD=<nouveau-mot-de-passe-application>
+   ```
+
+### 3. Contacter l'Administrateur Exchange
+
+Demander à l'admin IT de :
+- Vérifier que SMTP AUTH est activé pour ce compte
+- Désactiver MFA pour ce compte de service
+- Ou autoriser "Authentification de base" (Basic Auth) pour SMTP
+
+## Configuration Production (Render)
+
+### Variables d'Environnement à Ajouter
+
+Dans le dashboard Render → Service backend → Environment :
+
+```
+SMTP_SERVER=smtp.office365.com
 SMTP_PORT=587
-SMTP_USERNAME=votre.email@gmail.com
-SMTP_PASSWORD=xxxx xxxx xxxx xxxx  # Mot de passe d'application
+SMTP_USERNAME=maturation.dgppe@economie.gouv.sn
+SMTP_PASSWORD=Maturationdgppe1
+FROM_EMAIL=maturation.dgppe@economie.gouv.sn
+FROM_NAME=Maturation DGPPE
+EMAIL_ENABLED=true
+EMAIL_DEBUG_MODE=false
+PLATFORM_URL=https://maturation-dgppe.onrender.com
 ```
 
-## Configuration Autres Services SMTP
+**Note** : Utilisez le **mot de passe d'application** si MFA est activé
 
-### SendGrid
+## Test Local
+
 ```bash
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USERNAME=apikey
-SMTP_PASSWORD=votre_clé_api_sendgrid
+cd backend
+source venv/bin/activate
+python3 test_email_simple.py votre-email@test.com
 ```
 
-### Mailgun
-```bash
-SMTP_HOST=smtp.mailgun.org
-SMTP_PORT=587
-SMTP_USERNAME=postmaster@votre-domaine.mailgun.org
-SMTP_PASSWORD=votre_mot_de_passe_mailgun
-```
-
-### Serveur SMTP personnel
-```bash
-SMTP_HOST=smtp.votre-domaine.com
-SMTP_PORT=587  # ou 465 pour SSL
-SMTP_USERNAME=notifications@votre-domaine.com
-SMTP_PASSWORD=votre_mot_de_passe
-```
-
-## Types de notifications par email
+## Notifications Configurées
 
 Les emails sont envoyés automatiquement pour :
 
-1. **Assignation d'évaluation** (`assignation`)
-   - Envoyé à l'évaluateur quand un projet lui est assigné
-   - Template: Email vert avec bouton "Commencer l'évaluation"
+1. 📩 **Projet assigné** → Notification au soumissionnaire
+2. 🔄 **Projet en évaluation** → Notification au soumissionnaire  
+3. ⚠️ **Compléments demandés** → Email avec matrice des documents manquants
+4. ✅ **Évaluation terminée** → Notification au soumissionnaire
+5. 🎯 **Décision finale** (favorable/défavorable/sous conditions)
+6. 💬 **Nouveau message** dans la discussion
 
-2. **Décision finale** (`decision_finale`)
-   - Envoyé au soumissionnaire quand une décision finale est prise
-   - Template: Email violet avec couleur de décision (vert = approuvé, rouge = rejeté)
+## Fichiers Modifiés
 
-3. **Nouveau projet** (peut être activé)
-   - Envoyé aux administrateurs lors d'une nouvelle soumission
-   - Template: Email bleu avec détails du projet
+- ✅ `backend/email_service.py` - Service d'envoi (load_dotenv ajouté)
+- ✅ `backend/.env` - Configuration locale (non versionné)
+- ✅ `backend/test_email_simple.py` - Script de test
+- ✅ `backend/requirements.txt` - python-dotenv ajouté (à faire)
 
-## Contrôle de l'envoi
+## Prochaines Étapes
 
-### Envoi prioritaire uniquement (par défaut)
-```bash
-EMAIL_SEND_ALL=false
-```
-Seules les notifications marquées comme `priorite_email=True` déclencheront un email.
+1. ⏳ Résoudre l'authentification Office365/Exchange
+2. ⏳ Ajouter `python-dotenv` au requirements.txt
+3. ⏳ Configurer les variables sur Render
+4. ⏳ Tester l'envoi depuis la production
 
-### Envoi de toutes les notifications
-```bash
-EMAIL_SEND_ALL=true
-```
-Toutes les notifications créées déclencheront un email (peut générer beaucoup d'emails).
-
-## Mode Debug
-
-En développement, utilisez le mode debug pour voir les emails sans les envoyer :
-
-```bash
-EMAIL_ENABLED=true
-EMAIL_DEBUG_MODE=true
-```
-
-Les emails seront affichés dans les logs de la console au lieu d'être envoyés.
-
-## Test de la configuration
-
-Après avoir configuré les variables d'environnement, vous pouvez tester l'envoi d'email :
-
-```python
-from utils.email_service import email_service
-
-# Test simple
-success = email_service.send_email(
-    to_email='test@example.com',
-    subject='Test PLASMAP',
-    html_body='<h1>Test réussi !</h1>'
-)
-
-print(f"Email envoyé: {success}")
-```
-
-## Sécurité
-
-⚠️ **IMPORTANT** :
-- Ne JAMAIS commiter les mots de passe SMTP dans le code
-- Utiliser des variables d'environnement sur Render.com
-- Utiliser des mots de passe d'application (pas le mot de passe principal du compte)
-- Limiter les permissions du compte email utilisé
-
-## Configuration sur Render.com
-
-1. Allez dans votre service backend sur Render.com
-2. Cliquez sur "Environment"
-3. Ajoutez les variables d'environnement :
-   - `EMAIL_ENABLED` = `true`
-   - `EMAIL_DEBUG_MODE` = `false`
-   - `SMTP_HOST` = `smtp.gmail.com`
-   - `SMTP_PORT` = `587`
-   - `SMTP_USERNAME` = votre email
-   - `SMTP_PASSWORD` = mot de passe d'application
-   - `SMTP_FROM_EMAIL` = email expéditeur
-   - `SMTP_FROM_NAME` = `PLASMAP - DGPPE`
-   - `FRONTEND_URL` = `https://maturation-frontend.onrender.com`
-
-4. Sauvegardez et redémarrez le service
-
-## Personnalisation des templates
-
-Les templates d'email sont définis dans `/backend/utils/email_service.py`.
-
-Pour personnaliser un template :
-
-1. Modifiez le dictionnaire `templates` dans la méthode `send_notification_email()`
-2. Les templates supportent HTML complet avec CSS inline
-3. Variables disponibles : `{user_name}`, `{titre}`, `{numero}`, `{secteur}`, `{lien}`, etc.
-
-## Troubleshooting
-
-### Les emails ne sont pas envoyés
-
-1. Vérifiez que `EMAIL_ENABLED=true`
-2. Vérifiez que `EMAIL_DEBUG_MODE=false` (en production)
-3. Consultez les logs pour voir les erreurs SMTP
-4. Vérifiez que le compte email autorise les connexions SMTP
-5. Vérifiez que le mot de passe d'application est correct
-
-### Emails marqués comme spam
-
-1. Utilisez un serveur SMTP professionnel (SendGrid, Mailgun)
-2. Configurez SPF, DKIM et DMARC pour votre domaine
-3. Utilisez un domaine vérifié comme expéditeur
-
-### Trop d'emails envoyés
-
-1. Passez `EMAIL_SEND_ALL=false`
-2. Seules les notifications prioritaires seront envoyées
-
-## Support
-
-Pour toute question sur la configuration des emails, consultez la documentation ou contactez l'équipe technique.
