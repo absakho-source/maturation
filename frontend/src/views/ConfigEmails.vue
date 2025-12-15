@@ -9,83 +9,174 @@
           </svg>
           Configuration des Emails
         </h1>
-        <p class="subtitle">Gérer les paramètres d'envoi d'emails automatiques</p>
+        <p class="subtitle">Configurer les paramètres d'envoi d'emails automatiques</p>
       </div>
 
       <!-- Chargement -->
-      <div v-if="emailConfig.loading" class="loading-message">
+      <div v-if="loading" class="loading-message">
         ⏳ Chargement de la configuration...
       </div>
 
       <!-- Erreur -->
-      <div v-if="emailConfig.error" class="error-box">
-        <strong>❌ Erreur:</strong> {{ emailConfig.error }}
+      <div v-if="error" class="error-box">
+        <strong>❌ Erreur:</strong> {{ error }}
       </div>
 
-      <!-- Configuration -->
-      <div v-if="!emailConfig.loading && emailConfig.data" class="config-sections">
+      <!-- Formulaire de configuration -->
+      <div v-if="!loading" class="config-sections">
 
-        <!-- Statut global -->
-        <div class="config-card">
-          <h3>📊 Statut du Service Email</h3>
-          <div class="status-grid">
-            <div class="status-item">
-              <span class="label">Service Activé:</span>
-              <span :class="['badge', emailConfig.data.enabled ? 'badge-success' : 'badge-error']">
-                {{ emailConfig.data.enabled ? '✅ Activé' : '❌ Désactivé' }}
-              </span>
-            </div>
-            <div class="status-item">
-              <span class="label">Mode Debug:</span>
-              <span :class="['badge', emailConfig.data.debug_mode ? 'badge-warning' : 'badge-neutral']">
-                {{ emailConfig.data.debug_mode ? '🔍 Activé' : 'Désactivé' }}
-              </span>
-            </div>
-            <div class="status-item">
-              <span class="label">Mot de passe:</span>
-              <span :class="['badge', emailConfig.data.password_configured ? 'badge-success' : 'badge-error']">
-                {{ emailConfig.data.password_configured ? '✅ Configuré' : '❌ Manquant' }}
-              </span>
-            </div>
-          </div>
+        <!-- Message de succès -->
+        <div v-if="saveSuccess" class="success-box">
+          <strong>✅ Succès:</strong> La configuration a été enregistrée avec succès !
         </div>
 
-        <!-- Configuration SMTP -->
-        <div class="config-card">
-          <h3>⚙️ Paramètres SMTP</h3>
-          <div class="config-grid">
-            <div class="config-item">
-              <span class="label">Serveur SMTP:</span>
-              <code>{{ emailConfig.data.smtp_server }}</code>
-            </div>
-            <div class="config-item">
-              <span class="label">Port:</span>
-              <code>{{ emailConfig.data.smtp_port }}</code>
-            </div>
-            <div class="config-item">
-              <span class="label">Nom d'utilisateur:</span>
-              <code>{{ emailConfig.data.smtp_username }}</code>
-            </div>
-            <div class="config-item">
-              <span class="label">Email expéditeur:</span>
-              <code>{{ emailConfig.data.from_email }}</code>
-            </div>
-            <div class="config-item">
-              <span class="label">Nom d'affichage:</span>
-              <code>{{ emailConfig.data.from_name }}</code>
-            </div>
-            <div class="config-item">
-              <span class="label">URL Plateforme:</span>
-              <code>{{ emailConfig.data.platform_url }}</code>
+        <!-- Formulaire principal -->
+        <form @submit.prevent="saveConfiguration" class="config-form">
+
+          <!-- Activation du service -->
+          <div class="config-card">
+            <h3>🔌 Activation du Service</h3>
+            <div class="form-row">
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="config.enabled" />
+                  <span>Activer l'envoi d'emails automatiques</span>
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="config.debug_mode" />
+                  <span>Mode Debug (logs détaillés)</span>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- Paramètres SMTP -->
+          <div class="config-card">
+            <h3>⚙️ Paramètres SMTP</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="smtp_server">Serveur SMTP *</label>
+                <input
+                  type="text"
+                  id="smtp_server"
+                  v-model="config.smtp_server"
+                  placeholder="smtp.office365.com"
+                  required
+                />
+                <small>Exemple: smtp.office365.com, smtp.gmail.com, mail.votre-serveur.sn</small>
+              </div>
+
+              <div class="form-group">
+                <label for="smtp_port">Port SMTP *</label>
+                <input
+                  type="number"
+                  id="smtp_port"
+                  v-model.number="config.smtp_port"
+                  placeholder="587"
+                  required
+                  min="1"
+                  max="65535"
+                />
+                <small>Port standard: 587 (STARTTLS) ou 465 (SSL)</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="smtp_username">Nom d'utilisateur SMTP *</label>
+                <input
+                  type="text"
+                  id="smtp_username"
+                  v-model="config.smtp_username"
+                  placeholder="votre.email@exemple.com"
+                  required
+                />
+                <small>Généralement votre adresse email complète</small>
+              </div>
+
+              <div class="form-group">
+                <label for="smtp_password">Mot de passe SMTP *</label>
+                <div class="password-input-wrapper">
+                  <input
+                    :type="showPassword ? 'text' : 'password'"
+                    id="smtp_password"
+                    v-model="config.smtp_password"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button type="button" @click="showPassword = !showPassword" class="toggle-password">
+                    {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                  </button>
+                </div>
+                <small>Mot de passe de votre compte email ou mot de passe d'application</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations d'envoi -->
+          <div class="config-card">
+            <h3>📧 Informations d'Envoi</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="from_email">Email expéditeur *</label>
+                <input
+                  type="email"
+                  id="from_email"
+                  v-model="config.from_email"
+                  placeholder="noreply@exemple.com"
+                  required
+                />
+                <small>Adresse email qui apparaîtra comme expéditeur</small>
+              </div>
+
+              <div class="form-group">
+                <label for="from_name">Nom d'affichage *</label>
+                <input
+                  type="text"
+                  id="from_name"
+                  v-model="config.from_name"
+                  placeholder="Maturation DGPPE"
+                  required
+                />
+                <small>Nom qui apparaîtra comme expéditeur</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="platform_url">URL de la Plateforme *</label>
+                <input
+                  type="url"
+                  id="platform_url"
+                  v-model="config.platform_url"
+                  placeholder="https://votre-plateforme.com"
+                  required
+                />
+                <small>URL complète de la plateforme (utilisée dans les liens des emails)</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="form-actions">
+            <button type="button" @click="resetForm" class="btn-secondary" :disabled="saving">
+              🔄 Réinitialiser
+            </button>
+            <button type="submit" class="btn-primary" :disabled="saving">
+              {{ saving ? '⏳ Enregistrement...' : '💾 Enregistrer la Configuration' }}
+            </button>
+          </div>
+        </form>
 
         <!-- Test d'envoi -->
         <div class="config-card">
           <h3>🧪 Test d'Envoi d'Email</h3>
           <p class="help-text">
-            Envoyez un email de test pour vérifier que la configuration fonctionne correctement.
+            Testez votre configuration en envoyant un email de vérification.
           </p>
 
           <div class="test-email-form">
@@ -97,10 +188,10 @@
             />
             <button
               @click="envoyerEmailTest"
-              :disabled="testEmailLoading || !testEmailAddress"
+              :disabled="testEmailLoading || !testEmailAddress || !config.enabled"
               class="btn-test-email"
             >
-              {{ testEmailLoading ? '⏳ Envoi en cours...' : '📤 Envoyer Email Test' }}
+              {{ testEmailLoading ? '⏳ Envoi...' : '📤 Envoyer Test' }}
             </button>
           </div>
 
@@ -112,52 +203,41 @@
               💡 {{ testEmailResult.hint }}
             </div>
           </div>
-        </div>
 
-        <!-- Liens utiles -->
-        <div class="config-card">
-          <h3>🔗 Liens Utiles</h3>
-          <div class="links-grid">
-            <a
-              :href="emailConfig.data.render_dashboard_url"
-              target="_blank"
-              class="link-button"
-            >
-              🔧 Modifier Configuration sur Render
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <line x1="10" y1="14" x2="21" y2="3"></line>
-              </svg>
-            </a>
-            <button @click="rechargerConfiguration" class="link-button secondary">
-              🔄 Recharger la Configuration
-            </button>
-          </div>
-
-          <div class="documentation-links">
-            <h4>📚 Documentation</h4>
-            <ul>
-              <li><code>{{ emailConfig.data.documentation.guide_complet }}</code> - Guide complet de configuration</li>
-              <li><code>{{ emailConfig.data.documentation.guide_rapide }}</code> - Guide d'activation rapide</li>
-              <li><code>{{ emailConfig.data.documentation.status }}</code> - Status et diagnostic</li>
-            </ul>
+          <div v-if="!config.enabled" class="warning-message">
+            ⚠️ Le service email est désactivé. Activez-le pour pouvoir tester l'envoi.
           </div>
         </div>
 
-        <!-- Informations importantes -->
-        <div class="config-card warning">
-          <h3>⚠️ Informations Importantes</h3>
-          <ul class="info-list">
-            <li>Les variables d'environnement sont configurées sur Render et non dans le code</li>
-            <li>Toute modification nécessite un redéploiement du service backend</li>
-            <li>Le mode debug affiche des logs détaillés (à désactiver en production)</li>
-            <li>Les utilisateurs doivent avoir un email configuré dans leur profil pour recevoir les notifications</li>
-            <li v-if="!emailConfig.data.enabled" class="error-item">
-              ❌ <strong>Le service email est actuellement désactivé.</strong>
-              Activez EMAIL_ENABLED=true sur Render pour activer les notifications.
-            </li>
-          </ul>
+        <!-- Informations d'aide -->
+        <div class="config-card info">
+          <h3>ℹ️ Informations Utiles</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>📚 Configuration Office 365:</strong>
+              <ul>
+                <li>Serveur: smtp.office365.com</li>
+                <li>Port: 587</li>
+                <li>Username: votre.email@economie.gouv.sn</li>
+              </ul>
+            </div>
+            <div class="info-item">
+              <strong>📚 Configuration Gmail:</strong>
+              <ul>
+                <li>Serveur: smtp.gmail.com</li>
+                <li>Port: 587</li>
+                <li>Nécessite un mot de passe d'application</li>
+              </ul>
+            </div>
+            <div class="info-item">
+              <strong>⚠️ Important:</strong>
+              <ul>
+                <li>Les changements sont appliqués immédiatement</li>
+                <li>Testez toujours après modification</li>
+                <li>Désactivez le mode debug en production</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -174,11 +254,26 @@ export default {
   },
   data() {
     return {
-      emailConfig: {
-        loading: false,
-        error: null,
-        data: null
+      loading: false,
+      saving: false,
+      error: null,
+      saveSuccess: false,
+      showPassword: false,
+
+      config: {
+        enabled: false,
+        debug_mode: false,
+        smtp_server: '',
+        smtp_port: 587,
+        smtp_username: '',
+        smtp_password: '',
+        from_email: '',
+        from_name: '',
+        platform_url: ''
       },
+
+      originalConfig: null,
+
       testEmailAddress: '',
       testEmailLoading: false,
       testEmailResult: {
@@ -193,8 +288,8 @@ export default {
   },
   methods: {
     async loadEmailConfig() {
-      this.emailConfig.loading = true;
-      this.emailConfig.error = null;
+      this.loading = true;
+      this.error = null;
 
       try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -212,18 +307,81 @@ export default {
           throw new Error(errorData.error || 'Erreur lors du chargement de la configuration');
         }
 
-        this.emailConfig.data = await response.json();
-        console.log('Configuration email chargée:', this.emailConfig.data);
+        const data = await response.json();
+
+        // Remplir le formulaire avec les données reçues
+        this.config = {
+          enabled: data.enabled || false,
+          debug_mode: data.debug_mode || false,
+          smtp_server: data.smtp_server || '',
+          smtp_port: data.smtp_port || 587,
+          smtp_username: data.smtp_username ? data.smtp_username.replace('...', '') : '',
+          smtp_password: '', // Ne pas afficher le mot de passe
+          from_email: data.from_email || '',
+          from_name: data.from_name || '',
+          platform_url: data.platform_url || ''
+        };
+
+        // Sauvegarder la config originale
+        this.originalConfig = { ...this.config };
+
+        console.log('Configuration email chargée:', data);
       } catch (error) {
         console.error('Erreur chargement configuration email:', error);
-        this.emailConfig.error = error.message || 'Impossible de charger la configuration email';
+        this.error = error.message || 'Impossible de charger la configuration email';
       } finally {
-        this.emailConfig.loading = false;
+        this.loading = false;
       }
     },
 
-    rechargerConfiguration() {
-      this.loadEmailConfig();
+    async saveConfiguration() {
+      this.saving = true;
+      this.error = null;
+      this.saveSuccess = false;
+
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const role = user?.role || 'guest';
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/email-config/save`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            role: role,
+            config: this.config
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de l\'enregistrement');
+        }
+
+        this.saveSuccess = true;
+        this.originalConfig = { ...this.config };
+
+        // Masquer le message de succès après 5 secondes
+        setTimeout(() => {
+          this.saveSuccess = false;
+        }, 5000);
+
+      } catch (error) {
+        console.error('Erreur sauvegarde configuration:', error);
+        this.error = error.message || 'Impossible d\'enregistrer la configuration';
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    resetForm() {
+      if (this.originalConfig) {
+        this.config = { ...this.originalConfig };
+      } else {
+        this.loadEmailConfig();
+      }
     },
 
     async envoyerEmailTest() {
@@ -232,7 +390,6 @@ export default {
         return;
       }
 
-      // Validation basique de l'email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.testEmailAddress)) {
         alert('Veuillez entrer une adresse email valide');
@@ -272,7 +429,6 @@ export default {
             hint: ''
           };
 
-          // Effacer le champ email après succès
           if (data.success) {
             setTimeout(() => {
               this.testEmailAddress = '';
@@ -296,7 +452,7 @@ export default {
 
 <style scoped>
 .email-config-container {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: var(--dgppe-spacing-6);
 }
@@ -317,6 +473,7 @@ export default {
 
 .page-title svg {
   color: #007bff;
+  flex-shrink: 0;
 }
 
 .subtitle {
@@ -341,7 +498,34 @@ export default {
   margin-bottom: var(--dgppe-spacing-4);
 }
 
+.success-box {
+  padding: var(--dgppe-spacing-4);
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  color: #155724;
+  margin-bottom: var(--dgppe-spacing-6);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .config-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dgppe-spacing-6);
+}
+
+.config-form {
   display: flex;
   flex-direction: column;
   gap: var(--dgppe-spacing-6);
@@ -354,85 +538,177 @@ export default {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.config-card.warning {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+.config-card.info {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
 }
 
 .config-card h3 {
-  margin: 0 0 var(--dgppe-spacing-4) 0;
+  margin: 0 0 var(--dgppe-spacing-5) 0;
   font-size: 1.25rem;
   color: #2c3e50;
 }
 
-.status-grid,
-.config-grid {
+.form-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: var(--dgppe-spacing-4);
-  margin-top: var(--dgppe-spacing-4);
+  margin-bottom: var(--dgppe-spacing-4);
 }
 
-.status-item,
-.config-item {
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: var(--dgppe-spacing-2);
+  font-size: 0.938rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="url"],
+.form-group input[type="number"],
+.form-group input[type="password"] {
   padding: var(--dgppe-spacing-3);
-  background: #f8f9fa;
+  border: 1px solid #ced4da;
   border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.status-item .label,
-.config-item .label {
-  font-weight: 600;
-  color: #495057;
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
 }
 
-.badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 600;
+.form-group small {
+  margin-top: var(--dgppe-spacing-1);
+  font-size: 0.813rem;
+  color: #6c757d;
+  font-style: italic;
 }
 
-.badge-success {
-  background: #d4edda;
-  color: #155724;
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.badge-error {
-  background: #f8d7da;
-  color: #721c24;
+.password-input-wrapper input {
+  flex: 1;
+  padding-right: 45px;
 }
 
-.badge-warning {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.badge-neutral {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.config-item code {
-  background: #e9ecef;
+.toggle-password {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.toggle-password:hover {
+  opacity: 0.7;
+}
+
+.checkbox-group {
+  margin-bottom: 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--dgppe-spacing-2);
+  cursor: pointer;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--dgppe-spacing-3);
+  justify-content: flex-end;
+  padding-top: var(--dgppe-spacing-4);
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: var(--dgppe-spacing-3) var(--dgppe-spacing-5);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #545b62;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .help-text {
   color: #6c757d;
   margin-bottom: var(--dgppe-spacing-4);
+  font-size: 0.938rem;
 }
 
 .test-email-form {
   display: flex;
   gap: var(--dgppe-spacing-3);
-  margin-top: var(--dgppe-spacing-4);
+  margin-bottom: var(--dgppe-spacing-4);
 }
 
 .email-input {
@@ -451,17 +727,18 @@ export default {
 
 .btn-test-email {
   padding: var(--dgppe-spacing-3) var(--dgppe-spacing-5);
-  background: #007bff;
+  background: #28a745;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .btn-test-email:hover:not(:disabled) {
-  background: #0056b3;
+  background: #218838;
 }
 
 .btn-test-email:disabled {
@@ -470,9 +747,9 @@ export default {
 }
 
 .test-result {
-  margin-top: var(--dgppe-spacing-4);
   padding: var(--dgppe-spacing-4);
   border-radius: 8px;
+  margin-bottom: var(--dgppe-spacing-3);
 }
 
 .test-result.success {
@@ -493,98 +770,65 @@ export default {
   font-size: 0.875rem;
 }
 
-.links-grid {
-  display: flex;
-  gap: var(--dgppe-spacing-3);
-  margin-top: var(--dgppe-spacing-4);
-}
-
-.link-button {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--dgppe-spacing-2);
+.warning-message {
   padding: var(--dgppe-spacing-3);
-  background: #007bff;
-  color: white;
-  text-decoration: none;
-  border: none;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
   border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.link-button:hover {
-  background: #0056b3;
-}
-
-.link-button.secondary {
-  background: #6c757d;
-}
-
-.link-button.secondary:hover {
-  background: #545b62;
-}
-
-.documentation-links {
-  margin-top: var(--dgppe-spacing-5);
-}
-
-.documentation-links h4 {
-  margin: 0 0 var(--dgppe-spacing-3) 0;
-  font-size: 1rem;
-  color: #495057;
-}
-
-.documentation-links ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.documentation-links li {
-  padding: var(--dgppe-spacing-2) 0;
-  color: #6c757d;
-  font-size: 0.875rem;
-}
-
-.documentation-links code {
-  background: #e9ecef;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Courier New', monospace;
-}
-
-.info-list {
-  list-style: none;
-  padding: 0;
-  margin: var(--dgppe-spacing-4) 0 0 0;
-}
-
-.info-list li {
-  padding: var(--dgppe-spacing-2) 0;
   color: #856404;
   font-size: 0.938rem;
 }
 
-.info-list .error-item {
-  color: #721c24;
-  font-weight: 600;
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--dgppe-spacing-4);
+}
+
+.info-item strong {
+  display: block;
+  margin-bottom: var(--dgppe-spacing-2);
+  color: #2c3e50;
+}
+
+.info-item ul {
+  margin: 0;
+  padding-left: var(--dgppe-spacing-4);
+  color: #495057;
+  font-size: 0.938rem;
+}
+
+.info-item li {
+  margin-bottom: var(--dgppe-spacing-1);
 }
 
 @media (max-width: 768px) {
+  .email-config-container {
+    padding: var(--dgppe-spacing-4);
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
   .test-email-form {
     flex-direction: column;
   }
 
-  .links-grid {
-    flex-direction: column;
+  .form-actions {
+    flex-direction: column-reverse;
   }
 
-  .status-grid,
-  .config-grid {
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .info-grid {
     grid-template-columns: 1fr;
   }
 }

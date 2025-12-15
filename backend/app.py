@@ -2630,6 +2630,150 @@ def test_email_sending():
             "hint": "Erreur lors de l'envoi de l'email de test"
         }), 500
 
+@app.route("/api/admin/email-config/save", methods=["POST"])
+def save_email_config():
+    """Enregistrer la configuration email"""
+    try:
+        # Vérifier l'authentification
+        username = request.cookies.get("username")
+        role = request.cookies.get("role")
+
+        if not username:
+            return jsonify({"error": "Non authentifié"}), 401
+
+        # Vérifier les permissions (admin ou secretariatsct)
+        if role not in ['admin', 'secretariatsct']:
+            return jsonify({"error": "Accès non autorisé. Seuls les administrateurs et le secrétariat SCT peuvent modifier la configuration."}), 403
+
+        # Récupérer les données
+        data = request.get_json()
+        if not data or 'config' not in data:
+            return jsonify({"error": "Données manquantes"}), 400
+
+        config = data['config']
+
+        # Valider les champs requis
+        required_fields = ['smtp_server', 'smtp_port', 'smtp_username', 'smtp_password', 'from_email', 'from_name', 'platform_url']
+        for field in required_fields:
+            if field not in config or not config[field]:
+                return jsonify({"error": f"Le champ '{field}' est requis"}), 400
+
+        # Valider le format de l'email
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, config['from_email']):
+            return jsonify({"error": "Format d'email invalide pour 'from_email'"}), 400
+
+        # Valider le port
+        try:
+            port = int(config['smtp_port'])
+            if port < 1 or port > 65535:
+                return jsonify({"error": "Le port SMTP doit être entre 1 et 65535"}), 400
+        except ValueError:
+            return jsonify({"error": "Le port SMTP doit être un nombre"}), 400
+
+        # Valider l'URL de la plateforme
+        if not config['platform_url'].startswith('http'):
+            return jsonify({"error": "L'URL de la plateforme doit commencer par http:// ou https://"}), 400
+
+        # Préparer les nouvelles variables d'environnement
+        env_updates = {
+            'EMAIL_ENABLED': 'true' if config.get('enabled', False) else 'false',
+            'EMAIL_DEBUG_MODE': 'true' if config.get('debug_mode', False) else 'false',
+            'SMTP_SERVER': config['smtp_server'],
+            'SMTP_PORT': str(config['smtp_port']),
+            'SMTP_USERNAME': config['smtp_username'],
+            'SMTP_PASSWORD': config['smtp_password'],
+            'FROM_EMAIL': config['from_email'],
+            'FROM_NAME': config['from_name'],
+            'PLATFORM_URL': config['platform_url']
+        }
+
+        # Déterminer le chemin du fichier .env
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        env_path = os.path.join(backend_dir, '.env')
+
+        # Lire le fichier .env existant
+        env_lines = []
+        if os.path.exists(env_path):
+            with open(env_path, 'r', encoding='utf-8') as f:
+                env_lines = f.readlines()
+
+        # Mettre à jour ou ajouter les variables
+        updated_keys = set()
+        new_lines = []
+
+        for line in env_lines:
+            line = line.rstrip('\n')
+            # Ignorer les lignes vides et les commentaires
+            if not line or line.strip().startswith('#'):
+                new_lines.append(line)
+                continue
+
+            # Extraire la clé
+            if '=' in line:
+                key = line.split('=', 1)[0].strip()
+                if key in env_updates:
+                    # Mettre à jour la valeur
+                    new_lines.append(f"{key}={env_updates[key]}")
+                    updated_keys.add(key)
+                else:
+                    # Garder la ligne inchangée
+                    new_lines.append(line)
+            else:
+                new_lines.append(line)
+
+        # Ajouter les nouvelles variables qui n'existaient pas
+        for key, value in env_updates.items():
+            if key not in updated_keys:
+                new_lines.append(f"{key}={value}")
+
+        # Écrire le fichier .env
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+            if new_lines and not new_lines[-1]:  # Ajouter newline final si nécessaire
+                pass
+            else:
+                f.write('\n')
+
+        print(f"[EMAIL_CONFIG] Configuration mise à jour par {username} ({role})")
+
+        # Recharger la configuration dans email_service
+        import email_service
+        import importlib
+        importlib.reload(email_service)
+
+        # Mettre à jour les variables dans le module courant
+        from email_service import (
+            EMAIL_ENABLED, EMAIL_DEBUG_MODE, SMTP_SERVER, SMTP_PORT,
+            SMTP_USERNAME, SMTP_PASSWORD, FROM_EMAIL, FROM_NAME, PLATFORM_URL
+        )
+
+        print(f"[EMAIL_CONFIG] Nouvelle configuration chargée: ENABLED={EMAIL_ENABLED}, SERVER={SMTP_SERVER}")
+
+        return jsonify({
+            "success": True,
+            "message": "Configuration email enregistrée avec succès",
+            "config": {
+                "enabled": EMAIL_ENABLED,
+                "debug_mode": EMAIL_DEBUG_MODE,
+                "smtp_server": SMTP_SERVER,
+                "smtp_port": SMTP_PORT,
+                "from_email": FROM_EMAIL,
+                "from_name": FROM_NAME,
+                "platform_url": PLATFORM_URL
+            }
+        }), 200
+
+    except Exception as e:
+        print(f"[EMAIL_CONFIG] ❌ Erreur lors de la sauvegarde: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Erreur lors de l'enregistrement de la configuration",
+            "details": str(e)
+        }), 500
+
 @app.route("/api/users/<username>/status", methods=["GET"])
 def get_user_status(username):
     """Récupérer le statut du compte d'un utilisateur"""
