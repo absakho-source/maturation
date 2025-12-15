@@ -182,6 +182,150 @@
           </div>
         </form>
 
+        <!-- Templates d'emails -->
+        <div class="config-card">
+          <h3>📝 Templates d'Emails</h3>
+          <p class="help-text">
+            Personnalisez les messages envoyés automatiquement lors des différentes étapes du workflow.
+          </p>
+
+          <!-- Chargement des templates -->
+          <div v-if="templatesLoading" class="loading-message" style="padding: var(--dgppe-spacing-4); text-align: center;">
+            ⏳ Chargement des templates...
+          </div>
+
+          <!-- Liste des templates -->
+          <div v-else class="templates-list">
+            <div
+              v-for="template in templates"
+              :key="template.id"
+              class="template-item"
+              :class="{ 'template-expanded': expandedTemplate === template.id }"
+            >
+              <div class="template-header" @click="toggleTemplate(template.id)">
+                <div class="template-info">
+                  <h4>{{ template.nom }}</h4>
+                  <p class="template-description">{{ template.description }}</p>
+                </div>
+                <div class="template-actions">
+                  <span class="template-status" :class="{ active: template.actif }">
+                    {{ template.actif ? '✅ Actif' : '❌ Inactif' }}
+                  </span>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="expand-icon"
+                    :class="{ expanded: expandedTemplate === template.id }"
+                  >
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Formulaire d'édition du template -->
+              <div v-show="expandedTemplate === template.id" class="template-editor">
+                <div class="form-group">
+                  <label>Sujet de l'email</label>
+                  <input
+                    type="text"
+                    v-model="template.sujet"
+                    placeholder="Sujet de l'email"
+                    class="template-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Contenu de l'email (HTML)</label>
+                  <textarea
+                    v-model="template.contenu_html"
+                    rows="10"
+                    placeholder="Contenu HTML de l'email..."
+                    class="template-textarea"
+                  ></textarea>
+                </div>
+
+                <!-- Variables disponibles -->
+                <div class="variables-info">
+                  <strong>Variables disponibles:</strong>
+                  <div class="variables-list">
+                    <span
+                      v-for="variable in template.variables_disponibles"
+                      :key="variable.var"
+                      class="variable-tag"
+                      :title="variable.description"
+                      @click="copyToClipboard(variable.var)"
+                    >
+                      {{ variable.var }}
+                    </span>
+                  </div>
+                  <small class="hint">Cliquez sur une variable pour la copier</small>
+                </div>
+
+                <!-- Statut actif/inactif -->
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" v-model="template.actif" />
+                    <span>Template actif (envoi d'emails pour ce type d'événement)</span>
+                  </label>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="template-form-actions">
+                  <button
+                    type="button"
+                    @click="previewTemplate(template)"
+                    class="btn-preview"
+                    :disabled="templateSaving[template.id]"
+                  >
+                    👁️ Prévisualiser
+                  </button>
+                  <button
+                    type="button"
+                    @click="saveTemplate(template)"
+                    class="btn-save-template"
+                    :disabled="templateSaving[template.id]"
+                  >
+                    {{ templateSaving[template.id] ? '⏳ Sauvegarde...' : '💾 Sauvegarder' }}
+                  </button>
+                </div>
+
+                <!-- Résultat de la sauvegarde -->
+                <div v-if="templateSaveResult[template.id]" :class="['save-result', templateSaveResult[template.id].success ? 'success' : 'error']">
+                  {{ templateSaveResult[template.id].message }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modale de prévisualisation -->
+        <div v-if="previewModal.show" class="modal-overlay" @click.self="closePreview">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>📧 Prévisualisation de l'email</h3>
+              <button @click="closePreview" class="btn-close">✕</button>
+            </div>
+            <div class="modal-body">
+              <div v-if="previewModal.loading" class="loading-message">
+                ⏳ Génération de la prévisualisation...
+              </div>
+              <div v-else-if="previewModal.error" class="error-message">
+                ❌ {{ previewModal.error }}
+              </div>
+              <div v-else>
+                <div class="preview-subject">
+                  <strong>Sujet:</strong> {{ previewModal.sujet }}
+                </div>
+                <div class="preview-html" v-html="previewModal.html"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Test d'envoi -->
         <div class="config-card">
           <h3>🧪 Test d'Envoi d'Email</h3>
@@ -290,11 +434,28 @@ export default {
         success: false,
         message: '',
         hint: ''
+      },
+
+      // Templates d'emails
+      templates: [],
+      templatesLoading: false,
+      expandedTemplate: null,
+      templateSaving: {},
+      templateSaveResult: {},
+
+      // Prévisualisation
+      previewModal: {
+        show: false,
+        loading: false,
+        error: null,
+        sujet: '',
+        html: ''
       }
     };
   },
   mounted() {
     this.loadEmailConfig();
+    this.loadEmailTemplates();
   },
   methods: {
     async loadEmailConfig() {
@@ -455,6 +616,164 @@ export default {
       } finally {
         this.testEmailLoading = false;
       }
+    },
+
+    async loadEmailTemplates() {
+      this.templatesLoading = true;
+
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const role = user?.role || 'guest';
+        const username = user?.username || 'guest';
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/email-templates`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Role': role,
+            'X-Username': username
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erreur lors du chargement des templates');
+        }
+
+        const data = await response.json();
+        this.templates = data.templates || [];
+
+        console.log('Templates chargés:', this.templates);
+      } catch (error) {
+        console.error('Erreur chargement templates:', error);
+        this.error = error.message || 'Impossible de charger les templates d\'emails';
+      } finally {
+        this.templatesLoading = false;
+      }
+    },
+
+    toggleTemplate(templateId) {
+      if (this.expandedTemplate === templateId) {
+        this.expandedTemplate = null;
+      } else {
+        this.expandedTemplate = templateId;
+      }
+    },
+
+    async saveTemplate(template) {
+      this.templateSaving[template.id] = true;
+      this.templateSaveResult[template.id] = null;
+
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const role = user?.role || 'guest';
+        const username = user?.username || 'guest';
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/email-templates/${template.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Role': role,
+            'X-Username': username
+          },
+          body: JSON.stringify({
+            nom: template.nom,
+            description: template.description,
+            sujet: template.sujet,
+            contenu_html: template.contenu_html,
+            actif: template.actif
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de la sauvegarde');
+        }
+
+        this.templateSaveResult[template.id] = {
+          success: true,
+          message: '✅ Template sauvegardé avec succès'
+        };
+
+        // Masquer le message après 3 secondes
+        setTimeout(() => {
+          this.templateSaveResult[template.id] = null;
+        }, 3000);
+
+      } catch (error) {
+        console.error('Erreur sauvegarde template:', error);
+        this.templateSaveResult[template.id] = {
+          success: false,
+          message: `❌ ${error.message || 'Erreur lors de la sauvegarde'}`
+        };
+      } finally {
+        this.templateSaving[template.id] = false;
+      }
+    },
+
+    async previewTemplate(template) {
+      this.previewModal = {
+        show: true,
+        loading: true,
+        error: null,
+        sujet: '',
+        html: ''
+      };
+
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const role = user?.role || 'guest';
+        const username = user?.username || 'guest';
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/email-templates/preview`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Role': role,
+            'X-Username': username
+          },
+          body: JSON.stringify({
+            sujet: template.sujet,
+            contenu_html: template.contenu_html
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de la prévisualisation');
+        }
+
+        this.previewModal.loading = false;
+        this.previewModal.sujet = data.sujet;
+        this.previewModal.html = data.html;
+
+      } catch (error) {
+        console.error('Erreur prévisualisation:', error);
+        this.previewModal.loading = false;
+        this.previewModal.error = error.message || 'Impossible de générer la prévisualisation';
+      }
+    },
+
+    closePreview() {
+      this.previewModal = {
+        show: false,
+        loading: false,
+        error: null,
+        sujet: '',
+        html: ''
+      };
+    },
+
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Feedback visuel simple (pourrait être amélioré avec un toast)
+        console.log('Variable copiée:', text);
+        alert(`Variable ${text} copiée dans le presse-papier !`);
+      }).catch(err => {
+        console.error('Erreur copie:', err);
+      });
     }
   }
 };
@@ -868,6 +1187,349 @@ export default {
 
   .info-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Styles pour les templates d'emails */
+.templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dgppe-spacing-3);
+}
+
+.template-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.template-item.template-expanded {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--dgppe-spacing-4);
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.template-header:hover {
+  background: #e9ecef;
+}
+
+.template-info h4 {
+  margin: 0 0 var(--dgppe-spacing-1) 0;
+  font-size: 1.063rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.template-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--dgppe-spacing-3);
+}
+
+.template-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  background: #dc3545;
+  color: white;
+}
+
+.template-status.active {
+  background: #28a745;
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.template-editor {
+  padding: var(--dgppe-spacing-5);
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.template-input,
+.template-textarea {
+  width: 100%;
+  padding: var(--dgppe-spacing-3);
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.938rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.template-textarea {
+  font-family: 'Monaco', 'Courier New', monospace;
+  resize: vertical;
+  min-height: 200px;
+}
+
+.template-input:focus,
+.template-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.variables-info {
+  margin: var(--dgppe-spacing-4) 0;
+  padding: var(--dgppe-spacing-3);
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+}
+
+.variables-info strong {
+  display: block;
+  margin-bottom: var(--dgppe-spacing-2);
+  color: #2c3e50;
+  font-size: 0.938rem;
+}
+
+.variables-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dgppe-spacing-2);
+  margin-bottom: var(--dgppe-spacing-2);
+}
+
+.variable-tag {
+  padding: 4px 10px;
+  background: white;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  font-size: 0.813rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.variable-tag:hover {
+  background: #007bff;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.variables-info .hint {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.template-form-actions {
+  display: flex;
+  gap: var(--dgppe-spacing-3);
+  justify-content: flex-end;
+  margin-top: var(--dgppe-spacing-4);
+  padding-top: var(--dgppe-spacing-4);
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-preview,
+.btn-save-template {
+  padding: var(--dgppe-spacing-2) var(--dgppe-spacing-4);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.938rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-preview {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-preview:hover:not(:disabled) {
+  background: #545b62;
+}
+
+.btn-save-template {
+  background: #007bff;
+  color: white;
+}
+
+.btn-save-template:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-preview:disabled,
+.btn-save-template:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.save-result {
+  margin-top: var(--dgppe-spacing-3);
+  padding: var(--dgppe-spacing-3);
+  border-radius: 6px;
+  font-size: 0.938rem;
+  animation: slideDown 0.3s ease;
+}
+
+.save-result.success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.save-result.error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+/* Modale de prévisualisation */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--dgppe-spacing-4);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--dgppe-spacing-4);
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-close:hover {
+  background: #e9ecef;
+  color: #2c3e50;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--dgppe-spacing-5);
+}
+
+.preview-subject {
+  padding: var(--dgppe-spacing-3);
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: var(--dgppe-spacing-4);
+  font-size: 1rem;
+}
+
+.preview-subject strong {
+  color: #2c3e50;
+}
+
+.preview-html {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.error-message {
+  padding: var(--dgppe-spacing-4);
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  color: #721c24;
+}
+
+@media (max-width: 768px) {
+  .template-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dgppe-spacing-2);
+  }
+
+  .template-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .template-form-actions {
+    flex-direction: column;
+  }
+
+  .btn-preview,
+  .btn-save-template {
+    width: 100%;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
+  .variables-list {
+    flex-direction: column;
+  }
+
+  .variable-tag {
+    width: 100%;
   }
 }
 </style>

@@ -6,7 +6,7 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion, EmailTemplate
 from flask_cors import CORS
 from utils.archivage import archiver_fiche
 from workflow_validator import WorkflowValidator
@@ -2773,6 +2773,158 @@ def save_email_config():
             "error": "Erreur lors de l'enregistrement de la configuration",
             "details": str(e)
         }), 500
+
+
+@app.route("/api/admin/email-templates", methods=["GET"])
+def get_email_templates():
+    """Récupérer tous les templates d'emails (admin uniquement)"""
+    try:
+        # Vérifier le rôle admin
+        role = request.headers.get("X-Role")
+        if role != 'admin':
+            return jsonify({"error": "Accès non autorisé - réservé aux administrateurs"}), 403
+
+        templates = EmailTemplate.query.all()
+        return jsonify({
+            "templates": [t.to_dict() for t in templates]
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Erreur lors de la récupération des templates",
+            "details": str(e)
+        }), 500
+
+
+@app.route("/api/admin/email-templates/<int:template_id>", methods=["GET"])
+def get_email_template(template_id):
+    """Récupérer un template spécifique (admin uniquement)"""
+    try:
+        # Vérifier le rôle admin
+        role = request.headers.get("X-Role")
+        if role != 'admin':
+            return jsonify({"error": "Accès non autorisé - réservé aux administrateurs"}), 403
+
+        template = EmailTemplate.query.get(template_id)
+        if not template:
+            return jsonify({"error": "Template non trouvé"}), 404
+
+        return jsonify(template.to_dict()), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Erreur lors de la récupération du template",
+            "details": str(e)
+        }), 500
+
+
+@app.route("/api/admin/email-templates/<int:template_id>", methods=["PUT"])
+def update_email_template(template_id):
+    """Mettre à jour un template d'email (admin uniquement)"""
+    try:
+        # Vérifier le rôle admin
+        role = request.headers.get("X-Role")
+        username = request.headers.get("X-Username")
+
+        if role != 'admin':
+            return jsonify({"error": "Accès non autorisé - réservé aux administrateurs"}), 403
+
+        template = EmailTemplate.query.get(template_id)
+        if not template:
+            return jsonify({"error": "Template non trouvé"}), 404
+
+        data = request.get_json()
+
+        # Mettre à jour les champs
+        if 'nom' in data:
+            template.nom = data['nom']
+        if 'description' in data:
+            template.description = data['description']
+        if 'sujet' in data:
+            template.sujet = data['sujet']
+        if 'contenu_html' in data:
+            template.contenu_html = data['contenu_html']
+        if 'actif' in data:
+            template.actif = data['actif']
+
+        # Enregistrer qui a modifié
+        template.modifie_par = username
+        template.modifie_le = datetime.utcnow()
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Template mis à jour avec succès",
+            "template": template.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Erreur lors de la mise à jour du template",
+            "details": str(e)
+        }), 500
+
+
+@app.route("/api/admin/email-templates/preview", methods=["POST"])
+def preview_email_template():
+    """Prévisualiser un template avec des données de test (admin uniquement)"""
+    try:
+        # Vérifier le rôle admin
+        role = request.headers.get("X-Role")
+        if role != 'admin':
+            return jsonify({"error": "Accès non autorisé - réservé aux administrateurs"}), 403
+
+        data = request.get_json()
+        contenu_html = data.get('contenu_html', '')
+        sujet = data.get('sujet', '')
+
+        # Données de test pour le remplacement
+        test_vars = {
+            '{user_name}': 'Jean Dupont',
+            '{project_titre}': 'Construction d\'une école primaire',
+            '{numero_projet}': 'DGPPE-25-001',
+            '{evaluateur_nom}': 'Marie Martin',
+            '{auteur_nom}': 'Jean Dupont',
+            '{message_auteur}': 'Secrétariat SCT',
+            '{message_complements}': 'Veuillez fournir le budget détaillé du projet.'
+        }
+
+        # Remplacer les variables dans le sujet et le contenu
+        preview_sujet = sujet
+        preview_html = contenu_html
+
+        for var, value in test_vars.items():
+            preview_sujet = preview_sujet.replace(var, value)
+            preview_html = preview_html.replace(var, value)
+
+        # Générer le HTML complet avec le template email
+        from email_service import get_email_template
+        full_html = get_email_template(
+            title=preview_sujet,
+            content=preview_html
+        )
+
+        return jsonify({
+            "sujet": preview_sujet,
+            "html": full_html
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "error": "Erreur lors de la prévisualisation",
+            "details": str(e)
+        }), 500
+
 
 @app.route("/api/users/<username>/status", methods=["GET"])
 def get_user_status(username):

@@ -14,6 +14,21 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
+# Import de la DB pour charger les templates
+# On importe ici au lieu du début pour éviter les dépendances circulaires
+_db = None
+_EmailTemplate = None
+
+def _get_db():
+    """Lazy import de la DB pour éviter les dépendances circulaires"""
+    global _db, _EmailTemplate
+    if _db is None:
+        from db import db as _db_import
+        from models import EmailTemplate as _EmailTemplate_import
+        _db = _db_import
+        _EmailTemplate = _EmailTemplate_import
+    return _db, _EmailTemplate
+
 # Configuration SMTP (à définir dans les variables d'environnement)
 SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
 SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
@@ -168,6 +183,50 @@ def get_email_template(title, content, cta_text=None, cta_url=None):
     """
 
 
+def get_template_from_db(template_key):
+    """
+    Récupère un template depuis la base de données
+
+    Args:
+        template_key (str): Clé du template (ex: 'projet_assigne')
+
+    Returns:
+        dict: Template avec sujet et contenu, ou None si non trouvé
+    """
+    try:
+        db, EmailTemplate = _get_db()
+        template = EmailTemplate.query.filter_by(template_key=template_key, actif=True).first()
+
+        if template:
+            return {
+                'sujet': template.sujet,
+                'contenu': template.contenu_html
+            }
+        else:
+            print(f"[EMAIL] ⚠️ Template '{template_key}' non trouvé ou inactif")
+            return None
+
+    except Exception as e:
+        print(f"[EMAIL] ❌ Erreur chargement template '{template_key}': {e}")
+        return None
+
+
+def replace_variables(text, variables):
+    """
+    Remplace les variables dans le texte
+
+    Args:
+        text (str): Texte contenant des variables entre accolades
+        variables (dict): Dictionnaire des variables à remplacer
+
+    Returns:
+        str: Texte avec variables remplacées
+    """
+    for key, value in variables.items():
+        text = text.replace(key, str(value) if value is not None else '')
+    return text
+
+
 def send_status_change_email(project, user_email, user_name):
     """
     Envoie un email lors d'un changement de statut du projet
@@ -179,6 +238,63 @@ def send_status_change_email(project, user_email, user_name):
 
     Returns:
         bool: True si envoyé avec succès
+    """
+    # Mapping des statuts vers les clés de templates
+    status_to_template = {
+        'assigné': 'projet_assigne',
+        'en évaluation': 'projet_en_evaluation',
+        'compléments demandés': 'complements_demandes',
+        'évalué': 'projet_evalue',
+        'favorable': 'avis_favorable',
+        'favorable sous conditions': 'avis_favorable_conditions',
+        'défavorable': 'avis_defavorable'
+    }
+
+    template_key = status_to_template.get(project.statut)
+
+    if not template_key:
+        print(f"[EMAIL] ⚠️ Aucun template défini pour le statut '{project.statut}'")
+        return False
+
+    # Récupérer le template depuis la DB
+    template = get_template_from_db(template_key)
+
+    if not template:
+        # Fallback vers les messages hardcodés (pour compatibilité)
+        print(f"[EMAIL] ℹ️ Utilisation du fallback hardcodé pour '{project.statut}'")
+        return _send_status_change_email_fallback(project, user_email, user_name)
+
+    # Variables de remplacement
+    variables = {
+        '{user_name}': user_name,
+        '{project_titre}': project.titre,
+        '{numero_projet}': project.numero_projet,
+        '{message_complements}': project.complements_demande_message or 'Veuillez consulter la plateforme pour plus de détails.'
+    }
+
+    # Remplacer les variables
+    sujet = replace_variables(template['sujet'], variables)
+    contenu = replace_variables(template['contenu'], variables)
+
+    # Générer le HTML complet
+    html_content = get_email_template(
+        title=sujet.replace('[DGPPE] ', ''),
+        content=contenu,
+        cta_text="Voir mon projet",
+        cta_url=f"{PLATFORM_URL}/project/{project.id}"
+    )
+
+    return send_email(
+        to_email=user_email,
+        subject=sujet,
+        html_content=html_content
+    )
+
+
+def _send_status_change_email_fallback(project, user_email, user_name):
+    """
+    Fonction fallback utilisant les messages hardcodés
+    (Pour compatibilité au cas où les templates DB ne seraient pas disponibles)
     """
     status_messages = {
         'assigné': {
@@ -275,25 +391,52 @@ def send_evaluator_assignment_email(project, evaluator_email, evaluator_name):
     Returns:
         bool: True si envoyé avec succès
     """
-    content = f"""
-        <p>Bonjour {evaluator_name},</p>
-        <p>Un nouveau projet vous a été assigné pour évaluation.</p>
-        <p><strong>Projet :</strong> {project.titre}</p>
-        <p><strong>Numéro :</strong> {project.numero_projet}</p>
-        <p><strong>Soumissionnaire :</strong> {project.auteur_nom or 'Non spécifié'}</p>
-        <p>Veuillez vous connecter à la plateforme pour consulter le dossier complet et procéder à l'évaluation.</p>
-    """
+    # Récupérer le template depuis la DB
+    template = get_template_from_db('evaluateur_assignation')
 
-    html_content = get_email_template(
-        title="Nouveau projet à évaluer",
-        content=content,
-        cta_text="Voir le projet",
-        cta_url=f"{PLATFORM_URL}/project/{project.id}"
-    )
+    if template:
+        # Variables de remplacement
+        variables = {
+            '{evaluateur_nom}': evaluator_name,
+            '{project_titre}': project.titre,
+            '{numero_projet}': project.numero_projet,
+            '{auteur_nom}': project.auteur_nom or 'Non spécifié'
+        }
+
+        # Remplacer les variables
+        sujet = replace_variables(template['sujet'], variables)
+        contenu = replace_variables(template['contenu'], variables)
+
+        # Générer le HTML complet
+        html_content = get_email_template(
+            title=sujet.replace('[DGPPE] ', '').replace(f' - {project.titre}', ''),
+            content=contenu,
+            cta_text="Voir le projet",
+            cta_url=f"{PLATFORM_URL}/project/{project.id}"
+        )
+    else:
+        # Fallback hardcodé
+        print("[EMAIL] ℹ️ Utilisation du fallback hardcodé pour evaluateur_assignation")
+        content = f"""
+            <p>Bonjour {evaluator_name},</p>
+            <p>Un nouveau projet vous a été assigné pour évaluation.</p>
+            <p><strong>Projet :</strong> {project.titre}</p>
+            <p><strong>Numéro :</strong> {project.numero_projet}</p>
+            <p><strong>Soumissionnaire :</strong> {project.auteur_nom or 'Non spécifié'}</p>
+            <p>Veuillez vous connecter à la plateforme pour consulter le dossier complet et procéder à l'évaluation.</p>
+        """
+
+        html_content = get_email_template(
+            title="Nouveau projet à évaluer",
+            content=content,
+            cta_text="Voir le projet",
+            cta_url=f"{PLATFORM_URL}/project/{project.id}"
+        )
+        sujet = f"[DGPPE] Nouveau projet assigné - {project.titre}"
 
     return send_email(
         to_email=evaluator_email,
-        subject=f"[DGPPE] Nouveau projet assigné - {project.titre}",
+        subject=sujet,
         html_content=html_content
     )
 
@@ -311,22 +454,49 @@ def send_new_message_email(project, user_email, user_name, message_author):
     Returns:
         bool: True si envoyé avec succès
     """
-    content = f"""
-        <p>Bonjour {user_name},</p>
-        <p>Un nouveau message a été posté sur votre projet <strong>"{project.titre}"</strong> (N° {project.numero_projet}).</p>
-        <p><strong>Message de :</strong> {message_author}</p>
-        <p>Connectez-vous à la plateforme pour consulter ce message et y répondre si nécessaire.</p>
-    """
+    # Récupérer le template depuis la DB
+    template = get_template_from_db('nouveau_message')
 
-    html_content = get_email_template(
-        title="Nouveau message sur votre projet",
-        content=content,
-        cta_text="Voir les messages",
-        cta_url=f"{PLATFORM_URL}/project/{project.id}"
-    )
+    if template:
+        # Variables de remplacement
+        variables = {
+            '{user_name}': user_name,
+            '{project_titre}': project.titre,
+            '{numero_projet}': project.numero_projet,
+            '{message_auteur}': message_author
+        }
+
+        # Remplacer les variables
+        sujet = replace_variables(template['sujet'], variables)
+        contenu = replace_variables(template['contenu'], variables)
+
+        # Générer le HTML complet
+        html_content = get_email_template(
+            title=sujet.replace('[DGPPE] ', '').replace(f' - {project.titre}', ''),
+            content=contenu,
+            cta_text="Voir les messages",
+            cta_url=f"{PLATFORM_URL}/project/{project.id}"
+        )
+    else:
+        # Fallback hardcodé
+        print("[EMAIL] ℹ️ Utilisation du fallback hardcodé pour nouveau_message")
+        content = f"""
+            <p>Bonjour {user_name},</p>
+            <p>Un nouveau message a été posté sur votre projet <strong>"{project.titre}"</strong> (N° {project.numero_projet}).</p>
+            <p><strong>Message de :</strong> {message_author}</p>
+            <p>Connectez-vous à la plateforme pour consulter ce message et y répondre si nécessaire.</p>
+        """
+
+        html_content = get_email_template(
+            title="Nouveau message sur votre projet",
+            content=content,
+            cta_text="Voir les messages",
+            cta_url=f"{PLATFORM_URL}/project/{project.id}"
+        )
+        sujet = f"[DGPPE] Nouveau message - {project.titre}"
 
     return send_email(
         to_email=user_email,
-        subject=f"[DGPPE] Nouveau message - {project.titre}",
+        subject=sujet,
         html_content=html_content
     )

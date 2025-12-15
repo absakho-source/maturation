@@ -940,3 +940,34 @@ class ProjectVersion(db.Model):
             'statut_before': self.statut_before,
             'statut_after': self.statut_after
         }
+
+
+class EmailTemplate(db.Model):
+    """Modèle pour les templates d'emails personnalisables"""
+    __tablename__ = 'email_templates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    template_key = db.Column(db.String(100), unique=True, nullable=False)  # Clé unique du template (ex: 'projet_assigne')
+    nom = db.Column(db.String(200), nullable=False)  # Nom affiché du template
+    description = db.Column(db.Text)  # Description du template
+    sujet = db.Column(db.String(500), nullable=False)  # Sujet de l'email
+    contenu_html = db.Column(db.Text, nullable=False)  # Contenu HTML de l'email
+    variables_disponibles = db.Column(db.Text)  # JSON des variables disponibles (ex: {user_name}, {project_titre})
+    actif = db.Column(db.Boolean, default=True)  # Le template est-il actif ?
+    modifie_le = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    modifie_par = db.Column(db.String(100))  # Username de la dernière personne qui a modifié
+
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'template_key': self.template_key,
+            'nom': self.nom,
+            'description': self.description,
+            'sujet': self.sujet,
+            'contenu_html': self.contenu_html,
+            'variables_disponibles': json.loads(self.variables_disponibles) if self.variables_disponibles else [],
+            'actif': self.actif,
+            'modifie_le': self.modifie_le.isoformat() if self.modifie_le else None,
+            'modifie_par': self.modifie_par
+        }
