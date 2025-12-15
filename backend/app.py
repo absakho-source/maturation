@@ -2704,14 +2704,21 @@ def update_user_profile(username):
         if 'telephone' in data:
             user.telephone = data['telephone']
 
-        # Note: Le username est aussi l'email dans ce système
-        # Si on veut permettre de changer l'email, il faut mettre à jour le username
-        if 'email' in data and data['email'] != user.username:
-            # Vérifier que le nouvel email n'est pas déjà utilisé
-            existing_user = User.query.filter_by(username=data['email']).first()
-            if existing_user and existing_user.id != user.id:
-                return jsonify({"error": "Cet email est déjà utilisé par un autre compte"}), 400
-            user.username = data['email']
+        # Mettre à jour l'email (champ séparé du username)
+        if 'email' in data:
+            new_email = data['email'].strip()
+            if new_email:
+                # Vérifier que l'email n'est pas déjà utilisé par un autre utilisateur
+                existing_user = User.query.filter(
+                    User.email == new_email,
+                    User.id != user.id
+                ).first()
+                if existing_user:
+                    return jsonify({"error": "Cet email est déjà utilisé par un autre compte"}), 400
+                user.email = new_email
+                print(f"[PROFILE UPDATE] Email mis à jour pour {username}: {new_email}")
+            else:
+                user.email = None
 
         db.session.commit()
 
@@ -2720,6 +2727,7 @@ def update_user_profile(username):
             "message": "Profil mis à jour avec succès",
             "user": {
                 "username": user.username,
+                "email": user.email,
                 "telephone": user.telephone,
                 "display_name": user.display_name
             }
