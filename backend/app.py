@@ -2517,11 +2517,11 @@ def update_user_details(user_id):
 def get_email_config():
     """Récupérer la configuration email actuelle (admin seulement)"""
     try:
-        # Vérifier les permissions
+        # Vérifier les permissions (admin uniquement)
         data = request.args
         role = data.get('role', '').lower()
 
-        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+        if role != 'admin':
             return jsonify({"error": "Accès non autorisé"}), 403
 
         # Récupérer la configuration depuis email_service
@@ -2553,11 +2553,11 @@ def get_email_config():
 def test_email_sending():
     """Tester l'envoi d'email (admin seulement)"""
     try:
-        # Vérifier les permissions
+        # Vérifier les permissions (admin uniquement)
         data = request.json or {}
         role = data.get('role', '').lower()
 
-        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+        if role != 'admin':
             return jsonify({"error": "Accès non autorisé"}), 403
 
         # Récupérer l'email de test
@@ -2641,9 +2641,9 @@ def save_email_config():
         if not username:
             return jsonify({"error": "Non authentifié"}), 401
 
-        # Vérifier les permissions (admin ou secretariatsct)
-        if role not in ['admin', 'secretariatsct']:
-            return jsonify({"error": "Accès non autorisé. Seuls les administrateurs et le secrétariat SCT peuvent modifier la configuration."}), 403
+        # Vérifier les permissions (admin uniquement)
+        if role != 'admin':
+            return jsonify({"error": "Accès non autorisé. Seuls les administrateurs peuvent modifier la configuration email."}), 403
 
         # Récupérer les données
         data = request.get_json()
