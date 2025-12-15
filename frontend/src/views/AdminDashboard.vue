@@ -44,9 +44,6 @@
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
           🗺️ Carte des pôles territoriaux
         </button>
-        <router-link to="/config-emails" class="tab-btn">
-          📧 Configuration Emails
-        </router-link>
       </div>
 
       <!-- ============ ONGLET: TOUS LES PROJETS ============ -->
