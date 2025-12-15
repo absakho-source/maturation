@@ -2513,6 +2513,123 @@ def update_user_details(user_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/email-config", methods=["GET"])
+def get_email_config():
+    """Récupérer la configuration email actuelle (admin seulement)"""
+    try:
+        # Vérifier les permissions
+        data = request.args
+        role = data.get('role', '').lower()
+
+        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+            return jsonify({"error": "Accès non autorisé"}), 403
+
+        # Récupérer la configuration depuis email_service
+        config = {
+            "enabled": email_service.EMAIL_ENABLED,
+            "debug_mode": email_service.EMAIL_DEBUG_MODE,
+            "smtp_server": email_service.SMTP_SERVER,
+            "smtp_port": email_service.SMTP_PORT,
+            "from_email": email_service.FROM_EMAIL,
+            "from_name": email_service.FROM_NAME,
+            "platform_url": email_service.PLATFORM_URL,
+            "smtp_username": email_service.SMTP_USERNAME[:10] + "..." if email_service.SMTP_USERNAME else None,
+            "password_configured": bool(email_service.SMTP_PASSWORD),
+            "render_dashboard_url": "https://dashboard.render.com/web/srv-ctmvpttds78s73e9m78g/env",
+            "documentation": {
+                "guide_complet": "CONFIGURATION_EMAILS.md",
+                "guide_rapide": "GUIDE_ACTIVATION_EMAILS.md",
+                "status": "STATUS_EMAILS.md"
+            }
+        }
+
+        return jsonify(config), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/admin/test-email", methods=["POST"])
+def test_email_sending():
+    """Tester l'envoi d'email (admin seulement)"""
+    try:
+        # Vérifier les permissions
+        data = request.json or {}
+        role = data.get('role', '').lower()
+
+        if role not in ['admin', 'secretariatsct', 'presidencecomite', 'presidencesct']:
+            return jsonify({"error": "Accès non autorisé"}), 403
+
+        # Récupérer l'email de test
+        test_email = data.get('test_email')
+        if not test_email:
+            return jsonify({"error": "Veuillez fournir une adresse email de test"}), 400
+
+        # Vérifier que les emails sont activés
+        if not email_service.EMAIL_ENABLED:
+            return jsonify({
+                "error": "Les emails sont désactivés",
+                "hint": "Activer EMAIL_ENABLED=true dans les variables d'environnement"
+            }), 400
+
+        # Créer un email de test
+        content = """
+            <p>Ceci est un email de test envoyé depuis la console d'administration.</p>
+            <p><strong>Configuration actuelle :</strong></p>
+            <ul>
+                <li>Serveur SMTP: {}</li>
+                <li>Port: {}</li>
+                <li>De: {} ({})</li>
+                <li>Mode debug: {}</li>
+            </ul>
+            <p>Si vous recevez cet email, la configuration fonctionne correctement ✅</p>
+        """.format(
+            email_service.SMTP_SERVER,
+            email_service.SMTP_PORT,
+            email_service.FROM_EMAIL,
+            email_service.FROM_NAME,
+            "Activé" if email_service.EMAIL_DEBUG_MODE else "Désactivé"
+        )
+
+        html_content = email_service.get_email_template(
+            title="Test de configuration email",
+            content=content,
+            cta_text="Accéder à la plateforme",
+            cta_url=email_service.PLATFORM_URL
+        )
+
+        # Envoyer l'email de test
+        success = email_service.send_email(
+            to_email=test_email,
+            subject="[DGPPE] Test de configuration email",
+            html_content=html_content
+        )
+
+        if success:
+            return jsonify({
+                "success": True,
+                "message": f"Email de test envoyé avec succès à {test_email}",
+                "config": {
+                    "smtp_server": email_service.SMTP_SERVER,
+                    "smtp_port": email_service.SMTP_PORT,
+                    "from_email": email_service.FROM_EMAIL
+                }
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "error": "L'envoi de l'email a échoué",
+                "hint": "Vérifiez les logs du serveur pour plus de détails"
+            }), 500
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "hint": "Erreur lors de l'envoi de l'email de test"
+        }), 500
+
 @app.route("/api/users/<username>/status", methods=["GET"])
 def get_user_status(username):
     """Récupérer le statut du compte d'un utilisateur"""
