@@ -263,6 +263,41 @@ def send_status_change_email(project, user_email, user_name):
     )
 
 
+def send_evaluator_assignment_email(project, evaluator_email, evaluator_name):
+    """
+    Envoie un email à l'évaluateur lors de l'assignation d'un projet
+
+    Args:
+        project: Objet projet
+        evaluator_email (str): Email de l'évaluateur
+        evaluator_name (str): Nom de l'évaluateur
+
+    Returns:
+        bool: True si envoyé avec succès
+    """
+    content = f"""
+        <p>Bonjour {evaluator_name},</p>
+        <p>Un nouveau projet vous a été assigné pour évaluation.</p>
+        <p><strong>Projet :</strong> {project.titre}</p>
+        <p><strong>Numéro :</strong> {project.numero_projet}</p>
+        <p><strong>Soumissionnaire :</strong> {project.auteur_nom or 'Non spécifié'}</p>
+        <p>Veuillez vous connecter à la plateforme pour consulter le dossier complet et procéder à l'évaluation.</p>
+    """
+
+    html_content = get_email_template(
+        title="Nouveau projet à évaluer",
+        content=content,
+        cta_text="Voir le projet",
+        cta_url=f"{PLATFORM_URL}/project/{project.id}"
+    )
+
+    return send_email(
+        to_email=evaluator_email,
+        subject=f"[DGPPE] Nouveau projet assigné - {project.titre}",
+        html_content=html_content
+    )
+
+
 def send_new_message_email(project, user_email, user_name, message_author):
     """
     Envoie un email lors d'un nouveau message dans la discussion

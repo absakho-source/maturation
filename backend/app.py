@@ -1435,6 +1435,8 @@ def traiter_project(project_id):
         # Envoyer des emails au soumissionnaire selon le changement de statut
         try:
             print(f"[EMAIL_DEBUG] Tentative d'envoi d'email - Projet: {project_id}, Statut: {p.statut}, Auteur: {p.auteur_nom}")
+
+            # Email au soumissionnaire pour tous les changements de statut
             if p.auteur_nom:
                 soumissionnaire = User.query.filter_by(username=p.auteur_nom).first()
                 print(f"[EMAIL_DEBUG] Soumissionnaire trouvé: {soumissionnaire.username if soumissionnaire else 'None'}, Email: {soumissionnaire.email if soumissionnaire else 'None'}")
@@ -1444,18 +1446,33 @@ def traiter_project(project_id):
                                          "favorable", "favorable sous conditions", "défavorable"]
 
                     if p.statut in statuts_avec_email:
-                        print(f"[EMAIL_DEBUG] Envoi d'email à {soumissionnaire.email} pour le statut '{p.statut}'")
+                        print(f"[EMAIL_DEBUG] Envoi d'email au soumissionnaire {soumissionnaire.email} pour le statut '{p.statut}'")
                         email_service.send_status_change_email(
                             project=p,
                             user_email=soumissionnaire.email,
-                            user_name=soumissionnaire.nom or soumissionnaire.username
+                            user_name=soumissionnaire.nom_complet or soumissionnaire.display_name or soumissionnaire.username
                         )
                     else:
                         print(f"[EMAIL_DEBUG] Statut '{p.statut}' non dans la liste des statuts avec email")
                 else:
-                    print(f"[EMAIL_DEBUG] Pas d'envoi d'email - Soumissionnaire ou email manquant")
+                    print(f"[EMAIL_DEBUG] Pas d'envoi d'email au soumissionnaire - Email manquant")
             else:
-                print(f"[EMAIL_DEBUG] Pas d'envoi d'email - Pas d'auteur_nom sur le projet")
+                print(f"[EMAIL_DEBUG] Pas d'envoi d'email au soumissionnaire - Pas d'auteur_nom sur le projet")
+
+            # Email à l'évaluateur lors de l'assignation
+            if p.statut == "assigné" and p.evaluateur_nom:
+                evaluateur = User.query.filter_by(username=p.evaluateur_nom).first()
+                print(f"[EMAIL_DEBUG] Évaluateur trouvé: {evaluateur.username if evaluateur else 'None'}, Email: {evaluateur.email if evaluateur else 'None'}")
+                if evaluateur and evaluateur.email:
+                    print(f"[EMAIL_DEBUG] Envoi d'email à l'évaluateur {evaluateur.email}")
+                    email_service.send_evaluator_assignment_email(
+                        project=p,
+                        evaluator_email=evaluateur.email,
+                        evaluator_name=evaluateur.nom_complet or evaluateur.display_name or evaluateur.username
+                    )
+                else:
+                    print(f"[EMAIL_DEBUG] Pas d'envoi d'email à l'évaluateur - Email manquant")
+
         except Exception as email_error:
             print(f"[EMAIL] Erreur lors de l'envoi d'email: {email_error}")
             import traceback
