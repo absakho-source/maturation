@@ -17,6 +17,7 @@ import MinisteresEditor from '../views/MinisteresEditor.vue';
 import MonProfil from '../views/MonProfil.vue';
 import EditionFichePopup from '../views/EditionFichePopup.vue';
 import LogsConnexion from '../views/LogsConnexion.vue';
+import ConfigEmails from '../views/ConfigEmails.vue';
 import Contact from '../views/Contact.vue';
 import ProjetsTutelle from '../views/ProjetsTutelle.vue';
 import TestRoutes from '../views/TestRoutes.vue';
@@ -43,6 +44,7 @@ const routes = [
   { path: '/formulaire-editor', name: 'FormulaireEditor', component: FormulaireEditor, meta: { requiresAuth: true } },
   { path: '/ministeres-editor', name: 'MinisteresEditor', component: MinisteresEditor, meta: { requiresAuth: true } },
   { path: '/logs-connexion', name: 'LogsConnexion', component: LogsConnexion, meta: { requiresAuth: true } },
+  { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
   { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } },
   { path: '/edition-fiche-popup', name: 'EditionFichePopup', component: EditionFichePopup, meta: { requiresAuth: false } }
@@ -64,10 +66,10 @@ router.beforeEach((to, from, next) => {
 
   // Définir les routes accessibles par rôle
   const roleAccessMap = {
-    'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'mon-profil', 'project', 'evaluation'],
+    'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'config-emails', 'mon-profil', 'project', 'evaluation'],
     'soumissionnaire': ['soumissionnaire', 'projets-tutelle', 'mon-profil', 'project'],
     'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
-    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
+    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'config-emails', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'invite': ['invite', 'mon-profil'] // Les invités n'ont accès qu'à leur dashboard et profil
