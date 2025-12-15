@@ -1,6 +1,16 @@
 <template>
   <PageWrapper>
     <div class="email-config-container">
+      <!-- Bouton retour -->
+      <div class="back-button-container">
+        <router-link to="/admin" class="btn-back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Retour au dashboard
+        </router-link>
+      </div>
+
       <div class="page-header">
         <h1 class="page-title">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -800,6 +810,34 @@ export default {
 
 .info-item li {
   margin-bottom: var(--dgppe-spacing-1);
+}
+
+.back-button-container {
+  margin-bottom: var(--dgppe-spacing-4);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dgppe-spacing-2);
+  padding: var(--dgppe-spacing-2) var(--dgppe-spacing-4);
+  background: white;
+  border: 1px solid var(--dgppe-border-color);
+  border-radius: 6px;
+  color: var(--dgppe-text-color);
+  text-decoration: none;
+  font-size: 0.938rem;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background: var(--dgppe-bg-hover);
+  border-color: var(--dgppe-primary);
+  color: var(--dgppe-primary);
+}
+
+.btn-back svg {
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
