@@ -2644,7 +2644,7 @@ def get_user_profile(username):
             "id": user.id,
             "username": user.username,
             "display_name": user.display_name,
-            "email": user.username if '@' in user.username else None,
+            "email": user.email if hasattr(user, 'email') else None,
             "telephone": user.telephone if hasattr(user, 'telephone') else None,
             "fonction": user.fonction if hasattr(user, 'fonction') else None,
             "type_structure": user.type_structure if hasattr(user, 'type_structure') else None,

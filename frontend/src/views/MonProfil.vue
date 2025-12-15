@@ -11,14 +11,16 @@
       <h2>Informations personnelles</h2>
       <form @submit.prevent="updateProfile" class="profile-form">
         <div class="form-group">
-          <label for="email">Email *</label>
+          <label for="email">Email (pour recevoir les notifications)</label>
           <input
             type="email"
             id="email"
             v-model="profile.email"
-            required
             placeholder="votre.email@exemple.com"
           />
+          <small class="form-hint">
+            Ajoutez votre adresse email pour recevoir les notifications automatiques concernant vos projets
+          </small>
         </div>
 
         <div class="form-group">
