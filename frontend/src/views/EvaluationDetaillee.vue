@@ -962,9 +962,13 @@ export default {
   border-bottom: 1px solid #ddd;
 }
 
-.col-criteria {
+.criteria-row .col-criteria {
   font-weight: 500;
   background: #f8f9fa !important;
+}
+
+.table-header .col-criteria {
+  background: #34495e !important;
 }
 
 .score-max {
