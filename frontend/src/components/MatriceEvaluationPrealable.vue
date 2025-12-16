@@ -1,6 +1,6 @@
 <template>
   <div class="matrice-evaluation-prealable">
-    <h3>📋 Matrice d'Évaluation Préalable</h3>
+    <h3>📋 Matrice d'Évaluation de la Recevabilité</h3>
     <p class="description">Vérifier la recevabilité du dossier en cochant les documents requis et transmis</p>
 
     <!-- Tableau des documents -->
@@ -246,14 +246,14 @@ export default {
         }
 
         console.log('✅ [MatriceEvaluationPrealable] API call réussie, émission de l\'événement evaluation-soumise')
-        alert('Évaluation préalable soumise avec succès')
+        alert('Évaluation de la recevabilité soumise avec succès')
         console.log('✅ [MatriceEvaluationPrealable] Émission de l\'événement evaluation-soumise avec decision:', decision)
         this.$emit('evaluation-soumise', { decision, matrice })
         console.log('✅ [MatriceEvaluationPrealable] Événement evaluation-soumise émis')
 
       } catch (error) {
         console.error('Erreur:', error)
-        alert('Erreur lors de la soumission de l\'évaluation préalable')
+        alert('Erreur lors de la soumission de l\'évaluation de la recevabilité')
       } finally {
         this.enCours = false
       }

@@ -47,19 +47,19 @@
             </div>
           </div>
 
-          <!-- Matrice d'évaluation préalable (en modal pour avoir toute la largeur) -->
+          <!-- Matrice d'évaluation de la recevabilité (en modal pour avoir toute la largeur) -->
           <div v-else-if="needsEvaluationPrealable(p)" class="eval-prealable-container">
             <button
               @click="openEvalPrealableModal(p.id)"
               class="btn-toggle-eval-prealable"
             >
-              📋 Ouvrir l'évaluation préalable
+              📋 Ouvrir l'évaluation de la recevabilité
             </button>
           </div>
 
-          <!-- Résultat de l'évaluation préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
+          <!-- Résultat de l'évaluation de la recevabilité (lecture seule) - Affichée uniquement si le dossier est rejeté -->
           <div class="eval-section eval-prealable-result" v-else-if="p.evaluation_prealable === 'dossier_rejete'">
-            <h4>🔍 Évaluation Préalable</h4>
+            <h4>🔍 Évaluation de la Recevabilité</h4>
             <p>
               <strong>Décision:</strong>
               <span :class="getEvaluationPrealableClass(p.evaluation_prealable)">
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <!-- Modal pour l'évaluation préalable - Placé au niveau racine pour affichage correct -->
+    <!-- Modal pour l'évaluation de la recevabilité - Placé au niveau racine pour affichage correct -->
     <div v-if="modalEvalPrealableId" class="modal-overlay" @click="closeEvalPrealableModal">
       <div class="modal-content" @click.stop>
         <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
@@ -160,7 +160,7 @@ export default {
     },
     peutAccederFicheEvaluation(project) {
       // Le bouton "Fiche d'évaluation détaillée" est visible si:
-      // - L'évaluation préalable a été positive (dossier_evaluable)
+      // - L'évaluation de la recevabilité a été positive (dossier_evaluable)
       // - Le statut est "en évaluation" OU "assigné" (permet l'accès même si le statut n'a pas été mis à jour)
       // - Mais PAS après évaluation (évalué, approuvé, rejeté, etc.)
       return project.evaluation_prealable === "dossier_evaluable" &&
@@ -209,7 +209,7 @@ export default {
         window.location.reload();
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de l'envoi de l'évaluation préalable: " + error.message);
+        alert("Erreur lors de l'envoi de l'évaluation de la recevabilité: " + error.message);
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
@@ -483,7 +483,7 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   cursor: not-allowed;
 }
 
-/* Résultat de l'évaluation préalable */
+/* Résultat de l'évaluation de la recevabilité */
 .eval-prealable-result {
   background: #f0f9ff;
   border-top: 1px solid #bfdbfe;
@@ -606,7 +606,7 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   background: #4b5563;
 }
 
-/* Section pour le bouton d'ouverture de l'évaluation préalable */
+/* Section pour le bouton d'ouverture de l'évaluation de la recevabilité */
 .eval-prealable-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -633,7 +633,7 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-/* Modal overlay pour l'évaluation préalable */
+/* Modal overlay pour l'évaluation de la recevabilité */
 .modal-overlay {
   position: fixed;
   top: 0;

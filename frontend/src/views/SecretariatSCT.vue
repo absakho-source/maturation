@@ -332,7 +332,7 @@
               <div v-if="projet.statut === 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
-                    <!-- Différencier entre rejet lors de l'évaluation préalable et rejet par présidence -->
+                    <!-- Différencier entre rejet lors de l'évaluation de la recevabilité et rejet par présidence -->
                     <template v-if="projet.avis === 'dossier rejeté'">
                       ❌ <strong>Projet rejeté</strong>
                     </template>
@@ -556,17 +556,17 @@
 
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
-              <!-- Matrice d'évaluation préalable (en modal pour avoir toute la largeur) -->
+              <!-- Matrice d'évaluation de la recevabilité (en modal pour avoir toute la largeur) -->
               <div v-if="needsEvaluationPrealable(projet)" class="eval-prealable-container">
                 <button
                   @click="openEvalPrealableModal(projet.id)"
                   class="btn-toggle-eval-prealable"
                 >
-                  📋 Ouvrir l'évaluation préalable
+                  📋 Ouvrir l'évaluation de la recevabilité
                 </button>
               </div>
 
-              <!-- Modal pour l'évaluation préalable -->
+              <!-- Modal pour l'évaluation de la recevabilité -->
               <div v-if="modalEvalPrealableId === projet.id" class="modal-overlay" @click="closeEvalPrealableModal">
                 <div class="modal-content" @click.stop>
                   <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
@@ -577,9 +577,9 @@
                 </div>
               </div>
 
-              <!-- Résultat de l'évaluation préalable -->
+              <!-- Résultat de l'évaluation de la recevabilité -->
               <div class="eval-section eval-prealable-result" v-else-if="projet.evaluation_prealable">
-                <h4>🔍 Évaluation Préalable</h4>
+                <h4>🔍 Évaluation de la Recevabilité</h4>
                 <p>
                   <strong>Décision:</strong>
                   <span :class="getEvaluationPrealableClass(projet.evaluation_prealable)">
@@ -1577,7 +1577,7 @@ export default {
         evaluation_prealable_commentaire: projectBefore?.evaluation_prealable_commentaire
       });
 
-      // Appeler l'endpoint d'évaluation préalable avec role=secretariatsct et decision=dossier_rejete
+      // Appeler l'endpoint d'évaluation de la recevabilité avec role=secretariatsct et decision=dossier_rejete
       // Cela validera le rejet proposé
       // On envoie le commentaire de l'évaluateur (déjà présent dans evaluation_prealable_commentaire)
       const response = await fetch(`/api/projects/${id}/evaluation-prealable`, {
@@ -1615,7 +1615,7 @@ export default {
       }
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      // Réinitialiser l'évaluation préalable en réassignant le projet
+      // Réinitialiser l'évaluation de la recevabilité en réassignant le projet
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1820,7 +1820,7 @@ export default {
       }
     },
 
-    // Méthodes pour l'évaluation préalable
+    // Méthodes pour l'évaluation de la recevabilité
     async soumettreEvaluationPrealable(projectId, decision) {
       const commentaire = (this.evaluationPrealableCommentaires[projectId] || "").trim();
 
@@ -1933,10 +1933,10 @@ export default {
       return map[decision] || '';
     },
 
-    // Détermine si un projet nécessite une évaluation préalable
+    // Détermine si un projet nécessite une évaluation de la recevabilité
     needsEvaluationPrealable(project) {
-      // Afficher l'interface d'évaluation préalable si:
-      // - Le projet est assigné ET aucune évaluation préalable n'a été faite
+      // Afficher l'interface d'évaluation de la recevabilité si:
+      // - Le projet est assigné ET aucune évaluation de la recevabilité n'a été faite
       // OU
       // - Des compléments ont été demandés ET le soumissionnaire a répondu
       const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
@@ -1947,17 +1947,17 @@ export default {
       return isInitialAssignment || hasReceivedComplements;
     },
 
-    // Toggle pour afficher/masquer la matrice d'évaluation préalable dans "Mes évaluations"
-    // Ouvrir le modal d'évaluation préalable
+    // Toggle pour afficher/masquer la matrice d'évaluation de la recevabilité dans "Mes évaluations"
+    // Ouvrir le modal d'évaluation de la recevabilité
     openEvalPrealableModal(projectId) {
       this.modalEvalPrealableId = projectId;
     },
-    // Fermer le modal d'évaluation préalable
+    // Fermer le modal d'évaluation de la recevabilité
     closeEvalPrealableModal() {
       this.modalEvalPrealableId = null;
     },
 
-    // Méthode appelée après soumission de la matrice d'évaluation préalable
+    // Méthode appelée après soumission de la matrice d'évaluation de la recevabilité
     async handleEvaluationPrealableSubmitted() {
       // Fermer le modal et recharger la page
       this.modalEvalPrealableId = null;
@@ -2911,7 +2911,7 @@ export default {
   }
 }
 
-/* Styles pour l'évaluation préalable */
+/* Styles pour l'évaluation de la recevabilité */
 .eval-prealable {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border: 2px solid #0ea5e9;
@@ -3884,7 +3884,7 @@ tr.compte-non-verifie:hover {
   align-items: center;
 }
 
-/* Section collapsible pour l'évaluation préalable */
+/* Section collapsible pour l'évaluation de la recevabilité */
 .eval-prealable-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -3912,7 +3912,7 @@ tr.compte-non-verifie:hover {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-/* Modal overlay pour l'évaluation préalable */
+/* Modal overlay pour l'évaluation de la recevabilité */
 .modal-overlay {
   position: fixed;
   top: 0;

@@ -1,12 +1,12 @@
 /**
- * Mixin pour l'évaluation préalable
- * Fournit les méthodes et données nécessaires pour gérer l'évaluation préalable des projets
+ * Mixin pour l'évaluation de la recevabilité
+ * Fournit les méthodes et données nécessaires pour gérer l'évaluation de la recevabilité des projets
  * Utilisable par tous les rôles: evaluateur, secretariatsct, presidencesct, presidencecomite, admin
  */
 export default {
   data() {
     return {
-      // Données pour l'évaluation préalable
+      // Données pour l'évaluation de la recevabilité
       evaluationPrealableCommentaires: {},
       envoiEvaluationPrealable: {},
       modalEvalPrealableId: null
@@ -15,13 +15,13 @@ export default {
 
   methods: {
     /**
-     * Détermine si un projet nécessite une évaluation préalable
+     * Détermine si un projet nécessite une évaluation de la recevabilité
      * @param {Object} project - Le projet à évaluer
-     * @returns {boolean} - true si le projet nécessite une évaluation préalable
+     * @returns {boolean} - true si le projet nécessite une évaluation de la recevabilité
      */
     needsEvaluationPrealable(project) {
-      // Afficher l'interface d'évaluation préalable si:
-      // - Le projet est assigné ET aucune évaluation préalable n'a été faite
+      // Afficher l'interface d'évaluation de la recevabilité si:
+      // - Le projet est assigné ET aucune évaluation de la recevabilité n'a été faite
       // OU
       // - Des compléments ont été demandés ET le soumissionnaire a répondu
       const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
@@ -34,7 +34,7 @@ export default {
     },
 
     /**
-     * Ouvre la modal d'évaluation préalable pour un projet
+     * Ouvre la modal d'évaluation de la recevabilité pour un projet
      * @param {number} projectId - L'ID du projet
      */
     openEvalPrealableModal(projectId) {
@@ -42,14 +42,14 @@ export default {
     },
 
     /**
-     * Ferme la modal d'évaluation préalable
+     * Ferme la modal d'évaluation de la recevabilité
      */
     closeEvalPrealableModal() {
       this.modalEvalPrealableId = null;
     },
 
     /**
-     * Appelée après la soumission d'une évaluation préalable
+     * Appelée après la soumission d'une évaluation de la recevabilité
      * Ferme la modal et recharge les projets
      */
     async handleEvaluationPrealableSubmitted() {
@@ -66,7 +66,7 @@ export default {
     },
 
     /**
-     * Retourne le texte lisible pour une décision d'évaluation préalable
+     * Retourne le texte lisible pour une décision d'évaluation de la recevabilité
      * @param {string} decision - La décision (dossier_evaluable, complements_requis, dossier_rejete)
      * @returns {string} - Le texte formaté
      */
@@ -80,7 +80,7 @@ export default {
     },
 
     /**
-     * Retourne la classe CSS pour une décision d'évaluation préalable
+     * Retourne la classe CSS pour une décision d'évaluation de la recevabilité
      * @param {string} decision - La décision
      * @returns {string} - La classe CSS
      */

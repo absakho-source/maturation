@@ -196,7 +196,7 @@
 
           <!-- Section Évaluation Préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
           <div class="info-card" v-if="project.evaluation_prealable">
-            <h3>🔍 Évaluation Préalable</h3>
+            <h3>🔍 Évaluation de la Recevabilité</h3>
             <div class="evaluation-prealable-resultat">
               <div :class="['decision-badge',
                 project.evaluation_prealable === 'dossier_evaluable' ? 'success' :
@@ -799,7 +799,7 @@ export default {
 
     ouvrirFichePDF() {
       if (!this.peutAccederFicheEvaluation()) {
-        alert('L\'évaluation préalable doit être positive avant d\'accéder à la fiche d\'évaluation détaillée');
+        alert('L\'évaluation de la recevabilité doit être positive avant d\'accéder à la fiche d\'évaluation détaillée');
         return;
       }
       // Utiliser l'URL du backend (configurée via VITE_API_URL en production)
@@ -809,8 +809,8 @@ export default {
 
     peutAccederFicheEvaluation() {
       // Peut accéder si:
-      // 1. Pas d'évaluation préalable requise (ancien système)
-      // 2. OU évaluation préalable positive (dossier évaluable)
+      // 1. Pas d'évaluation de la recevabilité requise (ancien système)
+      // 2. OU évaluation de la recevabilité positive (dossier évaluable)
       // 3. OU statut >= "en évaluation" (déjà passé l'étape préalable)
       if (!this.project) return false;
 
