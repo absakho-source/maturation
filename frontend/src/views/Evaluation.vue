@@ -114,7 +114,7 @@
         <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
         <MatriceEvaluationPrealable
           :projectId="modalEvalPrealableId"
-          @evaluation-submitted="handleEvaluationPrealableSubmitted"
+          @evaluation-soumise="handleEvaluationPrealableSubmitted"
         />
       </div>
     </div>
