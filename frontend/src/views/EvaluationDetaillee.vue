@@ -40,7 +40,7 @@
           <div class="info-row centered-row full-width">
             <div class="info-item-editable full-width">
               <strong>INTITULÉ DU PROJET:</strong>
-              <input type="text" v-model="presentationData.intitule" class="input-text" placeholder="Intitulé du projet">
+              <textarea v-model="presentationData.intitule" class="textarea-text textarea-intitule" rows="2" placeholder="Intitulé du projet"></textarea>
             </div>
           </div>
 
@@ -57,7 +57,12 @@
 
             <div class="info-item-editable">
               <strong>COÛT DU PROJET:</strong>
-              <input type="text" v-model="presentationData.cout_estimatif" class="input-text" placeholder="Coût estimatif">
+              <input
+                type="text"
+                :value="formatCoutWithSpaces(presentationData.cout_estimatif)"
+                @input="updateCout"
+                class="input-text"
+                placeholder="Ex: 1 000 000">
             </div>
 
             <div class="info-item-editable">
@@ -589,6 +594,22 @@ export default {
       return this.getAppreciation()
     },
 
+    formatCoutWithSpaces(value) {
+      if (!value) return ''
+      // Convertir en string et supprimer les espaces existants
+      const numStr = String(value).replace(/\s/g, '')
+      // Vérifier si c'est un nombre valide
+      if (!/^\d+$/.test(numStr)) return value
+      // Ajouter les espaces tous les 3 chiffres de droite à gauche
+      return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+    },
+
+    updateCout(event) {
+      // Récupérer la valeur sans les espaces et la stocker dans le modèle
+      const value = event.target.value.replace(/\s/g, '')
+      this.presentationData.cout_estimatif = value
+    },
+
     async sauvegarder() {
       if (!this.peutSauvegarder) return
 
@@ -1006,6 +1027,13 @@ export default {
 .textarea-text::placeholder {
   color: #a0aec0;
   font-style: italic;
+}
+
+/* Textarea spécifique pour l'intitulé du projet */
+.textarea-intitule {
+  min-height: 50px;
+  max-height: 120px;
+  font-weight: 500;
 }
 
 .checkbox-group {
