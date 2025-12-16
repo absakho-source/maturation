@@ -40,7 +40,7 @@
           <div class="info-row centered-row full-width">
             <div class="info-item-editable full-width">
               <strong>INTITULÉ DU PROJET:</strong>
-              <textarea v-model="presentationData.intitule" class="textarea-text textarea-intitule" rows="2" placeholder="Intitulé du projet"></textarea>
+              <input type="text" v-model="presentationData.intitule" class="input-text input-intitule" placeholder="Intitulé du projet">
             </div>
           </div>
 
@@ -1029,11 +1029,10 @@ export default {
   font-style: italic;
 }
 
-/* Textarea spécifique pour l'intitulé du projet */
-.textarea-intitule {
-  min-height: 50px;
-  max-height: 120px;
+/* Input spécifique pour l'intitulé du projet - Plus large */
+.input-intitule {
   font-weight: 500;
+  font-size: 14px;
 }
 
 .checkbox-group {
