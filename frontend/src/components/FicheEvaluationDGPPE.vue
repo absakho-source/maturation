@@ -152,7 +152,7 @@
           <div class="criterion-content">
             <div class="score-input">
               <label>SCORE</label>
-              <input type="range" v-model.number="fiche.pertinence_score" min="0" max="5" step="1">
+              <input type="range" v-model.number="fiche.pertinence_score" min="0" max="5" step="0.5">
               <span class="score-value">{{ fiche.pertinence_score }}/5</span>
             </div>
             <div class="text-inputs">
@@ -177,7 +177,7 @@
           <div class="criterion-content">
             <div class="score-input">
               <label>SCORE</label>
-              <input type="range" v-model.number="fiche.alignement_score" min="0" max="10" step="1">
+              <input type="range" v-model.number="fiche.alignement_score" min="0" max="10" step="0.5">
               <span class="score-value">{{ fiche.alignement_score }}/10</span>
             </div>
             <div class="text-inputs">
@@ -202,7 +202,7 @@
           <div class="criterion-content">
             <div class="score-input">
               <label>SCORE</label>
-              <input type="range" v-model.number="fiche.pertinence_activites_score" min="0" max="15" step="1">
+              <input type="range" v-model.number="fiche.pertinence_activites_score" min="0" max="15" step="0.5">
               <span class="score-value">{{ fiche.pertinence_activites_score }}/15</span>
             </div>
             <div class="text-inputs">
@@ -227,7 +227,7 @@
           <div class="criterion-content">
             <div class="score-input">
               <label>SCORE</label>
-              <input type="range" v-model.number="fiche.equite_score" min="0" max="15" step="1">
+              <input type="range" v-model.number="fiche.equite_score" min="0" max="15" step="0.5">
               <span class="score-value">{{ fiche.equite_score }}/15</span>
             </div>
             <div class="text-inputs">
