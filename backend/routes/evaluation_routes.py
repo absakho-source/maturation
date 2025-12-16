@@ -63,19 +63,19 @@ def get_project_presentation(project_id):
             'objectifs_strategiques': fiche.objectifs_strategiques if fiche else '',
             'odd': fiche.odd if fiche else '',
 
-            # Tableau 2: DURÉES (avec valeurs par défaut si non renseignées)
-            'duree_analyse': fiche.duree_analyse if fiche and fiche.duree_analyse else '25 ans',
-            'realisation': fiche.realisation if fiche and fiche.realisation else '05 ans',
-            'exploitation': fiche.exploitation if fiche and fiche.exploitation else '20 ans',
+            # Tableau 2: DURÉES
+            'duree_analyse': fiche.duree_analyse if fiche else '',
+            'realisation': fiche.realisation if fiche else '',
+            'exploitation': fiche.exploitation if fiche else '',
 
             # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS CONNEXES
-            'localisation': fiche.localisation if fiche and fiche.localisation else (project.poles or 'Territoire national'),
+            'localisation': fiche.localisation if fiche else '',
             'parties_prenantes': fiche.parties_prenantes if fiche else '',
             'autres_projets_connexes': fiche.autres_projets_connexes if fiche else '',
 
             # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
-            'objectif_projet': fiche.objectif_projet if fiche and fiche.objectif_projet else getattr(project, 'objectifs', ''),
-            'activites_principales': fiche.activites_principales if fiche and fiche.activites_principales else (project.description or ''),
+            'objectif_projet': fiche.objectif_projet if fiche else '',
+            'activites_principales': fiche.activites_principales if fiche else '',
             'resultats_attendus': fiche.resultats_attendus if fiche else '',
             'evaluateur_nom': getattr(project, 'evaluateur_nom', '')
         }

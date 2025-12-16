@@ -77,10 +77,10 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><textarea v-model="presentationData.articulation" rows="2" placeholder="Articulation..."></textarea></td>
-                  <td><textarea v-model="presentationData.axes" rows="2" placeholder="Axe(s)..."></textarea></td>
-                  <td><textarea v-model="presentationData.objectifs_strategiques" rows="2" placeholder="Objectifs..."></textarea></td>
-                  <td><textarea v-model="presentationData.odd" rows="2" placeholder="ODD..."></textarea></td>
+                  <td><textarea v-model="presentationData.articulation" rows="2"></textarea></td>
+                  <td><textarea v-model="presentationData.axes" rows="2"></textarea></td>
+                  <td><textarea v-model="presentationData.objectifs_strategiques" rows="2"></textarea></td>
+                  <td><textarea v-model="presentationData.odd" rows="2"></textarea></td>
                 </tr>
               </tbody>
             </table>
@@ -95,9 +95,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><input v-model="presentationData.duree_analyse" type="text" placeholder="25 ans"></td>
-                  <td><input v-model="presentationData.realisation" type="text" placeholder="02 ans"></td>
-                  <td><input v-model="presentationData.exploitation" type="text" placeholder="20 ans"></td>
+                  <td><textarea v-model="presentationData.duree_analyse" rows="2"></textarea></td>
+                  <td><textarea v-model="presentationData.realisation" rows="2"></textarea></td>
+                  <td><textarea v-model="presentationData.exploitation" rows="2"></textarea></td>
                 </tr>
               </tbody>
             </table>
@@ -112,9 +112,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><textarea v-model="presentationData.localisation" rows="3" placeholder="Localisation..."></textarea></td>
-                  <td><textarea v-model="presentationData.parties_prenantes" rows="3" placeholder="Parties prenantes..."></textarea></td>
-                  <td><textarea v-model="presentationData.autres_projets_connexes" rows="3" placeholder="Autres projets..."></textarea></td>
+                  <td><textarea v-model="presentationData.localisation" rows="3"></textarea></td>
+                  <td><textarea v-model="presentationData.parties_prenantes" rows="3"></textarea></td>
+                  <td><textarea v-model="presentationData.autres_projets_connexes" rows="3"></textarea></td>
                 </tr>
               </tbody>
             </table>
@@ -129,9 +129,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><textarea v-model="presentationData.objectif_projet" rows="4" placeholder="Objectif..."></textarea></td>
-                  <td><textarea v-model="presentationData.activites_principales" rows="4" placeholder="Activités..."></textarea></td>
-                  <td><textarea v-model="presentationData.resultats_attendus" rows="4" placeholder="Résultats/Impacts..."></textarea></td>
+                  <td><textarea v-model="presentationData.objectif_projet" rows="4"></textarea></td>
+                  <td><textarea v-model="presentationData.activites_principales" rows="4"></textarea></td>
+                  <td><textarea v-model="presentationData.resultats_attendus" rows="4"></textarea></td>
                 </tr>
               </tbody>
             </table>
@@ -1355,8 +1355,7 @@ textarea {
   vertical-align: top;
 }
 
-.project-details-table textarea,
-.project-details-table input[type="text"] {
+.project-details-table textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
@@ -1364,9 +1363,5 @@ textarea {
   font-family: inherit;
   font-size: 12px;
   resize: vertical;
-}
-
-.project-details-table input[type="text"] {
-  resize: none;
 }
 </style>
