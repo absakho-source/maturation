@@ -78,32 +78,35 @@
         <h2 class="section-title">II - CLASSIFICATION DU PROJET</h2>
 
         <div class="project-info" v-if="presentationData">
-          <div class="info-grid">
-            <div class="info-item">
-              <strong>ORIGINE DU PROJET:</strong>
-              <div class="radio-group">
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="maturation"> MATURATION</label>
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="offre_spontanee"> OFFRE SPONTANÉE</label>
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="autres"> AUTRES</label>
+          <!-- Grille 2 colonnes pour Origine et Dimensions -->
+          <div class="classification-grid">
+            <!-- Colonne 1: Origine du projet -->
+            <div class="classification-section">
+              <div class="classification-header">ORIGINE DU PROJET</div>
+              <div class="radio-group-vertical">
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="maturation"> Maturation</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="offre_spontanee"> Offre spontanée</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="autres"> Autres</label>
               </div>
-              <div v-if="presentationData.origine_projet_choix === 'autres'" class="autres-precisions">
-                <input type="text" v-model="presentationData.origine_projet_autres_precision" placeholder="Précisez l'origine du projet..." class="input-text">
+              <div v-if="presentationData.origine_projet_choix === 'autres'" class="autres-precisions-inline">
+                <input type="text" v-model="presentationData.origine_projet_autres_precision" placeholder="Précisez..." class="input-text">
               </div>
             </div>
 
-            <div class="info-item full-width">
-              <strong>DIMENSIONS TRANSVERSALES:</strong>
-              <div class="dimensions-transversales-grid">
-                <div class="dimension-group">
-                  <div class="dimension-title">CHANGEMENT CLIMATIQUE</div>
-                  <div class="dimension-options">
+            <!-- Colonne 2: Dimensions transversales -->
+            <div class="classification-section">
+              <div class="classification-header">DIMENSIONS TRANSVERSALES</div>
+              <div class="dimensions-container">
+                <div class="dimension-block">
+                  <div class="dimension-subtitle">Changement climatique</div>
+                  <div class="checkbox-group-compact">
                     <label><input type="checkbox" v-model="presentationData.changement_climatique_adaptation"> Adaptation</label>
                     <label><input type="checkbox" v-model="presentationData.changement_climatique_attenuation"> Atténuation</label>
                   </div>
                 </div>
-                <div class="dimension-group">
-                  <div class="dimension-title">GENRE</div>
-                  <div class="dimension-options">
+                <div class="dimension-block">
+                  <div class="dimension-subtitle">Genre</div>
+                  <div class="checkbox-group-compact">
                     <label><input type="checkbox" v-model="presentationData.genre"> Prise en compte du genre</label>
                   </div>
                 </div>
@@ -1035,7 +1038,132 @@ export default {
   height: 16px;
 }
 
+/* Grille de classification (Origine + Dimensions transversales) */
+.classification-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.classification-section {
+  padding: 20px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.classification-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.classification-header {
+  font-weight: 700;
+  font-size: 14px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #3498db;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Origine du projet - radio buttons verticaux */
+.radio-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-group-vertical label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+}
+
+.radio-group-vertical label:hover {
+  background: #e3f2fd;
+  border-color: #90caf9;
+}
+
+.radio-group-vertical input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #3498db;
+}
+
+.autres-precisions-inline {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
 /* Dimensions transversales */
+.dimensions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.dimension-block {
+  padding: 12px 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.dimension-subtitle {
+  font-weight: 600;
+  font-size: 13px;
+  color: #34495e;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.checkbox-group-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-group-compact label {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.checkbox-group-compact label:hover {
+  background: #e3f2fd;
+  transform: translateX(3px);
+}
+
+.checkbox-group-compact input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #3498db;
+}
+
+/* Anciens styles - conservés pour compatibilité */
 .dimensions-transversales-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
