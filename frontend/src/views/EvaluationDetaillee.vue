@@ -56,7 +56,7 @@
             </div>
 
             <div class="info-item-editable">
-              <strong>COÛT DU PROJET:</strong>
+              <strong>COÛT DU PROJET (FCFA):</strong>
               <input
                 type="text"
                 :value="formatCoutWithSpaces(presentationData.cout_estimatif)"
@@ -794,7 +794,7 @@ export default {
 <style scoped>
 .evaluation-container {
   position: relative;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 30px 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
