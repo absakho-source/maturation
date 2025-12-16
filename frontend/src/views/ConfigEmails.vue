@@ -239,13 +239,40 @@
                 </div>
 
                 <div class="form-group">
-                  <label>Contenu de l'email (HTML)</label>
+                  <label>
+                    Contenu de l'email
+                    <small style="color: #6c757d; font-weight: normal; margin-left: 8px;">
+                      (Utilisez les balises HTML pour la mise en forme: &lt;p&gt;, &lt;strong&gt;, &lt;br&gt;, etc.)
+                    </small>
+                  </label>
                   <textarea
                     v-model="template.contenu_html"
-                    rows="10"
-                    placeholder="Contenu HTML de l'email..."
+                    rows="12"
+                    placeholder="Exemple:
+<p>Bonjour {nom},</p>
+<p>Votre projet <strong>{project_titre}</strong> a été soumis avec succès.</p>
+<p>Vous pouvez suivre son état sur la plateforme.</p>
+<p>Cordialement,<br>L'équipe DGPPE</p>"
                     class="template-textarea"
+                    style="font-family: 'Courier New', monospace; font-size: 13px;"
                   ></textarea>
+                </div>
+
+                <!-- Aide rapide HTML -->
+                <div class="html-help">
+                  <details>
+                    <summary style="cursor: pointer; color: var(--dgppe-primary); font-weight: 500;">
+                      💡 Aide rapide - Balises HTML courantes
+                    </summary>
+                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px;">
+                      <div><code>&lt;p&gt;...&lt;/p&gt;</code> - Paragraphe</div>
+                      <div><code>&lt;strong&gt;...&lt;/strong&gt;</code> - Texte en gras</div>
+                      <div><code>&lt;em&gt;...&lt;/em&gt;</code> - Texte en italique</div>
+                      <div><code>&lt;br&gt;</code> - Saut de ligne</div>
+                      <div><code>&lt;a href="URL"&gt;...&lt;/a&gt;</code> - Lien hypertexte</div>
+                      <div><code>&lt;ul&gt;&lt;li&gt;...&lt;/li&gt;&lt;/ul&gt;</code> - Liste à puces</div>
+                    </div>
+                  </details>
                 </div>
 
                 <!-- Variables disponibles -->
