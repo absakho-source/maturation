@@ -270,9 +270,8 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(section_title_table)
         self.story.append(Spacer(1, 10))
 
-        # Origine et typologie (depuis project_data, pas fiche_data)
+        # Origine et dimensions transversales (depuis project_data, pas fiche_data)
         origine_data = self.project.get('origine_projet', {})
-        typologie_data = self.project.get('typologie_projet', {})
 
         # Construire les textes avec cases cochées (utiliser [X] et [ ] pour compatibilité)
         origine_items = []
@@ -283,15 +282,33 @@ class FicheEvaluationDGPPEPDF:
         if origine_data.get('autres'): origine_items.append('<b>[X]</b> AUTRES')
         else: origine_items.append('[ ] AUTRES')
 
-        typologie_items = []
-        if typologie_data.get('productif'): typologie_items.append('<b>[X]</b> PRODUCTIF')
-        else: typologie_items.append('[ ] PRODUCTIF')
-        if typologie_data.get('appui_production'): typologie_items.append('<b>[X]</b> APPUI À LA PRODUCTION')
-        else: typologie_items.append('[ ] APPUI À LA PRODUCTION')
-        if typologie_data.get('social'): typologie_items.append('<b>[X]</b> SOCIAL')
-        else: typologie_items.append('[ ] SOCIAL')
-        if typologie_data.get('environnemental'): typologie_items.append('<b>[X]</b> ENVIRONNEMENTAL')
-        else: typologie_items.append('[ ] ENVIRONNEMENTAL')
+        # Dimensions transversales
+        cc_adaptation = self.project.get('cc_adaptation', False)
+        cc_attenuation = self.project.get('cc_attenuation', False)
+        genre = self.project.get('genre', False)
+
+        # Construire le texte des dimensions transversales
+        dimensions_items = []
+
+        # Changement climatique
+        cc_label = "<b>CHANGEMENT CLIMATIQUE:</b> "
+        cc_parts = []
+        if cc_adaptation:
+            cc_parts.append('<b>[X]</b> Adaptation')
+        else:
+            cc_parts.append('[ ] Adaptation')
+        if cc_attenuation:
+            cc_parts.append('<b>[X]</b> Atténuation')
+        else:
+            cc_parts.append('[ ] Atténuation')
+
+        cc_text = cc_label + ' &nbsp; '.join(cc_parts)
+
+        # Genre
+        if genre:
+            genre_text = "<b>GENRE:</b> <b>[X]</b> Oui"
+        else:
+            genre_text = "<b>GENRE:</b> [ ] Oui"
 
         data = [
             [
@@ -299,8 +316,8 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph(' &nbsp;&nbsp; '.join(origine_items), self.styles['DGPPEBodyText'])
             ],
             [
-                Paragraph("<b>TYPOLOGIE DU PROJET:</b>", self.styles['Label']),
-                Paragraph(' &nbsp;&nbsp; '.join(typologie_items), self.styles['DGPPEBodyText'])
+                Paragraph("<b>DIMENSIONS TRANSVERSALES:</b>", self.styles['Label']),
+                Paragraph(f"{cc_text}<br/>{genre_text}", self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -536,6 +553,28 @@ class FicheEvaluationDGPPEPDF:
             ]))
 
             self.story.append(table)
+
+        # Ajouter le nom de l'évaluateur après les recommandations
+        evaluateur_nom = self.fiche.get('evaluateur_nom', '')
+        if evaluateur_nom:
+            self.story.append(Spacer(1, 10))
+            evaluateur_data = [[
+                Paragraph("<b>ÉVALUATEUR:</b>", self.styles['Label']),
+                Paragraph(evaluateur_nom, self.styles['DGPPEBodyText'])
+            ]]
+
+            evaluateur_table = Table(evaluateur_data, colWidths=[4*cm, 13*cm])
+            evaluateur_table.setStyle(TableStyle([
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('BACKGROUND', (0, 0), (0, 0), Color(0.95, 0.95, 0.95)),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+            ]))
+
+            self.story.append(evaluateur_table)
 
         self.story.append(Spacer(1, 20))
 

@@ -80,7 +80,11 @@ class Project(db.Model):
     organisme_tutelle_data = db.Column(db.Text, nullable=True)  # JSON: données structurées de la hiérarchie organisme
     structure_soumissionnaire = db.Column(db.String(300), nullable=True)  # Structure soumissionnaire/maître d'ouvrage
     origine_projet = db.Column(db.Text, nullable=True)  # JSON: {maturation, offre_spontanee, autres}
-    typologie_projet = db.Column(db.Text, nullable=True)  # JSON: {productif, appui_production, social, environnemental}
+
+    # Dimensions transversales (remplace typologie_projet)
+    cc_adaptation = db.Column(db.Boolean, default=False, nullable=True)  # Changement climatique - Adaptation
+    cc_attenuation = db.Column(db.Boolean, default=False, nullable=True)  # Changement climatique - Atténuation
+    genre = db.Column(db.Boolean, default=False, nullable=True)  # Genre
 
     # Évaluation préalable (avant évaluation détaillée)
     evaluation_prealable = db.Column(db.String(50), nullable=True)  # "dossier_evaluable" ou "complements_requis"

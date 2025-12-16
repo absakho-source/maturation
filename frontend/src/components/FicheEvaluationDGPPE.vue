@@ -44,20 +44,21 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>TYPOLOGIE DU PROJET</label>
-            <div class="checkbox-group">
-              <label><input type="radio" v-model="fiche.typologie_projet" value="PRODUCTIF"> PRODUCTIF</label>
-              <label><input type="radio" v-model="fiche.typologie_projet" value="APPUI À LA PRODUCTION"> APPUI À LA PRODUCTION</label>
-              <label><input type="radio" v-model="fiche.typologie_projet" value="SOCIAL"> SOCIAL</label>
-              <label><input type="radio" v-model="fiche.typologie_projet" value="ENVIRONNEMENTAL"> ENVIRONNEMENTAL</label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>CHANGEMENT CLIMATIQUE</label>
-            <div class="checkbox-group">
-              <label><input type="radio" v-model="fiche.changement_climatique" value="ADAPTATION"> ADAPTATION</label>
-              <label><input type="radio" v-model="fiche.changement_climatique" value="ATTÉNUATION"> ATTÉNUATION</label>
-              <label><input type="radio" v-model="fiche.changement_climatique" value="GENRE"> GENRE</label>
+            <label>DIMENSIONS TRANSVERSALES</label>
+            <div class="dimensions-transversales">
+              <div class="dimension-item">
+                <strong>CHANGEMENT CLIMATIQUE:</strong>
+                <div class="checkbox-inline">
+                  <label><input type="checkbox" v-model="fiche.cc_adaptation"> Adaptation</label>
+                  <label><input type="checkbox" v-model="fiche.cc_attenuation"> Atténuation</label>
+                </div>
+              </div>
+              <div class="dimension-item">
+                <strong>GENRE:</strong>
+                <div class="checkbox-inline">
+                  <label><input type="checkbox" v-model="fiche.genre"> Oui</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -285,6 +286,10 @@
           <label>RECOMMANDATIONS</label>
           <textarea v-model="fiche.recommandations_generales" rows="4" placeholder="Vos recommandations générales..."></textarea>
         </div>
+        <div class="form-group evaluateur-info">
+          <label>ÉVALUATEUR</label>
+          <input type="text" :value="evaluateurNom" readonly style="background: #f3f4f6; cursor: not-allowed; font-weight: 500;">
+        </div>
         <div class="form-group">
           <label>IMPACT SUR L'EMPLOI</label>
           <select v-model="fiche.impact_sur_emploi">
@@ -342,8 +347,9 @@ export default {
         intitule_projet: '',
         cout_projet: '',
         origine_projet: '',
-        typologie_projet: '',
-        changement_climatique: '',
+        cc_adaptation: false,
+        cc_attenuation: false,
+        genre: false,
         sous_secteur: '',
         organisme_tutelle: '',
         snd_2025_2029: '',
@@ -852,6 +858,60 @@ export default {
 .btn-primary:hover,
 .btn-success:hover {
   opacity: 0.9;
+}
+
+/* Styles pour les dimensions transversales */
+.dimensions-transversales {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.dimension-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dimension-item strong {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.checkbox-inline {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.checkbox-inline label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: normal;
+  color: #4b5563;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Style pour le champ évaluateur en lecture seule */
+.evaluateur-info input[readonly] {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  font-weight: 500;
+  color: #1f2937;
 }
 
 @media (max-width: 768px) {

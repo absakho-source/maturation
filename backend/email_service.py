@@ -139,13 +139,24 @@ def get_email_template(title, content, cta_text=None, cta_url=None):
                     <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <!-- Header -->
                         <tr>
-                            <td style="background: linear-gradient(135deg, #2E6B6B 0%, #48B5B5 100%); padding: 30px; text-align: center;">
-                                <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
-                                    Direction Générale de la Planification et des Politiques Économiques
-                                </h1>
-                                <p style="margin: 10px 0 0 0; color: #E0F2F1; font-size: 14px;">
-                                    Plateforme de Maturation des Projets Publics
-                                </p>
+                            <td style="background-color: #2E6B6B; padding: 30px; text-align: center;">
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td align="center">
+                                            <img src="{PLATFORM_URL}/static/logo-dgppe.png" alt="Logo DGPPE" style="height: 80px; width: auto; margin-bottom: 15px; display: block;">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                                Direction Générale de la Planification<br>et des Politiques Économiques
+                                            </h1>
+                                            <p style="margin: 10px 0 0 0; color: #E0F2F1; font-size: 14px; font-weight: 500;">
+                                                Plateforme de Maturation des Projets Publics (PLASMAP)
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
                             </td>
                         </tr>
 
