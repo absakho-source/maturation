@@ -127,7 +127,41 @@ class FicheEvaluation(db.Model):
     evaluateur_nom = db.Column(db.String(100), nullable=False)
     date_evaluation = db.Column(db.DateTime, default=datetime.utcnow)
     reference_fiche = db.Column(db.String(50), nullable=False)
-    
+
+    # I - PRESENTATION DU PROJET (rempli par l'évaluateur)
+    intitule_projet = db.Column(db.Text, nullable=True)
+    cout_projet = db.Column(db.String(100), nullable=True)
+    origine_projet = db.Column(db.Text, nullable=True)
+
+    # Dimensions transversales
+    cc_adaptation = db.Column(db.Boolean, default=False, nullable=True)
+    cc_attenuation = db.Column(db.Boolean, default=False, nullable=True)
+    genre = db.Column(db.Boolean, default=False, nullable=True)
+
+    # Nouveaux champs - Tableau de présentation
+    articulation = db.Column(db.Text, nullable=True)
+    axes = db.Column(db.Text, nullable=True)
+    objectifs_strategiques = db.Column(db.Text, nullable=True)
+    odd = db.Column(db.Text, nullable=True)
+
+    # Durées
+    duree_analyse = db.Column(db.String(50), nullable=True)
+    realisation = db.Column(db.String(50), nullable=True)
+    exploitation = db.Column(db.String(50), nullable=True)
+
+    # Autres informations projet
+    localisation = db.Column(db.Text, nullable=True)
+    parties_prenantes = db.Column(db.Text, nullable=True)
+    autres_projets_connexes = db.Column(db.Text, nullable=True)
+    objectif_projet = db.Column(db.Text, nullable=True)
+    activites_principales = db.Column(db.Text, nullable=True)
+    resultats_attendus = db.Column(db.Text, nullable=True)
+
+    # Anciens champs (pour compatibilité)
+    sous_secteur = db.Column(db.Text, nullable=True)
+    organisme_tutelle = db.Column(db.Text, nullable=True)
+    snd_2025_2029 = db.Column(db.Text, nullable=True)
+
     # II - RESULTATS DE L'EVALUATION - Critères avec barèmes exacts du formulaire réel
     
     # PERTINENCE (/5)

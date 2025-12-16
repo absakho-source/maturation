@@ -333,6 +333,125 @@ class FicheEvaluationDGPPEPDF:
         ]))
 
         self.story.append(table)
+        self.story.append(Spacer(1, 10))
+
+        # Nouveau: Tableaux de présentation détaillée (remplis par l'évaluateur)
+        # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
+        data_tab1 = [
+            [
+                Paragraph("<b>ARTICULATION</b>", self.styles['TableHeader']),
+                Paragraph("<b>AXE(S)</b>", self.styles['TableHeader']),
+                Paragraph("<b>OBJECTIF(S) STRATÉGIQUE(S)</b>", self.styles['TableHeader']),
+                Paragraph("<b>ODD</b>", self.styles['TableHeader'])
+            ],
+            [
+                Paragraph(self.fiche_data.get('articulation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('axes', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('objectifs_strategiques', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('odd', 'N/A'), self.styles['DGPPEBodyText'])
+            ]
+        ]
+
+        table1 = Table(data_tab1, colWidths=[4.25*cm, 4.25*cm, 4.25*cm, 4.25*cm])
+        table1.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('BACKGROUND', (0, 0), (-1, 0), self.dgppe_blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]))
+
+        self.story.append(table1)
+        self.story.append(Spacer(1, 10))
+
+        # Tableau 2: DURÉES
+        data_tab2 = [
+            [
+                Paragraph("<b>DURÉE D'ANALYSE</b>", self.styles['TableHeader']),
+                Paragraph("<b>RÉALISATION</b>", self.styles['TableHeader']),
+                Paragraph("<b>EXPLOITATION</b>", self.styles['TableHeader'])
+            ],
+            [
+                Paragraph(self.fiche_data.get('duree_analyse', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('realisation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('exploitation', 'N/A'), self.styles['DGPPEBodyText'])
+            ]
+        ]
+
+        table2 = Table(data_tab2, colWidths=[5.67*cm, 5.67*cm, 5.67*cm])
+        table2.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('BACKGROUND', (0, 0), (-1, 0), self.dgppe_blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]))
+
+        self.story.append(table2)
+        self.story.append(Spacer(1, 10))
+
+        # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS
+        data_tab3 = [
+            [
+                Paragraph("<b>LOCALISATION</b>", self.styles['TableHeader']),
+                Paragraph("<b>PARTIES PRENANTES</b>", self.styles['TableHeader']),
+                Paragraph("<b>AUTRES PROJETS/PROG. CONNEXES</b>", self.styles['TableHeader'])
+            ],
+            [
+                Paragraph(self.fiche_data.get('localisation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('parties_prenantes', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('autres_projets_connexes', 'N/A'), self.styles['DGPPEBodyText'])
+            ]
+        ]
+
+        table3 = Table(data_tab3, colWidths=[5.67*cm, 5.67*cm, 5.67*cm])
+        table3.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('BACKGROUND', (0, 0), (-1, 0), self.dgppe_blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]))
+
+        self.story.append(table3)
+        self.story.append(Spacer(1, 10))
+
+        # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
+        data_tab4 = [
+            [
+                Paragraph("<b>OBJECTIF DU PROJET</b>", self.styles['TableHeader']),
+                Paragraph("<b>ACTIVITÉS PRINCIPALES</b>", self.styles['TableHeader']),
+                Paragraph("<b>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS</b>", self.styles['TableHeader'])
+            ],
+            [
+                Paragraph(self.fiche_data.get('objectif_projet', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('activites_principales', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche_data.get('resultats_attendus', 'N/A'), self.styles['DGPPEBodyText'])
+            ]
+        ]
+
+        table4 = Table(data_tab4, colWidths=[5.67*cm, 5.67*cm, 5.67*cm])
+        table4.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('BACKGROUND', (0, 0), (-1, 0), self.dgppe_blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]))
+
+        self.story.append(table4)
         self.story.append(Spacer(1, 15))
 
     def _create_section_III(self):

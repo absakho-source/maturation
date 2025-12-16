@@ -63,74 +63,77 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>SOUS SECTEUR</label>
-            <input v-model="fiche.sous_secteur" type="text" placeholder="Développement social">
-          </div>
-          <div class="form-group">
-            <label>ORGANISME DE TUTELLE OU AUTEUR DE L'OFFRE</label>
-            <input v-model="fiche.organisme_tutelle" type="text" placeholder="Ministère de la Famille et des Solidarités">
-          </div>
-        </div>
+        <!-- Tableau de présentation du projet -->
+        <div class="project-details-table">
+          <table>
+            <thead>
+              <tr>
+                <th>ARTICULATION</th>
+                <th>AXE(S)</th>
+                <th>OBJECTIF(S) STRATÉGIQUE(S)</th>
+                <th>ODD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><textarea v-model="fiche.articulation" rows="2" placeholder="Articulation..."></textarea></td>
+                <td><textarea v-model="fiche.axes" rows="2" placeholder="Axe(s)..."></textarea></td>
+                <td><textarea v-model="fiche.objectifs_strategiques" rows="2" placeholder="Objectifs..."></textarea></td>
+                <td><textarea v-model="fiche.odd" rows="2" placeholder="ODD..."></textarea></td>
+              </tr>
+            </tbody>
+          </table>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>SND 2025-2029</label>
-            <input v-model="fiche.snd_2025_2029" type="text" placeholder="AXES">
-          </div>
-          <div class="form-group">
-            <label>OBJECTIFS STRATÉGIQUES</label>
-            <input v-model="fiche.objectifs_strategiques" type="text" placeholder="OSA">
-          </div>
-        </div>
+          <table>
+            <thead>
+              <tr>
+                <th>DURÉE D'ANALYSE</th>
+                <th>RÉALISATION</th>
+                <th>EXPLOITATION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input v-model="fiche.duree_analyse" type="text" placeholder="25 ans"></td>
+                <td><input v-model="fiche.realisation" type="text" placeholder="02 ans"></td>
+                <td><input v-model="fiche.exploitation" type="text" placeholder="20 ans"></td>
+              </tr>
+            </tbody>
+          </table>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>DURÉE D'ANALYSE</label>
-            <input v-model="fiche.duree_analyse" type="text" placeholder="25 ans">
-          </div>
-          <div class="form-group">
-            <label>RÉALISATION</label>
-            <input v-model="fiche.realisation" type="text" placeholder="02 ans">
-          </div>
-          <div class="form-group">
-            <label>EXPLOITATION</label>
-            <input v-model="fiche.exploitation" type="text" placeholder="20 ans">
-          </div>
-        </div>
+          <table>
+            <thead>
+              <tr>
+                <th>LOCALISATION</th>
+                <th>PARTIES PRENANTES</th>
+                <th>AUTRES PROJETS/PROG. CONNEXES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><textarea v-model="fiche.localisation" rows="3" placeholder="Localisation..."></textarea></td>
+                <td><textarea v-model="fiche.parties_prenantes" rows="3" placeholder="Parties prenantes..."></textarea></td>
+                <td><textarea v-model="fiche.autres_projets_connexes" rows="3" placeholder="Autres projets..."></textarea></td>
+              </tr>
+            </tbody>
+          </table>
 
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label>LOCALISATION</label>
-            <input v-model="fiche.localisation" type="text" placeholder="Territoire national">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>PARTIES PRENANTES</label>
-            <textarea v-model="fiche.parties_prenantes" rows="4" placeholder="Ministères sectoriels, Partenaires au développement, etc."></textarea>
-          </div>
-          <div class="form-group">
-            <label>AUTRES PROJETS/PROG. CONNEXES</label>
-            <textarea v-model="fiche.autres_projets_connexes" rows="4" placeholder="Projets liés ou complémentaires"></textarea>
-          </div>
-        </div>
-
-        <div class="form-group full-width">
-          <label>OBJECTIF DU PROJET</label>
-          <textarea v-model="fiche.objectif_projet" rows="3" placeholder="Description de l'objectif principal"></textarea>
-        </div>
-
-        <div class="form-group full-width">
-          <label>ACTIVITÉS PRINCIPALES</label>
-          <textarea v-model="fiche.activites_principales" rows="4" placeholder="Liste des principales activités"></textarea>
-        </div>
-
-        <div class="form-group full-width">
-          <label>RÉSULTATS/IMPACTS ATTENDUS</label>
-          <textarea v-model="fiche.resultats_attendus" rows="4" placeholder="Résultats et impacts prévus"></textarea>
+          <table>
+            <thead>
+              <tr>
+                <th>OBJECTIF DU PROJET</th>
+                <th>ACTIVITÉS PRINCIPALES</th>
+                <th>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><textarea v-model="fiche.objectif_projet" rows="4" placeholder="Objectif..."></textarea></td>
+                <td><textarea v-model="fiche.activites_principales" rows="4" placeholder="Activités..."></textarea></td>
+                <td><textarea v-model="fiche.resultats_attendus" rows="4" placeholder="Résultats/Impacts..."></textarea></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -350,10 +353,13 @@ export default {
         cc_adaptation: false,
         cc_attenuation: false,
         genre: false,
+        articulation: '',
+        axes: '',
+        objectifs_strategiques: '',
+        odd: '',
         sous_secteur: '',
         organisme_tutelle: '',
         snd_2025_2029: '',
-        objectifs_strategiques: '',
         duree_analyse: '',
         realisation: '',
         exploitation: '',
@@ -735,6 +741,53 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.project-details-table {
+  margin: 20px 0;
+}
+
+.project-details-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.project-details-table th {
+  background: #2E6B6B;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  border: 1px solid #246060;
+}
+
+.project-details-table td {
+  padding: 0;
+  border: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.project-details-table textarea,
+.project-details-table input {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+  background: transparent;
+}
+
+.project-details-table textarea:focus,
+.project-details-table input:focus {
+  outline: 2px solid #2E6B6B;
+  outline-offset: -2px;
+  background: #f9fafb;
 }
 
 .total-score {
