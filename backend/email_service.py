@@ -167,10 +167,10 @@ def get_email_template(title, content, cta_text=None, cta_url=None):
                             <td style="background-color: #f9fafb; padding: 20px 30px; border-top: 1px solid #e5e7eb;">
                                 <p style="margin: 0; color: #6b7280; font-size: 13px; text-align: center;">
                                     Cet email a été envoyé automatiquement par la plateforme DGPPE.<br>
-                                    Pour toute question, veuillez contacter le secrétariat.
+                                    Pour toute question, veuillez contacter le secrétariat SCT.
                                 </p>
                                 <p style="margin: 10px 0 0 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                                    © {datetime.now().year} Direction Générale de la Planification et des Politiques Économiques - République du Sénégal
+                                    © {datetime.now().year} Direction Générale de la Planification et des Politiques Économiques
                                 </p>
                             </td>
                         </tr>
