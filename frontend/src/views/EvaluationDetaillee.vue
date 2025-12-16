@@ -1031,6 +1031,7 @@ export default {
 .intitule-section {
   margin-bottom: 20px;
   padding: 0;
+  text-align: center;
 }
 
 .intitule-label {
@@ -1041,6 +1042,7 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+  text-align: center;
 }
 
 .input-intitule-fullwidth {
@@ -1057,6 +1059,7 @@ export default {
   resize: vertical;
   font-family: inherit;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .input-intitule-fullwidth:focus {
@@ -1068,6 +1071,7 @@ export default {
 .input-intitule-fullwidth::placeholder {
   color: #a0aec0;
   font-style: italic;
+  text-align: center;
 }
 
 .checkbox-group {
