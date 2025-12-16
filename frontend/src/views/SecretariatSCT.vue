@@ -572,7 +572,7 @@
                   <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
                   <MatriceEvaluationPrealable
                     :projectId="projet.id"
-                    @evaluation-submitted="handleEvaluationPrealableSubmitted"
+                    @evaluation-soumise="handleEvaluationPrealableSubmitted"
                   />
                 </div>
               </div>
@@ -1871,6 +1871,8 @@ export default {
 
     // Méthode appelée par le composant MatriceEvaluationPrealable
     async handleEvaluationPrealableSubmitted() {
+      // Fermer la modal
+      this.closeEvalPrealableModal();
       // Recharger la liste des projets après soumission
       await this.loadProjects();
     },
