@@ -37,30 +37,37 @@
         </div>
 
         <div class="project-info" v-if="presentationData">
-          <div class="info-row centered-row">
-            <h3 class="project-title centered-title">INTITULÉ DU PROJET: {{ presentationData.intitule }}</h3>
+          <div class="info-row centered-row full-width">
+            <div class="info-item-editable full-width">
+              <strong>INTITULÉ DU PROJET:</strong>
+              <input type="text" v-model="presentationData.intitule" class="input-text" placeholder="Intitulé du projet">
+            </div>
           </div>
 
           <div class="info-grid">
-            <div class="info-item">
-              <strong>SECTEUR DE PLANIFICATION:</strong> {{ presentationData.secteur }}
+            <div class="info-item-editable">
+              <strong>SECTEUR DE PLANIFICATION:</strong>
+              <input type="text" v-model="presentationData.secteur" class="input-text" placeholder="Secteur de planification">
             </div>
 
-            <div class="info-item">
-              <strong>PÔLES TERRITORIAUX:</strong> {{ presentationData.poles }}
+            <div class="info-item-editable">
+              <strong>PÔLES TERRITORIAUX:</strong>
+              <input type="text" v-model="presentationData.poles" class="input-text" placeholder="Pôles territoriaux">
             </div>
 
-            <div class="info-item">
+            <div class="info-item-editable">
               <strong>COÛT DU PROJET:</strong>
-              {{ formatCurrency(presentationData.cout_estimatif) }}
+              <input type="text" v-model="presentationData.cout_estimatif" class="input-text" placeholder="Coût estimatif">
             </div>
 
-            <div class="info-item centered-row">
-              <strong>ORGANISME DE TUTELLE:</strong> {{ presentationData.organisme_tutelle }}
+            <div class="info-item-editable">
+              <strong>ORGANISME DE TUTELLE:</strong>
+              <input type="text" v-model="presentationData.organisme_tutelle" class="input-text" placeholder="Organisme de tutelle">
             </div>
 
-            <div class="info-item full-width">
-              <strong>DESCRIPTION DU PROJET:</strong> {{ presentationData.description }}
+            <div class="info-item-editable full-width">
+              <strong>DESCRIPTION DU PROJET:</strong>
+              <textarea v-model="presentationData.description" class="textarea-text" rows="4" placeholder="Description du projet"></textarea>
             </div>
           </div>
         </div>
@@ -587,6 +594,14 @@ export default {
         // Inclure les données de présentation (origine, dimensions transversales et tableaux détaillés du projet)
         const dataToSend = {
           ...this.evaluationData,
+          // Champs éditables de Section I
+          intitule: this.presentationData?.intitule || '',
+          secteur: this.presentationData?.secteur || '',
+          poles: this.presentationData?.poles || '',
+          cout_estimatif: this.presentationData?.cout_estimatif || '',
+          organisme_tutelle: this.presentationData?.organisme_tutelle || '',
+          description: this.presentationData?.description || '',
+          // Classification
           origine_projet_choix: this.presentationData?.origine_projet_choix || '',
           // Dimensions transversales
           changement_climatique_adaptation: this.presentationData?.changement_climatique_adaptation || false,
@@ -913,6 +928,81 @@ export default {
 
 .info-item.full-width {
   grid-column: 1 / -1;
+}
+
+/* Champs éditables dans la section présentation */
+.info-item-editable {
+  padding: 15px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-item-editable:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.info-item-editable strong {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.info-item-editable.full-width {
+  grid-column: 1 / -1;
+}
+
+.input-text {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.input-text:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.input-text::placeholder {
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.textarea-text {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  background: white;
+  min-height: 80px;
+}
+
+.textarea-text:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.textarea-text::placeholder {
+  color: #a0aec0;
+  font-style: italic;
 }
 
 .checkbox-group {

@@ -367,6 +367,20 @@ def create_or_update_fiche_evaluation(project_id):
             }
             project.typologie_projet = json.dumps(typologie_obj)
 
+        # Sauvegarder les champs de base éditables du projet
+        if 'intitule' in data:
+            project.intitule = data.get('intitule', '')
+        if 'secteur' in data:
+            project.secteur = data.get('secteur', '')
+        if 'poles' in data:
+            project.poles = data.get('poles', '')
+        if 'cout_estimatif' in data:
+            project.cout_estimatif = data.get('cout_estimatif', '')
+        if 'organisme_tutelle' in data:
+            project.organisme_tutelle = data.get('organisme_tutelle', '')
+        if 'description' in data:
+            project.description = data.get('description', '')
+
         # Sauvegarder les dimensions transversales
         fiche.changement_climatique_adaptation = data.get('changement_climatique_adaptation', False)
         fiche.changement_climatique_attenuation = data.get('changement_climatique_attenuation', False)
