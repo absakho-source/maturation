@@ -1029,49 +1029,45 @@ export default {
 
 /* Section intitulé du projet - Pleine largeur */
 .intitule-section {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   padding: 0;
 }
 
 .intitule-label {
   display: block;
-  font-size: 13px;
-  font-weight: 700;
-  color: #1565c0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d3748;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-  padding-left: 2px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
 .input-intitule-fullwidth {
   width: 100%;
-  min-height: 70px;
-  padding: 16px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.6;
+  min-height: 45px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
   color: #1a202c;
   background: white;
-  border: 3px solid #3498db;
-  border-radius: 8px;
+  border: 2px solid #cbd5e0;
+  border-radius: 6px;
   resize: vertical;
   font-family: inherit;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
 }
 
 .input-intitule-fullwidth:focus {
   outline: none;
-  border-color: #2980b9;
-  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
-  transform: translateY(-1px);
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .input-intitule-fullwidth::placeholder {
   color: #a0aec0;
   font-style: italic;
-  font-weight: 400;
 }
 
 .checkbox-group {
