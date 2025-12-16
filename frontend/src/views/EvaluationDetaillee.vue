@@ -1030,11 +1030,39 @@ export default {
 
 /* Input spécifique pour l'intitulé du projet */
 .input-intitule {
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 1.5;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.6;
   resize: vertical;
-  min-height: 50px;
+  min-height: 65px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #3498db;
+  color: #1a202c;
+}
+
+.input-intitule:focus {
+  border-color: #2980b9;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+/* Container spécifique pour l'intitulé - mise en valeur */
+.info-row.centered-row.full-width {
+  margin-bottom: 20px;
+}
+
+.info-row.centered-row.full-width .info-item-editable {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #3498db;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.info-row.centered-row.full-width .info-item-editable strong {
+  color: #1565c0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .checkbox-group {
