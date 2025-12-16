@@ -57,6 +57,11 @@ def get_project_presentation(project_id):
             'organisme_tutelle': project.organisme_tutelle or '',
             'poles': project.poles or '',  # Ajout explicite des pôles
             'description': project.description or '',  # Ajout de la description
+            # Dimensions transversales
+            'changement_climatique_adaptation': fiche.changement_climatique_adaptation if fiche else False,
+            'changement_climatique_attenuation': fiche.changement_climatique_attenuation if fiche else False,
+            'genre': fiche.genre if fiche else False,
+
             # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
             'articulation': fiche.articulation if fiche else '',
             'axes': fiche.axes if fiche else '',
@@ -361,6 +366,11 @@ def create_or_update_fiche_evaluation(project_id):
                 'environnemental': typologie_choix == 'environnemental'
             }
             project.typologie_projet = json.dumps(typologie_obj)
+
+        # Sauvegarder les dimensions transversales
+        fiche.changement_climatique_adaptation = data.get('changement_climatique_adaptation', False)
+        fiche.changement_climatique_attenuation = data.get('changement_climatique_attenuation', False)
+        fiche.genre = data.get('genre', False)
 
         # Sauvegarder les champs de présentation détaillée (Section I - 4 tableaux)
         # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD

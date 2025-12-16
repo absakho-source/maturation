@@ -63,6 +63,36 @@
               <strong>DESCRIPTION DU PROJET:</strong> {{ presentationData.description }}
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Section II - CLASSIFICATION DU PROJET -->
+      <div class="section section-classification">
+        <h2 class="section-title">II - CLASSIFICATION DU PROJET</h2>
+
+        <div class="project-info" v-if="presentationData">
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>ORIGINE DU PROJET:</strong>
+              <div class="radio-group">
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="maturation"> MATURATION</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="offre_spontanee"> OFFRE SPONTANÉE</label>
+                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="autres"> AUTRES</label>
+              </div>
+              <div v-if="presentationData.origine_projet_choix === 'autres'" class="autres-precisions">
+                <input type="text" v-model="presentationData.origine_projet_autres_precision" placeholder="Précisez l'origine du projet..." class="input-text">
+              </div>
+            </div>
+
+            <div class="info-item">
+              <strong>DIMENSIONS TRANSVERSALES:</strong>
+              <div class="checkbox-group">
+                <label><input type="checkbox" v-model="presentationData.changement_climatique_adaptation"> CHANGEMENT CLIMATIQUE - ADAPTATION</label>
+                <label><input type="checkbox" v-model="presentationData.changement_climatique_attenuation"> CHANGEMENT CLIMATIQUE - ATTÉNUATION</label>
+                <label><input type="checkbox" v-model="presentationData.genre"> GENRE</label>
+              </div>
+            </div>
+          </div>
 
           <!-- Tableaux de présentation détaillée du projet -->
           <div class="project-details-table">
@@ -135,37 +165,6 @@
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section II - CLASSIFICATION DU PROJET -->
-      <div class="section section-classification">
-        <h2 class="section-title">II - CLASSIFICATION DU PROJET</h2>
-
-        <div class="project-info" v-if="presentationData">
-          <div class="info-grid">
-            <div class="info-item">
-              <strong>ORIGINE DU PROJET:</strong>
-              <div class="radio-group">
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="maturation"> MATURATION</label>
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="offre_spontanee"> OFFRE SPONTANÉE</label>
-                <label><input type="radio" v-model="presentationData.origine_projet_choix" value="autres"> AUTRES</label>
-              </div>
-              <div v-if="presentationData.origine_projet_choix === 'autres'" class="autres-precisions">
-                <input type="text" v-model="presentationData.origine_projet_autres_precision" placeholder="Précisez l'origine du projet..." class="input-text">
-              </div>
-            </div>
-
-            <div class="info-item">
-              <strong>TYPOLOGIE DU PROJET:</strong>
-              <div class="radio-group">
-                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="productif"> PRODUCTIF</label>
-                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="appui_production"> APPUI À LA PRODUCTION</label>
-                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="social"> SOCIAL</label>
-                <label><input type="radio" v-model="presentationData.typologie_projet_choix" value="environnemental"> ENVIRONNEMENTAL</label>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -495,6 +494,11 @@ export default {
           if (!this.presentationData.objectif_projet) this.presentationData.objectif_projet = ''
           if (!this.presentationData.activites_principales) this.presentationData.activites_principales = ''
           if (!this.presentationData.resultats_attendus) this.presentationData.resultats_attendus = ''
+
+          // Initialiser les dimensions transversales
+          if (this.presentationData.changement_climatique_adaptation === undefined) this.presentationData.changement_climatique_adaptation = false
+          if (this.presentationData.changement_climatique_attenuation === undefined) this.presentationData.changement_climatique_attenuation = false
+          if (this.presentationData.genre === undefined) this.presentationData.genre = false
         } else {
           console.error('Erreur lors du chargement des données du projet')
         }
@@ -560,11 +564,14 @@ export default {
 
       this.loading = true
       try {
-        // Inclure les données de présentation (origine, typologie et tableaux détaillés du projet)
+        // Inclure les données de présentation (origine, dimensions transversales et tableaux détaillés du projet)
         const dataToSend = {
           ...this.evaluationData,
           origine_projet_choix: this.presentationData?.origine_projet_choix || '',
-          typologie_projet_choix: this.presentationData?.typologie_projet_choix || '',
+          // Dimensions transversales
+          changement_climatique_adaptation: this.presentationData?.changement_climatique_adaptation || false,
+          changement_climatique_attenuation: this.presentationData?.changement_climatique_attenuation || false,
+          genre: this.presentationData?.genre || false,
           // Tableaux de présentation détaillée
           articulation: this.presentationData?.articulation || '',
           axes: this.presentationData?.axes || '',
@@ -890,6 +897,26 @@ export default {
 }
 
 .radio-group input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.checkbox-group label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
   margin: 0;
   cursor: pointer;
 }
