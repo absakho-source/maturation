@@ -84,12 +84,22 @@
               </div>
             </div>
 
-            <div class="info-item">
+            <div class="info-item full-width">
               <strong>DIMENSIONS TRANSVERSALES:</strong>
-              <div class="checkbox-group">
-                <label><input type="checkbox" v-model="presentationData.changement_climatique_adaptation"> CHANGEMENT CLIMATIQUE - ADAPTATION</label>
-                <label><input type="checkbox" v-model="presentationData.changement_climatique_attenuation"> CHANGEMENT CLIMATIQUE - ATTÉNUATION</label>
-                <label><input type="checkbox" v-model="presentationData.genre"> GENRE</label>
+              <div class="dimensions-transversales-grid">
+                <div class="dimension-group">
+                  <div class="dimension-title">CHANGEMENT CLIMATIQUE</div>
+                  <div class="dimension-options">
+                    <label><input type="checkbox" v-model="presentationData.changement_climatique_adaptation"> Adaptation</label>
+                    <label><input type="checkbox" v-model="presentationData.changement_climatique_attenuation"> Atténuation</label>
+                  </div>
+                </div>
+                <div class="dimension-group">
+                  <div class="dimension-title">GENRE</div>
+                  <div class="dimension-options">
+                    <label><input type="checkbox" v-model="presentationData.genre"> Genre</label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -923,6 +933,60 @@ export default {
   cursor: pointer;
   width: 16px;
   height: 16px;
+}
+
+/* Dimensions transversales */
+.dimensions-transversales-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.dimension-group {
+  padding: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.dimension-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #2d3748;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #cbd5e0;
+}
+
+.dimension-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dimension-options label {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.dimension-options label:hover {
+  background: #e3f2fd;
+  transform: translateX(3px);
+}
+
+.dimension-options input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
 }
 
 .radio-group {
