@@ -97,7 +97,7 @@
                 <div class="dimension-group">
                   <div class="dimension-title">GENRE</div>
                   <div class="dimension-options">
-                    <label><input type="checkbox" v-model="presentationData.genre"> Genre</label>
+                    <label><input type="checkbox" v-model="presentationData.genre"> Prise en compte du genre</label>
                   </div>
                 </div>
               </div>
