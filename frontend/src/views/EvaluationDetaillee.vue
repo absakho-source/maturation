@@ -112,7 +112,7 @@
                   <th>ARTICULATION</th>
                   <th>AXE(S)</th>
                   <th>OBJECTIF(S) STRATÉGIQUE(S)</th>
-                  <th>ODD</th>
+                  <th>OBJECTIFS DE DÉVELOPPEMENT DURABLE</th>
                 </tr>
               </thead>
               <tbody>
@@ -287,6 +287,16 @@
               rows="5"
               class="recommendations-textarea">
             </textarea>
+          </div>
+
+          <div class="form-group form-group-inline">
+            <label><strong>NOM DE L'ÉVALUATEUR:</strong></label>
+            <input
+              type="text"
+              v-model="evaluationData.evaluateur_nom"
+              readonly
+              class="evaluateur-input"
+              placeholder="Nom de l'évaluateur">
           </div>
         </div>
       </div>
