@@ -124,18 +124,17 @@
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
 import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
+import evaluationPrealableMixin from '../mixins/evaluationPrealableMixin.js';
 
 export default {
   name: "Evaluation",
   components: { PageWrapper, MatriceEvaluationPrealable },
+  mixins: [evaluationPrealableMixin],
   data() {
     return {
       projects: [],
       avis: {},
-      commentaires: {},
-      evaluationPrealableCommentaires: {},
-      envoiEvaluationPrealable: {},
-      modalEvalPrealableId: null // ID du projet dont le modal est ouvert
+      commentaires: {}
     };
   },
   computed: {
@@ -158,22 +157,6 @@ export default {
       } catch (error) {
         console.error('Erreur lors du chargement des projets:', error);
       }
-    },
-    needsEvaluationPrealable(project) {
-      // Afficher l'interface d'évaluation préalable si:
-      // - Le projet est assigné ET aucune évaluation préalable n'a été faite
-      // OU
-      // - Des compléments ont été demandés ET le soumissionnaire a répondu (complements_reponse_message existe)
-      //   Dans ce cas, l'évaluateur doit pouvoir réévaluer
-      // OU
-      // - Le projet est assigné ET il y a une évaluation préalable (réassignation)
-      //   Dans ce cas, on ne montre PAS l'interface (on montre le résultat en lecture seule à la place)
-      const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
-      const hasReceivedComplements = project.evaluation_prealable === "complements_requis" &&
-                                     project.complements_reponse_message &&
-                                     project.complements_reponse_message.trim() !== "";
-
-      return isInitialAssignment || hasReceivedComplements;
     },
     peutAccederFicheEvaluation(project) {
       // Le bouton "Fiche d'évaluation détaillée" est visible si:
@@ -230,36 +213,6 @@ export default {
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
-    },
-    // Méthode appelée par le composant MatriceEvaluationPrealable
-    async handleEvaluationPrealableSubmitted() {
-      // Fermer le modal et recharger la page
-      this.modalEvalPrealableId = null;
-      window.location.reload();
-    },
-    // Ouvrir le modal d'évaluation préalable
-    openEvalPrealableModal(projectId) {
-      this.modalEvalPrealableId = projectId;
-    },
-    // Fermer le modal d'évaluation préalable
-    closeEvalPrealableModal() {
-      this.modalEvalPrealableId = null;
-    },
-    getEvaluationPrealableText(decision) {
-      const map = {
-        'dossier_evaluable': '✅ Dossier évaluable',
-        'complements_requis': '📝 Compléments requis',
-        'dossier_rejete': '❌ Dossier rejeté'
-      };
-      return map[decision] || decision;
-    },
-    getEvaluationPrealableClass(decision) {
-      const map = {
-        'dossier_evaluable': 'decision-evaluable',
-        'complements_requis': 'decision-complements',
-        'dossier_rejete': 'decision-rejete'
-      };
-      return map[decision] || '';
     },
     getEvaluateurDisplay(project) {
       // Si evaluateur_display_name existe, l'utiliser
