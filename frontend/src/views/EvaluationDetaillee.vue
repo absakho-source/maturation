@@ -63,6 +63,79 @@
               <strong>DESCRIPTION DU PROJET:</strong> {{ presentationData.description }}
             </div>
           </div>
+
+          <!-- Tableaux de présentation détaillée du projet -->
+          <div class="project-details-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ARTICULATION</th>
+                  <th>AXE(S)</th>
+                  <th>OBJECTIF(S) STRATÉGIQUE(S)</th>
+                  <th>ODD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><textarea v-model="presentationData.articulation" rows="2" placeholder="Articulation..."></textarea></td>
+                  <td><textarea v-model="presentationData.axes" rows="2" placeholder="Axe(s)..."></textarea></td>
+                  <td><textarea v-model="presentationData.objectifs_strategiques" rows="2" placeholder="Objectifs..."></textarea></td>
+                  <td><textarea v-model="presentationData.odd" rows="2" placeholder="ODD..."></textarea></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>DURÉE D'ANALYSE</th>
+                  <th>RÉALISATION</th>
+                  <th>EXPLOITATION</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input v-model="presentationData.duree_analyse" type="text" placeholder="25 ans"></td>
+                  <td><input v-model="presentationData.realisation" type="text" placeholder="02 ans"></td>
+                  <td><input v-model="presentationData.exploitation" type="text" placeholder="20 ans"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>LOCALISATION</th>
+                  <th>PARTIES PRENANTES</th>
+                  <th>AUTRES PROJETS/PROG. CONNEXES</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><textarea v-model="presentationData.localisation" rows="3" placeholder="Localisation..."></textarea></td>
+                  <td><textarea v-model="presentationData.parties_prenantes" rows="3" placeholder="Parties prenantes..."></textarea></td>
+                  <td><textarea v-model="presentationData.autres_projets_connexes" rows="3" placeholder="Autres projets..."></textarea></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>OBJECTIF DU PROJET</th>
+                  <th>ACTIVITÉS PRINCIPALES</th>
+                  <th>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><textarea v-model="presentationData.objectif_projet" rows="4" placeholder="Objectif..."></textarea></td>
+                  <td><textarea v-model="presentationData.activites_principales" rows="4" placeholder="Activités..."></textarea></td>
+                  <td><textarea v-model="presentationData.resultats_attendus" rows="4" placeholder="Résultats/Impacts..."></textarea></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -136,6 +209,7 @@
                   v-model.number="evaluationData.criteres[critere.cle].score"
                   min="0"
                   :max="critere.score_max"
+                  step="0.5"
                   class="score-input">
                 <span>/{{ critere.score_max }}</span>
               </div>
@@ -406,6 +480,21 @@ export default {
           if (!this.presentationData.organisme_tutelle || this.presentationData.organisme_tutelle.trim() === '') {
             this.presentationData.organisme_tutelle = "MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION"
           }
+
+          // Initialiser les champs des tableaux de présentation détaillée
+          if (!this.presentationData.articulation) this.presentationData.articulation = ''
+          if (!this.presentationData.axes) this.presentationData.axes = ''
+          if (!this.presentationData.objectifs_strategiques) this.presentationData.objectifs_strategiques = ''
+          if (!this.presentationData.odd) this.presentationData.odd = ''
+          if (!this.presentationData.duree_analyse) this.presentationData.duree_analyse = ''
+          if (!this.presentationData.realisation) this.presentationData.realisation = ''
+          if (!this.presentationData.exploitation) this.presentationData.exploitation = ''
+          if (!this.presentationData.localisation) this.presentationData.localisation = ''
+          if (!this.presentationData.parties_prenantes) this.presentationData.parties_prenantes = ''
+          if (!this.presentationData.autres_projets_connexes) this.presentationData.autres_projets_connexes = ''
+          if (!this.presentationData.objectif_projet) this.presentationData.objectif_projet = ''
+          if (!this.presentationData.activites_principales) this.presentationData.activites_principales = ''
+          if (!this.presentationData.resultats_attendus) this.presentationData.resultats_attendus = ''
         } else {
           console.error('Erreur lors du chargement des données du projet')
         }
@@ -471,11 +560,25 @@ export default {
 
       this.loading = true
       try {
-        // Inclure les données de présentation (origine et typologie du projet)
+        // Inclure les données de présentation (origine, typologie et tableaux détaillés du projet)
         const dataToSend = {
           ...this.evaluationData,
           origine_projet_choix: this.presentationData?.origine_projet_choix || '',
-          typologie_projet_choix: this.presentationData?.typologie_projet_choix || ''
+          typologie_projet_choix: this.presentationData?.typologie_projet_choix || '',
+          // Tableaux de présentation détaillée
+          articulation: this.presentationData?.articulation || '',
+          axes: this.presentationData?.axes || '',
+          objectifs_strategiques: this.presentationData?.objectifs_strategiques || '',
+          odd: this.presentationData?.odd || '',
+          duree_analyse: this.presentationData?.duree_analyse || '',
+          realisation: this.presentationData?.realisation || '',
+          exploitation: this.presentationData?.exploitation || '',
+          localisation: this.presentationData?.localisation || '',
+          parties_prenantes: this.presentationData?.parties_prenantes || '',
+          autres_projets_connexes: this.presentationData?.autres_projets_connexes || '',
+          objectif_projet: this.presentationData?.objectif_projet || '',
+          activites_principales: this.presentationData?.activites_principales || '',
+          resultats_attendus: this.presentationData?.resultats_attendus || ''
         }
 
         const response = await fetch(`/api/projects/${this.projectId}/fiche-evaluation`, {
@@ -1221,5 +1324,49 @@ textarea {
 
 .warning-content strong {
   color: #664d03;
+}
+
+/* Tableaux de présentation détaillée */
+.project-details-table {
+  margin-top: 20px;
+}
+
+.project-details-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  background: white;
+  border: 1px solid #ddd;
+}
+
+.project-details-table th {
+  background: #34495e;
+  color: white;
+  padding: 12px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  border: 1px solid #2c3e50;
+}
+
+.project-details-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.project-details-table textarea,
+.project-details-table input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.project-details-table input[type="text"] {
+  resize: none;
 }
 </style>

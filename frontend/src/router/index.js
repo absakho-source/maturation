@@ -4,7 +4,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import DashboardSoumissionnaire from '../views/DashboardSoumissionnaire.vue';
 import Evaluation from '../views/Evaluation.vue';
-import FicheEvaluationDGPPE from '../views/FicheEvaluationDGPPE.vue';
+import EvaluationDetaillee from '../views/EvaluationDetaillee.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
 import PresidenceSCT from '../views/PresidenceSCT.vue';
 import PresidenceComite from '../views/PresidenceComite.vue';
@@ -32,7 +32,7 @@ const routes = [
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },
   { path: '/projets-tutelle', name: 'ProjetsTutelle', component: ProjetsTutelle, meta: { requiresAuth: true } },
   { path: '/evaluateur', name: 'Evaluateur', component: Evaluation, meta: { requiresAuth: true } },
-  { path: '/evaluation/:id', name: 'EvaluationDetaillee', component: FicheEvaluationDGPPE },
+  { path: '/evaluation/:id', name: 'EvaluationDetaillee', component: EvaluationDetaillee },
   // Compat: anciennes routes spécifiques aux évaluateurs
   { path: '/evaluateur1', name: 'Evaluateur1', component: Evaluation, meta: { requiresAuth: true } },
   { path: '/evaluateur2', name: 'Evaluateur2', component: Evaluation, meta: { requiresAuth: true } },
