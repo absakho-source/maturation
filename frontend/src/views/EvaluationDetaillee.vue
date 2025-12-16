@@ -215,7 +215,6 @@
             <div v-for="critere in criteresEvaluation" :key="critere.id" class="criteria-row">
               <div class="col-criteria">
                 <strong>{{ critere.nom.toUpperCase() }}</strong>
-                <span class="score-max">(/{{ critere.score_max }})</span>
               </div>
               <div class="col-description">
                 <textarea
@@ -235,7 +234,6 @@
                   :max="critere.score_max"
                   step="0.5"
                   class="score-input">
-                <span>/{{ critere.score_max }}</span>
               </div>
               <div class="col-recommendations">
                 <textarea
