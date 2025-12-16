@@ -320,14 +320,18 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
+import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
+import evaluationPrealableMixin from '../mixins/evaluationPrealableMixin.js';
 
 export default {
   name: "PresidenceComite",
   components: {
     PageWrapper,
     StatsDashboard,
-    CartesPolesComparaison
+    CartesPolesComparaison,
+    MatriceEvaluationPrealable
   },
+  mixins: [evaluationPrealableMixin],
   data() {
     return {
       allProjects: [],
