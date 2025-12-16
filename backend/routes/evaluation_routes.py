@@ -26,7 +26,10 @@ def get_project_presentation(project_id):
     """Récupération des données de présentation du projet (Section I)"""
     try:
         project = Project.query.get_or_404(project_id)
-        
+
+        # Récupérer la fiche d'évaluation si elle existe pour récupérer les champs de présentation détaillée
+        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+
         # Données automatiquement pré-remplies de la section I - PRESENTATION DU PROJET
         presentation_data = {
             'intitule': project.titre,
@@ -54,22 +57,26 @@ def get_project_presentation(project_id):
             'organisme_tutelle': project.organisme_tutelle or '',
             'poles': project.poles or '',  # Ajout explicite des pôles
             'description': project.description or '',  # Ajout de la description
-            'snd_2025_2029': {
-                'axes': '',
-                'objectifs_strategiques': '',
-                'odd': ''
-            },
-            'durees': {
-                'analyse': '25 ans',
-                'realisation': '05 ans',
-                'exploitation': '20 ans'
-            },
-            'localisation': project.poles or 'Territoire national',
-            'parties_prenantes': '',
-            'projets_connexes': '',
-            'objectif_projet': getattr(project, 'objectifs', ''),
-            'activites_principales': project.description or '',
-            'extrants_resultats': '',
+            # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
+            'articulation': fiche.articulation if fiche else '',
+            'axes': fiche.axes if fiche else '',
+            'objectifs_strategiques': fiche.objectifs_strategiques if fiche else '',
+            'odd': fiche.odd if fiche else '',
+
+            # Tableau 2: DURÉES (avec valeurs par défaut si non renseignées)
+            'duree_analyse': fiche.duree_analyse if fiche and fiche.duree_analyse else '25 ans',
+            'realisation': fiche.realisation if fiche and fiche.realisation else '05 ans',
+            'exploitation': fiche.exploitation if fiche and fiche.exploitation else '20 ans',
+
+            # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS CONNEXES
+            'localisation': fiche.localisation if fiche and fiche.localisation else (project.poles or 'Territoire national'),
+            'parties_prenantes': fiche.parties_prenantes if fiche else '',
+            'autres_projets_connexes': fiche.autres_projets_connexes if fiche else '',
+
+            # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
+            'objectif_projet': fiche.objectif_projet if fiche and fiche.objectif_projet else getattr(project, 'objectifs', ''),
+            'activites_principales': fiche.activites_principales if fiche and fiche.activites_principales else (project.description or ''),
+            'resultats_attendus': fiche.resultats_attendus if fiche else '',
             'evaluateur_nom': getattr(project, 'evaluateur_nom', '')
         }
         return jsonify(presentation_data), 200
@@ -354,6 +361,28 @@ def create_or_update_fiche_evaluation(project_id):
                 'environnemental': typologie_choix == 'environnemental'
             }
             project.typologie_projet = json.dumps(typologie_obj)
+
+        # Sauvegarder les champs de présentation détaillée (Section I - 4 tableaux)
+        # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
+        fiche.articulation = data.get('articulation', '')
+        fiche.axes = data.get('axes', '')
+        fiche.objectifs_strategiques = data.get('objectifs_strategiques', '')
+        fiche.odd = data.get('odd', '')
+
+        # Tableau 2: DURÉES
+        fiche.duree_analyse = data.get('duree_analyse', '')
+        fiche.realisation = data.get('realisation', '')
+        fiche.exploitation = data.get('exploitation', '')
+
+        # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS
+        fiche.localisation = data.get('localisation', '')
+        fiche.parties_prenantes = data.get('parties_prenantes', '')
+        fiche.autres_projets_connexes = data.get('autres_projets_connexes', '')
+
+        # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
+        fiche.objectif_projet = data.get('objectif_projet', '')
+        fiche.activites_principales = data.get('activites_principales', '')
+        fiche.resultats_attendus = data.get('resultats_attendus', '')
 
         # Calcul automatique du score total
         score_total = fiche.calculer_score_total()
