@@ -53,9 +53,15 @@ export default {
      * Ferme la modal et recharge les projets
      */
     async handleEvaluationPrealableSubmitted() {
+      console.log('🎯 [evaluationPrealableMixin] handleEvaluationPrealableSubmitted appelé');
       this.closeEvalPrealableModal();
+      console.log('🎯 [evaluationPrealableMixin] Modal fermée');
       if (this.loadProjects) {
+        console.log('🎯 [evaluationPrealableMixin] Rechargement des projets...');
         await this.loadProjects();
+        console.log('🎯 [evaluationPrealableMixin] Projets rechargés');
+      } else {
+        console.warn('⚠️ [evaluationPrealableMixin] loadProjects n\'est pas disponible');
       }
     },
 

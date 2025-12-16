@@ -245,8 +245,11 @@ export default {
           throw new Error('Erreur lors de la soumission')
         }
 
+        console.log('✅ [MatriceEvaluationPrealable] API call réussie, émission de l\'événement evaluation-soumise')
         alert('Évaluation préalable soumise avec succès')
+        console.log('✅ [MatriceEvaluationPrealable] Émission de l\'événement evaluation-soumise avec decision:', decision)
         this.$emit('evaluation-soumise', { decision, matrice })
+        console.log('✅ [MatriceEvaluationPrealable] Événement evaluation-soumise émis')
 
       } catch (error) {
         console.error('Erreur:', error)
