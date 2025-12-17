@@ -180,6 +180,40 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
+    @app.route('/api/projects/<int:project_id>/fiche-evaluation/pdf', methods=['GET'])
+    def download_fiche_evaluation_pdf(project_id):
+        """Route pour télécharger le PDF de la fiche d'évaluation"""
+        try:
+            fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            if not fiche:
+                return jsonify({"error": "Fiche d'évaluation non trouvée"}), 404
+
+            if not fiche.fichier_pdf:
+                return jsonify({"error": "PDF non disponible pour cette fiche"}), 404
+
+            # Construire le chemin complet vers le fichier PDF
+            fiches_folder = os.path.join(app.config["UPLOAD_FOLDER"], "fiches_evaluation")
+            pdf_path = os.path.join(fiches_folder, fiche.fichier_pdf)
+
+            # Vérifier que le fichier existe
+            if not os.path.exists(pdf_path):
+                print(f"[FICHE_PDF] Fichier PDF introuvable: {pdf_path}")
+                return jsonify({"error": "Fichier PDF introuvable"}), 404
+
+            # Envoyer le fichier
+            from flask import send_file
+            return send_file(
+                pdf_path,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=fiche.fichier_pdf
+            )
+        except Exception as e:
+            print(f"[FICHE_PDF] Erreur téléchargement PDF: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 500
+
     @app.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['POST', 'PUT'])
     def save_fiche_evaluation(project_id):
         """Sauvegarde ou met à jour une fiche d'évaluation"""
