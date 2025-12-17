@@ -303,8 +303,36 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             fiche.evaluateur_nom = data.get('evaluateur_nom', '')
             fiche.proposition = data.get('proposition', '')
             fiche.recommandations_generales = data.get('recommandations', '')
-            
-            # Mettre à jour les critères selon le modèle réel
+
+            # SECTION I - Présentation du projet
+            fiche.intitule_projet = data.get('intitule', '')
+            fiche.sous_secteur = data.get('secteur', '')
+            fiche.cout_projet = data.get('cout_estimatif', '')
+            fiche.organisme_tutelle = data.get('organisme_tutelle', '')
+            # Note: description et poles viennent du projet, pas de la fiche
+
+            # SECTION II - Classification du projet
+            fiche.origine_projet = data.get('origine_projet_choix', '')
+            fiche.changement_climatique_adaptation = data.get('changement_climatique_adaptation', False)
+            fiche.changement_climatique_attenuation = data.get('changement_climatique_attenuation', False)
+            fiche.genre = data.get('genre', False)
+
+            # Tableaux détaillés de présentation
+            fiche.articulation = data.get('articulation', '')
+            fiche.axes = data.get('axes', '')
+            fiche.objectifs_strategiques = data.get('objectifs_strategiques', '')
+            fiche.odd = data.get('odd', '')
+            fiche.duree_analyse = data.get('duree_analyse', '')
+            fiche.realisation = data.get('realisation', '')
+            fiche.exploitation = data.get('exploitation', '')
+            fiche.localisation = data.get('localisation', '')
+            fiche.parties_prenantes = data.get('parties_prenantes', '')
+            fiche.autres_projets_connexes = data.get('autres_projets_connexes', '')
+            fiche.objectif_projet = data.get('objectif_projet', '')
+            fiche.activites_principales = data.get('activites_principales', '')
+            fiche.resultats_attendus = data.get('resultats_attendus', '')
+
+            # SECTION III - Mettre à jour les critères selon le modèle réel
             criteres = data.get('criteres', {})
 
             # DEBUG: Logger les données reçues (FORCE RELOAD - 2025-12-04)
