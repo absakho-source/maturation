@@ -1570,7 +1570,31 @@ def evaluation_prealable(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-# Soumission de la fiche d'évaluation détaillée (par l'évaluateur)
+# Routes pour la fiche d'évaluation détaillée
+
+# GET - Récupérer une fiche d'évaluation
+@app.route("/api/projects/<int:project_id>/fiche-evaluation", methods=["GET"])
+def get_fiche_evaluation(project_id):
+    """Route pour récupérer la fiche d'évaluation d'un projet"""
+    try:
+        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        if not fiche:
+            return jsonify({"error": "Fiche d'évaluation non trouvée"}), 404
+        return jsonify(fiche.to_dict()), 200
+    except Exception as e:
+        print(f"[FICHE_EVAL] Erreur GET: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# PUT - Mettre à jour une fiche d'évaluation existante
+@app.route("/api/projects/<int:project_id>/fiche-evaluation", methods=["PUT"])
+def update_fiche_evaluation(project_id):
+    """Route pour mettre à jour une fiche d'évaluation existante (édition par le secrétariat)"""
+    # Le code complet sera ajouté après - pour l'instant, on réutilise la logique de POST
+    return soumettre_fiche_evaluation(project_id)
+
+# POST - Soumission de la fiche d'évaluation détaillée (par l'évaluateur)
 @app.route("/api/projects/<int:project_id>/fiche-evaluation", methods=["POST"])
 def soumettre_fiche_evaluation(project_id):
     """

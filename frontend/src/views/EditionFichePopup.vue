@@ -17,7 +17,7 @@
                 class="textarea-description" rows="2" placeholder="Analyser le critère..."></textarea>
             </label>
             <label>SCORE:
-              <input type="number" :min="0" :max="critere.max"
+              <input type="number" :min="0" :max="critere.max" step="0.5"
                 v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
               / {{ critere.max }}
             </label>
