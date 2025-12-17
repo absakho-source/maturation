@@ -1570,6 +1570,244 @@ def evaluation_prealable(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+# Soumission de la fiche d'évaluation détaillée (par l'évaluateur)
+@app.route("/api/projects/<int:project_id>/fiche-evaluation", methods=["POST"])
+def soumettre_fiche_evaluation(project_id):
+    """
+    Route pour soumettre la fiche d'évaluation détaillée avec génération du PDF
+    """
+    try:
+        print(f"[FICHE_EVAL] Réception de la fiche d'évaluation pour le projet {project_id}")
+        data = request.json or {}
+        p = Project.query.get_or_404(project_id)
+
+        # Récupérer les informations de l'évaluateur
+        evaluateur_nom = data.get('evaluateur_nom', p.evaluateur_nom or 'inconnu')
+
+        # Vérifier si une fiche existe déjà
+        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+
+        if not fiche:
+            # Créer une nouvelle fiche
+            print(f"[FICHE_EVAL] Création d'une nouvelle fiche pour le projet {project_id}")
+            fiche = FicheEvaluation(
+                project_id=project_id,
+                evaluateur_nom=evaluateur_nom,
+                reference_fiche=f"DGPPE-FE-{p.numero_projet or project_id}"
+            )
+            db.session.add(fiche)
+        else:
+            print(f"[FICHE_EVAL] Mise à jour de la fiche existante {fiche.id}")
+
+        # Mise à jour de la fiche avec les données reçues
+        fiche.date_evaluation = datetime.utcnow()
+
+        # Section I - Présentation du projet (données éditables)
+        if 'intitule' in data:
+            fiche.intitule_projet = data['intitule']
+            p.intitule = data['intitule']  # Mettre à jour aussi dans Project
+        if 'cout_estimatif' in data:
+            fiche.cout_projet = data['cout_estimatif']
+            p.cout_estimatif = data['cout_estimatif']
+        if 'origine_projet_choix' in data:
+            fiche.origine_projet = data['origine_projet_choix']
+
+        # Dimensions transversales
+        fiche.cc_adaptation = data.get('changement_climatique_adaptation', False)
+        fiche.cc_attenuation = data.get('changement_climatique_attenuation', False)
+        fiche.genre = data.get('genre', False)
+
+        # Tableaux de présentation détaillée
+        fiche.articulation = data.get('articulation', '')
+        fiche.axes = data.get('axes', '')
+        fiche.objectifs_strategiques = data.get('objectifs_strategiques', '')
+        fiche.odd = data.get('odd', '')
+        fiche.duree_analyse = data.get('duree_analyse', '')
+        fiche.realisation = data.get('realisation', '')
+        fiche.exploitation = data.get('exploitation', '')
+        fiche.localisation = data.get('localisation', '')
+        fiche.parties_prenantes = data.get('parties_prenantes', '')
+        fiche.autres_projets_connexes = data.get('autres_projets_connexes', '')
+        fiche.objectif_projet = data.get('objectif_projet', '')
+        fiche.activites_principales = data.get('activites_principales', '')
+        fiche.resultats_attendus = data.get('resultats_attendus', '')
+
+        # Autres champs éditables de Section I
+        if 'secteur' in data:
+            p.secteur = data['secteur']
+        if 'poles' in data:
+            p.poles_territoriaux = data['poles']
+        if 'organisme_tutelle' in data:
+            fiche.organisme_tutelle = data['organisme_tutelle']
+        if 'description' in data:
+            p.description = data['description']
+
+        # Section III - Critères d'évaluation
+        criteres = data.get('criteres', {})
+
+        # Mapper les critères vers les champs de la base de données
+        if 'pertinence' in criteres:
+            fiche.pertinence_score = criteres['pertinence'].get('score', 0)
+            fiche.pertinence_description = criteres['pertinence'].get('description', '')
+            fiche.pertinence_recommandations = criteres['pertinence'].get('recommandations', '')
+
+        if 'alignement' in criteres:
+            fiche.alignement_score = criteres['alignement'].get('score', 0)
+            fiche.alignement_description = criteres['alignement'].get('description', '')
+            fiche.alignement_recommandations = criteres['alignement'].get('recommandations', '')
+
+        if 'activites_couts' in criteres:
+            fiche.activites_couts_score = criteres['activites_couts'].get('score', 0)
+            fiche.activites_couts_description = criteres['activites_couts'].get('description', '')
+            fiche.activites_couts_recommandations = criteres['activites_couts'].get('recommandations', '')
+
+        if 'equite' in criteres:
+            fiche.equite_score = criteres['equite'].get('score', 0)
+            fiche.equite_description = criteres['equite'].get('description', '')
+            fiche.equite_recommandations = criteres['equite'].get('recommandations', '')
+
+        if 'viabilite' in criteres:
+            fiche.viabilite_score = criteres['viabilite'].get('score', 0)
+            fiche.viabilite_description = criteres['viabilite'].get('description', '')
+            fiche.viabilite_recommandations = criteres['viabilite'].get('recommandations', '')
+
+        if 'rentabilite' in criteres:
+            fiche.rentabilite_score = criteres['rentabilite'].get('score', 0)
+            fiche.rentabilite_description = criteres['rentabilite'].get('description', '')
+            fiche.rentabilite_recommandations = criteres['rentabilite'].get('recommandations', '')
+
+        if 'benefices_strategiques' in criteres:
+            fiche.benefices_strategiques_score = criteres['benefices_strategiques'].get('score', 0)
+            fiche.benefices_strategiques_description = criteres['benefices_strategiques'].get('description', '')
+            fiche.benefices_strategiques_recommandations = criteres['benefices_strategiques'].get('recommandations', '')
+
+        if 'perennite' in criteres:
+            fiche.perennite_score = criteres['perennite'].get('score', 0)
+            fiche.perennite_description = criteres['perennite'].get('description', '')
+            fiche.perennite_recommandations = criteres['perennite'].get('recommandations', '')
+
+        if 'avantages_intangibles' in criteres:
+            fiche.avantages_intangibles_score = criteres['avantages_intangibles'].get('score', 0)
+            fiche.avantages_intangibles_description = criteres['avantages_intangibles'].get('description', '')
+            fiche.avantages_intangibles_recommandations = criteres['avantages_intangibles'].get('recommandations', '')
+
+        if 'faisabilite' in criteres:
+            fiche.faisabilite_score = criteres['faisabilite'].get('score', 0)
+            fiche.faisabilite_description = criteres['faisabilite'].get('description', '')
+            fiche.faisabilite_recommandations = criteres['faisabilite'].get('recommandations', '')
+
+        if 'ppp' in criteres:
+            fiche.ppp_score = criteres['ppp'].get('score', 0)
+            fiche.ppp_description = criteres['ppp'].get('description', '')
+            fiche.ppp_recommandations = criteres['ppp'].get('recommandations', '')
+
+        if 'impact_environnemental' in criteres:
+            fiche.impact_environnemental_score = criteres['impact_environnemental'].get('score', 0)
+            fiche.impact_environnemental_description = criteres['impact_environnemental'].get('description', '')
+            fiche.impact_environnemental_recommandations = criteres['impact_environnemental'].get('recommandations', '')
+
+        # Calculer le score total
+        score_total = (
+            (fiche.pertinence_score or 0) +
+            (fiche.alignement_score or 0) +
+            (fiche.activites_couts_score or 0) +
+            (fiche.equite_score or 0) +
+            (fiche.viabilite_score or 0) +
+            (fiche.rentabilite_score or 0) +
+            (fiche.benefices_strategiques_score or 0) +
+            (fiche.perennite_score or 0) +
+            (fiche.avantages_intangibles_score or 0) +
+            (fiche.faisabilite_score or 0) +
+            (fiche.ppp_score or 0) +
+            (fiche.impact_environnemental_score or 0)
+        )
+        fiche.score_total = score_total
+        p.score = score_total
+
+        # Proposition et recommandations finales
+        fiche.proposition = data.get('proposition', data.get('avis', ''))
+        fiche.recommandations = data.get('recommandations', '')
+
+        # Mettre à jour le projet
+        p.avis = fiche.proposition
+        p.commentaires = fiche.recommandations
+        p.statut = "évalué"
+
+        # Sauvegarder la fiche dans la base de données
+        db.session.commit()
+        print(f"[FICHE_EVAL] Fiche {fiche.id} sauvegardée avec score {score_total}/100")
+
+        # Générer le PDF
+        try:
+            import tempfile
+            import shutil
+
+            temp_dir = tempfile.mkdtemp()
+
+            try:
+                fiche_data = fiche.to_dict()
+                project_data = p.to_dict()
+
+                # Générer le PDF
+                pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, temp_dir)
+                print(f"[FICHE_EVAL] PDF généré: {pdf_path}")
+
+                # Créer le dossier pour les fiches d'évaluation
+                fiches_folder = os.path.join(app.config["UPLOAD_FOLDER"], "fiches_evaluation")
+                os.makedirs(fiches_folder, exist_ok=True)
+
+                # Nom du fichier final
+                pdf_filename = f"Fiche_Evaluation_{p.numero_projet or project_id}_{evaluateur_nom}.pdf"
+                dest_path = os.path.join(fiches_folder, pdf_filename)
+
+                # Copier le PDF vers le dossier final
+                shutil.copy2(pdf_path, dest_path)
+
+                # Enregistrer le chemin du PDF dans la fiche
+                fiche.fichier_pdf = pdf_filename
+                db.session.commit()
+
+                print(f"[FICHE_EVAL] PDF sauvegardé: {pdf_filename}")
+
+            finally:
+                # Nettoyer le répertoire temporaire
+                try:
+                    shutil.rmtree(temp_dir)
+                except Exception:
+                    pass
+
+        except Exception as pdf_error:
+            print(f"[FICHE_EVAL] Erreur lors de la génération du PDF: {pdf_error}")
+            import traceback
+            traceback.print_exc()
+            # Ne pas bloquer la soumission si le PDF échoue
+
+        # Ajouter une entrée dans l'historique
+        hist = Historique(
+            project_id=project_id,
+            action=f"Fiche d'évaluation soumise - Score: {score_total}/100 - Avis: {fiche.proposition}",
+            auteur=evaluateur_nom,
+            role='evaluateur'
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+        print(f"[FICHE_EVAL] Fiche d'évaluation complétée avec succès pour le projet {project_id}")
+
+        return jsonify({
+            "message": "Fiche d'évaluation enregistrée avec succès",
+            "fiche_id": fiche.id,
+            "score_total": score_total,
+            "pdf_generated": fiche.fichier_pdf is not None
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[FICHE_EVAL] Erreur: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 # Soumission des compléments par le soumissionnaire
 @app.route("/api/projects/<int:project_id>/complements", methods=["POST"])
 def submit_complements(project_id):
