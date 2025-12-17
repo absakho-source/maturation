@@ -8,23 +8,166 @@
     </div>
 
     <div class="popup-content" v-if="ficheEdition">
-      <div class="criteres-list">
-        <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
-          <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
-          <div class="critere-inputs">
-            <label>VALEUR ET/OU DESCRIPTION:
-              <textarea v-model="ficheEdition.criteres[critere.key].description"
-                class="textarea-description" rows="2" placeholder="Analyser le critère..."></textarea>
-            </label>
-            <label>SCORE:
-              <input type="number" :min="0" :max="critere.max" step="0.5"
-                v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
-              / {{ critere.max }}
-            </label>
-            <label>RECOMMANDATIONS:
-              <textarea v-model="ficheEdition.criteres[critere.key].recommandations"
-                class="textarea-recommandations" rows="2" placeholder="Recommandations pour ce critère..."></textarea>
-            </label>
+      <!-- SECTION I - PRÉSENTATION DU PROJET -->
+      <div class="section-block">
+        <h3 class="section-title">I - PRÉSENTATION DU PROJET</h3>
+
+        <div class="form-group">
+          <label>INTITULÉ DU PROJET:</label>
+          <textarea v-model="ficheEdition.intitule" class="form-control" rows="2" placeholder="Intitulé du projet"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>SECTEUR DE PLANIFICATION:</label>
+            <input type="text" v-model="ficheEdition.secteur" class="form-control" placeholder="Secteur de planification">
+          </div>
+          <div class="form-group">
+            <label>PÔLES TERRITORIAUX:</label>
+            <input type="text" v-model="ficheEdition.poles" class="form-control" placeholder="Pôles territoriaux">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>COÛT DU PROJET (FCFA):</label>
+            <input type="text" v-model="ficheEdition.cout_estimatif" class="form-control" placeholder="Ex: 1000000">
+          </div>
+          <div class="form-group">
+            <label>ORGANISME DE TUTELLE:</label>
+            <input type="text" v-model="ficheEdition.organisme_tutelle" class="form-control" placeholder="Organisme de tutelle">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>DESCRIPTION DU PROJET:</label>
+          <textarea v-model="ficheEdition.description" class="form-control" rows="4" placeholder="Description du projet"></textarea>
+        </div>
+      </div>
+
+      <!-- SECTION II - CLASSIFICATION DU PROJET -->
+      <div class="section-block">
+        <h3 class="section-title">II - CLASSIFICATION DU PROJET</h3>
+
+        <div class="form-row">
+          <!-- Origine du projet -->
+          <div class="form-group">
+            <label>ORIGINE DU PROJET:</label>
+            <div class="radio-group">
+              <label><input type="radio" v-model="ficheEdition.origine_projet_choix" value="maturation"> Maturation</label>
+              <label><input type="radio" v-model="ficheEdition.origine_projet_choix" value="offre_spontanee"> Offre spontanée</label>
+              <label><input type="radio" v-model="ficheEdition.origine_projet_choix" value="autres"> Autres</label>
+            </div>
+            <input v-if="ficheEdition.origine_projet_choix === 'autres'" type="text"
+              v-model="ficheEdition.origine_projet_autres_precision"
+              class="form-control" placeholder="Précisez..." style="margin-top: 10px;">
+          </div>
+
+          <!-- Dimensions transversales -->
+          <div class="form-group">
+            <label>DIMENSIONS TRANSVERSALES:</label>
+            <div class="checkbox-block">
+              <div class="dimension-subtitle">Changement climatique</div>
+              <label><input type="checkbox" v-model="ficheEdition.changement_climatique_adaptation"> Adaptation</label>
+              <label><input type="checkbox" v-model="ficheEdition.changement_climatique_attenuation"> Atténuation</label>
+            </div>
+            <div class="checkbox-block">
+              <div class="dimension-subtitle">Genre</div>
+              <label><input type="checkbox" v-model="ficheEdition.genre"> Prise en compte du genre</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableaux détaillés -->
+        <div class="form-group">
+          <label>ARTICULATION:</label>
+          <textarea v-model="ficheEdition.articulation" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>AXE(S):</label>
+            <textarea v-model="ficheEdition.axes" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>OBJECTIF(S) STRATÉGIQUE(S):</label>
+            <textarea v-model="ficheEdition.objectifs_strategiques" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>OBJECTIFS DE DÉVELOPPEMENT DURABLE:</label>
+          <textarea v-model="ficheEdition.odd" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>DURÉE D'ANALYSE:</label>
+            <input type="text" v-model="ficheEdition.duree_analyse" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>RÉALISATION:</label>
+            <input type="text" v-model="ficheEdition.realisation" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>EXPLOITATION:</label>
+            <input type="text" v-model="ficheEdition.exploitation" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>LOCALISATION:</label>
+            <textarea v-model="ficheEdition.localisation" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>PARTIES PRENANTES:</label>
+            <textarea v-model="ficheEdition.parties_prenantes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>AUTRES PROJETS/PROG. CONNEXES:</label>
+          <textarea v-model="ficheEdition.autres_projets_connexes" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>OBJECTIF DU PROJET:</label>
+            <textarea v-model="ficheEdition.objectif_projet" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>ACTIVITÉS PRINCIPALES:</label>
+            <textarea v-model="ficheEdition.activites_principales" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS:</label>
+          <textarea v-model="ficheEdition.resultats_attendus" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- SECTION III - RÉSULTATS DE L'ÉVALUATION -->
+      <div class="section-block">
+        <h3 class="section-title">III - RÉSULTATS DE L'ÉVALUATION</h3>
+
+        <div class="criteres-list">
+          <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
+            <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
+            <div class="critere-inputs">
+              <label>VALEUR ET/OU DESCRIPTION:
+                <textarea v-model="ficheEdition.criteres[critere.key].description"
+                  class="textarea-description" rows="2" placeholder="Analyser le critère..."></textarea>
+              </label>
+              <label>SCORE:
+                <input type="number" :min="0" :max="critere.max" step="0.5"
+                  v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
+                / {{ critere.max }}
+              </label>
+              <label>RECOMMANDATIONS:
+                <textarea v-model="ficheEdition.criteres[critere.key].recommandations"
+                  class="textarea-recommandations" rows="2" placeholder="Recommandations pour ce critère..."></textarea>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -141,8 +284,39 @@ export default {
         }
         const fiche = ficheRes.ok ? await ficheRes.json() : { criteres: {}, proposition: '', recommandations: '' };
 
-        // Initialiser ficheEdition
+        // Initialiser ficheEdition avec TOUS les champs de la fiche
         this.ficheEdition = {
+          // Section I - Présentation du projet
+          intitule: fiche.intitule || this.projet.titre || '',
+          secteur: fiche.secteur || this.projet.secteur || '',
+          poles: fiche.poles || this.projet.poles_territoriaux || '',
+          cout_estimatif: fiche.cout_estimatif || this.projet.cout_estimatif || '',
+          organisme_tutelle: fiche.organisme_tutelle || '',
+          description: fiche.description || this.projet.description || '',
+
+          // Section II - Classification
+          origine_projet_choix: fiche.origine_projet_choix || '',
+          origine_projet_autres_precision: fiche.origine_projet_autres_precision || '',
+          changement_climatique_adaptation: fiche.changement_climatique_adaptation || false,
+          changement_climatique_attenuation: fiche.changement_climatique_attenuation || false,
+          genre: fiche.genre || false,
+
+          // Tableaux détaillés
+          articulation: fiche.articulation || '',
+          axes: fiche.axes || '',
+          objectifs_strategiques: fiche.objectifs_strategiques || '',
+          odd: fiche.odd || '',
+          duree_analyse: fiche.duree_analyse || '',
+          realisation: fiche.realisation || '',
+          exploitation: fiche.exploitation || '',
+          localisation: fiche.localisation || '',
+          parties_prenantes: fiche.parties_prenantes || '',
+          autres_projets_connexes: fiche.autres_projets_connexes || '',
+          objectif_projet: fiche.objectif_projet || '',
+          activites_principales: fiche.activites_principales || '',
+          resultats_attendus: fiche.resultats_attendus || '',
+
+          // Section III - Critères d'évaluation
           criteres: {},
           proposition: fiche.proposition || '',
           recommandations: fiche.recommandations || ''
@@ -477,5 +651,78 @@ export default {
   font-size: 0.85rem;
   margin-top: 0.5rem;
   line-height: 1.6;
+}
+
+/* Styles pour les sections */
+.section-block {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c5282;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #2c5282;
+  text-transform: uppercase;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  cursor: pointer;
+}
+
+.checkbox-block {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.dimension-subtitle {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-block label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+}
+
+.checkbox-block input[type="checkbox"] {
+  cursor: pointer;
 }
 </style>
