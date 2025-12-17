@@ -116,6 +116,16 @@ class FicheEvaluationDGPPEPDF:
             textColor=colors.black
         ))
 
+        # Style pour les en-têtes de tableaux (Section II)
+        self.styles.add(ParagraphStyle(
+            name='TableHeader',
+            parent=self.styles['Normal'],
+            fontSize=9,
+            fontName='Helvetica-Bold',
+            textColor=colors.white,
+            alignment=TA_CENTER
+        ))
+
     def _create_header(self):
         """Création de l'en-tête officiel"""
         # En-tête texte centré

@@ -441,11 +441,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                     from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 
                 # Préparer les données pour le PDF
+                # IMPORTANT: fiche_data contient les données Section II (tableaux détaillés)
+                # car le générateur PDF les cherche dans self.fiche_data.get(...)
                 fiche_data = {
                     'id': fiche.id,
                     'evaluateur_nom': fiche.evaluateur_nom,
                     'proposition': fiche.proposition,
                     'recommandations': fiche.recommandations_generales,
+
+                    # Section III - Critères d'évaluation
                     'criteres': {
                         'pertinence': {'score': fiche.pertinence_score, 'description': fiche.pertinence_description, 'recommandations': fiche.pertinence_recommandations},
                         'alignement': {'score': fiche.alignement_score, 'description': fiche.alignement_description, 'recommandations': fiche.alignement_recommandations},
@@ -459,19 +463,66 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                         'faisabilite': {'score': fiche.faisabilite_score, 'description': fiche.faisabilite_description, 'recommandations': fiche.faisabilite_recommandations},
                         'ppp': {'score': fiche.ppp_score, 'description': fiche.ppp_description, 'recommandations': fiche.ppp_recommandations},
                         'impact_environnemental': {'score': fiche.impact_environnemental_score, 'description': fiche.impact_environnemental_description, 'recommandations': fiche.impact_environnemental_recommandations}
-                    }
+                    },
+
+                    # Section II - Tableaux détaillés (utilisés par le générateur PDF)
+                    'articulation': fiche.articulation or '',
+                    'axes': fiche.axes or '',
+                    'objectifs_strategiques': fiche.objectifs_strategiques or '',
+                    'odd': fiche.odd or '',
+                    'duree_analyse': fiche.duree_analyse or '',
+                    'realisation': fiche.realisation or '',
+                    'exploitation': fiche.exploitation or '',
+                    'localisation': fiche.localisation or '',
+                    'parties_prenantes': fiche.parties_prenantes or '',
+                    'autres_projets_connexes': fiche.autres_projets_connexes or '',
+                    'objectif_projet': fiche.objectif_projet or '',
+                    'activites_principales': fiche.activites_principales or '',
+                    'resultats_attendus': fiche.resultats_attendus or ''
                 }
 
+                # Préparer project_data avec TOUTES les données (projet + fiche)
+                # Le générateur PDF utilise project_data pour les Sections I et II
                 project_data = {
                     'id': project.id,
                     'numero_projet': project.numero_projet,
-                    'titre': project.titre,
-                    'organisme_tutelle': project.organisme_tutelle,
-                    'cout_estimatif': project.cout_estimatif
+                    'titre': fiche.intitule_projet or project.titre,  # Priorité à la fiche
+                    'organisme_tutelle': fiche.organisme_tutelle or project.organisme_tutelle,
+                    'cout_estimatif': fiche.cout_projet or project.cout_estimatif,
+
+                    # Section I - Données de la fiche
+                    'secteur': fiche.sous_secteur or project.secteur,
+                    'poles': project.poles_territoriaux,  # Vient toujours du projet
+                    'description': project.description,  # Vient toujours du projet
+
+                    # Section II - Classification (depuis fiche)
+                    'origine_projet': {
+                        'maturation': fiche.origine_projet == 'maturation' if fiche.origine_projet else False,
+                        'offre_spontanee': fiche.origine_projet == 'offre_spontanee' if fiche.origine_projet else False,
+                        'autres': fiche.origine_projet == 'autres' if fiche.origine_projet else False
+                    },
+                    'cc_adaptation': fiche.changement_climatique_adaptation or False,
+                    'cc_attenuation': fiche.changement_climatique_attenuation or False,
+                    'genre': fiche.genre or False,
+
+                    # Tableaux détaillés (depuis fiche)
+                    'articulation': fiche.articulation or '',
+                    'axes': fiche.axes or '',
+                    'objectifs_strategiques': fiche.objectifs_strategiques or '',
+                    'odd': fiche.odd or '',
+                    'duree_analyse': fiche.duree_analyse or '',
+                    'realisation': fiche.realisation or '',
+                    'exploitation': fiche.exploitation or '',
+                    'localisation': fiche.localisation or '',
+                    'parties_prenantes': fiche.parties_prenantes or '',
+                    'autres_projets_connexes': fiche.autres_projets_connexes or '',
+                    'objectif_projet': fiche.objectif_projet or '',
+                    'activites_principales': fiche.activites_principales or '',
+                    'resultats_attendus': fiche.resultats_attendus or ''
                 }
 
-                # Répertoire de sortie pour les PDFs
-                pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
+                # Répertoire de sortie pour les PDFs - CORRECTION: utiliser UPLOAD_FOLDER
+                pdf_directory = os.path.join(app.config["UPLOAD_FOLDER"], 'fiches_evaluation')
                 os.makedirs(pdf_directory, exist_ok=True)
 
                 # Générer le nouveau PDF
