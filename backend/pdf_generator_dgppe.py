@@ -518,10 +518,14 @@ class FicheEvaluationDGPPEPDF:
             description_formatted = self.format_text_with_linebreaks(description) if description else '-'
             recommandations_formatted = self.format_text_with_linebreaks(recommandations) if recommandations else '-'
 
+            # Formater le score pour afficher les décimales si nécessaire
+            score_formatted = f"{score:.1f}" if isinstance(score, float) and score % 1 != 0 else str(int(score)) if isinstance(score, (int, float)) else str(score)
+            max_score_formatted = f"{max_score:.1f}" if isinstance(max_score, float) and max_score % 1 != 0 else str(int(max_score)) if isinstance(max_score, (int, float)) else str(max_score)
+
             row = [
-                Paragraph(f"<b>{title}</b><br/><font size=8>({max_score} points)</font>", self.styles['DGPPEBodyText']),
+                Paragraph(f"<b>{title}</b><br/><font size=8>({max_score_formatted} points)</font>", self.styles['DGPPEBodyText']),
                 Paragraph(description_formatted, self.styles['DGPPEBodyText']),
-                Paragraph(f"<b>{score}/{max_score}</b>", ParagraphStyle(
+                Paragraph(f"<b>{score_formatted}/{max_score_formatted}</b>", ParagraphStyle(
                     name=f'Score{key}',
                     parent=self.styles['DGPPEBodyText'],
                     alignment=TA_CENTER,
@@ -531,11 +535,13 @@ class FicheEvaluationDGPPEPDF:
             ]
             data.append(row)
 
-        # Ligne de total
+        # Ligne de total avec formatage des décimales
+        total_score_formatted = f"{total_score:.1f}" if isinstance(total_score, float) and total_score % 1 != 0 else str(int(total_score)) if isinstance(total_score, (int, float)) else str(total_score)
+
         total_row = [
             Paragraph("<b>SCORE TOTAL =</b>", self.styles['Label']),
             '',
-            Paragraph(f"<b>{total_score}/100</b>", ParagraphStyle(
+            Paragraph(f"<b>{total_score_formatted}/100</b>", ParagraphStyle(
                 name='TotalScore',
                 parent=self.styles['Label'],
                 alignment=TA_CENTER,
