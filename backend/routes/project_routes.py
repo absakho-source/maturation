@@ -168,12 +168,45 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 'id': fiche.id,
                 'project_id': fiche.project_id,
                 'evaluateur_nom': fiche.evaluateur_nom or '',
+
+                # Section I - Présentation du projet
+                'intitule': fiche.intitule_projet or '',
+                'secteur': fiche.sous_secteur or '',
+                'poles': '',  # Ce champ vient du projet, pas de la fiche
+                'cout_estimatif': fiche.cout_projet or '',
+                'organisme_tutelle': fiche.organisme_tutelle or '',
+                'description': '',  # Ce champ vient du projet, pas de la fiche
+
+                # Section II - Classification
+                'origine_projet_choix': fiche.origine_projet or '',
+                'origine_projet_autres_precision': '',
+                'changement_climatique_adaptation': fiche.changement_climatique_adaptation or False,
+                'changement_climatique_attenuation': fiche.changement_climatique_attenuation or False,
+                'genre': fiche.genre or False,
+
+                # Tableaux détaillés
+                'articulation': fiche.articulation or '',
+                'axes': fiche.axes or '',
+                'objectifs_strategiques': fiche.objectifs_strategiques or '',
+                'odd': fiche.odd or '',
+                'duree_analyse': fiche.duree_analyse or '',
+                'realisation': fiche.realisation or '',
+                'exploitation': fiche.exploitation or '',
+                'localisation': fiche.localisation or '',
+                'parties_prenantes': fiche.parties_prenantes or '',
+                'autres_projets_connexes': fiche.autres_projets_connexes or '',
+                'objectif_projet': fiche.objectif_projet or '',
+                'activites_principales': fiche.activites_principales or '',
+                'resultats_attendus': fiche.resultats_attendus or '',
+
+                # Section III - Critères d'évaluation
                 'criteres': criteres,
                 'proposition': fiche.proposition or '',
                 'recommandations': fiche.recommandations_generales or '',
                 'score_total': fiche.calculer_score_total(),
                 'appreciation_globale': fiche.get_appreciation_globale(),
-                'date_evaluation': fiche.date_evaluation.isoformat() if fiche.date_evaluation else None
+                'date_evaluation': fiche.date_evaluation.isoformat() if fiche.date_evaluation else None,
+                'fichier_pdf': fiche.fichier_pdf  # IMPORTANT: Nécessaire pour afficher le bouton PDF dans le frontend
             }
             return jsonify(evaluation_data)
             
