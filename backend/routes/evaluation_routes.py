@@ -876,18 +876,29 @@ def get_fiches_evaluation_stats():
 def get_fiches_archives(project_id):
     """
     Récupère l'historique des PDFs archivés pour un projet
-    Accessible uniquement aux membres du Comité (admin, secretariatsct, presidencesct, presidencecomite)
+    Accessible aux membres du Comité et aux évaluateurs assignés au projet
     """
     try:
-        # Vérifier les permissions (membres du comité uniquement)
+        # Vérifier les permissions
         role = request.headers.get('X-Role', '')
+        username = request.headers.get('X-Username', '')
         roles_autorises = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite']
 
+        # Vérifier si l'utilisateur a accès
         if role not in roles_autorises:
-            return jsonify({
-                'error': 'Accès refusé',
-                'message': 'Seuls les membres du Comité peuvent consulter l\'historique des fiches'
-            }), 403
+            # Si c'est un évaluateur, vérifier qu'il est assigné au projet
+            if role == 'evaluateur':
+                project = Project.query.get(project_id)
+                if not project or project.evaluateur_nom != username:
+                    return jsonify({
+                        'error': 'Accès refusé',
+                        'message': 'Vous ne pouvez consulter que l\'historique des projets qui vous sont assignés'
+                    }), 403
+            else:
+                return jsonify({
+                    'error': 'Accès refusé',
+                    'message': 'Seuls les membres du Comité et les évaluateurs assignés peuvent consulter l\'historique des fiches'
+                }), 403
 
         # Vérifier que le projet existe
         project = Project.query.get(project_id)
