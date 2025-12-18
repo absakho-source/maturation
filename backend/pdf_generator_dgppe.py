@@ -724,7 +724,7 @@ class FicheEvaluationDGPPEPDF:
         ]
         data.append(total_row)
 
-        table = Table(data, colWidths=[4.5*cm, 5*cm, 2*cm, 5.5*cm])
+        table = Table(data, colWidths=[4.5*cm, 4.5*cm, 2.5*cm, 5.5*cm])
         table.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
