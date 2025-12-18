@@ -471,14 +471,6 @@
 
             <!-- Carte détaillée (expanded) -->
             <div v-if="expandedProjects[p.id]" class="project-card-expanded">
-            <div class="card-header">
-              <div class="card-title-section">
-                <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
-                <h3>{{ p.titre }}</h3>
-              </div>
-              <span v-if="p.evaluation_prealable === 'dossier_rejete'" class="badge status-rejected">⚠️ Rejet proposé</span>
-              <span v-else class="badge status-evaluated">évalué</span>
-            </div>
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
               <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
@@ -1053,6 +1045,7 @@ export default {
       return projets;
     },
     projectsToAssign() {
+      // Exclure les projets 'évalué' qui apparaissent dans l'onglet "Avis à valider"
       return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné', 'rejeté'].includes(p.statut));
     },
     projectsToValidate() {
