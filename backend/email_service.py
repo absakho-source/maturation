@@ -277,9 +277,10 @@ def send_status_change_email(project, user_email, user_name):
 
     # Variables de remplacement
     variables = {
-        '{user_name}': user_name,
+        '{nom}': user_name,  # Variable pour salutation "Bonjour {nom}"
+        '{user_name}': user_name,  # Compatibilité avec anciens templates
         '{project_titre}': project.titre,
-        '{numero_projet}': project.numero_projet,
+        '{numero_projet}': project.numero_projet or '',  # Gérer les projets sans numéro
         '{message_complements}': project.complements_demande_message or 'Veuillez consulter la plateforme pour plus de détails.'
     }
 

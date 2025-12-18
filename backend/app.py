@@ -2025,7 +2025,7 @@ def enregistrer_decision_comite(project_id):
                     email_service.send_status_change_email(
                         project=p,
                         user_email=soumissionnaire.email,
-                        user_name=soumissionnaire.nom or soumissionnaire.username
+                        user_name=soumissionnaire.nom_complet or soumissionnaire.display_name or soumissionnaire.username
                     )
         except Exception as email_error:
             print(f"[EMAIL] Erreur lors de l'envoi d'email: {email_error}")
