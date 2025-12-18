@@ -168,7 +168,7 @@
                   👁️ Détails
                 </button>
                 <button
-                  @click="supprimerCompte(compte.id, compte.username)"
+                  @click="supprimerCompte(compte)"
                   class="btn-action btn-delete"
                   :disabled="actionEnCours === compte.id"
                 >
