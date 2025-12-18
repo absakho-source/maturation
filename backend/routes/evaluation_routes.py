@@ -1042,3 +1042,85 @@ def delete_fiche_archive(project_id, filename):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500
+
+
+# ==================== RECEVABILITÉ PDF ====================
+
+@evaluation_bp.route('/api/projects/<int:project_id>/recevabilite/pdf', methods=['GET'])
+def get_recevabilite_pdf(project_id):
+    """Génération et téléchargement du PDF de la Matrice d'Évaluation de la Recevabilité"""
+    try:
+        # Récupérer le projet
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Projet non trouvé'}), 404
+
+        # Vérifier que l'évaluation préalable a été faite
+        if not project.evaluation_prealable:
+            return jsonify({'error': 'Aucune évaluation de recevabilité pour ce projet'}), 404
+
+        # Récupérer la matrice
+        matrice_data = project.evaluation_prealable_matrice
+        if not matrice_data:
+            return jsonify({'error': 'Matrice de recevabilité non trouvée'}), 404
+
+        # Parser la matrice si c'est une chaîne JSON
+        if isinstance(matrice_data, str):
+            try:
+                matrice = json.loads(matrice_data)
+            except json.JSONDecodeError:
+                matrice = {}
+        else:
+            matrice = matrice_data
+
+        # Importer le générateur PDF
+        try:
+            from pdf_generator_recevabilite import generer_fiche_recevabilite_pdf
+        except ImportError:
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            sys.path.insert(0, parent_dir)
+            from pdf_generator_recevabilite import generer_fiche_recevabilite_pdf
+
+        # Préparer les données du projet
+        project_data = {
+            'id': project.id,
+            'numero_projet': project.numero_projet,
+            'titre': project.titre,
+            'secteur': project.secteur,
+            'poles': project.poles,
+            'structure_soumissionnaire': getattr(project, 'structure_soumissionnaire', '') or '',
+            'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
+            'organisme_tutelle': project.organisme_tutelle or ''
+        }
+
+        # Répertoire de sortie
+        data_dir = os.environ.get('DATA_DIR', None)
+        if data_dir:
+            pdf_directory = os.path.join(data_dir, 'pdfs', 'recevabilite')
+        else:
+            pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'recevabilite')
+        os.makedirs(pdf_directory, exist_ok=True)
+
+        # Générer le PDF
+        pdf_path = generer_fiche_recevabilite_pdf(
+            project_data,
+            matrice,
+            project.evaluation_prealable,
+            pdf_directory
+        )
+
+        # Nom du fichier pour le téléchargement
+        numero = project.numero_projet or f"PROJ-{project.id}"
+        download_name = f"Recevabilite_{numero}.pdf"
+
+        return send_file(
+            pdf_path,
+            as_attachment=False,
+            download_name=download_name,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors de la génération du PDF: {str(e)}'}), 500
