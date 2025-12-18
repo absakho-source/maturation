@@ -62,31 +62,31 @@ def get_project_presentation(project_id):
             'organisme_tutelle': project.organisme_tutelle or '',
             'poles': project.poles or '',  # Ajout explicite des pôles
             'description': project.description or '',  # Ajout de la description
-            # Dimensions transversales
-            'changement_climatique_adaptation': fiche.changement_climatique_adaptation if fiche else getattr(project, 'cc_adaptation', False),
-            'changement_climatique_attenuation': fiche.changement_climatique_attenuation if fiche else getattr(project, 'cc_attenuation', False),
-            'genre': fiche.genre if fiche else getattr(project, 'genre', False),
+            # Dimensions transversales (utiliser getattr pour éviter AttributeError)
+            'changement_climatique_adaptation': getattr(fiche, 'changement_climatique_adaptation', False) if fiche else getattr(project, 'cc_adaptation', False),
+            'changement_climatique_attenuation': getattr(fiche, 'changement_climatique_attenuation', False) if fiche else getattr(project, 'cc_attenuation', False),
+            'genre': getattr(fiche, 'genre', False) if fiche else getattr(project, 'genre', False),
 
             # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
-            'articulation': fiche.articulation if fiche else '',
-            'axes': fiche.axes if fiche else '',
-            'objectifs_strategiques': fiche.objectifs_strategiques if fiche else '',
-            'odd': fiche.odd if fiche else '',
+            'articulation': getattr(fiche, 'articulation', '') if fiche else '',
+            'axes': getattr(fiche, 'axes', '') if fiche else '',
+            'objectifs_strategiques': getattr(fiche, 'objectifs_strategiques', '') if fiche else '',
+            'odd': getattr(fiche, 'odd', '') if fiche else '',
 
             # Tableau 2: DURÉES
-            'duree_analyse': fiche.duree_analyse if fiche else '',
-            'realisation': fiche.realisation if fiche else '',
-            'exploitation': fiche.exploitation if fiche else '',
+            'duree_analyse': getattr(fiche, 'duree_analyse', '') if fiche else '',
+            'realisation': getattr(fiche, 'realisation', '') if fiche else '',
+            'exploitation': getattr(fiche, 'exploitation', '') if fiche else '',
 
             # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS CONNEXES
-            'localisation': fiche.localisation if fiche else '',
-            'parties_prenantes': fiche.parties_prenantes if fiche else '',
-            'autres_projets_connexes': fiche.autres_projets_connexes if fiche else '',
+            'localisation': getattr(fiche, 'localisation', '') if fiche else '',
+            'parties_prenantes': getattr(fiche, 'parties_prenantes', '') if fiche else '',
+            'autres_projets_connexes': getattr(fiche, 'autres_projets_connexes', '') if fiche else '',
 
             # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
-            'objectif_projet': fiche.objectif_projet if fiche else '',
-            'activites_principales': fiche.activites_principales if fiche else '',
-            'resultats_attendus': fiche.resultats_attendus if fiche else '',
+            'objectif_projet': getattr(fiche, 'objectif_projet', '') if fiche else '',
+            'activites_principales': getattr(fiche, 'activites_principales', '') if fiche else '',
+            'resultats_attendus': getattr(fiche, 'resultats_attendus', '') if fiche else '',
             'evaluateur_nom': getattr(project, 'evaluateur_nom', '')
         }
         print(f"[PRESENTATION] ✓ Données construites, retour JSON", file=sys.stderr, flush=True)
