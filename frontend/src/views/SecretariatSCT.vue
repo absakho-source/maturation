@@ -521,9 +521,9 @@
               <!-- Actions pour un avis normal -->
               <div v-else class="validation-actions">
                 <button class="btn-primary" @click="validerAvis(p.id)">Valider l'avis ➜ Présidence SCT</button>
-                <div class="reassign">
+                <div v-if="estProjetAssignable(p)" class="reassign">
                   <label>Réassigner à
-                    <select v-model="assignation[p.id]" :disabled="!estProjetAssignable(p)">
+                    <select v-model="assignation[p.id]">
                       <option value="">--Choisir--</option>
                       <option v-if="p.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
                       <option v-for="evaluateur in getAvailableEvaluateurs(p)" :key="evaluateur.username" :value="evaluateur.username">
@@ -531,8 +531,7 @@
                       </option>
                     </select>
                   </label>
-                  <button class="btn-secondary" @click="reassigner(p.id)" :disabled="!estProjetAssignable(p)">Réassigner</button>
-                  <p v-if="!estProjetAssignable(p)" class="reassign-blocked-message">⚠️ Validation secrétariat ou décision hiérarchique en cours</p>
+                  <button class="btn-secondary" @click="reassigner(p.id)">Réassigner</button>
                 </div>
               </div>
             </div>
