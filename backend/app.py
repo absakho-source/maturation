@@ -905,14 +905,9 @@ def traiter_project(project_id):
             and data.get("statut_action") != "reassigner_rejete"):
 
             # Vérifier que le projet n'a pas de statut définitif
-            # Exception: les rôles secretariatsct et admin peuvent réassigner pour corriger/réviser
             statuts_definitifs = ['favorable', 'favorable sous conditions', 'défavorable']
-            has_definitive_status = (p.statut in statuts_definitifs or p.avis in statuts_definitifs or
-                p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif')
-
-            # Bloquer seulement si statut définitif ET le rôle n'est pas autorisé à réassigner
-            roles_pouvant_reassigner_definitif = ['secretariatsct', 'admin']
-            if has_definitive_status and role not in roles_pouvant_reassigner_definitif:
+            if (p.statut in statuts_definitifs or p.avis in statuts_definitifs or
+                p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif'):
                 return jsonify({
                     "error": "Impossible d'assigner un projet ayant déjà un avis définitif ou une décision du Comité"
                 }), 403
@@ -927,8 +922,6 @@ def traiter_project(project_id):
                     # Déterminer la raison selon le contexte
                     if p.statut in ["soumis", "en attente d'assignation"]:
                         raison = "assignation_initiale"
-                    elif has_definitive_status:
-                        raison = "reassignation_apres_avis_definitif"
                     else:
                         raison = "reassignation_avant_hierarchie"
 
