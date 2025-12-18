@@ -1151,9 +1151,9 @@ export default {
       // Bloquer dès que le secrétariat a validé (montée hiérarchique)
       const aValidationSecretariat = ['valide', 'approuve'].includes(projet.validation_secretariat);
 
-      // Statuts définitifs : avis confirmé par le Comité ou avis final validé
+      // Statuts définitifs du workflow (après validation finale)
       const statutsDefinitifs = ['favorable', 'favorable sous conditions', 'défavorable'];
-      const aStatutDefinitif = statutsDefinitifs.includes(projet.statut) || statutsDefinitifs.includes(projet.avis);
+      const aStatutDefinitif = statutsDefinitifs.includes(projet.statut);
       const aDecisionConfirmee = projet.decision_finale === 'confirme';
       const estApprouveDefinitif = projet.statut_comite === 'approuve_definitif';
 
