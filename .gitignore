@@ -76,6 +76,8 @@ migrate_*.py
 !backend/migrate_prod_gps.sh
 !backend/migrate_fiche_sections.py
 !backend/migrate_scores_to_float.py
+regenerer_*.py
+!backend/regenerer_tous_pdfs.py
 update_*.py
 add_*.py
 analyze_*.py
