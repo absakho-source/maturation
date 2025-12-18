@@ -611,6 +611,18 @@ export default {
     async sauvegarder() {
       if (!this.peutSauvegarder) return
 
+      // Demander confirmation avant de finaliser l'évaluation
+      const confirmation = confirm(
+        "⚠️ Confirmer la finalisation de l'évaluation ?\n\n" +
+        "Une fois finalisée, l'évaluation sera soumise et un PDF sera généré.\n" +
+        "Cette action est irréversible.\n\n" +
+        "Voulez-vous continuer ?"
+      )
+
+      if (!confirmation) {
+        return // L'utilisateur a annulé
+      }
+
       this.loading = true
       try {
         // Inclure les données de présentation (origine, dimensions transversales et tableaux détaillés du projet)
