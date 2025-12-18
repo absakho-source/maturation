@@ -904,12 +904,12 @@ def traiter_project(project_id):
         if ("evaluateur_nom" in data and "avis" not in data and data.get("validation_secretariat") != "reassigne"
             and data.get("statut_action") != "reassigner_rejete"):
 
-            # Vérifier que le projet n'a pas de statut définitif
-            statuts_definitifs = ['favorable', 'favorable sous conditions', 'défavorable']
-            if (p.statut in statuts_definitifs or p.avis in statuts_definitifs or
-                p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif'):
+            # Vérifier que le projet n'a pas de décision finale du Comité
+            # On autorise la réassignation après avis évaluateur pour permettre corrections/révisions
+            # Mais on bloque après décision du Comité (vraiment définitif)
+            if (p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif'):
                 return jsonify({
-                    "error": "Impossible d'assigner un projet ayant déjà un avis définitif ou une décision du Comité"
+                    "error": "Impossible de réassigner un projet avec une décision finale du Comité"
                 }), 403
 
             nouveau_evaluateur = data["evaluateur_nom"]
@@ -961,10 +961,13 @@ def traiter_project(project_id):
 
         # Réassignation explicite (via validation_secretariat: "reassigne")
         elif data.get("validation_secretariat") == "reassigne":
-            # AJOUT: Vérifier que le projet peut être réassigné
-            peut, erreur = WorkflowValidator.peut_etre_assigne(p)
-            if not peut:
-                return jsonify({"error": erreur}), 403
+            # Vérifier que le projet n'a pas de décision finale du Comité
+            # On autorise la réassignation après avis évaluateur pour permettre corrections/révisions
+            # Mais on bloque après décision du Comité (vraiment définitif)
+            if (p.decision_finale == 'confirme' or get_statut_comite(p) == 'approuve_definitif'):
+                return jsonify({
+                    "error": "Impossible de réassigner un projet avec une décision finale du Comité"
+                }), 403
 
             nouveau_evaluateur = data["evaluateur_nom"]
 
