@@ -1229,8 +1229,15 @@ def traiter_project(project_id):
             if not peut:
                 return jsonify({"error": erreur}), 403
 
-            p.avis_presidencesct = data["avis_presidencesct"]
-            if data["avis_presidencesct"] == "valide":
+            avis_psct = data["avis_presidencesct"]
+            commentaires_psct = (data.get("commentaires") or "").strip()
+
+            # Commentaire obligatoire pour le rejet
+            if avis_psct == "rejete" and not commentaires_psct:
+                return jsonify({"error": "Le motif du rejet est obligatoire"}), 400
+
+            p.avis_presidencesct = avis_psct
+            if avis_psct == "valide":
                 p.statut = "validé par presidencesct"
                 # NE PAS mettre de statut_comite ici - c'est le rôle de PresidenceComite
                 action = "Validation par Présidence SCT - transmission à Présidence du Comité"
@@ -1285,21 +1292,28 @@ def traiter_project(project_id):
                 p.statut = "rejeté"
                 p.evaluateur_nom = None
 
+                # Sauvegarder le motif du rejet (obligatoire - vérifié plus haut)
+                p.commentaires_finaux = commentaires_psct
+
                 # Réinitialiser les décisions de présidence pour permettre un nouveau cycle
                 p.decision_finale = None
-                p.commentaires_finaux = None
                 set_statut_comite(p, None)  # Réinitialiser aussi le statut_comite
 
-                action = "Avis rejeté par Présidence SCT"
+                action = f"Avis rejeté par Présidence SCT - Motif: {commentaires_psct[:100]}..." if len(commentaires_psct) > 100 else f"Avis rejeté par Présidence SCT - Motif: {commentaires_psct}"
 
         # Validation Présidence du Comité
         elif "decision_finale" in data:
             dec = data.get("decision_finale")
+            commentaires_comite = (data.get("commentaires") or "").strip()
 
             # Vérifier que la Présidence du Comité peut décider
             peut, erreur = WorkflowValidator.peut_etre_decide_par_presidence_comite(p)
             if not peut:
                 return jsonify({"error": erreur}), 403
+
+            # Commentaire obligatoire pour l'infirmation
+            if dec == "infirme" and not commentaires_comite:
+                return jsonify({"error": "Le motif de l'infirmation est obligatoire"}), 400
 
             # PHASE 2: PresidenceComite confirme ou infirme l'avis
             if dec == "confirme":
@@ -1335,9 +1349,11 @@ def traiter_project(project_id):
                 p.evaluateur_nom = None
                 # Réinitialiser la validation SCT pour forcer un nouveau cycle
                 p.avis_presidencesct = None
-                action = "Décision de la Présidence du Comité : avis infirmé, retour au Secrétariat SCT"
-                if data.get("commentaires"):
-                    p.commentaires_finaux = data.get("commentaires")
+
+                # Sauvegarder le motif de l'infirmation (obligatoire - vérifié plus haut)
+                p.commentaires_finaux = commentaires_comite
+
+                action = f"Décision de la Présidence du Comité : avis infirmé - Motif: {commentaires_comite[:100]}..." if len(commentaires_comite) > 100 else f"Décision de la Présidence du Comité : avis infirmé - Motif: {commentaires_comite}"
             else:
                 return jsonify({"error": "decision_finale invalide"}), 400
 

@@ -273,6 +273,19 @@
               <p v-if="projet.secteur"><strong>Secteur de planification:</strong> {{ projet.secteur }}</p>
               <p v-if="projet.poles"><strong>Pôle(s) territorial(aux):</strong> {{ projet.poles }}</p>
               
+              <!-- Alerte pour projets en réexamen (après infirmation par Présidence du Comité) -->
+              <div v-if="projet.statut === 'en réexamen par le Secrétariat SCT'" class="reexamen-alert">
+                <div class="alert alert-warning">
+                  <strong>⚠️ Projet retourné pour réexamen</strong>
+                  <p>L'avis sur ce projet a été infirmé par la Présidence du Comité.</p>
+                </div>
+                <div v-if="projet.commentaires_finaux" class="motif-infirmation">
+                  <strong>Motif de l'infirmation:</strong>
+                  <p class="motif-text">{{ projet.commentaires_finaux }}</p>
+                </div>
+                <p class="action-required">Veuillez réassigner ce projet à un évaluateur pour une nouvelle évaluation.</p>
+              </div>
+
               <!-- Projets déjà assignés ou en évaluation -->
               <div v-if="projet.statut === 'assigné' || projet.statut === 'en évaluation'" class="reassign-info">
                 <p><strong>🔄 Projet {{ projet.statut === 'en évaluation' ? 'en cours d\'évaluation' : 'assigné' }} :</strong></p>
@@ -346,9 +359,12 @@
                       ❌ <strong>Projet rejeté</strong>
                     </template>
                   </div>
-                  <p v-if="projet.commentaires_finaux"><strong>Motif de rejet:</strong> {{ projet.commentaires_finaux }}</p>
-                  <p v-else-if="projet.commentaires"><strong>Motif de rejet:</strong> {{ projet.commentaires }}</p>
-                  <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale }}</p>
+                  <p v-if="projet.commentaires_finaux">
+                    <strong>{{ projet.decision_finale === 'infirme' ? 'Motif de l\'infirmation:' : 'Motif du rejet:' }}</strong>
+                    {{ projet.commentaires_finaux }}
+                  </p>
+                  <p v-else-if="projet.commentaires"><strong>Motif:</strong> {{ projet.commentaires }}</p>
+                  <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale === 'infirme' ? 'Avis infirmé (retour pour réexamen)' : projet.decision_finale }}</p>
                 </div>
 
                 <!-- Actions disponibles pour tous les projets rejetés -->
@@ -2729,6 +2745,63 @@ export default {
   border: 1px solid #fca5a5;
   margin-bottom: 10px;
   font-weight: 500;
+}
+
+/* Alerte réexamen après infirmation */
+.reexamen-alert {
+  background: #fffbeb;
+  border: 2px solid #fbbf24;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 12px 0;
+}
+
+.reexamen-alert .alert-warning {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+  margin-bottom: 12px;
+}
+
+.reexamen-alert .alert-warning strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.reexamen-alert .alert-warning p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.motif-infirmation {
+  background: white;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.motif-infirmation strong {
+  color: #b45309;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.motif-text {
+  margin: 0;
+  color: #451a03;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.action-required {
+  color: #92400e;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .reassign-rejected-section {

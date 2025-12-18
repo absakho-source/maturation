@@ -138,9 +138,24 @@
               </div>
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
               <div v-if="p.validation_secretariat === 'valide'" class="decision-section">
-                <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
-                <button @click="valider(p.id, 'valide')" class="btn-success">✓ Valider</button>
-                <button @click="valider(p.id, 'rejete')" class="btn-danger">✗ Rejeter</button>
+                <div class="motif-rejet-section">
+                  <label for="commentaire" class="motif-label">
+                    Justification de votre décision
+                    <span class="motif-hint">(obligatoire en cas de rejet)</span>
+                  </label>
+                  <textarea
+                    v-model="commentaires[p.id]"
+                    rows="3"
+                    placeholder="Saisissez le motif de votre décision..."
+                    :class="{ 'error-border': erreursRejet[p.id] }"
+                    style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"
+                  ></textarea>
+                  <p v-if="erreursRejet[p.id]" class="error-message">{{ erreursRejet[p.id] }}</p>
+                </div>
+                <div class="decision-buttons">
+                  <button @click="valider(p.id, 'valide')" class="btn-success">✓ Valider</button>
+                  <button @click="valider(p.id, 'rejete')" class="btn-danger">✗ Rejeter</button>
+                </div>
               </div>
             </div>
           </div>
@@ -255,6 +270,7 @@ export default {
       allProjects: [],
       activeTab: 'all',
       commentaires: {},
+      erreursRejet: {},
       filtreStatut: null,
       metrics: {
         averageProcessingTime: '0 jours',
@@ -309,17 +325,27 @@ export default {
       return this.allProjects.filter(p => p.statut === status).length;
     },
     valider(id, decision) {
+      // Effacer l'erreur précédente
+      this.erreursRejet[id] = null;
+
+      const com = (this.commentaires[id] || "").trim();
+
+      // Vérification: motif obligatoire pour le rejet
+      if (decision === 'rejete' && !com) {
+        this.erreursRejet[id] = "Le motif du rejet est obligatoire. Veuillez justifier votre décision.";
+        return;
+      }
+
       // Confirmation avant validation pour éviter clics accidentels
       const actionMessage = decision === 'valide'
         ? "Êtes-vous sûr de vouloir valider cet avis et le transmettre à la Présidence du Comité ?"
-        : "Êtes-vous sûr de vouloir rejeter cet avis ?";
+        : `Êtes-vous sûr de vouloir rejeter cet avis ?\n\nMotif: "${com}"`;
 
       if (!confirm(actionMessage)) {
         return;
       }
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const com = (this.commentaires[id] || "").trim();
       fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -328,15 +354,19 @@ export default {
           auteur: user.username,
           role: user.role
         })
-      }).then(() => {
-        alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté');
+      }).then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erreur lors de la validation');
+        }
+        alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté. Le secrétariat SCT sera notifié du motif.');
         // Rediriger vers la même route pour forcer le rechargement
         this.$router.push('/presidencesct').then(() => {
           window.location.reload();
         });
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
-        alert('Erreur lors de la validation. Veuillez réessayer.');
+        alert('Erreur: ' + error.message);
       });
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
@@ -662,7 +692,13 @@ export default {
 .card-body { padding: 1rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
 .btn-view { width: 100%; margin-top: .75rem; padding: .6rem; background: #6b7280; color: #fff; border: none; border-radius: 8px; }
-.decision-section { display:flex; gap:.5rem; margin-top:.5rem; }
+.decision-section { display:flex; flex-direction: column; gap:.5rem; margin-top:.5rem; }
+.decision-buttons { display: flex; gap: .5rem; }
+.motif-rejet-section { margin-bottom: 0.5rem; }
+.motif-label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; }
+.motif-hint { font-weight: 400; font-size: 0.85rem; color: #dc2626; }
+.error-border { border-color: #dc2626 !important; background-color: #fef2f2 !important; }
+.error-message { color: #dc2626; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
 .btn-success{background:#10b981;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
 .btn-danger{background:#ef4444;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
 .avis-favorable{color:#10b981 !important;font-weight:600 !important}.avis-conditions{color:#f59e0b !important;font-weight:600 !important}.avis-defavorable{color:#ef4444 !important;font-weight:600 !important}.avis-complement{color:#f97316 !important;font-weight:600 !important}

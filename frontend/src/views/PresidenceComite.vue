@@ -163,9 +163,19 @@
                 <button @click="confirmer(p.id, 'confirme')" class="btn-success">✓ Confirmer l'avis</button>
                 <button @click="confirmer(p.id, 'infirme')" class="btn-danger">✗ Infirmer l'avis</button>
               </div>
-              <label>Commentaires (optionnel):
-                <textarea v-model="commentaires[p.id]" rows="2" placeholder="Justification de votre décision (optionnel)..."></textarea>
-              </label>
+              <div class="motif-section">
+                <label class="motif-label">
+                  Commentaires / Justification
+                  <span class="motif-hint">(obligatoire si infirmation)</span>
+                </label>
+                <textarea
+                  v-model="commentaires[p.id]"
+                  rows="3"
+                  placeholder="Saisissez la justification de votre décision..."
+                  :class="{ 'error-border': erreursInfirmation[p.id] }"
+                ></textarea>
+                <p v-if="erreursInfirmation[p.id]" class="error-message">{{ erreursInfirmation[p.id] }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -336,6 +346,7 @@ export default {
     return {
       allProjects: [],
       commentaires: {},
+      erreursInfirmation: {},
       activeTab: 'all',
       filtreStatut: null,
       metrics: {
@@ -403,17 +414,27 @@ export default {
       return this.allProjects.filter(p => p.statut === status).length;
     },
     confirmer(id, decision) {
+      // Effacer l'erreur précédente
+      this.erreursInfirmation[id] = null;
+
+      const com = (this.commentaires[id] || "").trim();
+
+      // Vérification: motif obligatoire pour l'infirmation
+      if (decision === 'infirme' && !com) {
+        this.erreursInfirmation[id] = "Le motif de l'infirmation est obligatoire. Veuillez justifier votre décision.";
+        return;
+      }
+
       // Confirmation avant décision finale pour éviter clics accidentels
       const actionMessage = decision === 'confirme'
         ? "Êtes-vous sûr de vouloir confirmer cet avis ? Cette décision est finale."
-        : "Êtes-vous sûr de vouloir infirmer cet avis ? Cette décision est finale.";
+        : `Êtes-vous sûr de vouloir infirmer cet avis ? Cette décision est finale.\n\nMotif: "${com}"`;
 
       if (!confirm(actionMessage)) {
         return;
       }
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const com = (this.commentaires[id] || "").trim();
       fetch(`/api/projects/${id}/traiter`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -423,15 +444,19 @@ export default {
           auteur: user.username,
           role: user.role
         })
-      }).then(() => {
-        alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé');
+      }).then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erreur lors de la validation');
+        }
+        alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé. Le secrétariat SCT sera notifié du motif.');
         // Rediriger vers la même route pour forcer le rechargement
         this.$router.push('/presidencecomite').then(() => {
           window.location.reload();
         });
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
-        alert('Erreur lors de la validation. Veuillez réessayer.');
+        alert('Erreur: ' + error.message);
       });
     },
     getEvaluateurLabel(ev) {
@@ -881,6 +906,12 @@ export default {
 .final-section label { display: block; margin-bottom: 0.75rem; font-weight: 600; color: #2c3e50; font-size: 0.9rem; }
 .final-section textarea { width: 100%; padding: 0.75rem; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.3s; }
 .final-section textarea:focus { outline: none; border-color: #2563eb; }
+/* Styles pour motif obligatoire */
+.motif-section { margin-top: 1rem; }
+.motif-label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; }
+.motif-hint { font-weight: 400; font-size: 0.85rem; color: #dc2626; }
+.error-border { border-color: #dc2626 !important; background-color: #fef2f2 !important; }
+.error-message { color: #dc2626; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
 .btn-success { padding: 0.85rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
 .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
 .btn-danger { padding: 0.85rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
