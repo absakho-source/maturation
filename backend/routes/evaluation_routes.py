@@ -24,11 +24,21 @@ evaluation_bp = Blueprint('evaluation', __name__)
 @evaluation_bp.route('/api/projects/<int:project_id>/presentation', methods=['GET'])
 def get_project_presentation(project_id):
     """Récupération des données de présentation du projet (Section I)"""
+    print(f"[PRESENTATION] ===== DÉBUT REQUÊTE project_id={project_id} =====", file=sys.stderr, flush=True)
+
     try:
-        project = Project.query.get_or_404(project_id)
+        print(f"[PRESENTATION] Recherche projet ID={project_id}...", file=sys.stderr, flush=True)
+        project = Project.query.filter_by(id=project_id).first()
+
+        if not project:
+            print(f"[PRESENTATION] ❌ Projet {project_id} non trouvé", file=sys.stderr, flush=True)
+            return jsonify({"error": f"Projet {project_id} non trouvé"}), 404
+
+        print(f"[PRESENTATION] ✓ Projet trouvé: {project.titre}", file=sys.stderr, flush=True)
 
         # Récupérer la fiche d'évaluation si elle existe pour récupérer les champs de présentation détaillée
         fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        print(f"[PRESENTATION] Fiche existante: {fiche is not None}", file=sys.stderr, flush=True)
 
         # Données automatiquement pré-remplies de la section I - PRESENTATION DU PROJET
         presentation_data = {
@@ -40,16 +50,11 @@ def get_project_presentation(project_id):
                 'offre_spontanee': False,
                 'autres': False
             },
-            'typologie_projet': {
-                'productif': False,
-                'appui_production': False,
-                'social': False,
-                'environnemental': False
-            },
+            # SUPPRIMÉ: typologie_projet (obsolète, remplacé par cc_adaptation/attenuation/genre)
             'changement_climatique': {
-                'adaptation': False,
-                'attenuation': False,
-                'genre': project.secteur and 'famille' in project.secteur.lower()
+                'adaptation': getattr(project, 'cc_adaptation', False),
+                'attenuation': getattr(project, 'cc_attenuation', False),
+                'genre': getattr(project, 'genre', False)
             },
             'sous_secteur': project.secteur or '',
             'secteur': project.secteur or '',  # Ajout pour compatibilité
@@ -58,9 +63,9 @@ def get_project_presentation(project_id):
             'poles': project.poles or '',  # Ajout explicite des pôles
             'description': project.description or '',  # Ajout de la description
             # Dimensions transversales
-            'changement_climatique_adaptation': fiche.changement_climatique_adaptation if fiche else False,
-            'changement_climatique_attenuation': fiche.changement_climatique_attenuation if fiche else False,
-            'genre': fiche.genre if fiche else False,
+            'changement_climatique_adaptation': fiche.changement_climatique_adaptation if fiche else getattr(project, 'cc_adaptation', False),
+            'changement_climatique_attenuation': fiche.changement_climatique_attenuation if fiche else getattr(project, 'cc_attenuation', False),
+            'genre': fiche.genre if fiche else getattr(project, 'genre', False),
 
             # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
             'articulation': fiche.articulation if fiche else '',
@@ -84,9 +89,13 @@ def get_project_presentation(project_id):
             'resultats_attendus': fiche.resultats_attendus if fiche else '',
             'evaluateur_nom': getattr(project, 'evaluateur_nom', '')
         }
+        print(f"[PRESENTATION] ✓ Données construites, retour JSON", file=sys.stderr, flush=True)
         return jsonify(presentation_data), 200
-        
+
     except Exception as e:
+        print(f"[PRESENTATION] ❌ EXCEPTION: {type(e).__name__}: {str(e)}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         return jsonify({'error': f'Erreur lors de la récupération: {str(e)}'}), 500
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['GET'])
