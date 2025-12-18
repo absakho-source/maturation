@@ -523,6 +523,13 @@
                       </option>
                     </select>
                   </label>
+                  <label style="margin-top: 10px;">Motivation (facultatif):</label>
+                  <textarea
+                    v-model="motivations[p.id]"
+                    rows="2"
+                    placeholder="Justification de cette réassignation (facultatif)"
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; margin-bottom: 10px;"
+                  ></textarea>
                   <button class="btn-secondary" @click="reassigner(p.id)">Réassigner</button>
                 </div>
               </div>
