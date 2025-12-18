@@ -133,7 +133,7 @@ class FicheEvaluationDGPPEPDF:
             textColor=colors.black
         ))
 
-        # Style pour les en-têtes de tableaux (Section II)
+        # Style pour les en-têtes de tableau (texte blanc sur fond sombre)
         self.styles.add(ParagraphStyle(
             name='TableHeader',
             parent=self.styles['Normal'],
@@ -665,12 +665,12 @@ class FicheEvaluationDGPPEPDF:
         # Créer le tableau des critères
         data = []
 
-        # En-tête
+        # En-tête avec texte blanc sur fond sombre
         header_row = [
-            Paragraph("<b>CRITÈRES</b>", self.styles['Label']),
-            Paragraph("<b>VALEUR ET/OU DESCRIPTION</b>", self.styles['Label']),
-            Paragraph("<b>SCORE</b>", self.styles['Label']),
-            Paragraph("<b>RECOMMANDATIONS</b>", self.styles['Label'])
+            Paragraph("<b>CRITÈRES</b>", self.styles['TableHeader']),
+            Paragraph("<b>VALEUR ET/OU<br/>DESCRIPTION</b>", self.styles['TableHeader']),
+            Paragraph("<b>SCORE</b>", self.styles['TableHeader']),
+            Paragraph("<b>RECOMMANDATIONS</b>", self.styles['TableHeader'])
         ]
         data.append(header_row)
 
