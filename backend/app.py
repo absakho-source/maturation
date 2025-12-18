@@ -5882,6 +5882,49 @@ def fix_fiche_visible():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/fix-rejected-status", methods=["POST"])
+def fix_rejected_status():
+    """
+    Endpoint pour corriger le statut des projets rejetés par présidence SCT
+    Convertit 'rejeté' en 'rejeté par présidence SCT' pour les projets qui ont avis_presidencesct='rejete'
+    """
+    try:
+        print("[ADMIN] Correction des statuts 'rejeté' → 'rejeté par présidence SCT'...")
+
+        # Trouver les projets avec statut 'rejeté' et avis_presidencesct='rejete'
+        projects = Project.query.filter_by(statut='rejeté').filter(
+            Project.avis_presidencesct == 'rejete'
+        ).all()
+
+        updated = []
+        for p in projects:
+            old_statut = p.statut
+            p.statut = 'rejeté par présidence SCT'
+            updated.append({
+                'id': p.id,
+                'numero': p.numero_projet,
+                'titre': p.titre,
+                'old_statut': old_statut,
+                'new_statut': p.statut
+            })
+            print(f"  ✅ [{p.numero_projet}] {p.titre}: '{old_statut}' → 'rejeté par présidence SCT'")
+
+        db.session.commit()
+
+        print(f"[ADMIN] ✅ {len(updated)} projet(s) corrigé(s)")
+
+        return jsonify({
+            "message": f"{len(updated)} projet(s) corrigé(s)",
+            "updated": len(updated),
+            "projects": updated
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/admin/delete-test-projects", methods=["POST"])
 def delete_test_projects():
     """
