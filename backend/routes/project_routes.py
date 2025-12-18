@@ -45,15 +45,6 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             except Exception:
                 origine_projet = {'maturation': False, 'offre_spontanee': False, 'autres': False}
 
-            try:
-                typologie_db = getattr(project, 'typologie_projet', None)
-                if typologie_db:
-                    typologie_projet = json.loads(typologie_db)
-                else:
-                    typologie_projet = {'productif': False, 'appui_production': False, 'social': False, 'environnemental': False}
-            except Exception:
-                typologie_projet = {'productif': False, 'appui_production': False, 'social': False, 'environnemental': False}
-
             presentation_data = {
                 'id': project.id,
                 'intitule': project.titre,
@@ -65,7 +56,7 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 'organisme_tutelle': getattr(project, 'organisme_tutelle', None) or '',
                 # 'auteur_nom' supprimé
                 'origine_projet': origine_projet,
-                'typologie_projet': typologie_projet,
+                # 'typologie_projet' supprimé - remplacé par cc_adaptation, cc_attenuation, genre
                 'evaluateur_nom': project.evaluateur_nom if hasattr(project, 'evaluateur_nom') else ''
             }
             return jsonify(presentation_data)
