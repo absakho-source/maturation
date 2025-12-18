@@ -24,32 +24,48 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
     @app.route('/api/projects/<int:project_id>/presentation', methods=['GET'])
     def get_project_presentation(project_id):
         """Récupère les données de présentation d'un projet pour pré-remplir la fiche d'évaluation"""
+        import json
+        import sys
+
+        print(f"[PRESENTATION] ===== DÉBUT REQUÊTE project_id={project_id} =====", file=sys.stderr, flush=True)
+
         try:
             # Vérifier le rôle de l'utilisateur
             role = request.args.get("role", "")
+            print(f"[PRESENTATION] Role reçu: '{role}'", file=sys.stderr, flush=True)
 
             # Les invités ne peuvent pas accéder aux données de présentation
             if role == "invite":
+                print(f"[PRESENTATION] Accès refusé pour invité", file=sys.stderr, flush=True)
                 return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux données de projets"}), 403
 
-            import json
-            print(f"[PRESENTATION] Chargement du projet {project_id}")
-            project = Project.query.get_or_404(project_id)
-            print(f"[PRESENTATION] Projet trouvé: {project.titre}")
+            print(f"[PRESENTATION] Recherche projet ID={project_id} dans la base...", file=sys.stderr, flush=True)
+            project = Project.query.filter_by(id=project_id).first()
+
+            if not project:
+                print(f"[PRESENTATION] ❌ Projet {project_id} non trouvé", file=sys.stderr, flush=True)
+                return jsonify({"error": f"Projet {project_id} non trouvé"}), 404
+
+            print(f"[PRESENTATION] ✓ Projet trouvé: {project.titre}", file=sys.stderr, flush=True)
 
             # Lire les cases à cocher depuis la base de données (JSON)
             try:
+                print(f"[PRESENTATION] Lecture origine_projet...", file=sys.stderr, flush=True)
                 origine_db = getattr(project, 'origine_projet', None)
-                print(f"[PRESENTATION] origine_projet DB: {origine_db}")
+                print(f"[PRESENTATION] origine_projet DB brut: {repr(origine_db)}", file=sys.stderr, flush=True)
+
                 if origine_db:
                     origine_projet = json.loads(origine_db)
+                    print(f"[PRESENTATION] origine_projet parsé: {origine_projet}", file=sys.stderr, flush=True)
                 else:
                     origine_projet = {'maturation': False, 'offre_spontanee': False, 'autres': False}
+                    print(f"[PRESENTATION] origine_projet par défaut", file=sys.stderr, flush=True)
             except Exception as e:
-                print(f"[PRESENTATION] Erreur parsing origine_projet: {e}")
+                print(f"[PRESENTATION] ⚠️ Erreur parsing origine_projet: {e}", file=sys.stderr, flush=True)
+                traceback.print_exc(file=sys.stderr)
                 origine_projet = {'maturation': False, 'offre_spontanee': False, 'autres': False}
 
-            print(f"[PRESENTATION] Construction de presentation_data")
+            print(f"[PRESENTATION] Construction presentation_data...", file=sys.stderr, flush=True)
             presentation_data = {
                 'id': project.id,
                 'intitule': project.titre,
@@ -62,12 +78,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 'origine_projet': origine_projet,
                 'evaluateur_nom': getattr(project, 'evaluateur_nom', None) or ''
             }
-            print(f"[PRESENTATION] Données construites avec succès")
+            print(f"[PRESENTATION] ✓ Données construites avec succès", file=sys.stderr, flush=True)
+            print(f"[PRESENTATION] Retour JSON avec {len(presentation_data)} champs", file=sys.stderr, flush=True)
             return jsonify(presentation_data)
 
         except Exception as e:
-            print(f"[PRESENTATION] ERREUR: {str(e)}", flush=True)
-            traceback.print_exc()
+            print(f"[PRESENTATION] ❌❌❌ EXCEPTION CAPTURÉE ❌❌❌", file=sys.stderr, flush=True)
+            print(f"[PRESENTATION] Type: {type(e).__name__}", file=sys.stderr, flush=True)
+            print(f"[PRESENTATION] Message: {str(e)}", file=sys.stderr, flush=True)
+            traceback.print_exc(file=sys.stderr)
             return jsonify({'error': f'Erreur lors de la récupération: {str(e)}'}), 500
 
     @app.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['GET'])
