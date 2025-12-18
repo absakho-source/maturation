@@ -36,57 +36,57 @@ def get_project_presentation(project_id):
 
         print(f"[PRESENTATION] ✓ Projet trouvé: {project.titre}", file=sys.stderr, flush=True)
 
-        # Récupérer la fiche d'évaluation si elle existe pour récupérer les champs de présentation détaillée
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
-        print(f"[PRESENTATION] Fiche existante: {fiche is not None}", file=sys.stderr, flush=True)
+        # NE PAS récupérer la fiche existante pour le pré-remplissage
+        # car lors d'une réassignation, la Section II doit rester vierge
+        # (les données de l'ancienne évaluation sont dans la fiche archivée)
+        print(f"[PRESENTATION] Section II non pré-remplie (nouvelle évaluation)", file=sys.stderr, flush=True)
 
-        # Données automatiquement pré-remplies de la section I - PRESENTATION DU PROJET
+        # Données automatiquement pré-remplies UNIQUEMENT pour la SECTION I - PRÉSENTATION DU PROJET
+        # La SECTION II - CLASSIFICATION doit rester vierge pour chaque nouvelle évaluation
         presentation_data = {
+            # ===== SECTION I: Données descriptives du projet (toujours pré-remplies) =====
             'intitule': project.titre,
             'cout_projet': project.cout_estimatif,
             'cout_estimatif': project.cout_estimatif,  # Ajout pour compatibilité
-            'origine_projet': {
-                'maturation': False,
-                'offre_spontanee': False,
-                'autres': False
-            },
-            # SUPPRIMÉ: typologie_projet (obsolète, remplacé par cc_adaptation/attenuation/genre)
-            'changement_climatique': {
-                'adaptation': getattr(project, 'cc_adaptation', False),
-                'attenuation': getattr(project, 'cc_attenuation', False),
-                'genre': getattr(project, 'genre', False)
-            },
             'sous_secteur': project.secteur or '',
             'secteur': project.secteur or '',  # Ajout pour compatibilité
             'secteur_planification': project.secteur or '',
             'organisme_tutelle': project.organisme_tutelle or '',
             'poles': project.poles or '',  # Ajout explicite des pôles
             'description': project.description or '',  # Ajout de la description
-            # Dimensions transversales (utiliser getattr pour éviter AttributeError)
-            'changement_climatique_adaptation': getattr(fiche, 'changement_climatique_adaptation', False) if fiche else getattr(project, 'cc_adaptation', False),
-            'changement_climatique_attenuation': getattr(fiche, 'changement_climatique_attenuation', False) if fiche else getattr(project, 'cc_attenuation', False),
-            'genre': getattr(fiche, 'genre', False) if fiche else getattr(project, 'genre', False),
 
-            # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
-            'articulation': getattr(fiche, 'articulation', '') if fiche else '',
-            'axes': getattr(fiche, 'axes', '') if fiche else '',
-            'objectifs_strategiques': getattr(fiche, 'objectifs_strategiques', '') if fiche else '',
-            'odd': getattr(fiche, 'odd', '') if fiche else '',
+            # ===== SECTION II: Données d'évaluation (TOUJOURS vides pour nouvelle évaluation) =====
+            # Ces champs ne sont JAMAIS pré-remplis car ils font partie de l'évaluation
+            # et doivent rester dans la fiche archivée uniquement
+            'origine_projet': {
+                'maturation': False,
+                'offre_spontanee': False,
+                'autres': False
+            },
+            'changement_climatique': {
+                'adaptation': False,
+                'attenuation': False,
+                'genre': False
+            },
+            'changement_climatique_adaptation': False,
+            'changement_climatique_attenuation': False,
+            'genre': False,
 
-            # Tableau 2: DURÉES
-            'duree_analyse': getattr(fiche, 'duree_analyse', '') if fiche else '',
-            'realisation': getattr(fiche, 'realisation', '') if fiche else '',
-            'exploitation': getattr(fiche, 'exploitation', '') if fiche else '',
+            # Tableaux détaillés Section II (toujours vides)
+            'articulation': '',
+            'axes': '',
+            'objectifs_strategiques': '',
+            'odd': '',
+            'duree_analyse': '',
+            'realisation': '',
+            'exploitation': '',
+            'localisation': '',
+            'parties_prenantes': '',
+            'autres_projets_connexes': '',
+            'objectif_projet': '',
+            'activites_principales': '',
+            'resultats_attendus': '',
 
-            # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS CONNEXES
-            'localisation': getattr(fiche, 'localisation', '') if fiche else '',
-            'parties_prenantes': getattr(fiche, 'parties_prenantes', '') if fiche else '',
-            'autres_projets_connexes': getattr(fiche, 'autres_projets_connexes', '') if fiche else '',
-
-            # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
-            'objectif_projet': getattr(fiche, 'objectif_projet', '') if fiche else '',
-            'activites_principales': getattr(fiche, 'activites_principales', '') if fiche else '',
-            'resultats_attendus': getattr(fiche, 'resultats_attendus', '') if fiche else '',
             'evaluateur_nom': getattr(project, 'evaluateur_nom', '')
         }
         print(f"[PRESENTATION] ✓ Données construites, retour JSON", file=sys.stderr, flush=True)
