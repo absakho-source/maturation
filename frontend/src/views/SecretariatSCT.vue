@@ -418,7 +418,7 @@
               </div>
 
               <!-- Actions pour assigner (projets non rejetés) -->
-              <div v-if="projet.statut !== 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="assign-section">
+              <div v-if="projet.statut !== 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
                 <label>{{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
@@ -437,6 +437,11 @@
                 <button class="btn-primary" @click="assigner(projet.id)">
                   {{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner' : 'Assigner' }}
                 </button>
+              </div>
+
+              <!-- Message si projet non réassignable (validation secrétariat ou statut définitif) -->
+              <div v-if="(projet.statut === 'assigné' || projet.statut === 'en évaluation') && !estProjetAssignable(projet)" class="info-message">
+                <p>⚠️ Ce projet ne peut plus être réassigné (validation secrétariat ou décision hiérarchique en cours).</p>
               </div>
             </div>
             </div>
@@ -516,9 +521,9 @@
               <!-- Actions pour un avis normal -->
               <div v-else class="validation-actions">
                 <button class="btn-primary" @click="validerAvis(p.id)">Valider l'avis ➜ Présidence SCT</button>
-                <div v-if="estProjetAssignable(p)" class="reassign">
+                <div class="reassign">
                   <label>Réassigner à
-                    <select v-model="assignation[p.id]">
+                    <select v-model="assignation[p.id]" :disabled="!estProjetAssignable(p)">
                       <option value="">--Choisir--</option>
                       <option v-if="p.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
                       <option v-for="evaluateur in getAvailableEvaluateurs(p)" :key="evaluateur.username" :value="evaluateur.username">
@@ -526,7 +531,8 @@
                       </option>
                     </select>
                   </label>
-                  <button class="btn-secondary" @click="reassigner(p.id)">Réassigner</button>
+                  <button class="btn-secondary" @click="reassigner(p.id)" :disabled="!estProjetAssignable(p)">Réassigner</button>
+                  <p v-if="!estProjetAssignable(p)" class="reassign-blocked-message">⚠️ Validation secrétariat ou décision hiérarchique en cours</p>
                 </div>
               </div>
             </div>
