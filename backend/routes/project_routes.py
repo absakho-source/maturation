@@ -33,35 +33,40 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux données de projets"}), 403
 
             import json
+            print(f"[PRESENTATION] Chargement du projet {project_id}")
             project = Project.query.get_or_404(project_id)
-            
+            print(f"[PRESENTATION] Projet trouvé: {project.titre}")
+
             # Lire les cases à cocher depuis la base de données (JSON)
             try:
                 origine_db = getattr(project, 'origine_projet', None)
+                print(f"[PRESENTATION] origine_projet DB: {origine_db}")
                 if origine_db:
                     origine_projet = json.loads(origine_db)
                 else:
                     origine_projet = {'maturation': False, 'offre_spontanee': False, 'autres': False}
-            except Exception:
+            except Exception as e:
+                print(f"[PRESENTATION] Erreur parsing origine_projet: {e}")
                 origine_projet = {'maturation': False, 'offre_spontanee': False, 'autres': False}
 
+            print(f"[PRESENTATION] Construction de presentation_data")
             presentation_data = {
                 'id': project.id,
                 'intitule': project.titre,
                 'titre': project.titre,
-                'secteur': project.secteur or 'Non spécifié',
-                'description': project.description or '',
-                'cout_estimatif': project.cout_estimatif or 0,
-                'poles': project.poles or 'Territoire national',
+                'secteur': getattr(project, 'secteur', None) or 'Non spécifié',
+                'description': getattr(project, 'description', None) or '',
+                'cout_estimatif': getattr(project, 'cout_estimatif', None) or 0,
+                'poles': getattr(project, 'poles', None) or 'Territoire national',
                 'organisme_tutelle': getattr(project, 'organisme_tutelle', None) or '',
-                # 'auteur_nom' supprimé
                 'origine_projet': origine_projet,
-                # 'typologie_projet' supprimé - remplacé par cc_adaptation, cc_attenuation, genre
-                'evaluateur_nom': project.evaluateur_nom if hasattr(project, 'evaluateur_nom') else ''
+                'evaluateur_nom': getattr(project, 'evaluateur_nom', None) or ''
             }
+            print(f"[PRESENTATION] Données construites avec succès")
             return jsonify(presentation_data)
-            
+
         except Exception as e:
+            print(f"[PRESENTATION] ERREUR: {str(e)}", flush=True)
             traceback.print_exc()
             return jsonify({'error': f'Erreur lors de la récupération: {str(e)}'}), 500
 
