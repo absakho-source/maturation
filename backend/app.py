@@ -2683,9 +2683,13 @@ def reintegrate_user_account(user_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/admin/users/<int:user_id>", methods=["PUT"])
+@app.route("/api/admin/users/<int:user_id>", methods=["PUT", "OPTIONS"])
 def update_user_details(user_id):
     """Modifier les détails d'un compte utilisateur (accessible par admin/secretariatsct/presidences)"""
+    # Gérer les requêtes preflight CORS
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     try:
         # Vérifier les permissions
         data = request.json or {}
