@@ -29,8 +29,8 @@
       </button>
     </div>
 
-    <!-- Filtres -->
-    <div class="filters-section">
+    <!-- Filtres - Uniquement pour les soumissionnaires -->
+    <div class="filters-section" v-if="userSubTab === 'soumissionnaires'">
       <div class="filter-group">
         <label>Filtrer par statut :</label>
         <select v-model="filtreStatut" @change="chargerComptes">
@@ -51,8 +51,24 @@
       </div>
     </div>
 
-    <!-- Statistiques rapides -->
-    <div class="stats-section">
+    <!-- Filtres simplifiés pour utilisateurs internes -->
+    <div class="filters-section" v-else>
+      <div class="filter-group">
+        <label>Rechercher :</label>
+        <input
+          v-model="rechercheTexte"
+          type="text"
+          placeholder="Nom, identifiant..."
+          @input="filtrerComptes"
+        />
+      </div>
+      <div class="filter-group">
+        <span class="users-count">{{ comptesFiltres.length }} utilisateur(s)</span>
+      </div>
+    </div>
+
+    <!-- Statistiques rapides - Uniquement pour les soumissionnaires -->
+    <div class="stats-section" v-if="userSubTab === 'soumissionnaires'">
       <div class="stat-card non-verifie">
         <div class="stat-icon">⚠️</div>
         <div class="stat-content">
@@ -1557,6 +1573,17 @@ function getTypeInstitutionLabel(type) {
   border: 1px solid #cbd5e0;
   border-radius: 8px;
   font-size: 1rem;
+}
+
+.users-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: #e2e8f0;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.95rem;
 }
 
 /* Statistiques */
