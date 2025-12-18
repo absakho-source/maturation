@@ -144,35 +144,142 @@ class FicheEvaluationDGPPEPDF:
         ))
 
     def _create_header(self):
-        """Création de l'en-tête officiel"""
-        # En-tête texte centré
-        header_text = Paragraph(
-            "<b>MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION</b><br/>"
-            "<b>DIRECTION GÉNÉRALE DE LA PLANIFICATION ET DES POLITIQUES ÉCONOMIQUES</b><br/>"
-            "<b>PLATEFORME DE SUIVI DE LA MATURATION DES PROJETS</b>",
-            self.styles['RepublicHeader']
+        """Création de l'en-tête officiel avec PLASMAP"""
+        # Style pour le ministère (plus petit)
+        ministry_style = ParagraphStyle(
+            name='MinistryStyle',
+            parent=self.styles['Normal'],
+            fontSize=9,
+            fontName='Helvetica',
+            textColor=HexColor('#1a4d7a'),
+            alignment=TA_CENTER,
+            leading=12
         )
 
-        # Créer un tableau pour l'en-tête avec bordure
-        header_table = Table([[header_text]], colWidths=[17*cm])
+        # Style pour la DGPPE
+        dgppe_style = ParagraphStyle(
+            name='DGPPEStyle',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            fontName='Helvetica-Bold',
+            textColor=HexColor('#1a4d7a'),
+            alignment=TA_CENTER,
+            leading=14
+        )
+
+        # Style pour PLASMAP (acronyme mis en valeur)
+        plasmap_style = ParagraphStyle(
+            name='PLASMAPStyle',
+            parent=self.styles['Normal'],
+            fontSize=14,
+            fontName='Helvetica-Bold',
+            textColor=HexColor('#27ae60'),
+            alignment=TA_CENTER,
+            leading=18
+        )
+
+        # Style pour le nom complet de PLASMAP
+        plasmap_full_style = ParagraphStyle(
+            name='PLASMAPFullStyle',
+            parent=self.styles['Normal'],
+            fontSize=8,
+            fontName='Helvetica-Oblique',
+            textColor=HexColor('#555555'),
+            alignment=TA_CENTER,
+            leading=10
+        )
+
+        # Ligne 1: République du Sénégal
+        republique = Paragraph(
+            "RÉPUBLIQUE DU SÉNÉGAL",
+            ParagraphStyle(
+                name='RepubliqueStyle',
+                parent=self.styles['Normal'],
+                fontSize=11,
+                fontName='Helvetica-Bold',
+                textColor=HexColor('#1a4d7a'),
+                alignment=TA_CENTER
+            )
+        )
+
+        # Ligne 2: Devise
+        devise = Paragraph(
+            "<i>Un Peuple - Un But - Une Foi</i>",
+            ParagraphStyle(
+                name='DeviseStyle',
+                parent=self.styles['Normal'],
+                fontSize=8,
+                fontName='Helvetica-Oblique',
+                textColor=HexColor('#666666'),
+                alignment=TA_CENTER
+            )
+        )
+
+        # Ligne 3: Ministère
+        ministere = Paragraph("MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION", ministry_style)
+
+        # Ligne 4: DGPPE
+        dgppe = Paragraph("DIRECTION GÉNÉRALE DE LA PLANIFICATION ET DES POLITIQUES ÉCONOMIQUES", dgppe_style)
+
+        # Séparateur décoratif
+        separator = Paragraph("─────────────────────", ParagraphStyle(
+            name='SepStyle',
+            parent=self.styles['Normal'],
+            fontSize=8,
+            textColor=HexColor('#27ae60'),
+            alignment=TA_CENTER
+        ))
+
+        # Ligne 5: PLASMAP en gros
+        plasmap = Paragraph("<b>PLASMAP</b>", plasmap_style)
+
+        # Ligne 6: Nom complet de PLASMAP
+        plasmap_full = Paragraph(
+            "<b>PL</b>ateforme de suivi de l'<b>A</b>nalyse et de la <b>S</b>élection des projets de <b>MA</b>turation du <b>P</b>IP",
+            plasmap_full_style
+        )
+
+        # Créer le tableau d'en-tête
+        header_data = [
+            [republique],
+            [devise],
+            [Spacer(1, 5)],
+            [ministere],
+            [dgppe],
+            [Spacer(1, 3)],
+            [separator],
+            [plasmap],
+            [plasmap_full]
+        ]
+
+        header_table = Table(header_data, colWidths=[17*cm])
         header_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
-            ('BOX', (0, 0), (0, 0), 1.5, colors.grey),
-            ('BACKGROUND', (0, 0), (0, 0), Color(0.95, 0.98, 0.95)),
-            ('TOPPADDING', (0, 0), (0, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (0, 0), 10)
+            ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (0, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (0, -1), 2),
+            ('BOTTOMPADDING', (0, 0), (0, -1), 2),
         ]))
 
-        self.story.append(header_table)
+        # Encadrer tout l'en-tête dans un cadre avec fond dégradé
+        outer_table = Table([[header_table]], colWidths=[17.5*cm])
+        outer_table.setStyle(TableStyle([
+            ('BOX', (0, 0), (0, 0), 2, HexColor('#1a4d7a')),
+            ('BACKGROUND', (0, 0), (0, 0), HexColor('#f8f9fa')),
+            ('TOPPADDING', (0, 0), (0, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (0, 0), 12),
+            ('LEFTPADDING', (0, 0), (0, 0), 10),
+            ('RIGHTPADDING', (0, 0), (0, 0), 10),
+        ]))
+
+        self.story.append(outer_table)
         self.story.append(Spacer(1, 15))
 
-        # Titre principal
+        # Titre principal: FICHE D'ÉVALUATION
         title = Paragraph("FICHE D'ÉVALUATION", self.styles['MainTitle'])
         self.story.append(title)
 
         # Date et version sur la même ligne
-        date_generation = datetime.now().strftime("%d/%m/%Y à %H:%M:%S")
+        date_generation = datetime.now().strftime("%d/%m/%Y à %H:%M")
 
         # Construire le texte avec version si disponible
         if self.version_affichage:
