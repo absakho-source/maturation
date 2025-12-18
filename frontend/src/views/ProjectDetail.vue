@@ -194,8 +194,8 @@
             </div>
           </div>
 
-          <!-- Section Évaluation Préalable (lecture seule) - Affichée uniquement si le dossier est rejeté -->
-          <div class="info-card" v-if="project.evaluation_prealable">
+          <!-- Section Évaluation Préalable (lecture seule) -->
+          <div class="info-card" v-if="project.evaluation_prealable && !isSoumissionnaire()">
             <h3>🔍 Évaluation de la Recevabilité</h3>
             <div class="evaluation-prealable-resultat">
               <div :class="['decision-badge',
@@ -219,6 +219,15 @@
                 </p>
               </template>
             </div>
+          </div>
+
+          <!-- Section PDF Recevabilité - Même style que la fiche d'évaluation -->
+          <div class="info-card" v-if="project.evaluation_prealable && project.evaluation_prealable_matrice && !isSoumissionnaire()">
+            <h3>📋 Matrice de Recevabilité (PDF)</h3>
+            <p>La matrice d'évaluation de la recevabilité a été générée.</p>
+            <button @click="ouvrirRecevabilitePDF" class="btn-primary">
+              📄 Voir la matrice de recevabilité (PDF)
+            </button>
           </div>
 
           <!-- Section Statut pour soumissionnaire: En attente décision Comité -->
@@ -551,6 +560,11 @@ export default {
     ouvrirFichePDF() {
       // Ouvrir le PDF de la fiche d'évaluation dans un nouvel onglet
       const pdfUrl = `/api/projects/${this.project.id}/fiche-evaluation/pdf`;
+      window.open(pdfUrl, '_blank');
+    },
+    ouvrirRecevabilitePDF() {
+      // Ouvrir le PDF de la matrice de recevabilité dans un nouvel onglet
+      const pdfUrl = `/api/projects/${this.project.id}/recevabilite/pdf`;
       window.open(pdfUrl, '_blank');
     },
     async rechargerFicheEtHistorique() {
