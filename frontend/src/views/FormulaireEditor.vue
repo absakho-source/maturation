@@ -451,14 +451,7 @@ export default {
     },
 
     retour() {
-      // Rediriger vers le dashboard approprié selon le rôle
-      if (this.role === 'admin') {
-        this.$router.push('/admin')
-      } else if (this.role === 'secretariatsct') {
-        this.$router.push('/secretariatsct')
-      } else {
-        this.$router.push('/')
-      }
+      this.$router.go(-1)
     }
   }
 }

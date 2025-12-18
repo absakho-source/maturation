@@ -687,11 +687,11 @@ export default {
     },
 
     retour() {
-      this.$router.push('/evaluation')
+      this.$router.go(-1)
     },
 
     retourDashboard() {
-      this.$router.push('/evaluation')
+      this.$router.go(-1)
     },
 
     async sauvegarderBrouillon() {

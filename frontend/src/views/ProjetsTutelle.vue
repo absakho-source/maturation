@@ -231,7 +231,7 @@ function voirProjet(projetId) {
 }
 
 function retourDashboard() {
-  router.push('/soumissionnaire')
+  router.go(-1)
 }
 
 function formatStatut(statut) {

@@ -1405,15 +1405,7 @@ function formatDate(dateStr) {
 
 
 function retourDashboard() {
-  // Déterminer la route du dashboard selon le rôle
-  const roleRoutes = {
-    admin: '/admin',
-    presidencesct: '/presidencesct',
-    secretariatsct: '/secretariatsct',
-    presidencecomite: '/presidencecomite'
-  }
-  const route = roleRoutes[user?.role] || '/'
-  router.push(route)
+  router.go(-1)
 }
 
 // Fonctions helper pour les labels de structure hiérarchique
