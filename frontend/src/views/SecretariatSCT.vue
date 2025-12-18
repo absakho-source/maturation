@@ -1052,8 +1052,8 @@ export default {
       return projets;
     },
     projectsToAssign() {
-      // Exclure les projets 'évalué' qui apparaissent dans l'onglet "Avis à valider"
-      return this.allProjects.filter(p => ['soumis', 'compléments fournis', 'assigné', 'rejeté'].includes(p.statut));
+      // Afficher tous les projets réassignables (non bloqués par validation secrétariat ou décision hiérarchique)
+      return this.allProjects.filter(p => this.estProjetAssignable(p));
     },
     projectsToValidate() {
       // Inclure à la fois :
