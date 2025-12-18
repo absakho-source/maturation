@@ -419,11 +419,11 @@
 
               <!-- Actions pour assigner (projets non rejetés) -->
               <div v-if="projet.statut !== 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
-                <label>{{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner à:' : 'Assigner à:' }}</label>
+                <label>{{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
-                  <option v-if="!(projet.statut === 'assigné' || projet.statut === 'en évaluation') || projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
-                  <option v-for="evaluateur in ((projet.statut === 'assigné' || projet.statut === 'en évaluation') ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
+                  <option v-if="!['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                  <option v-for="evaluateur in (['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
                     {{ evaluateur.display_name || evaluateur.username }}
                   </option>
                 </select>
@@ -431,11 +431,11 @@
                 <textarea
                   v-model="motivations[projet.id]"
                   rows="2"
-                  :placeholder="(projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Justification de cette réassignation (facultatif)' : 'Justification de cette assignation (facultatif)'"
+                  :placeholder="['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Justification de cette réassignation (facultatif)' : 'Justification de cette assignation (facultatif)'"
                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"
                 ></textarea>
                 <button class="btn-primary" @click="assigner(projet.id)">
-                  {{ (projet.statut === 'assigné' || projet.statut === 'en évaluation') ? 'Réassigner' : 'Assigner' }}
+                  {{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner' : 'Assigner' }}
                 </button>
               </div>
 
