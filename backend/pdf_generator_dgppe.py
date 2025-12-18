@@ -235,7 +235,7 @@ class FicheEvaluationDGPPEPDF:
 
         # Ligne 6: Nom complet de PLASMAP
         plasmap_full = Paragraph(
-            "<b>PL</b>ateforme de suivi de l'<b>A</b>nalyse et de la <b>S</b>élection des projets de <b>MA</b>turation du <b>P</b>IP",
+            "<b>PL</b>ateforme de <b>S</b>uivi de la <b>MA</b>turation des <b>P</b>rojets",
             plasmap_full_style
         )
 
