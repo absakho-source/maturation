@@ -1288,8 +1288,13 @@ def traiter_project(project_id):
                     # On ne bloque pas la validation même si l'ajout échoue
 
             else:
-                # Rejet par Présidence SCT
-                p.statut = "rejeté"
+                # Rejet par Présidence SCT - Retour au Secrétariat SCT pour décision
+                # Le Secrétariat SCT aura 3 options:
+                # 1. Réassigner pour nouvelle évaluation
+                # 2. Soumettre malgré le rejet à la Présidence SCT
+                # 3. Classer définitivement le projet
+                p.statut = "rejeté par présidence SCT"
+                p.avis_presidencesct = "rejete"
                 p.evaluateur_nom = None
 
                 # Sauvegarder le motif du rejet (obligatoire - vérifié plus haut)
@@ -1299,7 +1304,7 @@ def traiter_project(project_id):
                 p.decision_finale = None
                 set_statut_comite(p, None)  # Réinitialiser aussi le statut_comite
 
-                action = f"Avis rejeté par Présidence SCT - Motif: {commentaires_psct[:100]}..." if len(commentaires_psct) > 100 else f"Avis rejeté par Présidence SCT - Motif: {commentaires_psct}"
+                action = f"Avis rejeté par Présidence SCT - Retour au Secrétariat SCT - Motif: {commentaires_psct[:100]}..." if len(commentaires_psct) > 100 else f"Avis rejeté par Présidence SCT - Retour au Secrétariat SCT - Motif: {commentaires_psct}"
 
         # Validation Présidence du Comité
         elif "decision_finale" in data:

@@ -221,14 +221,14 @@
                         ✓ Valider avis
                       </button>
 
-                      <!-- Réassigner : projets rejetés -->
+                      <!-- Réassigner : projets rejetés (par présidence SCT, présidence comité ou définitivement) -->
                       <button
-                        v-if="projet.statut === 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'"
+                        v-if="(projet.statut === 'rejeté' || projet.statut === 'rejeté par présidence SCT' || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-warning"
                         title="Réassigner pour nouvelle évaluation"
                       >
-                        🔄 Nouvelle chance
+                        🔄 Traiter
                       </button>
                     </div>
                   </td>
@@ -341,19 +341,19 @@
               
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
-              <!-- Actions pour projets rejetés - Présentation contextuelle -->
-              <div v-if="projet.statut === 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
+              <!-- Actions pour projets rejetés ou infirmés - Présentation contextuelle -->
+              <div v-if="(projet.statut === 'rejeté' || projet.statut === 'rejeté par présidence SCT' || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
                     <!-- Différencier entre rejet lors de l'évaluation de la recevabilité et rejet par présidence -->
                     <template v-if="projet.avis === 'dossier rejeté'">
-                      ❌ <strong>Projet rejeté</strong>
+                      ❌ <strong>Projet rejeté (recevabilité)</strong>
                     </template>
-                    <template v-else-if="projet.avis_presidencesct === 'rejette'">
-                      ❌ <strong>Avis rejeté par la Présidence SCT</strong>
+                    <template v-else-if="projet.statut === 'rejeté par présidence SCT' || projet.avis_presidencesct === 'rejete'">
+                      ⚠️ <strong>Avis rejeté par la Présidence SCT - Action requise</strong>
                     </template>
-                    <template v-else-if="projet.decision_finale === 'infirme'">
-                      ❌ <strong>Avis rejeté par la Présidence du Comité</strong>
+                    <template v-else-if="projet.statut === 'en réexamen par le Secrétariat SCT' || projet.decision_finale === 'infirme'">
+                      ⚠️ <strong>Avis infirmé par la Présidence du Comité - Action requise</strong>
                     </template>
                     <template v-else>
                       ❌ <strong>Projet rejeté</strong>
@@ -433,8 +433,8 @@
                 </div>
               </div>
 
-              <!-- Actions pour assigner (projets non rejetés) -->
-              <div v-if="projet.statut !== 'rejeté' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
+              <!-- Actions pour assigner (projets non rejetés définitivement) -->
+              <div v-if="projet.statut !== 'rejeté' && projet.statut !== 'rejeté par présidence SCT' && projet.statut !== 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
                 <label>{{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
@@ -1069,7 +1069,13 @@ export default {
     },
     projectsToAssign() {
       // Afficher tous les projets réassignables (non bloqués par validation secrétariat ou décision hiérarchique)
-      return this.allProjects.filter(p => this.estProjetAssignable(p));
+      // Inclure aussi les projets rejetés par présidence SCT ou infirmés par présidence comité
+      return this.allProjects.filter(p =>
+        this.estProjetAssignable(p) ||
+        p.statut === 'rejeté par présidence SCT' ||
+        p.statut === 'en réexamen par le Secrétariat SCT' ||
+        p.statut === 'rejeté'
+      );
     },
     projectsToValidate() {
       // Inclure à la fois :
