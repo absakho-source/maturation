@@ -144,7 +144,17 @@ class FicheEvaluationDGPPEPDF:
         ))
 
     def _create_header(self):
-        """Création de l'en-tête officiel avec PLASMAP"""
+        """Création de l'en-tête officiel avec PLASMAP et logo DGPPE"""
+        # Charger le logo DGPPE
+        logo_path = os.path.join(os.path.dirname(__file__), 'static', 'logo-dgppe.png')
+        logo = None
+        if os.path.exists(logo_path):
+            try:
+                logo = Image(logo_path, width=2*cm, height=2*cm)
+            except Exception as e:
+                print(f"Erreur chargement logo: {e}")
+                logo = None
+
         # Style pour le ministère (plus petit)
         ministry_style = ParagraphStyle(
             name='MinistryStyle',
@@ -160,11 +170,11 @@ class FicheEvaluationDGPPEPDF:
         dgppe_style = ParagraphStyle(
             name='DGPPEStyle',
             parent=self.styles['Normal'],
-            fontSize=10,
+            fontSize=9,
             fontName='Helvetica-Bold',
             textColor=HexColor('#1a4d7a'),
             alignment=TA_CENTER,
-            leading=14
+            leading=12
         )
 
         # Style pour PLASMAP (acronyme mis en valeur)
@@ -189,20 +199,19 @@ class FicheEvaluationDGPPEPDF:
             leading=10
         )
 
-        # Ligne 1: République du Sénégal
+        # Textes de l'en-tête
         republique = Paragraph(
             "RÉPUBLIQUE DU SÉNÉGAL",
             ParagraphStyle(
                 name='RepubliqueStyle',
                 parent=self.styles['Normal'],
-                fontSize=11,
+                fontSize=10,
                 fontName='Helvetica-Bold',
                 textColor=HexColor('#1a4d7a'),
                 alignment=TA_CENTER
             )
         )
 
-        # Ligne 2: Devise
         devise = Paragraph(
             "<i>Un Peuple - Un But - Une Foi</i>",
             ParagraphStyle(
@@ -215,14 +224,11 @@ class FicheEvaluationDGPPEPDF:
             )
         )
 
-        # Ligne 3: Ministère
         ministere = Paragraph("MINISTÈRE DE L'ÉCONOMIE, DU PLAN ET DE LA COOPÉRATION", ministry_style)
-
-        # Ligne 4: DGPPE
-        dgppe = Paragraph("DIRECTION GÉNÉRALE DE LA PLANIFICATION ET DES POLITIQUES ÉCONOMIQUES", dgppe_style)
+        dgppe = Paragraph("DIRECTION GÉNÉRALE DE LA PLANIFICATION<br/>ET DES POLITIQUES ÉCONOMIQUES", dgppe_style)
 
         # Séparateur décoratif
-        separator = Paragraph("─────────────────────", ParagraphStyle(
+        separator = Paragraph("───────────────", ParagraphStyle(
             name='SepStyle',
             parent=self.styles['Normal'],
             fontSize=8,
@@ -230,45 +236,57 @@ class FicheEvaluationDGPPEPDF:
             alignment=TA_CENTER
         ))
 
-        # Ligne 5: PLASMAP en gros
         plasmap = Paragraph("<b>PLASMAP</b>", plasmap_style)
-
-        # Ligne 6: Nom complet de PLASMAP
         plasmap_full = Paragraph(
             "<b>PL</b>ateforme de <b>S</b>uivi de la <b>MA</b>turation des <b>P</b>rojets",
             plasmap_full_style
         )
 
-        # Créer le tableau d'en-tête
-        header_data = [
+        # Créer le contenu central (texte)
+        central_content = Table([
             [republique],
             [devise],
-            [Spacer(1, 5)],
+            [Spacer(1, 3)],
             [ministere],
             [dgppe],
-            [Spacer(1, 3)],
+            [Spacer(1, 2)],
             [separator],
             [plasmap],
             [plasmap_full]
-        ]
-
-        header_table = Table(header_data, colWidths=[17*cm])
-        header_table.setStyle(TableStyle([
+        ], colWidths=[12*cm])
+        central_content.setStyle(TableStyle([
             ('ALIGN', (0, 0), (0, -1), 'CENTER'),
             ('VALIGN', (0, 0), (0, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (0, -1), 2),
-            ('BOTTOMPADDING', (0, 0), (0, -1), 2),
+            ('TOPPADDING', (0, 0), (0, -1), 1),
+            ('BOTTOMPADDING', (0, 0), (0, -1), 1),
         ]))
 
-        # Encadrer tout l'en-tête dans un cadre avec fond dégradé
+        # Créer le tableau principal avec logo à gauche et contenu central
+        if logo:
+            header_data = [[logo, central_content, '']]
+            header_table = Table(header_data, colWidths=[2.5*cm, 12*cm, 2.5*cm])
+            header_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+        else:
+            header_data = [[central_content]]
+            header_table = Table(header_data, colWidths=[17*cm])
+            header_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
+            ]))
+
+        # Encadrer tout l'en-tête dans un cadre avec fond
         outer_table = Table([[header_table]], colWidths=[17.5*cm])
         outer_table.setStyle(TableStyle([
             ('BOX', (0, 0), (0, 0), 2, HexColor('#1a4d7a')),
             ('BACKGROUND', (0, 0), (0, 0), HexColor('#f8f9fa')),
-            ('TOPPADDING', (0, 0), (0, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (0, 0), 12),
-            ('LEFTPADDING', (0, 0), (0, 0), 10),
-            ('RIGHTPADDING', (0, 0), (0, 0), 10),
+            ('TOPPADDING', (0, 0), (0, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (0, 0), 10),
+            ('LEFTPADDING', (0, 0), (0, 0), 8),
+            ('RIGHTPADDING', (0, 0), (0, 0), 8),
         ]))
 
         self.story.append(outer_table)
