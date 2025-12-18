@@ -355,10 +355,10 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>ODD</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche_data.get('articulation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('axes', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('objectifs_strategiques', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('odd', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self.fiche.get('articulation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('axes', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('objectifs_strategiques', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('odd', 'N/A'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -385,9 +385,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>EXPLOITATION</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche_data.get('duree_analyse', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('realisation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('exploitation', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self.fiche.get('duree_analyse', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('realisation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('exploitation', 'N/A'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -414,9 +414,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>AUTRES PROJETS/PROG. CONNEXES</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche_data.get('localisation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('parties_prenantes', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('autres_projets_connexes', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self.fiche.get('localisation', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('parties_prenantes', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('autres_projets_connexes', 'N/A'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -443,9 +443,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche_data.get('objectif_projet', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('activites_principales', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche_data.get('resultats_attendus', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self.fiche.get('objectif_projet', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('activites_principales', 'N/A'), self.styles['DGPPEBodyText']),
+                Paragraph(self.fiche.get('resultats_attendus', 'N/A'), self.styles['DGPPEBodyText'])
             ]
         ]
 
