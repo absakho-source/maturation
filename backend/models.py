@@ -313,6 +313,29 @@ class FicheEvaluation(db.Model):
             'date_evaluation': self.date_evaluation.isoformat() if self.date_evaluation else None,
             'reference_fiche': self.reference_fiche,
 
+            # I - PRESENTATION DU PROJET
+            'intitule_projet': self.intitule_projet,
+            'cout_projet': self.cout_projet,
+            'origine_projet': self.origine_projet,
+            'cc_adaptation': self.cc_adaptation,
+            'cc_attenuation': self.cc_attenuation,
+            'genre': self.genre,
+            'articulation': self.articulation or '',
+            'axes': self.axes or '',
+            'objectifs_strategiques': self.objectifs_strategiques or '',
+            'odd': self.odd or '',
+            'duree_analyse': self.duree_analyse or '',
+            'realisation': self.realisation or '',
+            'exploitation': self.exploitation or '',
+            'localisation': self.localisation or '',
+            'parties_prenantes': self.parties_prenantes or '',
+            'autres_projets_connexes': self.autres_projets_connexes or '',
+            'objectif_projet': self.objectif_projet or '',
+            'activites_principales': self.activites_principales or '',
+            'resultats_attendus': self.resultats_attendus or '',
+            'sous_secteur': self.sous_secteur,
+            'organisme_tutelle': self.organisme_tutelle,
+
             # Critères d'évaluation au format structuré
             'criteres': {
                 'pertinence': {
