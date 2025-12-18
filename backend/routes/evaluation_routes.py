@@ -725,54 +725,92 @@ def download_fiche_evaluation_pdf(project_id, filename):
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation-brouillon', methods=['POST'])
 def save_fiche_evaluation_brouillon(project_id):
-    """Sauvegarde d'un brouillon d'évaluation"""
+    """Sauvegarde d'un brouillon d'évaluation - stocke les données dans les champs réels du modèle"""
     try:
         project = Project.query.get(project_id)
         if not project:
             return jsonify({'error': 'Projet non trouvé'}), 404
-        
+
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Données manquantes'}), 400
-        
-        # Vérifier si une fiche brouillon existe déjà
-        fiche_brouillon = FicheEvaluation.query.filter_by(
-            project_id=project_id, 
-            statut='brouillon'
-        ).first()
-        
+
+        # Vérifier si une fiche existe déjà pour ce projet
+        fiche_brouillon = FicheEvaluation.query.filter_by(project_id=project_id).first()
+
+        # Extraire les critères
+        criteres = data.get('criteres', {})
+
+        # Mapping des clés de critères vers les champs du modèle
+        criteres_mapping = {
+            'pertinence': ('pertinence_score', 'pertinence_description', 'pertinence_recommandations'),
+            'alignement': ('alignement_score', 'alignement_description', 'alignement_recommandations'),
+            'activites_couts': ('activites_couts_score', 'activites_couts_description', 'activites_couts_recommandations'),
+            'equite': ('equite_score', 'equite_description', 'equite_recommandations'),
+            'viabilite': ('viabilite_score', 'viabilite_description', 'viabilite_recommandations'),
+            'rentabilite': ('rentabilite_score', 'rentabilite_description', 'rentabilite_recommandations'),
+            'benefices_strategiques': ('benefices_strategiques_score', 'benefices_strategiques_description', 'benefices_strategiques_recommandations'),
+            'perennite': ('perennite_score', 'perennite_description', 'perennite_recommandations'),
+            'avantages_intangibles': ('avantages_intangibles_score', 'avantages_intangibles_description', 'avantages_intangibles_recommandations'),
+            'faisabilite': ('faisabilite_score', 'faisabilite_description', 'faisabilite_recommandations'),
+            'ppp': ('ppp_score', 'ppp_description', 'ppp_recommandations'),
+            'impact_environnemental': ('impact_environnemental_score', 'impact_environnemental_description', 'impact_environnemental_recommandations'),
+            'impact_emploi': ('impact_emploi_score', 'impact_emploi_description', 'impact_emploi_recommandations'),
+        }
+
         if fiche_brouillon:
             # Mettre à jour le brouillon existant
-            fiche_brouillon.evaluateur_nom = data.get('evaluateur_nom', '')
-            fiche_brouillon.criteres_json = json.dumps(data.get('criteres', {}))
+            fiche_brouillon.evaluateur_nom = data.get('evaluateur_nom', fiche_brouillon.evaluateur_nom)
             fiche_brouillon.proposition = data.get('proposition', '')
             fiche_brouillon.recommandations = data.get('recommandations', '')
-            fiche_brouillon.date_modification = datetime.now()
+            fiche_brouillon.date_evaluation = datetime.now()
+
+            # Mettre à jour les critères
+            for critere_key, critere_data in criteres.items():
+                if critere_key in criteres_mapping:
+                    score_field, desc_field, reco_field = criteres_mapping[critere_key]
+                    if isinstance(critere_data, dict):
+                        setattr(fiche_brouillon, score_field, critere_data.get('score', 0))
+                        setattr(fiche_brouillon, desc_field, critere_data.get('description', ''))
+                        setattr(fiche_brouillon, reco_field, critere_data.get('recommandations', ''))
         else:
             # Créer un nouveau brouillon
             fiche_brouillon = FicheEvaluation(
                 project_id=project_id,
                 evaluateur_nom=data.get('evaluateur_nom', ''),
-                criteres_json=json.dumps(data.get('criteres', {})),
                 proposition=data.get('proposition', ''),
                 recommandations=data.get('recommandations', ''),
-                statut='brouillon',
-                date_creation=datetime.now(),
-                date_modification=datetime.now()
+                date_evaluation=datetime.now()
             )
+
+            # Ajouter les critères
+            for critere_key, critere_data in criteres.items():
+                if critere_key in criteres_mapping:
+                    score_field, desc_field, reco_field = criteres_mapping[critere_key]
+                    if isinstance(critere_data, dict):
+                        setattr(fiche_brouillon, score_field, critere_data.get('score', 0))
+                        setattr(fiche_brouillon, desc_field, critere_data.get('description', ''))
+                        setattr(fiche_brouillon, reco_field, critere_data.get('recommandations', ''))
+
             db.session.add(fiche_brouillon)
-        
+
+        # Calculer le score total
+        fiche_brouillon.calculer_score_total()
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Brouillon sauvegardé avec succès',
             'fiche_id': fiche_brouillon.id,
-            'statut': 'brouillon',
-            'date_sauvegarde': fiche_brouillon.date_modification.isoformat()
+            'score_total': fiche_brouillon.score_total,
+            'date_sauvegarde': fiche_brouillon.date_evaluation.isoformat() if fiche_brouillon.date_evaluation else None
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Erreur brouillon: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': f'Erreur lors de la sauvegarde du brouillon: {str(e)}'}), 500
 
 @evaluation_bp.route('/api/projects/<int:project_id>/fiche-evaluation', methods=['DELETE'])
