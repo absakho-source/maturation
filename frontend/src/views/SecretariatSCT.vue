@@ -242,11 +242,11 @@
       <!-- Assignation -->
       <div v-if="activeTab === 'assignation'" class="tab-content">
         <h2>Assignation / Réassignation</h2>
-        <div v-if="projetsFiltres.length === 0" class="empty-state">
+        <div v-if="projectsToAssign.length === 0" class="empty-state">
           <p>Aucun projet trouvé</p>
         </div>
         <div v-else class="projects-compact-grid">
-          <div v-for="projet in projetsFiltres" :key="projet.id" class="project-compact-card" :class="{ 'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie' }">
+          <div v-for="projet in projectsToAssign" :key="projet.id" class="project-compact-card" :class="{ 'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie' }">
             <!-- En-tête compacte cliquable -->
             <div class="compact-card-header" @click="toggleProjectExpansion(projet.id)">
               <div class="compact-card-top">
