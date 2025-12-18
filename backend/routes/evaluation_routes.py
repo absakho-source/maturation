@@ -503,9 +503,13 @@ def create_or_update_fiche_evaluation(project_id):
                 'cout_estimatif': project.cout_estimatif,
                 'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
                 'origine_projet': origine_projet,
-                'typologie_projet': typologie_projet
+                'typologie_projet': typologie_projet,
+                # Champs supplémentaires pour le PDF
+                'description': project.description or '',
+                'organisme_tutelle': project.organisme_tutelle or '',
+                'structure_soumissionnaire': getattr(project, 'structure_soumissionnaire', '') or ''
             }
-            print(f"[PDF] Données projet préparées: numero={project.numero_projet}, titre={project.titre}", file=sys.stderr, flush=True)
+            print(f"[PDF] Données projet préparées: numero={project.numero_projet}, titre={project.titre}, description={project.description[:50] if project.description else 'N/A'}...", file=sys.stderr, flush=True)
 
             fiche_data = fiche.to_dict()
             fiche_data['evaluateur_nom'] = evaluateur_display_name
@@ -643,7 +647,11 @@ def generate_fiche_evaluation_pdf(project_id):
             'cout_estimatif': project.cout_estimatif,
             'date_soumission': project.date_soumission.isoformat() if project.date_soumission else None,
             'origine_projet': origine_projet,
-            'typologie_projet': typologie_projet
+            'typologie_projet': typologie_projet,
+            # Champs supplémentaires pour le PDF
+            'description': project.description or '',
+            'organisme_tutelle': project.organisme_tutelle or '',
+            'structure_soumissionnaire': getattr(project, 'structure_soumissionnaire', '') or ''
         }
 
         fiche_data = fiche.to_dict()

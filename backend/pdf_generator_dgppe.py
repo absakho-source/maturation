@@ -256,7 +256,9 @@ class FicheEvaluationDGPPEPDF:
         ])
 
         # Ligne 4: Description (pleine largeur)
-        description = self.project.get('description', 'N/A')
+        description = self.project.get('description', '') or self.fiche.get('description', '')
+        if not description or not description.strip():
+            description = 'Non renseignée'
         data.append([
             Paragraph("<b>DESCRIPTION DU PROJET:</b>", self.styles['Label']),
             Paragraph(description, self.styles['DGPPEBodyText']),
