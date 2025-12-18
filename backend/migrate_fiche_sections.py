@@ -8,7 +8,9 @@ import sqlite3
 import os
 import sys
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "maturation.db")
+# Utiliser le même chemin que app.py (compatible Render et local)
+DATA_DIR = os.environ.get("DATA_DIR", os.path.abspath(os.path.dirname(__file__)))
+DB_PATH = os.path.join(DATA_DIR, "maturation.db")
 
 def migrate_fiche_sections():
     """
