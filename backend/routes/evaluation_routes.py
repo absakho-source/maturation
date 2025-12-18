@@ -168,6 +168,9 @@ def get_fiche_evaluation(project_id):
         # Utiliser to_dict() pour garantir la cohérence avec tous les champs (notamment recommandations)
         fiche_data = fiche.to_dict()
 
+        # Debug: logger le champ fichier_pdf
+        print(f"[GET_FICHE] Projet {project_id}: fichier_pdf = '{fiche_data.get('fichier_pdf')}'", file=sys.stderr, flush=True)
+
         return jsonify(fiche_data), 200
         
     except Exception as e:
