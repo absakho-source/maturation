@@ -458,7 +458,7 @@ def create_or_update_fiche_evaluation(project_id):
         db.session.commit()
 
         # Générer le PDF à chaque création ou mise à jour
-        print(f"[PDF] Début de la génération du PDF pour le projet {project_id}", flush=True)
+        print(f"[PDF] ===== DÉBUT GÉNÉRATION PDF projet={project_id} =====", file=sys.stderr, flush=True)
         try:
             from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
             import os
@@ -466,10 +466,12 @@ def create_or_update_fiche_evaluation(project_id):
             # Récupérer le display_name de l'évaluateur
             from models import User
             evaluateur_display_name = fiche.evaluateur_nom
+            print(f"[PDF] Évaluateur username: {fiche.evaluateur_nom}", file=sys.stderr, flush=True)
             if fiche.evaluateur_nom:
                 evaluateur = User.query.filter_by(username=fiche.evaluateur_nom).first()
                 if evaluateur and evaluateur.display_name:
                     evaluateur_display_name = evaluateur.display_name
+                    print(f"[PDF] Évaluateur display_name: {evaluateur_display_name}", file=sys.stderr, flush=True)
 
             # Préparer les données pour le PDF
             import json
@@ -500,9 +502,11 @@ def create_or_update_fiche_evaluation(project_id):
                 'origine_projet': origine_projet,
                 'typologie_projet': typologie_projet
             }
+            print(f"[PDF] Données projet préparées: numero={project.numero_projet}, titre={project.titre}", file=sys.stderr, flush=True)
 
             fiche_data = fiche.to_dict()
             fiche_data['evaluateur_nom'] = evaluateur_display_name
+            print(f"[PDF] Données fiche préparées: id={fiche.id}, score_total={fiche.score_total}", file=sys.stderr, flush=True)
 
             # Répertoire de sortie pour les PDFs
             # Utiliser DATA_DIR si défini (Render), sinon chemin local
@@ -514,12 +518,12 @@ def create_or_update_fiche_evaluation(project_id):
                 # En local: stocker dans backend/routes/pdfs/fiches_evaluation/
                 pdf_directory = os.path.join(os.path.dirname(__file__), 'pdfs', 'fiches_evaluation')
             os.makedirs(pdf_directory, exist_ok=True)
-            print(f"[PDF] Répertoire PDF: {pdf_directory}", flush=True)
+            print(f"[PDF] Répertoire PDF créé: {pdf_directory}", file=sys.stderr, flush=True)
 
             # Archiver l'ancien PDF s'il existe (lors d'une modification)
-            print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}", flush=True)
+            print(f"[PDF] Vérification archivage: is_update={is_update}, fiche.fichier_pdf={fiche.fichier_pdf}", file=sys.stderr, flush=True)
             if is_update and fiche.fichier_pdf:
-                print(f"[PDF] Lancement de l'archivage...", flush=True)
+                print(f"[PDF] Lancement de l'archivage...", file=sys.stderr, flush=True)
                 from utils.archivage import archiver_fiche
                 # Le modificateur est l'utilisateur actuel qui édite la fiche
                 modificateur = data.get('evaluateur_nom', 'admin')
@@ -527,19 +531,26 @@ def create_or_update_fiche_evaluation(project_id):
                 editeur_actuel = fiche.evaluateur_nom
                 archive_path = archiver_fiche(fiche, 'modification', modificateur, editeur_actuel)
                 if archive_path:
-                    print(f"[PDF] Ancien PDF archivé: {archive_path}", flush=True)
+                    print(f"[PDF] Ancien PDF archivé: {archive_path}", file=sys.stderr, flush=True)
                 else:
-                    print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué", flush=True)
+                    print(f"[PDF] Avertissement: archivage de l'ancien PDF échoué", file=sys.stderr, flush=True)
             else:
-                print(f"[PDF] Archivage ignoré (première génération ou pas de PDF existant)", flush=True)
+                print(f"[PDF] Archivage ignoré (première génération ou pas de PDF existant)", file=sys.stderr, flush=True)
 
             # Générer le nouveau PDF
+            print(f"[PDF] Appel generer_fiche_evaluation_dgppe_pdf...", file=sys.stderr, flush=True)
             pdf_path = generer_fiche_evaluation_dgppe_pdf(fiche_data, project_data, pdf_directory)
+            print(f"[PDF] PDF généré: {pdf_path}", file=sys.stderr, flush=True)
+
             fiche.fichier_pdf = os.path.basename(pdf_path)
+            print(f"[PDF] Nom fichier PDF enregistré: {fiche.fichier_pdf}", file=sys.stderr, flush=True)
+
             db.session.commit()
-            print(f"[PDF] Nouveau PDF généré et enregistré: {fiche.fichier_pdf}")
+            print(f"[PDF] ✅ PDF généré avec succès et enregistré: {fiche.fichier_pdf}", file=sys.stderr, flush=True)
         except Exception as e:
-            print(f"Erreur lors de la génération du PDF: {str(e)}")
+            print(f"[PDF] ❌ ERREUR lors de la génération du PDF: {str(e)}", file=sys.stderr, flush=True)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
             # Ne pas bloquer l'enregistrement si la génération PDF échoue
 
         return jsonify({
