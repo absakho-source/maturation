@@ -1056,7 +1056,8 @@ async function saveNewUser() {
       // Mise à jour - utiliser l'API admin pour les utilisateurs internes
       response = await axios.put(`/api/admin/users/${formUser.value.id}`, {
         display_name: formUser.value.display_name,
-        role: formUser.value.role,
+        new_role: formUser.value.role,  // Le rôle à attribuer à l'utilisateur
+        role: user?.role,  // Le rôle de l'admin connecté (pour vérification permissions)
         // Inclure le mot de passe seulement s'il est fourni
         ...(formUser.value.password && { password: formUser.value.password }),
         admin_username: user?.username

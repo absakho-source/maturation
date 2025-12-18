@@ -2705,6 +2705,15 @@ def update_user_details(user_id):
         if 'display_name' in data and data['display_name'] is not None:
             user.display_name = data['display_name']
 
+        # Mise à jour du rôle (new_role pour éviter confusion avec role d'authentification)
+        if 'new_role' in data and data['new_role']:
+            user.role = data['new_role']
+
+        # Mise à jour du mot de passe si fourni
+        if 'password' in data and data['password']:
+            from werkzeug.security import generate_password_hash
+            user.password = generate_password_hash(data['password'])
+
         if 'telephone' in data and data['telephone'] is not None:
             user.telephone = data['telephone']
 
