@@ -358,9 +358,13 @@ def create_or_update_fiche_evaluation(project_id):
         # Sauvegarder origine_projet et typologie_projet depuis le frontend
         import json
 
-        # Convertir origine_projet_choix en format objet
+        # Convertir origine_projet_choix en format objet et sauvegarder dans la fiche ET le projet
         origine_choix = data.get('origine_projet_choix', '')
         if origine_choix:
+            # Sauvegarder directement le choix dans la fiche
+            fiche.origine_projet = origine_choix
+
+            # Aussi mettre à jour dans le projet (pour compatibilité)
             origine_obj = {
                 'maturation': origine_choix == 'maturation',
                 'offre_spontanee': origine_choix == 'offre_spontanee',
@@ -393,9 +397,9 @@ def create_or_update_fiche_evaluation(project_id):
         if 'description' in data:
             project.description = data.get('description', '')
 
-        # Sauvegarder les dimensions transversales
-        fiche.changement_climatique_adaptation = data.get('changement_climatique_adaptation', False)
-        fiche.changement_climatique_attenuation = data.get('changement_climatique_attenuation', False)
+        # Sauvegarder les dimensions transversales (les noms dans le modèle sont cc_adaptation et cc_attenuation)
+        fiche.cc_adaptation = data.get('changement_climatique_adaptation', False)
+        fiche.cc_attenuation = data.get('changement_climatique_attenuation', False)
         fiche.genre = data.get('genre', False)
 
         # Sauvegarder les champs de présentation détaillée (Section I - 4 tableaux)

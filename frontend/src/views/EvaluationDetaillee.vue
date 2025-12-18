@@ -562,7 +562,85 @@ export default {
         const response = await fetch(`/api/projects/${this.projectId}/fiche-evaluation`)
         if (response.ok) {
           const fiche = await response.json()
-          // Charger les données de la fiche si elle existe
+
+          // Si c'est une fiche archivée, ne pas pré-remplir
+          if (fiche.archived) {
+            console.log('Fiche archivée trouvée - pas de pré-remplissage')
+            return
+          }
+
+          // Si la fiche n'a pas d'ID (structure par défaut), ne pas pré-remplir
+          if (!fiche.id) {
+            console.log('Aucune fiche existante - formulaire vierge')
+            return
+          }
+
+          console.log('[EvaluationDetaillee] Chargement fiche existante:', fiche)
+
+          // Pré-remplir les critères d'évaluation
+          if (fiche.criteres) {
+            for (const [key, value] of Object.entries(fiche.criteres)) {
+              if (this.evaluationData.criteres[key]) {
+                this.evaluationData.criteres[key].score = value.score || 0
+                this.evaluationData.criteres[key].description = value.description || ''
+                this.evaluationData.criteres[key].recommandations = value.recommandations || ''
+              }
+            }
+          }
+
+          // Pré-remplir la proposition et recommandations
+          if (fiche.proposition) {
+            this.evaluationData.proposition = fiche.proposition
+          }
+          if (fiche.recommandations) {
+            this.evaluationData.recommandations = fiche.recommandations
+          }
+
+          // Pré-remplir l'origine du projet
+          if (fiche.origine_projet) {
+            // Si c'est une string (ancien format ou valeur directe)
+            if (typeof fiche.origine_projet === 'string') {
+              this.presentationData.origine_projet_choix = fiche.origine_projet
+            }
+            // Si c'est un objet avec les clés maturation/offre_spontanee/autres
+            else if (typeof fiche.origine_projet === 'object') {
+              if (fiche.origine_projet.maturation) {
+                this.presentationData.origine_projet_choix = 'maturation'
+              } else if (fiche.origine_projet.offre_spontanee) {
+                this.presentationData.origine_projet_choix = 'offre_spontanee'
+              } else if (fiche.origine_projet.autres) {
+                this.presentationData.origine_projet_choix = 'autres'
+              }
+            }
+          }
+
+          // Pré-remplir les dimensions transversales
+          if (fiche.cc_adaptation !== undefined) {
+            this.presentationData.changement_climatique_adaptation = fiche.cc_adaptation || false
+          }
+          if (fiche.cc_attenuation !== undefined) {
+            this.presentationData.changement_climatique_attenuation = fiche.cc_attenuation || false
+          }
+          if (fiche.genre !== undefined) {
+            this.presentationData.genre = fiche.genre || false
+          }
+
+          // Pré-remplir les champs de présentation du projet
+          if (fiche.articulation) this.presentationData.articulation = fiche.articulation
+          if (fiche.axes) this.presentationData.axes = fiche.axes
+          if (fiche.objectifs_strategiques) this.presentationData.objectifs_strategiques = fiche.objectifs_strategiques
+          if (fiche.odd) this.presentationData.odd = fiche.odd
+          if (fiche.duree_analyse) this.presentationData.duree_analyse = fiche.duree_analyse
+          if (fiche.realisation) this.presentationData.realisation = fiche.realisation
+          if (fiche.exploitation) this.presentationData.exploitation = fiche.exploitation
+          if (fiche.localisation) this.presentationData.localisation = fiche.localisation
+          if (fiche.parties_prenantes) this.presentationData.parties_prenantes = fiche.parties_prenantes
+          if (fiche.autres_projets_connexes) this.presentationData.autres_projets_connexes = fiche.autres_projets_connexes
+          if (fiche.objectif_projet) this.presentationData.objectif_projet = fiche.objectif_projet
+          if (fiche.activites_principales) this.presentationData.activites_principales = fiche.activites_principales
+          if (fiche.resultats_attendus) this.presentationData.resultats_attendus = fiche.resultats_attendus
+
+          console.log('[EvaluationDetaillee] Données pré-remplies avec succès')
         }
       } catch (error) {
         console.log('Aucune fiche d\'évaluation existante - création d\'une nouvelle')
