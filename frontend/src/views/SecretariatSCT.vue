@@ -516,7 +516,7 @@
               <!-- Actions pour un avis normal -->
               <div v-else class="validation-actions">
                 <button class="btn-primary" @click="validerAvis(p.id)">Valider l'avis ➜ Présidence SCT</button>
-                <div class="reassign">
+                <div v-if="estProjetAssignable(p)" class="reassign">
                   <label>Réassigner à
                     <select v-model="assignation[p.id]">
                       <option value="">--Choisir--</option>
@@ -1143,14 +1143,17 @@ export default {
   methods: {
     estProjetAssignable(projet) {
       // Un projet est assignable uniquement s'il n'a PAS de statut définitif
+      // Bloquer dès que le secrétariat a validé (montée hiérarchique)
+      const aValidationSecretariat = ['valide', 'approuve'].includes(projet.validation_secretariat);
+
       // Statuts définitifs : avis confirmé par le Comité ou avis final validé
       const statutsDefinitifs = ['favorable', 'favorable sous conditions', 'défavorable'];
       const aStatutDefinitif = statutsDefinitifs.includes(projet.statut) || statutsDefinitifs.includes(projet.avis);
       const aDecisionConfirmee = projet.decision_finale === 'confirme';
       const estApprouveDefinitif = projet.statut_comite === 'approuve_definitif';
 
-      // Ne PAS permettre l'assignation si le projet a un statut définitif
-      if (aStatutDefinitif || aDecisionConfirmee || estApprouveDefinitif) {
+      // Ne PAS permettre l'assignation/réassignation si validation secrétariat ou statut définitif
+      if (aValidationSecretariat || aStatutDefinitif || aDecisionConfirmee || estApprouveDefinitif) {
         return false;
       }
 
