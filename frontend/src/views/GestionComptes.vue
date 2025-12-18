@@ -759,12 +759,20 @@ const user = userStr ? JSON.parse(userStr) : null
 // URL de base du backend
 const backendUrl = import.meta.env.VITE_API_URL || ''
 
-// Statistiques
+// Statistiques - filtrées par sous-onglet actif
 const stats = computed(() => {
+  // D'abord filtrer par sous-onglet
+  let comptesFiltre = comptes.value
+  if (userSubTab.value === 'soumissionnaires') {
+    comptesFiltre = comptes.value.filter(u => u.role === 'soumissionnaire' || u.role === 'invite')
+  } else {
+    comptesFiltre = comptes.value.filter(u => u.role !== 'soumissionnaire' && u.role !== 'invite')
+  }
+
   return {
-    non_verifie: comptes.value.filter(c => (c.statut_compte || 'non_verifie') === 'non_verifie').length,
-    verifie: comptes.value.filter(c => c.statut_compte === 'verifie').length,
-    suspendu: comptes.value.filter(c => c.statut_compte === 'suspendu').length
+    non_verifie: comptesFiltre.filter(c => (c.statut_compte || 'non_verifie') === 'non_verifie').length,
+    verifie: comptesFiltre.filter(c => c.statut_compte === 'verifie').length,
+    suspendu: comptesFiltre.filter(c => c.statut_compte === 'suspendu').length
   }
 })
 
