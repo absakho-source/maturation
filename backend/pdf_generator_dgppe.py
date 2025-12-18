@@ -45,6 +45,23 @@ class FicheEvaluationDGPPEPDF:
         self._setup_custom_styles()
         self.story = []
 
+    def _get_value(self, key, default='N/A'):
+        """
+        Récupère une valeur depuis la fiche, avec fallback sur le projet si vide.
+        Utile pour les champs de présentation qui peuvent être dans l'un ou l'autre.
+        """
+        # D'abord essayer depuis la fiche
+        value = self.fiche.get(key, '')
+        if value and str(value).strip():
+            return str(value).strip()
+
+        # Sinon essayer depuis le projet
+        value = self.project.get(key, '')
+        if value and str(value).strip():
+            return str(value).strip()
+
+        return default
+
     @staticmethod
     def format_text_with_linebreaks(text):
         """Convertir les retours à la ligne en balises <br/> pour ReportLab"""
@@ -280,8 +297,16 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(section_title_table)
         self.story.append(Spacer(1, 10))
 
-        # Origine et dimensions transversales (depuis project_data, pas fiche_data)
-        origine_data = self.project.get('origine_projet', {})
+        # Origine et dimensions transversales (depuis fiche d'abord, puis projet)
+        origine_data = self.fiche.get('origine_projet', {}) or self.project.get('origine_projet', {})
+
+        # Si origine_projet est une chaîne, la convertir en dict
+        if isinstance(origine_data, str):
+            origine_data = {
+                'maturation': origine_data == 'maturation',
+                'offre_spontanee': origine_data == 'offre_spontanee',
+                'autres': origine_data == 'autres'
+            }
 
         # Construire les textes avec cases cochées (utiliser [X] et [ ] pour compatibilité)
         origine_items = []
@@ -292,10 +317,10 @@ class FicheEvaluationDGPPEPDF:
         if origine_data.get('autres'): origine_items.append('<b>[X]</b> AUTRES')
         else: origine_items.append('[ ] AUTRES')
 
-        # Dimensions transversales
-        cc_adaptation = self.project.get('cc_adaptation', False)
-        cc_attenuation = self.project.get('cc_attenuation', False)
-        genre = self.project.get('genre', False)
+        # Dimensions transversales (depuis fiche d'abord, puis projet)
+        cc_adaptation = self.fiche.get('cc_adaptation', False) or self.project.get('cc_adaptation', False)
+        cc_attenuation = self.fiche.get('cc_attenuation', False) or self.project.get('cc_attenuation', False)
+        genre = self.fiche.get('genre', False) or self.project.get('genre', False)
 
         # Construire le texte des dimensions transversales
         dimensions_items = []
@@ -345,7 +370,7 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(table)
         self.story.append(Spacer(1, 10))
 
-        # Nouveau: Tableaux de présentation détaillée (remplis par l'évaluateur)
+        # Nouveau: Tableaux de présentation détaillée (depuis fiche avec fallback sur projet)
         # Tableau 1: ARTICULATION / AXES / OBJECTIFS STRATÉGIQUES / ODD
         data_tab1 = [
             [
@@ -355,10 +380,10 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>ODD</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche.get('articulation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('axes', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('objectifs_strategiques', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('odd', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self._get_value('articulation', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('axes', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('objectifs_strategiques', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('odd', '-'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -385,9 +410,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>EXPLOITATION</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche.get('duree_analyse', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('realisation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('exploitation', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(self._get_value('duree_analyse', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('realisation', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('exploitation', '-'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -407,6 +432,11 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(Spacer(1, 10))
 
         # Tableau 3: LOCALISATION / PARTIES PRENANTES / AUTRES PROJETS
+        # Pour localisation, utiliser poles du projet comme fallback
+        localisation = self._get_value('localisation', '')
+        if not localisation or localisation == '-':
+            localisation = self.project.get('poles', '-') or '-'
+
         data_tab3 = [
             [
                 Paragraph("<b>LOCALISATION</b>", self.styles['TableHeader']),
@@ -414,9 +444,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>AUTRES PROJETS/PROG. CONNEXES</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche.get('localisation', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('parties_prenantes', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('autres_projets_connexes', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(localisation, self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('parties_prenantes', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('autres_projets_connexes', '-'), self.styles['DGPPEBodyText'])
             ]
         ]
 
@@ -436,6 +466,11 @@ class FicheEvaluationDGPPEPDF:
         self.story.append(Spacer(1, 10))
 
         # Tableau 4: OBJECTIF / ACTIVITÉS / RÉSULTATS
+        # Utiliser la description du projet comme fallback pour objectif_projet
+        objectif = self._get_value('objectif_projet', '')
+        if not objectif or objectif == '-':
+            objectif = self.project.get('description', '-') or '-'
+
         data_tab4 = [
             [
                 Paragraph("<b>OBJECTIF DU PROJET</b>", self.styles['TableHeader']),
@@ -443,9 +478,9 @@ class FicheEvaluationDGPPEPDF:
                 Paragraph("<b>EXTRANTS / RÉSULTATS / IMPACTS ATTENDUS</b>", self.styles['TableHeader'])
             ],
             [
-                Paragraph(self.fiche.get('objectif_projet', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('activites_principales', 'N/A'), self.styles['DGPPEBodyText']),
-                Paragraph(self.fiche.get('resultats_attendus', 'N/A'), self.styles['DGPPEBodyText'])
+                Paragraph(objectif, self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('activites_principales', '-'), self.styles['DGPPEBodyText']),
+                Paragraph(self._get_value('resultats_attendus', '-'), self.styles['DGPPEBodyText'])
             ]
         ]
 
