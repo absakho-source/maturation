@@ -605,6 +605,7 @@ def projects():
                             "evaluation_prealable_date": evaluation_prealable_date,
                             "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
                             "evaluation_prealable_commentaires": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",  # Alias pour compatibilité frontend
+                            "evaluation_prealable_matrice": p.evaluation_prealable_matrice if hasattr(p, 'evaluation_prealable_matrice') and p.evaluation_prealable_matrice else None,
                             "pieces_jointes": pieces_jointes,
                             "date_soumission": date_soumission,
                             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
@@ -844,7 +845,12 @@ def get_project(project_id):
             "point_focal_nom": p.point_focal_nom if hasattr(p, 'point_focal_nom') else None,
             "point_focal_fonction": p.point_focal_fonction if hasattr(p, 'point_focal_fonction') else None,
             "point_focal_telephone": p.point_focal_telephone if hasattr(p, 'point_focal_telephone') else None,
-            "point_focal_email": p.point_focal_email if hasattr(p, 'point_focal_email') else None
+            "point_focal_email": p.point_focal_email if hasattr(p, 'point_focal_email') else None,
+            # Évaluation préalable (recevabilité)
+            "evaluation_prealable": p.evaluation_prealable if hasattr(p, 'evaluation_prealable') else None,
+            "evaluation_prealable_date": p.evaluation_prealable_date.isoformat() if hasattr(p, 'evaluation_prealable_date') and p.evaluation_prealable_date else None,
+            "evaluation_prealable_commentaire": p.evaluation_prealable_commentaire if hasattr(p, 'evaluation_prealable_commentaire') else None,
+            "evaluation_prealable_matrice": p.evaluation_prealable_matrice if hasattr(p, 'evaluation_prealable_matrice') else None
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()
