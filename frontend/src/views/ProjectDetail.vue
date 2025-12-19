@@ -255,16 +255,14 @@
                   Évaluation effectuée le {{ formatDateTime(project.evaluation_prealable_date) }}
                 </p>
               </template>
-            </div>
-          </div>
 
-          <!-- Section PDF Recevabilité - Même style que la fiche d'évaluation -->
-          <div class="info-card" v-if="project.evaluation_prealable && project.evaluation_prealable_matrice && !isSoumissionnaire()">
-            <h3>📋 Matrice de Recevabilité (PDF)</h3>
-            <p>La matrice d'évaluation de la recevabilité a été générée.</p>
-            <button @click="ouvrirRecevabilitePDF" class="btn-primary">
-              📄 Voir la matrice de recevabilité (PDF)
-            </button>
+              <!-- Bouton pour télécharger le PDF de la matrice -->
+              <div v-if="project.evaluation_prealable_matrice" class="pdf-action" style="margin-top: 1rem;">
+                <button @click="ouvrirRecevabilitePDF" class="btn-primary">
+                  📄 Télécharger la matrice (PDF)
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Section Statut pour soumissionnaire: En attente décision Comité -->
