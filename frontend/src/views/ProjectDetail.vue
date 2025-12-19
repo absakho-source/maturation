@@ -596,12 +596,20 @@ export default {
     },
     ouvrirFichePDF() {
       // Ouvrir le PDF de la fiche d'évaluation dans un nouvel onglet
-      const pdfUrl = `/api/projects/${this.project.id}/fiche-evaluation/pdf`;
+      const isProduction = window.location.hostname.includes('render.com');
+      const backendUrl = isProduction
+        ? 'https://maturation-backend.onrender.com'
+        : '';
+      const pdfUrl = `${backendUrl}/api/projects/${this.project.id}/fiche-evaluation/pdf`;
       window.open(pdfUrl, '_blank');
     },
     ouvrirRecevabilitePDF() {
       // Ouvrir le PDF de la matrice de recevabilité dans un nouvel onglet
-      const pdfUrl = `/api/projects/${this.project.id}/recevabilite/pdf`;
+      const isProduction = window.location.hostname.includes('render.com');
+      const backendUrl = isProduction
+        ? 'https://maturation-backend.onrender.com'
+        : '';
+      const pdfUrl = `${backendUrl}/api/projects/${this.project.id}/recevabilite/pdf`;
       window.open(pdfUrl, '_blank');
     },
     async rechargerFicheEtHistorique() {
