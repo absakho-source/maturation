@@ -1080,9 +1080,10 @@ def traiter_project(project_id):
                 p.evaluation_prealable_commentaire = None
                 action = "Projet réinitialisé - réassigné pour réévaluation"
             elif statut_action == "reassigner_rejete":
-                # Réassignation d'un projet avec avis rejeté avec préservation de l'historique
-                if p.statut != "rejeté":
-                    return jsonify({"error": "Seuls les projets avec avis rejetés peuvent être réassignés"}), 400
+                # Réassignation d'un projet en réexamen (rejeté par Présidence SCT ou Comité)
+                statuts_reexamen = ["rejeté", "en réexamen par le Secrétariat SCT", "rejeté par présidence SCT"]
+                if p.statut not in statuts_reexamen:
+                    return jsonify({"error": "Seuls les projets en réexamen peuvent être réassignés"}), 400
 
                 to = data.get("evaluateur_nom")
                 if not to:
