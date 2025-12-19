@@ -317,11 +317,14 @@
           <div class="form-row">
             <div class="form-group">
               <label>Pôles territoriaux concernés *</label>
-              <select v-model="form.poles" multiple required size="1" class="multi-select-compact">
-                <option value="" disabled>-- Sélectionner --</option>
-                <option v-for="pole in polesOptions" :key="pole" :value="pole">{{ pole }}</option>
-              </select>
-              <small class="hint">Maintenez Cmd (Mac) ou Ctrl (Windows) pour sélectionner plusieurs pôles</small>
+              <div class="checkbox-group-poles">
+                <label v-for="pole in polesOptions" :key="pole" class="checkbox-label-pole">
+                  <input type="checkbox" :value="pole" v-model="form.poles" />
+                  <span class="checkbox-text">{{ pole }}</span>
+                </label>
+              </div>
+              <small class="hint" v-if="form.poles.length === 0">Sélectionnez au moins un pôle territorial</small>
+              <small class="hint hint-success" v-else>{{ form.poles.length }} pôle(s) sélectionné(s)</small>
             </div>
             <div class="form-group">
               <label>Secteur de planification *</label>
@@ -1370,6 +1373,12 @@ export default {
         this.fieldErrors.etudes_plans = true;
       }
 
+      // Vérifier les pôles territoriaux
+      if (!this.form.poles || this.form.poles.length === 0) {
+        errors.push("Veuillez sélectionner au moins un pôle territorial");
+        this.fieldErrors.poles = true;
+      }
+
       // Vérifier la certification
       if (!this.form.certification) {
         errors.push("Veuillez certifier que les informations fournies sont exactes");
@@ -2334,5 +2343,64 @@ select:disabled, input:disabled {
 .checkbox-label input[type="checkbox"] {
   width: auto;
   cursor: pointer;
+}
+
+/* Styles pour les checkboxes des pôles territoriaux */
+.checkbox-group-poles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.checkbox-label-pole {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: normal;
+}
+
+.checkbox-label-pole:hover {
+  background: #f0f9ff;
+  border-color: #3b82f6;
+}
+
+.checkbox-label-pole input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.checkbox-label-pole input[type="checkbox"]:checked + .checkbox-text {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.checkbox-label-pole:has(input:checked) {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.checkbox-text {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.hint-success {
+  color: #059669;
+  font-weight: 500;
 }
 </style>
