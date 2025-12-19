@@ -410,15 +410,18 @@
                       <h5>Soumettre de nouveau</h5>
                       <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
 
-                      <label style="display: block; margin-top: 10px; margin-bottom: 5px; font-weight: 500;">
-                        Motivation de la resoumission (facultatif):
+                      <label class="motif-label" style="display: block; margin-top: 10px; margin-bottom: 5px;">
+                        Motivation de la resoumission
+                        <span class="motif-hint">(obligatoire)</span>
                       </label>
                       <textarea
                         v-model="motivationsResoumission[projet.id]"
                         rows="3"
-                        placeholder="Expliquez brièvement pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet..."
+                        placeholder="Expliquez pourquoi ce projet mérite d'être soumis à la Présidence SCT malgré le rejet..."
+                        :class="{ 'error-border': erreursResoumission[projet.id] }"
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;"
                       ></textarea>
+                      <p v-if="erreursResoumission[projet.id]" class="error-message">{{ erreursResoumission[projet.id] }}</p>
 
                       <div class="reassign-button-container" style="margin-top: 10px;">
                         <button
@@ -926,6 +929,7 @@ export default {
       assignation: {},
       motivations: {},
       motivationsResoumission: {},
+      erreursResoumission: {},
       activeTab: 'all',
       refreshInterval: null,
       filtreStatut: null,
@@ -1547,13 +1551,22 @@ export default {
     },
 
     async soumettreVoieHierarchique(id) {
-      // Confirmer la soumission
-      if (!confirm("Êtes-vous sûr de vouloir soumettre ce projet à la Présidence SCT malgré le rejet ?")) {
+      // Effacer l'erreur précédente
+      this.erreursResoumission[id] = null;
+
+      // Récupérer la motivation depuis le textarea
+      const motivation = (this.motivationsResoumission[id] || "").trim();
+
+      // Vérification: motif obligatoire pour la resoumission
+      if (!motivation) {
+        this.erreursResoumission[id] = "La motivation de la resoumission est obligatoire. Veuillez justifier votre décision.";
         return;
       }
 
-      // Récupérer la motivation depuis le textarea
-      const motivation = this.motivationsResoumission[id] || "";
+      // Confirmer la soumission
+      if (!confirm(`Êtes-vous sûr de vouloir soumettre ce projet à la Présidence SCT malgré le rejet ?\n\nMotif: "${motivation}"`)) {
+        return;
+      }
 
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
@@ -1561,14 +1574,10 @@ export default {
         const requestBody = {
           validation_secretariat: "valide",
           statut_action: "resoumission_apres_rejet",
+          motivation_resoumission: motivation,
           auteur: user.username,
           role: user.role
         };
-
-        // Ajouter la motivation si elle a été fournie
-        if (motivation && motivation.trim() !== "") {
-          requestBody.motivation_resoumission = motivation.trim();
-        }
 
         const response = await fetch(`/api/projects/${id}/traiter`, {
           method: "POST",
@@ -1582,6 +1591,7 @@ export default {
 
         // Effacer le champ motivation après soumission réussie
         this.motivationsResoumission[id] = "";
+        this.erreursResoumission[id] = null;
 
         alert("Projet soumis à la Présidence SCT");
         this.loadProjects();
