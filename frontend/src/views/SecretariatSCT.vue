@@ -221,12 +221,12 @@
                         ✓ Valider avis
                       </button>
 
-                      <!-- Réassigner : projets rejetés (par présidence SCT, présidence comité ou définitivement) -->
+                      <!-- Traiter : projets en réexamen (rejetés par présidence SCT ou comité) -->
                       <button
-                        v-if="(projet.statut === 'rejeté' || projet.statut === 'rejeté par présidence SCT' || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'"
+                        v-if="projet.statut === 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-warning"
-                        title="Réassigner pour nouvelle évaluation"
+                        title="Traiter ce projet en réexamen"
                       >
                         🔄 Traiter
                       </button>
@@ -341,22 +341,19 @@
               
               <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
-              <!-- Actions pour projets rejetés ou infirmés - Présentation contextuelle -->
-              <div v-if="(projet.statut === 'rejeté' || projet.statut === 'rejeté par présidence SCT' || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
+              <!-- Actions pour projets en réexamen - Présentation contextuelle -->
+              <div v-if="projet.statut === 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie'" class="project-actions rejected-actions">
                 <div class="rejected-info">
                   <div class="alert alert-danger">
-                    <!-- Différencier entre rejet lors de l'évaluation de la recevabilité et rejet par présidence -->
-                    <template v-if="projet.avis === 'dossier rejeté'">
-                      ❌ <strong>Projet rejeté (recevabilité)</strong>
-                    </template>
-                    <template v-else-if="projet.statut === 'rejeté par présidence SCT' || projet.avis_presidencesct === 'rejete'">
+                    <!-- Différencier entre rejet par présidence SCT et infirmation par comité -->
+                    <template v-if="projet.avis_presidencesct === 'rejete' && projet.decision_finale !== 'infirme'">
                       ⚠️ <strong>Avis rejeté par la Présidence SCT - Action requise</strong>
                     </template>
-                    <template v-else-if="projet.statut === 'en réexamen par le Secrétariat SCT' || projet.decision_finale === 'infirme'">
+                    <template v-else-if="projet.decision_finale === 'infirme'">
                       ⚠️ <strong>Avis infirmé par la Présidence du Comité - Action requise</strong>
                     </template>
                     <template v-else>
-                      ❌ <strong>Projet rejeté</strong>
+                      ⚠️ <strong>Projet en réexamen - Action requise</strong>
                     </template>
                   </div>
                   <p v-if="projet.commentaires_finaux">
@@ -364,17 +361,17 @@
                     {{ projet.commentaires_finaux }}
                   </p>
                   <p v-else-if="projet.commentaires"><strong>Motif:</strong> {{ projet.commentaires }}</p>
-                  <p v-if="projet.decision_finale"><strong>Décision finale:</strong> {{ projet.decision_finale === 'infirme' ? 'Avis infirmé (retour pour réexamen)' : projet.decision_finale }}</p>
                 </div>
 
-                <!-- Actions disponibles pour tous les projets rejetés -->
+                <!-- Options de traitement -->
                 <div class="reassign-rejected-section">
                   <h4>🔄 Options de traitement</h4>
 
                   <div class="reassign-controls-vertical">
-                    <!-- Réassignation à un évaluateur -->
-                    <div class="action-group">
-                      <h5>Réassigner pour nouvelle évaluation</h5>
+                    <!-- Option 1: Réassignation à un évaluateur (orange) -->
+                    <div class="action-group action-group-orange">
+                      <h5><span class="action-bullet orange">1</span> Réassigner pour nouvelle évaluation</h5>
+                      <p class="info-text">Confier le dossier à un évaluateur pour une nouvelle analyse</p>
                       <div class="reassign-select-container">
                         <label>Réassigner à:</label>
                         <select v-model="assignation[projet.id]" class="reassign-select">
@@ -408,10 +405,10 @@
                       </div>
                     </div>
 
-                    <!-- Soumission par voie hiérarchique -->
-                    <div class="action-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                      <h5>Soumettre de nouveau</h5>
-                      <p class="info-text">Soumettre directement à la présidence SCT malgré le rejet</p>
+                    <!-- Option 2: Soumettre de nouveau (bleu) -->
+                    <div class="action-group action-group-blue">
+                      <h5><span class="action-bullet blue">2</span> Soumettre de nouveau à la hiérarchie</h5>
+                      <p class="info-text">Transmettre directement à la Présidence SCT malgré le rejet</p>
 
                       <label class="motif-label" style="display: block; margin-top: 10px; margin-bottom: 5px;">
                         Motivation de la resoumission
@@ -439,8 +436,8 @@
                 </div>
               </div>
 
-              <!-- Actions pour assigner (projets non rejetés définitivement) -->
-              <div v-if="projet.statut !== 'rejeté' && projet.statut !== 'rejeté par présidence SCT' && projet.statut !== 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
+              <!-- Actions pour assigner (projets non en réexamen) -->
+              <div v-if="projet.statut !== 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)" class="assign-section">
                 <label>{{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
@@ -1084,12 +1081,10 @@ export default {
     },
     projectsToAssign() {
       // Afficher tous les projets réassignables (non bloqués par validation secrétariat ou décision hiérarchique)
-      // Inclure aussi les projets rejetés par présidence SCT ou infirmés par présidence comité
+      // Inclure aussi les projets en réexamen (rejetés par Présidence SCT ou Présidence Comité)
       return this.allProjects.filter(p =>
         this.estProjetAssignable(p) ||
-        p.statut === 'rejeté par présidence SCT' ||
-        p.statut === 'en réexamen par le Secrétariat SCT' ||
-        p.statut === 'rejeté'
+        p.statut === 'en réexamen par le Secrétariat SCT'
       );
     },
     projectsToValidate() {
@@ -1619,6 +1614,7 @@ export default {
         alert("Erreur lors de la soumission");
       }
     },
+
     async validerRejet(id) {
       // Validation du rejet proposé par l'évaluateur
       if (!confirm("Êtes-vous sûr de vouloir valider ce rejet ? Le dossier sera définitivement rejeté.")) {
@@ -2900,6 +2896,59 @@ export default {
   font-weight: 600;
   color: #374151;
   margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Puces colorées pour les options */
+.action-bullet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.action-bullet.orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.action-bullet.blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.action-bullet.red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Bordures colorées pour les groupes d'action */
+.action-group-orange {
+  border-left: 4px solid #f59e0b;
+  padding-left: 15px;
+  margin-bottom: 20px;
+}
+
+.action-group-blue {
+  border-left: 4px solid #3b82f6;
+  padding-left: 15px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.action-group-red {
+  border-left: 4px solid #ef4444;
+  padding-left: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .warning-note {

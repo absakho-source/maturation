@@ -1293,7 +1293,7 @@ def traiter_project(project_id):
                 # 1. Réassigner pour nouvelle évaluation
                 # 2. Soumettre malgré le rejet à la Présidence SCT
                 # 3. Classer définitivement le projet
-                p.statut = "rejeté par présidence SCT"
+                p.statut = "en réexamen par le Secrétariat SCT"
                 p.avis_presidencesct = "rejete"
                 p.evaluateur_nom = None
 
@@ -5885,21 +5885,20 @@ def fix_fiche_visible():
 @app.route("/api/admin/fix-rejected-status", methods=["POST"])
 def fix_rejected_status():
     """
-    Endpoint pour corriger le statut des projets rejetés par présidence SCT
-    Convertit 'rejeté' en 'rejeté par présidence SCT' pour les projets qui ont avis_presidencesct='rejete'
+    Endpoint pour corriger le statut des projets rejetés par présidence SCT ou Comité
+    Convertit les anciens statuts vers 'en réexamen par le Secrétariat SCT'
     """
     try:
-        print("[ADMIN] Correction des statuts 'rejeté' → 'rejeté par présidence SCT'...")
+        print("[ADMIN] Correction des statuts vers 'en réexamen par le Secrétariat SCT'...")
 
-        # Trouver les projets avec statut 'rejeté' et avis_presidencesct='rejete'
-        projects = Project.query.filter_by(statut='rejeté').filter(
-            Project.avis_presidencesct == 'rejete'
-        ).all()
+        # Trouver les projets avec anciens statuts de rejet
+        old_statuts = ['rejeté', 'rejeté par présidence SCT', 'rejeté par presidencesct']
+        projects = Project.query.filter(Project.statut.in_(old_statuts)).all()
 
         updated = []
         for p in projects:
             old_statut = p.statut
-            p.statut = 'rejeté par présidence SCT'
+            p.statut = 'en réexamen par le Secrétariat SCT'
             updated.append({
                 'id': p.id,
                 'numero': p.numero_projet,
@@ -5907,7 +5906,7 @@ def fix_rejected_status():
                 'old_statut': old_statut,
                 'new_statut': p.statut
             })
-            print(f"  ✅ [{p.numero_projet}] {p.titre}: '{old_statut}' → 'rejeté par présidence SCT'")
+            print(f"  ✅ [{p.numero_projet}] {p.titre}: '{old_statut}' → 'en réexamen par le Secrétariat SCT'")
 
         db.session.commit()
 
