@@ -38,7 +38,7 @@
             <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
             <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir les détails complets</button>
           </div>
-          <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier évaluable et en évaluation) -->
+          <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier recevable et en évaluation) -->
           <div class="eval-section" v-if="peutAccederFicheEvaluation(p)">
             <div class="eval-options">
               <button @click="$router.push(`/evaluation/${p.id}`)" class="btn-evaluation-detaillee">
@@ -197,7 +197,7 @@ export default {
 
         let message;
         if (decision === "dossier_evaluable") {
-          message = "Dossier déclaré évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.";
+          message = "Dossier déclaré recevable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.";
         } else if (decision === "complements_requis") {
           message = "Compléments demandés. Le soumissionnaire a été notifié.";
         } else if (decision === "dossier_rejete") {

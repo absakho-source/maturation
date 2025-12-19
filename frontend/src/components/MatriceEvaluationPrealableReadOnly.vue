@@ -1,6 +1,6 @@
 <template>
   <div class="matrice-readonly">
-    <h4>📋 Matrice d'Évaluation de la Recevabilité</h4>
+    <h4>📋 Matrice de Recevabilité</h4>
     <p class="eval-date" v-if="matrice.date_evaluation">
       Évaluée le {{ formatDate(matrice.date_evaluation) }}
       <span v-if="matrice.evaluateur"> par {{ matrice.evaluateur }}</span>

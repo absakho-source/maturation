@@ -1,6 +1,6 @@
 <template>
   <div class="matrice-evaluation-prealable">
-    <h3>📋 Matrice d'Évaluation de la Recevabilité</h3>
+    <h3>📋 Matrice de Recevabilité</h3>
     <p class="description">Vérifier la recevabilité du dossier en cochant les documents requis et transmis</p>
 
     <!-- Tableau des documents -->
@@ -104,9 +104,9 @@
         @click="soumettre('dossier_evaluable')"
         class="btn-action btn-success"
         :disabled="enCours || documentsManquants > 0"
-        :title="documentsManquants > 0 ? 'Des documents requis sont manquants' : 'Valider le dossier comme évaluable'"
+        :title="documentsManquants > 0 ? 'Des documents requis sont manquants' : 'Valider le dossier comme recevable'"
       >
-        ✓ Dossier évaluable
+        ✓ Dossier recevable
       </button>
       <button
         @click="soumettre('complements_requis')"
@@ -207,7 +207,7 @@ export default {
     async soumettre(decision) {
       // Validation
       if (decision === 'dossier_evaluable' && this.documentsManquants > 0) {
-        alert('Impossible de valider le dossier comme évaluable: des documents requis sont manquants')
+        alert('Impossible de valider le dossier comme recevable: des documents requis sont manquants')
         return
       }
 

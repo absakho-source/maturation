@@ -73,7 +73,7 @@ export default {
      */
     getEvaluationPrealableText(decision) {
       const map = {
-        'dossier_evaluable': '✅ Dossier évaluable',
+        'dossier_evaluable': '✅ Dossier recevable',
         'complements_requis': '📝 Compléments requis',
         'dossier_rejete': '❌ Dossier rejeté'
       };

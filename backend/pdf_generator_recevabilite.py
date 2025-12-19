@@ -1,5 +1,5 @@
 """
-Générateur PDF pour la Matrice d'Évaluation de la Recevabilité
+Générateur PDF pour la Matrice de Recevabilité
 Format conforme à MatriceEvaluationPrealable.vue
 """
 
@@ -242,7 +242,7 @@ class FicheRecevabilitePDF:
         self.story.append(Spacer(1, 15))
 
         # Titre principal
-        title = Paragraph("MATRICE D'ÉVALUATION DE LA RECEVABILITÉ", self.styles['MainTitle'])
+        title = Paragraph("MATRICE DE RECEVABILITÉ", self.styles['MainTitle'])
         self.story.append(title)
 
         # Date de génération
@@ -529,7 +529,7 @@ class FicheRecevabilitePDF:
     def _get_decision_display(self):
         """Retourne le texte, la couleur et le fond de la décision"""
         if self.decision == 'dossier_evaluable':
-            return "DOSSIER ÉVALUABLE", HexColor('#065f46'), HexColor('#d1fae5')
+            return "DOSSIER RECEVABLE", HexColor('#065f46'), HexColor('#d1fae5')
         elif self.decision == 'complements_requis':
             return "COMPLÉMENTS REQUIS", HexColor('#92400e'), HexColor('#fef3c7')
         elif self.decision == 'dossier_rejete':

@@ -625,7 +625,7 @@
                 </div>
               </div>
 
-              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier évaluable) -->
+              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier recevable) -->
               <div v-if="projet.evaluation_prealable === 'dossier_evaluable'" class="eval-section">
                 <div class="eval-options">
                   <button @click="$router.push(`/evaluation/${projet.id}`)" class="btn-evaluation-detaillee">
@@ -1894,7 +1894,7 @@ export default {
 
         let message = "";
         if (decision === "dossier_evaluable") {
-          message = "✅ Dossier marqué comme évaluable. Vous pouvez maintenant procéder à l'évaluation détaillée.";
+          message = "✅ Dossier marqué comme recevable. Vous pouvez maintenant procéder à l'évaluation détaillée.";
         } else if (decision === "complements_requis") {
           message = "📝 Compléments demandés. Le soumissionnaire sera notifié.";
         } else if (decision === "dossier_rejete") {
@@ -1959,7 +1959,7 @@ export default {
 
     getEvaluationPrealableText(decision) {
       const map = {
-        'dossier_evaluable': '✅ Dossier évaluable',
+        'dossier_evaluable': '✅ Dossier recevable',
         'complements_requis': '📝 Compléments requis',
         'dossier_rejete': '❌ Dossier rejeté'
       };

@@ -238,7 +238,7 @@
               <div :class="['decision-badge',
                 project.evaluation_prealable === 'dossier_evaluable' ? 'success' :
                 project.evaluation_prealable === 'dossier_rejete' ? 'danger' : 'warning']">
-                {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier évaluable' :
+                {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier recevable' :
                    project.evaluation_prealable === 'dossier_rejete' ? '❌ Dossier rejeté' :
                    '📝 Compléments requis' }}
               </div>
@@ -867,7 +867,7 @@ export default {
     peutAccederFicheEvaluation() {
       // Peut accéder si:
       // 1. Pas d'évaluation de la recevabilité requise (ancien système)
-      // 2. OU évaluation de la recevabilité positive (dossier évaluable)
+      // 2. OU évaluation de la recevabilité positive (dossier recevable)
       // 3. OU statut >= "en évaluation" (déjà passé l'étape préalable)
       if (!this.project) return false;
 
