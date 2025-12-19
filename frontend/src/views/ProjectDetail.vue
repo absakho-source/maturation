@@ -115,6 +115,43 @@
             <p class="description">{{ project.description }}</p>
           </div>
 
+          <!-- Pièces jointes du projet (fichiers soumis avec le projet) -->
+          <div class="info-card" v-if="project.pieces_jointes && project.pieces_jointes.length > 0">
+            <h3>📎 Pièces jointes du projet</h3>
+            <p class="info-text-small">Documents soumis avec le projet</p>
+            <div class="files-list-grid">
+              <div v-for="(fichier, index) in project.pieces_jointes"
+                   :key="index"
+                   class="file-item"
+                   @click="ouvrirFichier(fichier)">
+                <div class="file-icon">
+                  <svg v-if="isPDF(fichier)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <path d="M9 15v-2h2v2H9z"/>
+                  </svg>
+                  <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </div>
+                <div class="file-info">
+                  <span class="file-name">{{ getFileName(fichier) }}</span>
+                  <span class="file-type">{{ getFileExtension(fichier).toUpperCase() }}</span>
+                </div>
+                <div class="file-action">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15,3 21,3 21,9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Informations sur les compléments -->
           <div class="info-card" v-if="project.complements_reponse_message || project.commentaires">
             <h3>💬 Échanges et compléments</h3>
@@ -884,6 +921,31 @@ export default {
       return `${mb.toFixed(2)} Mo`;
     },
 
+    // Méthodes pour les pièces jointes du projet
+    isPDF(fileName) {
+      if (!fileName) return false;
+      return fileName.toLowerCase().endsWith('.pdf');
+    },
+
+    getFileName(filePath) {
+      if (!filePath) return '';
+      // Extraire le nom du fichier du chemin complet
+      const parts = filePath.split('/');
+      const fileName = parts[parts.length - 1];
+      // Si le nom est trop long, le tronquer
+      if (fileName.length > 40) {
+        const ext = this.getFileExtension(fileName);
+        return fileName.substring(0, 35) + '...' + ext;
+      }
+      return fileName;
+    },
+
+    getFileExtension(fileName) {
+      if (!fileName) return '';
+      const parts = fileName.split('.');
+      return parts.length > 1 ? '.' + parts[parts.length - 1] : '';
+    },
+
     ouvrirArchive(filename) {
       // Ouvrir l'archive dans un nouvel onglet
       const isProduction = window.location.hostname.includes('render.com');
@@ -1183,6 +1245,87 @@ export default {
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* Styles pour les pièces jointes du projet */
+.info-text-small {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.files-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-item:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.file-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-type {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.file-action {
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+
+.file-item:hover .file-action {
+  color: #3b82f6;
+}
+
 .avis-favorable { color: #10b981 !important; font-weight: 600 !important; }
 .avis-conditions { color: #f59e0b !important; font-weight: 600 !important; }
 .avis-defavorable { color: #ef4444 !important; font-weight: 600 !important; }
