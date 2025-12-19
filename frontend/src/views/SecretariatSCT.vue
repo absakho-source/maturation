@@ -273,19 +273,6 @@
               <p v-if="projet.secteur"><strong>Secteur de planification:</strong> {{ projet.secteur }}</p>
               <p v-if="projet.poles"><strong>Pôle(s) territorial(aux):</strong> {{ projet.poles }}</p>
               
-              <!-- Alerte pour projets en réexamen (après infirmation par Présidence du Comité) -->
-              <div v-if="projet.statut === 'en réexamen par le Secrétariat SCT'" class="reexamen-alert">
-                <div class="alert alert-warning">
-                  <strong>⚠️ Projet retourné pour réexamen</strong>
-                  <p>L'avis sur ce projet a été infirmé par la Présidence du Comité.</p>
-                </div>
-                <div v-if="projet.commentaires_finaux" class="motif-infirmation">
-                  <strong>Motif de l'infirmation:</strong>
-                  <p class="motif-text">{{ projet.commentaires_finaux }}</p>
-                </div>
-                <p class="action-required">Veuillez réassigner ce projet à un évaluateur pour une nouvelle évaluation.</p>
-              </div>
-
               <!-- Projets déjà assignés ou en évaluation -->
               <div v-if="projet.statut === 'assigné' || projet.statut === 'en évaluation'" class="reassign-info">
                 <p><strong>🔄 Projet {{ projet.statut === 'en évaluation' ? 'en cours d\'évaluation' : 'assigné' }} :</strong></p>
