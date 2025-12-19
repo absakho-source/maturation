@@ -284,6 +284,18 @@ def ensure_sqlite_columns():
                 print(f"[DB MIGRATION] Adding project.{c}")
                 cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
 
+        # Migration pour le point focal / responsable du projet
+        needed_point_focal = {
+            "point_focal_nom": "VARCHAR(200)",
+            "point_focal_fonction": "VARCHAR(200)",
+            "point_focal_telephone": "VARCHAR(50)",
+            "point_focal_email": "VARCHAR(200)"
+        }
+        for c, cdef in needed_point_focal.items():
+            if c not in cols:
+                print(f"[DB MIGRATION] Adding project.{c}")
+                cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
+
     # Migration pour la table contact_messages
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
     if cur.fetchone():
@@ -600,7 +612,12 @@ def projects():
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
                             "type_financement": str(p.type_financement) if p.type_financement else "",
-                            "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte)
+                            "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte),
+                            # Coordonnées du point focal / responsable du projet
+                            "point_focal_nom": str(p.point_focal_nom) if hasattr(p, 'point_focal_nom') and p.point_focal_nom else "",
+                            "point_focal_fonction": str(p.point_focal_fonction) if hasattr(p, 'point_focal_fonction') and p.point_focal_fonction else "",
+                            "point_focal_telephone": str(p.point_focal_telephone) if hasattr(p, 'point_focal_telephone') and p.point_focal_telephone else "",
+                            "point_focal_email": str(p.point_focal_email) if hasattr(p, 'point_focal_email') and p.point_focal_email else ""
                         })
                 except Exception as err:
                     import traceback
@@ -640,6 +657,12 @@ def projects():
         projet_initial_ref = request.form.get("projet_initial_ref")
         niveau_priorite = request.form.get("niveau_priorite")
         type_financement = request.form.get("type_financement")  # JSON array
+
+        # Point focal / Responsable du projet
+        point_focal_nom = request.form.get("point_focal_nom")
+        point_focal_fonction = request.form.get("point_focal_fonction")
+        point_focal_telephone = request.form.get("point_focal_telephone")
+        point_focal_email = request.form.get("point_focal_email")
 
         # Récupérer tous les fichiers catégorisés
         files = []
@@ -719,7 +742,11 @@ def projects():
             nouveaute=nouveaute,
             projet_initial_ref=projet_initial_ref,
             niveau_priorite=niveau_priorite,
-            type_financement=type_financement
+            type_financement=type_financement,
+            point_focal_nom=point_focal_nom,
+            point_focal_fonction=point_focal_fonction,
+            point_focal_telephone=point_focal_telephone,
+            point_focal_email=point_focal_email
         )
         db.session.add(project)
         db.session.commit()
@@ -812,7 +839,12 @@ def get_project(project_id):
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
             "type_financement": p.type_financement,
-            "soumissionnaire_statut_compte": soumissionnaire_statut_compte
+            "soumissionnaire_statut_compte": soumissionnaire_statut_compte,
+            # Coordonnées du point focal / responsable du projet
+            "point_focal_nom": p.point_focal_nom if hasattr(p, 'point_focal_nom') else None,
+            "point_focal_fonction": p.point_focal_fonction if hasattr(p, 'point_focal_fonction') else None,
+            "point_focal_telephone": p.point_focal_telephone if hasattr(p, 'point_focal_telephone') else None,
+            "point_focal_email": p.point_focal_email if hasattr(p, 'point_focal_email') else None
         }), 200
     except Exception as e:
         import traceback; traceback.print_exc()

@@ -101,6 +101,12 @@ class Project(db.Model):
     niveau_priorite = db.Column(db.String(50), nullable=True)  # "prioritaire_ant" ou "standard"
     type_financement = db.Column(db.Text, nullable=True)  # JSON: liste des types de financement
 
+    # Point focal / Responsable du projet (pour notifications)
+    point_focal_nom = db.Column(db.String(200), nullable=True)
+    point_focal_fonction = db.Column(db.String(200), nullable=True)
+    point_focal_telephone = db.Column(db.String(50), nullable=True)
+    point_focal_email = db.Column(db.String(200), nullable=True)
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auteur = db.Column(db.String(100))
