@@ -379,7 +379,10 @@
                         <label>Réassigner à:</label>
                         <select v-model="assignation[projet.id]" class="reassign-select">
                           <option value="">--Choisir un évaluateur--</option>
-                          <option v-if="projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                          <option v-if="projet.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même ({{ currentUser?.display_name || 'Secrétariat SCT' }})</option>
+                          <option v-for="autre in autresSecretariatSCT" :key="autre.username" :value="autre.username">
+                            {{ autre.display_name || autre.username }} (Secrétariat SCT)
+                          </option>
                           <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
                             {{ evaluateur.display_name || evaluateur.username }}
                           </option>
@@ -441,7 +444,10 @@
                 <label>{{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner à:' : 'Assigner à:' }}</label>
                 <select v-model="assignation[projet.id]">
                   <option value="">--Choisir--</option>
-                  <option v-if="!['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                  <option v-if="!['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même ({{ currentUser?.display_name || 'Secrétariat SCT' }})</option>
+                  <option v-for="autre in autresSecretariatSCT" :key="'sct-' + autre.username" :value="autre.username">
+                    {{ autre.display_name || autre.username }} (Secrétariat SCT)
+                  </option>
                   <option v-for="evaluateur in (['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
                     {{ evaluateur.display_name || evaluateur.username }}
                   </option>
@@ -536,7 +542,10 @@
                   <label>Réassigner à
                     <select v-model="assignation[p.id]">
                       <option value="">--Choisir--</option>
-                      <option v-if="p.evaluateur_nom !== 'secretariatsct'" value="secretariatsct">Moi-même (Secrétariat SCT)</option>
+                      <option v-if="p.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même ({{ currentUser?.display_name || 'Secrétariat SCT' }})</option>
+                      <option v-for="autre in autresSecretariatSCT" :key="'val-sct-' + autre.username" :value="autre.username">
+                        {{ autre.display_name || autre.username }} (Secrétariat SCT)
+                      </option>
                       <option v-for="evaluateur in getAvailableEvaluateurs(p)" :key="evaluateur.username" :value="evaluateur.username">
                         {{ evaluateur.display_name || evaluateur.username }}
                       </option>
@@ -926,6 +935,8 @@ export default {
     return {
       allProjects: [],
       evaluateurs: [],
+      autresSecretariatSCT: [], // Autres comptes secretariatsct (hors l'utilisateur connecté)
+      currentUser: null, // Utilisateur connecté
       assignation: {},
       motivations: {},
       motivationsResoumission: {},
@@ -1289,11 +1300,19 @@ export default {
     },
     async loadEvaluateurs() {
       try {
+        // Récupérer l'utilisateur connecté
+        this.currentUser = JSON.parse(localStorage.getItem("user") || "null") || {};
+
         const res = await fetch('/api/users');
         if (res.ok) {
           const users = await res.json();
           // Filtrer uniquement les évaluateurs
           this.evaluateurs = users.filter(u => u.role === 'evaluateur');
+
+          // Filtrer les autres comptes secretariatsct (hors l'utilisateur connecté)
+          this.autresSecretariatSCT = users.filter(u =>
+            u.role === 'secretariatsct' && u.username !== this.currentUser.username
+          );
         }
       } catch (error) {
         console.error('Erreur lors du chargement des évaluateurs:', error);
