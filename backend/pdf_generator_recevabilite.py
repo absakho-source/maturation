@@ -81,15 +81,11 @@ class FicheRecevabilitePDF:
             textColor=HexColor('#1e293b')
         ))
 
-        # Texte normal
-        self.styles.add(ParagraphStyle(
-            name='BodyText',
-            parent=self.styles['Normal'],
-            fontSize=10,
-            fontName='Helvetica',
-            textColor=HexColor('#374151'),
-            leading=14
-        ))
+        # Texte normal (modifier le style existant au lieu de l'ajouter)
+        self.styles['BodyText'].fontSize = 10
+        self.styles['BodyText'].fontName = 'Helvetica'
+        self.styles['BodyText'].textColor = HexColor('#374151')
+        self.styles['BodyText'].leading = 14
 
         # En-tête tableau
         self.styles.add(ParagraphStyle(
