@@ -318,6 +318,11 @@
             <div class="form-group">
               <label>Pôles territoriaux concernés *</label>
               <div class="checkbox-group-poles">
+                <div class="poles-actions">
+                  <button type="button" @click="toggleAllPoles" class="btn-toggle-poles">
+                    {{ form.poles.length === polesOptions.length ? '✕ Désélectionner tout' : '✓ Sélectionner tous les pôles' }}
+                  </button>
+                </div>
                 <label v-for="pole in polesOptions" :key="pole" class="checkbox-label-pole">
                   <input type="checkbox" :value="pole" v-model="form.poles" />
                   <span class="checkbox-text">{{ pole }}</span>
@@ -822,6 +827,16 @@ export default {
     this.loadDataLists();
   },
   methods: {
+    toggleAllPoles() {
+      if (this.form.poles.length === this.polesOptions.length) {
+        // Tous sont sélectionnés → désélectionner tout
+        this.form.poles = [];
+      } else {
+        // Sélectionner tous les pôles
+        this.form.poles = [...this.polesOptions];
+      }
+    },
+
     async loadUserAccountStatus() {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -2354,8 +2369,33 @@ select:disabled, input:disabled {
   background: #f8fafc;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  max-height: 250px;
+  max-height: 300px;
   overflow-y: auto;
+}
+
+.poles-actions {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.btn-toggle-poles {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-toggle-poles:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .checkbox-label-pole {
