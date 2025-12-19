@@ -1978,10 +1978,11 @@ export default {
     // Détermine si un projet nécessite une évaluation de la recevabilité
     needsEvaluationPrealable(project) {
       // Afficher l'interface d'évaluation de la recevabilité si:
-      // - Le projet est assigné ET aucune évaluation de la recevabilité n'a été faite
+      // - Le projet est assigné OU en évaluation, ET aucune évaluation de la recevabilité n'a été faite
       // OU
       // - Des compléments ont été demandés ET le soumissionnaire a répondu
-      const isInitialAssignment = project.statut === "assigné" && !project.evaluation_prealable;
+      const statutsEligibles = ["assigné", "en évaluation"];
+      const isInitialAssignment = statutsEligibles.includes(project.statut) && !project.evaluation_prealable;
       const hasReceivedComplements = project.evaluation_prealable === "complements_requis" &&
                                      project.complements_reponse_message &&
                                      project.complements_reponse_message.trim() !== "";
