@@ -5925,6 +5925,48 @@ def fix_rejected_status():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/admin/fix-papa-sy-role", methods=["POST"])
+def fix_papa_sy_role():
+    """
+    Endpoint pour corriger le rôle de papa.sy (Papa Baïdy SY)
+    qui est actuellement 'secretariatsct' mais devrait être 'evaluateur'
+    """
+    try:
+        print("[ADMIN] Correction du rôle de papa.sy...")
+
+        user = User.query.filter_by(username='papa.sy').first()
+
+        if not user:
+            return jsonify({"error": "Compte papa.sy non trouvé"}), 404
+
+        old_role = user.role
+
+        if old_role == 'evaluateur':
+            return jsonify({
+                "message": "Le rôle est déjà correct (evaluateur)",
+                "username": user.username,
+                "role": user.role
+            }), 200
+
+        user.role = 'evaluateur'
+        db.session.commit()
+
+        print(f"[ADMIN] ✅ Rôle corrigé: {old_role} → evaluateur")
+
+        return jsonify({
+            "message": f"Rôle corrigé: {old_role} → evaluateur",
+            "username": user.username,
+            "display_name": user.display_name,
+            "old_role": old_role,
+            "new_role": user.role
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/admin/delete-test-projects", methods=["POST"])
 def delete_test_projects():
     """
