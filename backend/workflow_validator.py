@@ -60,7 +60,15 @@ class WorkflowValidator:
     @staticmethod
     def peut_etre_valide_par_secretariat(projet):
         """Vérifie si le Secrétariat peut valider l'avis"""
-        if projet.statut != 'évalué':
+        # Autoriser la validation pour les projets évalués ou les projets rejetés (resoumission)
+        statuts_autorisees = [
+            'évalué',
+            'rejeté',
+            'rejeté par présidence SCT',
+            'en réexamen par le Secrétariat SCT'
+        ]
+
+        if projet.statut not in statuts_autorisees:
             return False, "Le projet doit être évalué pour être validé"
 
         if projet.validation_secretariat == 'valide':
