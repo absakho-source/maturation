@@ -173,3 +173,50 @@ def migrate_evaluabilite():
             'success': False,
             'error': str(e)
         }), 500
+
+@cleanup_bp.route('/api/admin/migrate-seuil-minimum', methods=['POST'])
+def migrate_seuil_minimum():
+    """Endpoint pour ajouter la colonne seuil_minimum à formulaire_config"""
+    try:
+        import sqlite3
+
+        DATA_DIR = os.environ.get("DATA_DIR", os.path.abspath(os.path.dirname(__file__)))
+        DB_PATH = os.path.join(DATA_DIR, "maturation.db")
+
+        if not os.path.exists(DB_PATH):
+            return jsonify({
+                'success': False,
+                'error': f'Database not found: {DB_PATH}'
+            }), 500
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Vérifier si la colonne existe déjà
+        cursor.execute("PRAGMA table_info(formulaire_config)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'seuil_minimum' not in columns:
+            cursor.execute("ALTER TABLE formulaire_config ADD COLUMN seuil_minimum INTEGER DEFAULT 70")
+            # Synchroniser avec seuil_conditionnel existant
+            cursor.execute("UPDATE formulaire_config SET seuil_minimum = seuil_conditionnel WHERE seuil_minimum IS NULL")
+            conn.commit()
+            message = "Colonne seuil_minimum ajoutée et synchronisée"
+        else:
+            message = "Colonne seuil_minimum existe déjà"
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': message,
+            'db_path': DB_PATH
+        }), 200
+
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

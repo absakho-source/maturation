@@ -103,6 +103,12 @@ def update_configuration(config_id):
             config.description = data['description']
         if 'score_total_max' in data:
             config.score_total_max = data['score_total_max']
+        if 'seuil_minimum' in data:
+            config.seuil_minimum = data['seuil_minimum']
+            # Synchroniser les anciens champs pour compatibilité
+            config.seuil_favorable = data['seuil_minimum']
+            config.seuil_conditionnel = data['seuil_minimum']
+        # Support des anciens champs (deprecated)
         if 'seuil_favorable' in data:
             config.seuil_favorable = data['seuil_favorable']
         if 'seuil_conditionnel' in data:

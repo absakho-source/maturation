@@ -59,12 +59,12 @@
               <input type="number" v-model.number="config.score_total_max" @input="marquerConfigModifiee" class="param-input">
             </div>
             <div class="param-item">
-              <label>Seuil Favorable (%):</label>
-              <input type="number" v-model.number="config.seuil_favorable" @input="marquerConfigModifiee" class="param-input">
-            </div>
-            <div class="param-item">
-              <label>Seuil Conditionnel (%):</label>
-              <input type="number" v-model.number="config.seuil_conditionnel" @input="marquerConfigModifiee" class="param-input">
+              <label>Seuil Minimum (points):</label>
+              <input type="number" v-model.number="config.seuil_minimum" @input="marquerConfigModifiee" class="param-input">
+              <small class="param-help">
+                Score ≥ ce seuil: l'évaluateur choisit entre Favorable ou Favorable sous conditions<br>
+                Score < ce seuil: automatiquement Défavorable
+              </small>
             </div>
           </div>
         </div>
@@ -279,8 +279,7 @@ export default {
             role: this.role,
             version_affichage: this.config.version_affichage,
             score_total_max: this.config.score_total_max,
-            seuil_favorable: this.config.seuil_favorable,
-            seuil_conditionnel: this.config.seuil_conditionnel
+            seuil_minimum: this.config.seuil_minimum || 70
           })
         })
 
@@ -571,6 +570,15 @@ export default {
   color: #7f8c8d;
   font-style: italic;
   margin-left: 5px;
+}
+
+.param-help {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 6px;
+  line-height: 1.4;
+  font-style: italic;
 }
 
 .param-input {

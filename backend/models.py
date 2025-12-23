@@ -685,10 +685,11 @@ class FormulaireConfig(db.Model):
     active = db.Column(db.Boolean, default=False)  # Configuration active?
     score_total_max = db.Column(db.Integer, default=100)  # Score total maximum
 
-    # Seuils de proposition (en pourcentage)
-    seuil_favorable = db.Column(db.Integer, default=80)  # >= 80%
-    seuil_conditionnel = db.Column(db.Integer, default=70)  # >= 70% et < 80%
-    # En dessous de seuil_conditionnel = défavorable
+    # Seuil de proposition (un seul seuil maintenant)
+    seuil_minimum = db.Column(db.Integer, default=70)  # >= 70 = évaluateur choisit favorable/conditionnel, < 70 = défavorable
+    # Anciens champs conservés pour compatibilité mais non utilisés
+    seuil_favorable = db.Column(db.Integer, default=70)  # Deprecated: maintenant = seuil_minimum
+    seuil_conditionnel = db.Column(db.Integer, default=70)  # Deprecated: maintenant = seuil_minimum
 
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     date_modification = db.Column(db.DateTime, nullable=True)
@@ -706,8 +707,9 @@ class FormulaireConfig(db.Model):
             'description': self.description,
             'active': self.active,
             'score_total_max': self.score_total_max,
-            'seuil_favorable': self.seuil_favorable,
-            'seuil_conditionnel': self.seuil_conditionnel,
+            'seuil_minimum': self.seuil_minimum,
+            'seuil_favorable': self.seuil_favorable,  # Deprecated mais gardé pour compatibilité
+            'seuil_conditionnel': self.seuil_conditionnel,  # Deprecated mais gardé pour compatibilité
             'date_creation': self.date_creation.isoformat() if self.date_creation else None,
             'date_modification': self.date_modification.isoformat() if self.date_modification else None,
             'modifie_par': self.modifie_par,
