@@ -8,6 +8,40 @@ import sqlite3
 
 cleanup_bp = Blueprint('cleanup', __name__)
 
+@cleanup_bp.route('/api/admin/db-info', methods=['GET'])
+def get_db_info():
+    """Endpoint de diagnostic pour voir la structure de la base de données"""
+    try:
+        import os
+        conn = sqlite3.connect('maturation.db')
+        cursor = conn.cursor()
+
+        # Lister toutes les tables
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+
+        # Pour chaque table, obtenir sa structure
+        tables_info = {}
+        for (table_name,) in tables:
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = cursor.fetchall()
+            tables_info[table_name] = [col[1] for col in columns]  # col[1] est le nom de la colonne
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'db_path': os.path.abspath('maturation.db'),
+            'db_exists': os.path.exists('maturation.db'),
+            'tables': tables_info
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Liste des comptes à supprimer
 ACCOUNTS_TO_DELETE = [
     'papa.sy',
