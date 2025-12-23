@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Endpoint API pour nettoyer les comptes récents
+Endpoint API pour nettoyer les comptes récents et effectuer les migrations
 À appeler via: curl -X POST http://localhost:5000/api/admin/cleanup-recent-users
 """
 from flask import Blueprint, jsonify
 from models import Project, User
 from db import db
+import os
 
 cleanup_bp = Blueprint('cleanup', __name__)
 
@@ -111,6 +112,63 @@ def cleanup_recent_users():
 
     except Exception as e:
         db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@cleanup_bp.route('/api/admin/migrate-evaluabilite', methods=['POST'])
+def migrate_evaluabilite():
+    """Endpoint pour exécuter la migration d'évaluabilité"""
+    try:
+        import sqlite3
+
+        DATA_DIR = os.environ.get("DATA_DIR", os.path.abspath(os.path.dirname(__file__)))
+        DB_PATH = os.path.join(DATA_DIR, "maturation.db")
+
+        if not os.path.exists(DB_PATH):
+            return jsonify({
+                'success': False,
+                'error': f'Database not found: {DB_PATH}'
+            }), 500
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Vérifier si les colonnes existent déjà
+        cursor.execute("PRAGMA table_info(project)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        columns_to_add = [
+            ("evaluabilite", "VARCHAR(50)"),
+            ("evaluabilite_date", "DATETIME"),
+            ("evaluabilite_commentaire", "TEXT")
+        ]
+
+        added_columns = []
+        existing_columns = []
+
+        for col_name, col_type in columns_to_add:
+            if col_name not in columns:
+                cursor.execute(f"ALTER TABLE project ADD COLUMN {col_name} {col_type}")
+                added_columns.append(col_name)
+            else:
+                existing_columns.append(col_name)
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': 'Migration réussie',
+            'added_columns': added_columns,
+            'existing_columns': existing_columns,
+            'db_path': DB_PATH
+        }), 200
+
+    except Exception as e:
+        if conn:
+            conn.close()
         return jsonify({
             'success': False,
             'error': str(e)
