@@ -20,7 +20,12 @@
           </button>
         </div>
 
-        <h1 class="form-title centered-title">FICHE D'ÉVALUATION</h1>
+        <h1 class="form-title centered-title">
+          FICHE D'ÉVALUATION
+          <span v-if="projectInfo && projectInfo.numero_projet" class="numero-projet-badge">
+            {{ projectInfo.numero_projet }}
+          </span>
+        </h1>
 
         <!-- Informations sur la version du formulaire -->
         <div v-if="config && config.version_affichage" class="version-info">
@@ -1853,6 +1858,19 @@ textarea::placeholder {
   justify-content: center;
   align-items: center;
   text-align: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.numero-projet-badge {
+  display: inline-block;
+  background: #007bff;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
 .centered-row {

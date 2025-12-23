@@ -606,6 +606,9 @@ def projects():
                             "evaluation_prealable_commentaire": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",
                             "evaluation_prealable_commentaires": str(p.evaluation_prealable_commentaire) if p.evaluation_prealable_commentaire else "",  # Alias pour compatibilité frontend
                             "evaluation_prealable_matrice": p.evaluation_prealable_matrice if hasattr(p, 'evaluation_prealable_matrice') and p.evaluation_prealable_matrice else None,
+                            "evaluabilite": str(p.evaluabilite) if p.evaluabilite else "",
+                            "evaluabilite_date": p.evaluabilite_date.isoformat() if hasattr(p, 'evaluabilite_date') and p.evaluabilite_date else None,
+                            "evaluabilite_commentaire": str(p.evaluabilite_commentaire) if p.evaluabilite_commentaire else "",
                             "pieces_jointes": pieces_jointes,
                             "date_soumission": date_soumission,
                             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
