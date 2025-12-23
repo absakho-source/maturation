@@ -5692,6 +5692,14 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import admin routes: {e}")
 
+# Import and register cleanup routes
+try:
+    from cleanup_users_api import cleanup_bp
+    app.register_blueprint(cleanup_bp, url_prefix='')
+    print("Cleanup routes registered successfully")
+except ImportError as e:
+    print(f"Warning: Could not import cleanup routes: {e}")
+
 @app.route("/api/version", methods=["GET"])
 def get_version():
     """Retourne la version du code backend déployé"""

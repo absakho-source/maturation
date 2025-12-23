@@ -52,7 +52,8 @@
       "Bash(npm run lint:*)",
       "Bash(timeout 60 ssh:*)",
       "Bash(./deploy_gmail_to_production.sh:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(timeout 10 ssh:*)"
     ],
     "deny": [],
     "ask": []
