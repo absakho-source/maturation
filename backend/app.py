@@ -1637,6 +1637,48 @@ def evaluation_prealable(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/projects/<int:project_id>/evaluabilite", methods=["POST"])
+def set_evaluabilite(project_id):
+    """Endpoint pour définir l'évaluabilité d'un projet (après recevabilité)"""
+    try:
+        data = request.json or {}
+        p = Project.query.get_or_404(project_id)
+
+        # Vérifier que le projet est recevable avant de pouvoir le marquer comme évaluable
+        if p.evaluation_prealable != "dossier_evaluable":
+            return jsonify({"error": "Le projet doit d'abord être recevable"}), 403
+
+        auteur = data.get("auteur", "")
+        role = data.get("role", "")
+
+        decision = data.get("decision")  # "evaluable"
+        commentaire = data.get("commentaire", "").strip()
+
+        if not decision or decision != "evaluable":
+            return jsonify({"error": "Décision invalide"}), 400
+
+        # Enregistrer l'évaluabilité
+        p.evaluabilite = decision
+        p.evaluabilite_date = datetime.utcnow()
+        p.evaluabilite_commentaire = commentaire
+
+        action = f"Dossier marqué comme évaluable"
+        if commentaire:
+            action += f" - {commentaire}"
+
+        db.session.commit()
+
+        # Enregistrer dans l'historique
+        hist = Historique(project_id=project_id, action=action, auteur=auteur, role=role)
+        db.session.add(hist)
+        db.session.commit()
+
+        return jsonify({"message": "Évaluabilité enregistrée"}), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 # Routes pour la fiche d'évaluation détaillée
 
 # GET - Récupérer une fiche d'évaluation
