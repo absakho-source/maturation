@@ -1657,14 +1657,16 @@ def set_evaluabilite(project_id):
         if not decision or decision != "evaluable":
             return jsonify({"error": "Décision invalide"}), 400
 
+        # Validation: commentaires obligatoires pour justifier l'évaluabilité
+        if not commentaire:
+            return jsonify({"error": "Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier"}), 400
+
         # Enregistrer l'évaluabilité
         p.evaluabilite = decision
         p.evaluabilite_date = datetime.utcnow()
         p.evaluabilite_commentaire = commentaire
 
-        action = f"Dossier marqué comme évaluable"
-        if commentaire:
-            action += f" - {commentaire}"
+        action = f"Dossier marqué comme évaluable - {commentaire}"
 
         db.session.commit()
 

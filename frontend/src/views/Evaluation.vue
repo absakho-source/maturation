@@ -50,19 +50,23 @@
           <!-- Interface d'évaluabilité (après recevabilité, avant évaluation détaillée) -->
           <div v-else-if="needsEvaluabilite(p)" class="eval-section eval-evaluabilite">
             <h4>📊 Évaluabilité du Dossier</h4>
-            <p class="eval-info">Le dossier est recevable. Vous devez maintenant confirmer qu'il est évaluable avant d'accéder à la fiche d'évaluation détaillée.</p>
+            <p class="eval-info">Le dossier est recevable. Vous devez maintenant confirmer qu'il est évaluable et expliquer pourquoi avant d'accéder à la fiche d'évaluation détaillée.</p>
             <div class="evaluabilite-form">
-              <label for="evaluabilite-commentaire-{{ p.id }}">Commentaires (optionnel):</label>
+              <label for="evaluabilite-commentaire-{{ p.id }}" class="required-label">
+                Commentaires (obligatoire) - Expliquez pourquoi le dossier est évaluable:
+              </label>
               <textarea
                 :id="'evaluabilite-commentaire-' + p.id"
                 v-model="evaluabiliteCommentaires[p.id]"
-                rows="3"
-                placeholder="Ajoutez vos commentaires sur l'évaluabilité du dossier..."
+                rows="4"
+                placeholder="Expliquez pourquoi ce dossier est évaluable (clarté des objectifs, faisabilité technique, cohérence du budget, etc.)..."
+                required
               ></textarea>
               <button
                 @click="marquerEvaluable(p.id)"
                 class="btn-action btn-success"
-                :disabled="envoiEvaluabilite[p.id]"
+                :disabled="envoiEvaluabilite[p.id] || !evaluabiliteCommentaires[p.id]?.trim()"
+                :title="!evaluabiliteCommentaires[p.id]?.trim() ? 'Les commentaires sont obligatoires' : 'Valider l\'évaluabilité'"
               >
                 {{ envoiEvaluabilite[p.id] ? '⏳ Enregistrement...' : '✓ Dossier évaluable' }}
               </button>
@@ -204,6 +208,12 @@ export default {
     async marquerEvaluable(projectId) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const commentaire = (this.evaluabiliteCommentaires[projectId] || "").trim();
+
+      // Validation: commentaires obligatoires
+      if (!commentaire) {
+        alert("⚠️ Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier.");
+        return;
+      }
 
       this.envoiEvaluabilite[projectId] = true;
 
@@ -710,6 +720,12 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   font-weight: 600;
   color: #334155;
   font-size: 0.95rem;
+}
+
+.evaluabilite-form .required-label::after {
+  content: ' *';
+  color: #ef4444;
+  font-weight: bold;
 }
 
 .evaluabilite-form textarea {
