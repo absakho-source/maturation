@@ -254,9 +254,8 @@
               <div class="col-description"></div>
               <div class="col-score">
                 <strong class="total-score" :class="{
-                  'score-favorable': calculerScoreTotal() >= (config?.seuil_favorable || 80),
-                  'score-conditionnel': calculerScoreTotal() >= (config?.seuil_conditionnel || 70) && calculerScoreTotal() < (config?.seuil_favorable || 80),
-                  'score-defavorable': calculerScoreTotal() < (config?.seuil_conditionnel || 70)
+                  'score-acceptable': calculerScoreTotal() >= (config?.seuil_minimum || 70),
+                  'score-defavorable': calculerScoreTotal() < (config?.seuil_minimum || 70)
                 }">{{ calculerScoreTotal() }}/{{ config?.score_total_max || 100 }}</strong>
               </div>
               <div class="col-recommendations"></div>
@@ -272,23 +271,34 @@
         <div class="conclusion-form">
           <div class="form-group form-group-inline">
             <label><strong>PROPOSITION:</strong></label>
+            <!-- Si score < 70: automatiquement "Défavorable" -->
             <input
+              v-if="calculerScoreTotal() < (config?.seuil_minimum || 70)"
               type="text"
-              :value="getPropositionNom()"
+              value="Défavorable"
               readonly
-              class="proposition-readonly"
+              class="proposition-readonly proposition-defavorable">
+            <!-- Si score >= 70: l'évaluateur choisit entre "Favorable" et "Favorable sous conditions" -->
+            <select
+              v-else
+              v-model="evaluationData.proposition"
+              class="proposition-select"
               :class="{
-                'proposition-favorable': calculerScoreTotal() >= (config?.seuil_favorable || 80),
-                'proposition-conditionnel': calculerScoreTotal() >= (config?.seuil_conditionnel || 70) && calculerScoreTotal() < (config?.seuil_favorable || 80),
-                'proposition-defavorable': calculerScoreTotal() < (config?.seuil_conditionnel || 70)
+                'proposition-favorable': evaluationData.proposition === 'Favorable',
+                'proposition-conditionnel': evaluationData.proposition === 'Favorable sous conditions'
               }">
+              <option value="Favorable">Favorable</option>
+              <option value="Favorable sous conditions">Favorable sous conditions</option>
+            </select>
           </div>
           <div class="proposition-help">
             <small class="help-text">
-              Proposition automatique basée sur le score total:
-              <br>• 0-{{ (config?.seuil_conditionnel || 70) - 1 }} points = Défavorable
-              <br>• {{ config?.seuil_conditionnel || 70 }}-{{ (config?.seuil_favorable || 80) - 1 }} points = Favorable sous condition
-              <br>• {{ config?.seuil_favorable || 80 }}-{{ config?.score_total_max || 100 }} points = Favorable
+              <span v-if="calculerScoreTotal() < (config?.seuil_minimum || 70)">
+                Score < {{ config?.seuil_minimum || 70 }} points = Défavorable (automatique)
+              </span>
+              <span v-else>
+                Score ≥ {{ config?.seuil_minimum || 70 }} points = Vous choisissez entre "Favorable" ou "Favorable sous conditions"
+              </span>
             </small>
           </div>
 
@@ -391,7 +401,18 @@ export default {
   watch: {
     'evaluationData.criteres': {
       handler() {
-        this.evaluationData.proposition = this.getPropositionAutomatique()
+        const score = this.calculerScoreTotal()
+        const seuilMinimum = this.config?.seuil_minimum || 70
+
+        // Si score < 70: automatiquement "Défavorable"
+        if (score < seuilMinimum) {
+          this.evaluationData.proposition = 'Défavorable'
+        }
+        // Si score >= 70 et pas encore de proposition: initialiser avec "Favorable"
+        else if (!this.evaluationData.proposition || this.evaluationData.proposition === 'Défavorable') {
+          this.evaluationData.proposition = 'Favorable'
+        }
+        // Sinon, garder le choix de l'évaluateur
       },
       deep: true
     }
@@ -1509,16 +1530,30 @@ export default {
   font-size: 18px;
 }
 
-.score-favorable {
+.score-acceptable {
   color: #2d7a2d !important;
-}
-
-.score-conditionnel {
-  color: #d97706 !important;
 }
 
 .score-defavorable {
   color: #dc2626 !important;
+}
+
+/* Style pour le select de proposition */
+.proposition-select {
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.proposition-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .no-description,
