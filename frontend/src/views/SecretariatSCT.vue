@@ -794,22 +794,46 @@
             </div>
           </div>
 
+          <div class="total-score-display">
+            Score total: <strong>{{ calculerScoreTotal() }} / 100</strong>
+          </div>
+
           <div class="form-group">
-            <label>Avis global:</label>
-            <select v-model="ficheEdition.avis" class="form-control">
+            <label><strong>Avis global:</strong></label>
+            <!-- Si score < 70: automatiquement "Défavorable" -->
+            <input
+              v-if="calculerScoreTotal() < 70"
+              type="text"
+              value="Défavorable"
+              readonly
+              class="form-control proposition-readonly proposition-defavorable">
+            <!-- Si score >= 70: choix entre "Favorable" et "Favorable sous conditions" -->
+            <select
+              v-else
+              v-model="ficheEdition.avis"
+              class="form-control proposition-select"
+              :class="{
+                'proposition-favorable': ficheEdition.avis === 'favorable',
+                'proposition-conditionnel': ficheEdition.avis === 'favorable sous conditions'
+              }">
               <option value="favorable">Favorable</option>
               <option value="favorable sous conditions">Favorable sous conditions</option>
-              <option value="défavorable">Défavorable</option>
             </select>
+          </div>
+          <div class="proposition-help-edit">
+            <small class="help-text">
+              <span v-if="calculerScoreTotal() < 70">
+                Score < 70 points = Défavorable (automatique)
+              </span>
+              <span v-else>
+                Score ≥ 70 points = Vous choisissez entre "Favorable" ou "Favorable sous conditions"
+              </span>
+            </small>
           </div>
 
           <div class="form-group">
             <label>Commentaires généraux:</label>
             <textarea v-model="ficheEdition.commentaires" class="form-control" rows="4"></textarea>
-          </div>
-
-          <div class="total-score-display">
-            Score total: <strong>{{ calculerScoreTotal() }} / 100</strong>
           </div>
         </div>
         <div class="modal-footer">
@@ -1184,6 +1208,24 @@ export default {
       }
 
       return alerts;
+    }
+  },
+  watch: {
+    'ficheEdition.criteres': {
+      handler() {
+        const score = this.calculerScoreTotal()
+
+        // Si score < 70: automatiquement "Défavorable"
+        if (score < 70) {
+          this.ficheEdition.avis = 'défavorable'
+        }
+        // Si score >= 70 et pas encore d'avis ou était "défavorable": initialiser avec "favorable"
+        else if (!this.ficheEdition.avis || this.ficheEdition.avis === 'défavorable') {
+          this.ficheEdition.avis = 'favorable'
+        }
+        // Sinon, garder le choix de l'utilisateur
+      },
+      deep: true
     }
   },
   mounted() {
@@ -4268,5 +4310,52 @@ tr.compte-non-verifie:hover {
 .modal-close:hover {
   background: #dc2626;
   transform: scale(1.1);
+}
+
+/* Styles pour la proposition dans le modal d'édition */
+.proposition-readonly {
+  background-color: #f5f5f5 !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  font-weight: 600;
+}
+
+.proposition-defavorable {
+  color: #dc2626 !important;
+  border: 2px solid #dc2626;
+}
+
+.proposition-select {
+  font-weight: 600;
+  padding: 8px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.proposition-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.proposition-favorable {
+  color: #16a34a;
+  border-color: #16a34a;
+}
+
+.proposition-conditionnel {
+  color: #ea580c;
+  border-color: #ea580c;
+}
+
+.proposition-help-edit {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.proposition-help-edit .help-text {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 </style>
