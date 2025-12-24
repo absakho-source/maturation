@@ -679,13 +679,17 @@ export default {
     },
 
     getAppreciation() {
+      // Avec le nouveau système à 1 seul seuil:
+      // - Score < seuil_minimum: automatiquement "Défavorable"
+      // - Score >= seuil_minimum: l'évaluateur choisit (retourner la proposition choisie)
       const score = this.calculerScoreTotal()
-      const seuilFavorable = this.config?.seuil_favorable || 80
-      const seuilConditionnel = this.config?.seuil_conditionnel || 70
+      const seuilMinimum = this.config?.seuil_minimum || 70
 
-      if (score >= seuilFavorable) return 'Favorable'
-      if (score >= seuilConditionnel) return 'Favorable sous condition'
-      return 'Défavorable'
+      if (score < seuilMinimum) {
+        return 'Défavorable'
+      }
+      // Si score >= seuil, retourner la proposition choisie par l'évaluateur
+      return this.evaluationData.proposition || 'Favorable'
     },
 
     getPropositionNom() {
@@ -693,7 +697,11 @@ export default {
     },
 
     getPropositionAutomatique() {
-      return this.getAppreciation()
+      // Cette méthode retourne la proposition basée uniquement sur le score
+      // Note: avec le nouveau système, au-dessus du seuil, c'est un choix manuel
+      const score = this.calculerScoreTotal()
+      const seuilMinimum = this.config?.seuil_minimum || 70
+      return score >= seuilMinimum ? this.evaluationData.proposition || 'Favorable' : 'Défavorable'
     },
 
     formatCoutWithSpaces(value) {

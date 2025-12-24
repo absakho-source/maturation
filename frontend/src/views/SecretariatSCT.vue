@@ -625,8 +625,37 @@
                 </div>
               </div>
 
-              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier recevable) -->
-              <div v-if="projet.evaluation_prealable === 'dossier_evaluable'" class="eval-section">
+              <!-- Interface d'évaluabilité (si recevable mais pas encore évaluable) -->
+              <div v-if="needsEvaluabilite(projet)" class="eval-section eval-evaluabilite">
+                <h4>📊 Évaluabilité du Dossier</h4>
+                <p class="eval-info">Le dossier a été jugé recevable. Vous devez maintenant confirmer qu'il est évaluable.</p>
+                <label class="required-label">
+                  Commentaires (obligatoire) - Expliquez pourquoi le dossier est évaluable:
+                </label>
+                <textarea
+                  v-model="evaluabiliteCommentaires[projet.id]"
+                  rows="3"
+                  placeholder="Justifiez pourquoi ce dossier est évaluable..."
+                  required
+                ></textarea>
+                <button
+                  @click="marquerEvaluable(projet.id)"
+                  class="btn-success"
+                  :disabled="envoiEvaluabilite[projet.id] || !evaluabiliteCommentaires[projet.id]?.trim()"
+                >
+                  {{ envoiEvaluabilite[projet.id] ? '⏳ Envoi en cours...' : '✓ Marquer comme évaluable' }}
+                </button>
+              </div>
+
+              <!-- Résultat évaluabilité (si déjà marqué évaluable) -->
+              <div v-else-if="projet.evaluation_prealable === 'dossier_evaluable' && projet.evaluabilite === 'evaluable'" class="eval-section eval-evaluabilite-result">
+                <h4>✅ Dossier Évaluable</h4>
+                <p v-if="projet.evaluabilite_commentaire"><strong>Commentaires:</strong> {{ projet.evaluabilite_commentaire }}</p>
+                <p class="eval-date" v-if="projet.evaluabilite_date">{{ new Date(projet.evaluabilite_date).toLocaleString('fr-FR') }}</p>
+              </div>
+
+              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier recevable ET évaluable) -->
+              <div v-if="projet.evaluation_prealable === 'dossier_evaluable' && projet.evaluabilite === 'evaluable'" class="eval-section">
                 <div class="eval-options">
                   <button @click="$router.push(`/evaluation/${projet.id}`)" class="btn-evaluation-detaillee">
                     📋 Fiche d'évaluation détaillée
@@ -946,6 +975,9 @@ export default {
       evaluationPrealableCommentaires: {},
       envoiEvaluationPrealable: {},
       modalEvalPrealableId: null, // ID du projet dont le modal est ouvert dans "Mes évaluations"
+      // Évaluabilité
+      evaluabiliteCommentaires: {},
+      envoiEvaluabilite: {},
       // Édition de fiche
       showModalEdition: false,
       projetEnEdition: {},
@@ -1973,6 +2005,56 @@ export default {
         'dossier_rejete': 'decision-rejete'
       };
       return map[decision] || '';
+    },
+
+    // Détermine si un projet nécessite une évaluation d'évaluabilité
+    needsEvaluabilite(project) {
+      // L'interface d'évaluabilité est affichée si:
+      // - Le dossier est recevable (evaluation_prealable === "dossier_evaluable")
+      // - L'évaluabilité n'a pas encore été définie (evaluabilite === null)
+      // - Le statut est "en évaluation" ou "assigné"
+      return project.evaluation_prealable === "dossier_evaluable" &&
+             !project.evaluabilite &&
+             (project.statut === "en évaluation" || project.statut === "assigné");
+    },
+
+    async marquerEvaluable(projectId) {
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      const commentaire = (this.evaluabiliteCommentaires[projectId] || "").trim();
+
+      // Validation: commentaires obligatoires
+      if (!commentaire) {
+        alert("⚠️ Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier.");
+        return;
+      }
+
+      this.envoiEvaluabilite[projectId] = true;
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}/evaluabilite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            decision: "evaluable",
+            commentaire: commentaire,
+            auteur: user.username,
+            role: user.role
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Erreur lors de l'enregistrement");
+        }
+
+        alert("✅ Dossier marqué comme évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.");
+        this.evaluabiliteCommentaires[projectId] = "";
+        await this.loadProjects();
+      } catch (error) {
+        alert("Erreur: " + error.message);
+      } finally {
+        this.envoiEvaluabilite[projectId] = false;
+      }
     },
 
     // Détermine si un projet nécessite une évaluation de la recevabilité
@@ -3186,6 +3268,78 @@ export default {
   margin: 0 0 0.75rem 0;
   font-size: 1.1rem;
   font-weight: 700;
+}
+
+/* Styles pour l'interface d'évaluabilité */
+.eval-evaluabilite {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.eval-evaluabilite h4 {
+  color: #1e40af;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.eval-evaluabilite .eval-info {
+  color: #1e40af;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.eval-evaluabilite .required-label {
+  display: block;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+
+.eval-evaluabilite .required-label::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.eval-evaluabilite textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 1rem;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.eval-evaluabilite textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.eval-evaluabilite-result {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #22c55e;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.eval-evaluabilite-result h4 {
+  color: #15803d;
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.eval-evaluabilite-result p {
+  margin: 0.5rem 0;
+  color: #166534;
 }
 
 .decision-evaluable {
