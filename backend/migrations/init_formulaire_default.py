@@ -169,7 +169,7 @@ def init_default_config():
             largeur="full",
             options=proposition_options,
             lecture_seule=True,  # Auto-calculé basé sur le score
-            aide="Proposition automatique basée sur le score total: 0-69 points = Défavorable, 70-79 points = Favorable sous condition, 80-100 points = Favorable"
+            aide="Proposition basée sur le score total: Score < 70 points = Défavorable (automatique), Score ≥ 70 points = L'évaluateur choisit entre Favorable ou Favorable sous conditions"
         )
         db.session.add(champ_proposition)
 

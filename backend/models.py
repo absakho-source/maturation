@@ -284,20 +284,20 @@ class FicheEvaluation(db.Model):
         """
         Calcule automatiquement l'avis (proposition) basé sur le score total
 
-        Barème:
-        - 80-100 points : Favorable
-        - 70-79 points : Favorable sous condition
-        - 0-69 points : Défavorable
+        Note: Avec le nouveau système (1 seul seuil), cette méthode retourne:
+        - Score < 70 points : Défavorable (automatique)
+        - Score ≥ 70 points : Favorable (par défaut, mais l'évaluateur peut choisir "Favorable sous conditions")
+
+        Cette méthode est conservée pour compatibilité mais le choix final
+        entre "Favorable" et "Favorable sous conditions" est fait par l'évaluateur.
 
         Returns:
             str: L'avis calculé
         """
         score = self.score_total or 0
 
-        if score >= 80:
+        if score >= 70:
             return "favorable"
-        elif score >= 70:
-            return "favorable sous conditions"
         else:
             return "défavorable"
     

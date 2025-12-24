@@ -819,10 +819,9 @@ class FicheEvaluationDGPPEPDF:
         # Note explicative
         note_text = (
             "<i><font size=8>"
-            "Proposition automatique basée sur le score total:<br/>"
-            "• 0-69 points = Défavorable<br/>"
-            "• 70-79 points = Favorable sous condition<br/>"
-            "• 80-100 points = Favorable"
+            "Proposition basée sur le score total:<br/>"
+            "• Score &lt; 70 points = Défavorable (automatique)<br/>"
+            "• Score ≥ 70 points = L'évaluateur choisit entre Favorable ou Favorable sous conditions"
             "</font></i>"
         )
         self.story.append(Paragraph(note_text, self.styles['DGPPEBodyText']))

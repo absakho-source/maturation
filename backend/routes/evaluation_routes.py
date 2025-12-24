@@ -427,7 +427,8 @@ def create_or_update_fiche_evaluation(project_id):
         # Calcul automatique du score total
         score_total = fiche.calculer_score_total()
 
-        # Calcul automatique de l'avis depuis le score (barème : 80+: favorable, 70-79: sous conditions, <70: défavorable)
+        # Calcul automatique de l'avis depuis le score (nouveau barème : <70: défavorable, ≥70: favorable par défaut)
+        # Note: L'évaluateur peut choisir "favorable sous conditions" au lieu de "favorable" si score ≥ 70
         avis_calcule = fiche.calculer_avis_depuis_score()
 
         # Mise à jour de la proposition dans la fiche ET de l'avis du projet
