@@ -222,6 +222,62 @@ def migrate_seuil_minimum():
             'error': str(e)
         }), 500
 
+@cleanup_bp.route('/api/admin/migrate-soft-delete', methods=['POST'])
+def migrate_soft_delete():
+    """Endpoint pour ajouter la colonne deleted_at à la table project (soft delete)"""
+    try:
+        import sqlite3
+
+        DATA_DIR = os.environ.get("DATA_DIR", os.path.abspath(os.path.dirname(__file__)))
+        DB_PATH = os.path.join(DATA_DIR, "maturation.db")
+
+        if not os.path.exists(DB_PATH):
+            return jsonify({
+                'success': False,
+                'error': f'Database not found: {DB_PATH}'
+            }), 500
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Vérifier si la colonne existe déjà
+        cursor.execute("PRAGMA table_info(project)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'deleted_at' not in columns:
+            cursor.execute("ALTER TABLE project ADD COLUMN deleted_at DATETIME DEFAULT NULL")
+            conn.commit()
+
+            # Vérifier le nombre de projets
+            cursor.execute("SELECT COUNT(*) FROM project")
+            total_projects = cursor.fetchone()[0]
+
+            message = f"Colonne deleted_at ajoutée avec succès. Total de projets: {total_projects}"
+        else:
+            # Vérifier le nombre de projets actifs et supprimés
+            cursor.execute("SELECT COUNT(*) FROM project WHERE deleted_at IS NULL")
+            active_projects = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM project WHERE deleted_at IS NOT NULL")
+            deleted_projects = cursor.fetchone()[0]
+
+            message = f"Colonne deleted_at existe déjà. Projets actifs: {active_projects}, Projets supprimés: {deleted_projects}"
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': message,
+            'db_path': DB_PATH
+        }), 200
+
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # ============ ENDPOINTS DE GESTION DE LA CORBEILLE (SOFT DELETE) ============
 
 @cleanup_bp.route('/api/admin/corbeille', methods=['GET'])
