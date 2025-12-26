@@ -112,6 +112,9 @@ class Project(db.Model):
     point_focal_telephone = db.Column(db.String(50), nullable=True)
     point_focal_email = db.Column(db.String(200), nullable=True)
 
+    # Soft delete (suppression douce)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # NULL = actif, non-NULL = supprimé
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auteur = db.Column(db.String(100))
