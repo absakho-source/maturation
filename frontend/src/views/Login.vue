@@ -68,16 +68,8 @@
                 id="password"
                 v-model="password"
                 class="form-input"
-                placeholder="Laisser vide pour les comptes de test (sauf admin)"
+                placeholder="Entrez votre mot de passe"
               />
-              <p class="form-help">
-                <small v-if="selectedUsername === 'admin'">
-                  ⚠️ Pour le compte admin, utilisez le mot de passe: <strong>admin</strong>
-                </small>
-                <small v-else-if="selectedUsername">
-                  💡 Les autres comptes peuvent se connecter avec un mot de passe vide
-                </small>
-              </p>
             </div>
 
             <div v-if="errorMessage" class="error-message">
