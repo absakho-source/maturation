@@ -385,8 +385,8 @@
           </div>
 
           <p class="corbeille-info">
-            Les projets supprimés restent dans la corbeille pendant 30 jours avant d'être automatiquement supprimés définitivement.
-            Vous pouvez restaurer un projet à tout moment ou le supprimer définitivement.
+            Les projets supprimés restent dans la corbeille pendant 12 mois avant d'être automatiquement supprimés définitivement.
+            Vous pouvez restaurer un projet à tout moment ou le supprimer manuellement avant ce délai.
           </p>
 
           <div v-if="corbeilleProjects.length === 0" class="empty-state">
