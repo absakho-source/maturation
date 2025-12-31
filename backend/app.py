@@ -460,20 +460,21 @@ def projects():
             username = request.args.get("username", "")
 
             # Correction : filtrage pour le dashboard soumissionnaire
+            # Exclure les projets supprimés (soft delete) de toutes les vues
             if role == "soumissionnaire" and username:
-                items = Project.query.filter_by(auteur_nom=username).all()
+                items = Project.query.filter_by(auteur_nom=username).filter(Project.deleted_at.is_(None)).all()
             elif role == "evaluateur":
                 # Les évaluateurs voient tous les projets de l'équipe
-                items = Project.query.all()
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role == "presidencecomite":
-                items = Project.query.all()
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role in ["secretariatsct", "presidencesct", "admin"]:
-                items = Project.query.all()
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role == "invite":
                 # Rôle invité: voir tous les projets mais avec données limitées
-                items = Project.query.all()
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
             else:
-                items = Project.query.all()
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
 
             # Filter out projects from suspended accounts
             # Note: Projects from non-verified accounts ARE visible but will be marked with soumissionnaire_statut_compte
@@ -861,6 +862,10 @@ def get_project(project_id):
 
 @app.route("/api/projects/<int:project_id>", methods=["DELETE", "OPTIONS"])
 def delete_project(project_id):
+    """
+    Soft delete: marque le projet comme supprimé sans le supprimer définitivement.
+    Les projets supprimés peuvent être restaurés depuis la corbeille par les admins.
+    """
     # Handle CORS preflight
     if request.method == 'OPTIONS':
         return jsonify({}), 200
@@ -875,28 +880,22 @@ def delete_project(project_id):
         projet_titre = project.titre
         projet_numero = project.numero_projet
 
-        # Supprimer tous les enregistrements liés AVANT de supprimer le projet
-        # 1. Supprimer les fiches d'évaluation
-        FicheEvaluation.query.filter_by(project_id=project_id).delete()
+        # Soft delete: marquer comme supprimé au lieu de supprimer
+        project.deleted_at = datetime.utcnow()
 
-        # 2. Supprimer les documents du projet
-        DocumentProjet.query.filter_by(project_id=project_id).delete()
-
-        # 3. Supprimer l'historique
-        Historique.query.filter_by(project_id=project_id).delete()
-
-        # 4. Supprimer les messages de discussion
-        MessageProjet.query.filter_by(project_id=project_id).delete()
-
-        # 5. Supprimer les logs
-        Log.query.filter_by(projet_id=project_id).delete()
-
-        # 6. Maintenant on peut supprimer le projet
-        db.session.delete(project)
+        # Ajouter dans l'historique
+        hist = Historique(
+            project_id=project_id,
+            action=f"Projet déplacé vers la corbeille",
+            auteur=request.args.get('username', 'admin'),
+            role='admin',
+            date_action=datetime.utcnow()
+        )
+        db.session.add(hist)
         db.session.commit()
 
-        print(f"[ADMIN] Projet supprimé: {projet_numero} - {projet_titre}")
-        return jsonify({"message": "Projet supprimé avec succès"}), 200
+        print(f"[ADMIN] Projet déplacé vers la corbeille: {projet_numero} - {projet_titre}")
+        return jsonify({"message": "Projet déplacé vers la corbeille. Il peut être restauré depuis l'interface admin."}), 200
 
     except Exception as e:
         db.session.rollback()

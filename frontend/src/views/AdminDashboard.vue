@@ -44,6 +44,10 @@
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
           🗺️ Carte des pôles territoriaux
         </button>
+        <button @click="activeTab = 'corbeille'" :class="{ active: activeTab === 'corbeille' }" class="tab-btn">
+          🗑️ Corbeille
+          <span v-if="corbeilleProjects.length > 0" class="badge-count">{{ corbeilleProjects.length }}</span>
+        </button>
       </div>
 
       <!-- ============ ONGLET: TOUS LES PROJETS ============ -->
@@ -359,6 +363,73 @@
       <div v-if="activeTab === 'carte'" class="tab-content">
         <CartesPolesComparaison />
       </div>
+
+      <!-- ============ ONGLET: CORBEILLE ============ -->
+      <div v-if="activeTab === 'corbeille'" class="tab-content">
+        <div class="corbeille-section">
+          <div class="section-header">
+            <h2>🗑️ Corbeille</h2>
+            <div class="corbeille-actions">
+              <button @click="loadCorbeille" class="btn-refresh" :disabled="loadingCorbeille">
+                🔄 {{ loadingCorbeille ? 'Chargement...' : 'Actualiser' }}
+              </button>
+              <button
+                v-if="corbeilleProjects.length > 0"
+                @click="viderCorbeille"
+                class="btn-danger"
+                :disabled="loadingCorbeille"
+              >
+                🗑️ Vider la corbeille (suppression définitive)
+              </button>
+            </div>
+          </div>
+
+          <p class="corbeille-info">
+            Les projets supprimés restent dans la corbeille pendant 12 mois avant d'être automatiquement supprimés définitivement.
+            Vous pouvez restaurer un projet à tout moment ou le supprimer manuellement avant ce délai.
+          </p>
+
+          <div v-if="corbeilleProjects.length === 0" class="empty-state">
+            <p>✓ La corbeille est vide</p>
+          </div>
+
+          <div v-else class="corbeille-list">
+            <table class="projects-table">
+              <thead>
+                <tr>
+                  <th>Numéro</th>
+                  <th>Titre</th>
+                  <th>Auteur</th>
+                  <th>Statut</th>
+                  <th>Date de soumission</th>
+                  <th>Supprimé le</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="project in corbeilleProjects" :key="project.id" class="deleted-project">
+                  <td><strong>{{ project.numero_projet || `PROJ-${project.id}` }}</strong></td>
+                  <td class="project-title">{{ project.titre }}</td>
+                  <td>{{ project.auteur_nom }}</td>
+                  <td>
+                    <span class="badge-status">{{ project.statut }}</span>
+                  </td>
+                  <td>{{ formatDate(project.date_soumission) }}</td>
+                  <td class="deleted-date">{{ formatDate(project.deleted_at) }}</td>
+                  <td class="actions-cell">
+                    <button @click="restaurerProjet(project.id)" class="btn-success-small" title="Restaurer le projet">
+                      ↩️ Restaurer
+                    </button>
+                    <button @click="supprimerDefinitivement(project)" class="btn-danger-small" title="Supprimer définitivement">
+                      ❌ Supprimer
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </PageWrapper>
 </template>
@@ -376,7 +447,11 @@ export default {
   },
   data() {
     return {
-      activeTab: 'projects', // 'projects', 'stats' ou 'carte'
+      activeTab: 'projects', // 'projects', 'stats', 'carte' ou 'corbeille'
+
+      // Corbeille (soft delete)
+      corbeilleProjects: [],
+      loadingCorbeille: false,
 
       // Métriques de performance
       metrics: {
@@ -501,6 +576,9 @@ export default {
     activeTab(newTab) {
       if (newTab === 'emails' && !this.emailConfig.data) {
         this.loadEmailConfig();
+      }
+      if (newTab === 'corbeille') {
+        this.loadCorbeille();
       }
     }
   },
@@ -651,19 +729,21 @@ export default {
 
     async deleteProject(project) {
       const confirmation = confirm(
-        `Êtes-vous sûr de vouloir supprimer le projet "${project.titre}" ?\n\nCette action est irréversible.`
+        `Êtes-vous sûr de vouloir déplacer le projet "${project.titre}" vers la corbeille ?\n\nVous pourrez le restaurer depuis l'onglet Corbeille.`
       );
 
       if (!confirmation) return;
 
       try {
-        const res = await fetch(`/api/projects/${project.id}?role=admin`, {
+        const res = await fetch(`/api/projects/${project.id}?role=admin&username=admin`, {
           method: 'DELETE'
         });
-        
+
         if (res.ok) {
+          const data = await res.json();
           await this.loadAllProjects(); // Recharger la liste
-          alert('Projet supprimé avec succès');
+          await this.loadCorbeille(); // Recharger la corbeille
+          alert(data.message || 'Projet déplacé vers la corbeille avec succès');
         } else {
           const error = await res.json();
           alert(error.error || 'Erreur lors de la suppression');
@@ -671,6 +751,129 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la suppression:", error);
         alert("Erreur de connexion au serveur");
+      }
+    },
+
+    // ============ Gestion de la corbeille (soft delete) ============
+    async loadCorbeille() {
+      this.loadingCorbeille = true;
+      try {
+        const res = await fetch('/api/admin/corbeille');
+        if (res.ok) {
+          const data = await res.json();
+          this.corbeilleProjects = data.projects || [];
+          console.log(`Corbeille chargée: ${this.corbeilleProjects.length} projet(s)`);
+        } else {
+          console.error('Erreur lors du chargement de la corbeille:', res.status);
+          alert('Erreur lors du chargement de la corbeille');
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement de la corbeille:', error);
+        alert('Erreur de connexion au serveur');
+      } finally {
+        this.loadingCorbeille = false;
+      }
+    },
+
+    async restaurerProjet(projectId) {
+      const confirmation = confirm('Voulez-vous restaurer ce projet ?');
+      if (!confirmation) return;
+
+      this.loadingCorbeille = true;
+      try {
+        const res = await fetch(`/api/admin/corbeille/${projectId}/restore?username=admin`, {
+          method: 'POST'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          await this.loadCorbeille(); // Recharger la corbeille
+          await this.loadAllProjects(); // Recharger les projets
+          alert(data.message || 'Projet restauré avec succès');
+        } else {
+          const error = await res.json();
+          alert(error.error || 'Erreur lors de la restauration');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la restauration:', error);
+        alert('Erreur de connexion au serveur');
+      } finally {
+        this.loadingCorbeille = false;
+      }
+    },
+
+    async supprimerDefinitivement(project) {
+      const confirmation = confirm(
+        `⚠️ ATTENTION: Voulez-vous SUPPRIMER DÉFINITIVEMENT le projet "${project.titre}" ?\n\n` +
+        `Cette action est IRRÉVERSIBLE. Toutes les données du projet (évaluations, documents, historique) seront perdues.\n\n` +
+        `Tapez "SUPPRIMER" pour confirmer.`
+      );
+
+      if (!confirmation) return;
+
+      const finalConfirmation = prompt('Tapez "SUPPRIMER" en majuscules pour confirmer:');
+      if (finalConfirmation !== 'SUPPRIMER') {
+        alert('Suppression annulée');
+        return;
+      }
+
+      this.loadingCorbeille = true;
+      try {
+        const res = await fetch(`/api/admin/corbeille/${project.id}/delete-permanent`, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          await this.loadCorbeille(); // Recharger la corbeille
+          alert(data.message || 'Projet supprimé définitivement');
+        } else {
+          const error = await res.json();
+          alert(error.error || 'Erreur lors de la suppression définitive');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la suppression définitive:', error);
+        alert('Erreur de connexion au serveur');
+      } finally {
+        this.loadingCorbeille = false;
+      }
+    },
+
+    async viderCorbeille() {
+      const confirmation = confirm(
+        `⚠️ DANGER: Voulez-vous vider complètement la corbeille ?\n\n` +
+        `Cela supprimera DÉFINITIVEMENT ${this.corbeilleProjects.length} projet(s).\n` +
+        `Cette action est IRRÉVERSIBLE.\n\n` +
+        `Tapez "VIDER" pour confirmer.`
+      );
+
+      if (!confirmation) return;
+
+      const finalConfirmation = prompt('Tapez "VIDER" en majuscules pour confirmer:');
+      if (finalConfirmation !== 'VIDER') {
+        alert('Opération annulée');
+        return;
+      }
+
+      this.loadingCorbeille = true;
+      try {
+        const res = await fetch('/api/admin/corbeille/vider', {
+          method: 'POST'
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          await this.loadCorbeille(); // Recharger la corbeille
+          alert(data.message || 'Corbeille vidée avec succès');
+        } else {
+          const error = await res.json();
+          alert(error.error || 'Erreur lors du vidage de la corbeille');
+        }
+      } catch (error) {
+        console.error('Erreur lors du vidage de la corbeille:', error);
+        alert('Erreur de connexion au serveur');
+      } finally {
+        this.loadingCorbeille = false;
       }
     },
 
@@ -2766,5 +2969,118 @@ export default {
   .config-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============ STYLES CORBEILLE ============ */
+.corbeille-section {
+  padding: var(--dgppe-spacing-4);
+}
+
+.corbeille-actions {
+  display: flex;
+  gap: var(--dgppe-spacing-3);
+  align-items: center;
+}
+
+.btn-refresh {
+  padding: var(--dgppe-spacing-2) var(--dgppe-spacing-4);
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.corbeille-info {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: var(--dgppe-spacing-3);
+  margin: var(--dgppe-spacing-4) 0;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 0.938rem;
+}
+
+.corbeille-list {
+  margin-top: var(--dgppe-spacing-4);
+}
+
+.deleted-project {
+  background: #f8f9fa;
+  opacity: 0.85;
+}
+
+.deleted-project:hover {
+  opacity: 1;
+  background: #e9ecef;
+}
+
+.deleted-date {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.btn-success-small {
+  padding: 6px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-right: 8px;
+  transition: background 0.2s;
+}
+
+.btn-success-small:hover {
+  background: #218838;
+}
+
+.btn-danger-small {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+
+.btn-danger-small:hover {
+  background: #c82333;
+}
+
+.badge-count {
+  display: inline-block;
+  background: #dc3545;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--dgppe-spacing-6);
+  color: #6c757d;
+  font-size: 1.125rem;
+}
+
+.empty-state p {
+  margin: 0;
 }
 </style>
