@@ -24,31 +24,63 @@
         <!-- Titre connexion -->
         <div class="login-header">
           <h1 class="login-title">Connexion</h1>
-          <p class="login-subtitle">Sélectionnez votre profil pour accéder à la plateforme</p>
+          <p class="login-subtitle">Sélectionnez votre compte et entrez votre mot de passe</p>
         </div>
 
-        <!-- Sélecteur de profils (simple: nom + profil cliquable) -->
-        <div class="profiles-section">
-          <div class="profiles-grid">
-            <div 
-              v-for="account in accounts" 
-              :key="account.value"
-              class="profile-card"
-              @click="handleLogin(account.value)"
-            >
-              <div class="profile-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <!-- Formulaire de connexion -->
+        <div class="login-form-section">
+          <form @submit.prevent="handleLoginSubmit" class="login-form">
+            <div class="form-group">
+              <label for="username" class="form-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-              </div>
-              <div class="profile-info">
-                <h3 class="profile-name">{{ account.displayName }}</h3>
-                <div class="profile-username">@{{ account.value }}</div>
-                <span class="role-badge">{{ account.roleLabel }}</span>
-              </div>
+                Compte utilisateur
+              </label>
+              <select
+                id="username"
+                v-model="selectedUsername"
+                class="form-select"
+                required
+              >
+                <option value="">-- Sélectionnez un compte --</option>
+                <option
+                  v-for="account in accounts"
+                  :key="account.value"
+                  :value="account.value"
+                >
+                  {{ account.displayName }} (@{{ account.value }}) - {{ account.roleLabel }}
+                </option>
+              </select>
             </div>
-          </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                Mot de passe
+              </label>
+              <input
+                type="password"
+                id="password"
+                v-model="password"
+                class="form-input"
+                placeholder="Entrez votre mot de passe"
+              />
+            </div>
+
+            <div v-if="errorMessage" class="error-message">
+              {{ errorMessage }}
+            </div>
+
+            <button type="submit" class="btn-login" :disabled="!selectedUsername || isLoading">
+              <span v-if="isLoading">⏳ Connexion en cours...</span>
+              <span v-else>Se connecter</span>
+            </button>
+          </form>
         </div>
 
         <!-- Lien d'inscription -->
@@ -93,7 +125,11 @@ export default {
     return {
       logoUrl,
       accounts: [],
-      rolesByUsername: {}
+      rolesByUsername: {},
+      selectedUsername: '',
+      password: '',
+      errorMessage: '',
+      isLoading: false
     };
   },
   computed: {
@@ -160,50 +196,74 @@ export default {
       };
       return labels[role] || role;
     },
-    async handleLogin(username) {
-      const uname = username;
-      if (!uname) return;
-      const role = this.rolesByUsername[uname] || uname;
+    async handleLoginSubmit() {
+      this.errorMessage = '';
+      this.isLoading = true;
 
-      // Trouver les infos depuis la liste des accounts
-      const account = this.accounts.find(acc => acc.value === uname);
-      const displayName = account ? account.displayName : uname;
-
-      const user = {
-        id: account ? account.id : null,
-        username: uname,
-        nom: uname,
-        role,
-        display_name: displayName,
-        email: account ? account.email : null,
-        telephone: account ? account.telephone : null
-      };
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Enregistrer la connexion avec géolocalisation
       try {
-        // Enregistrer la connexion (sans géolocalisation - uniquement pour audit)
-        await fetch('/api/connexion-logs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: uname,
-            role
-          })
-        });
-      } catch (err) {
-        console.error('Erreur lors de l\'enregistrement de la connexion:', err);
-        // Ne pas bloquer la connexion si le log échoue
-      }
+        const uname = this.selectedUsername;
+        if (!uname) {
+          this.errorMessage = 'Veuillez sélectionner un compte';
+          return;
+        }
 
-      // Redirection vers le dashboard approprié selon le rôle
-      const normalizeRole = (r) => {
-        if (!r) return r;
-        if (typeof r === 'string' && r.toLowerCase().startsWith('evaluateur')) return 'evaluateur';
-        return r;
-      };
-      const normalizedRole = normalizeRole(role);
-      this.$router.push(`/${normalizedRole}`);
+        // Vérification du mot de passe
+        if (uname === 'admin') {
+          // Pour le compte admin, le mot de passe doit être "admin"
+          if (this.password !== 'admin') {
+            this.errorMessage = 'Mot de passe incorrect pour le compte admin';
+            return;
+          }
+        } else {
+          // Pour les autres comptes, accepter un mot de passe vide ou n'importe quel mot de passe
+          // (pas de validation stricte pour les comptes de test)
+        }
+
+        const role = this.rolesByUsername[uname] || uname;
+
+        // Trouver les infos depuis la liste des accounts
+        const account = this.accounts.find(acc => acc.value === uname);
+        const displayName = account ? account.displayName : uname;
+
+        const user = {
+          id: account ? account.id : null,
+          username: uname,
+          nom: uname,
+          role,
+          display_name: displayName,
+          email: account ? account.email : null,
+          telephone: account ? account.telephone : null
+        };
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Enregistrer la connexion
+        try {
+          await fetch('/api/connexion-logs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: uname,
+              role
+            })
+          });
+        } catch (err) {
+          console.error('Erreur lors de l\'enregistrement de la connexion:', err);
+          // Ne pas bloquer la connexion si le log échoue
+        }
+
+        // Redirection vers le dashboard approprié selon le rôle
+        const normalizeRole = (r) => {
+          if (!r) return r;
+          if (typeof r === 'string' && r.toLowerCase().startsWith('evaluateur')) return 'evaluateur';
+          return r;
+        };
+        const normalizedRole = normalizeRole(role);
+        this.$router.push(`/${normalizedRole}`);
+      } catch (error) {
+        this.errorMessage = 'Erreur lors de la connexion: ' + error.message;
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 };
@@ -353,81 +413,117 @@ export default {
   margin: 0;
 }
 
-/* ==================== PROFILES SECTION ==================== */
-.profiles-section {
+/* ==================== LOGIN FORM SECTION ==================== */
+.login-form-section {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
+  padding: 2.5rem;
   border: 1px solid #e2e8f0;
 }
 
-.profiles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+.login-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 1.75rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.form-label svg {
+  color: #004080;
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 0.95rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #2d3748;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #004080;
+  box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+}
+
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.form-help {
+  margin-top: 0.5rem;
   margin-bottom: 0;
 }
 
-.profile-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: #fafbfc;
+.form-help small {
+  color: #718096;
+  font-size: 0.85rem;
+  font-style: italic;
 }
 
-.profile-card:hover {
-  border-color: #004080;
-  box-shadow: 0 4px 12px rgba(0, 64, 128, 0.12);
-  background: white;
-  transform: translateY(-2px);
-}
-
-.profile-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  background: #e8eef5;
+.form-help strong {
   color: #004080;
-  flex-shrink: 0;
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-info h3.profile-name {
-  font-size: 1.05rem;
   font-weight: 600;
-  color: #1a202c;
-  margin: 0 0 0.25rem 0;
 }
 
-.profile-username {
-  font-size: 0.8rem;
-  color: #a0aec0;
-  font-family: 'Courier New', monospace;
-  margin-bottom: 0.35rem;
+.error-message {
+  padding: 0.875rem 1rem;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-.role-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  color: #004080;
-  background: #e8eef5;
-  border: 1px solid #d0dce8;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-weight: 500;
+.btn-login {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--dgppe-primary) 0%, var(--dgppe-primary-light) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 51, 102, 0.15);
+}
+
+.btn-login:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--dgppe-primary-light) 0%, var(--dgppe-primary) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 51, 102, 0.2);
+}
+
+.btn-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ==================== FOOTER ==================== */
@@ -572,10 +668,6 @@ export default {
     padding: 1rem;
   }
 
-  .profiles-grid {
-    grid-template-columns: 1fr;
-  }
-
   .login-title {
     font-size: 1.5rem;
   }
@@ -588,23 +680,25 @@ export default {
     padding: 1.5rem;
   }
 
-  .profiles-section {
+  .login-form-section {
     padding: 1.5rem;
+  }
+
+  .login-form {
+    max-width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .profile-card {
-    padding: var(--dgppe-spacing-3);
+  .form-select,
+  .form-input {
+    font-size: 0.875rem;
+    padding: 0.75rem;
   }
-  
-  .profile-icon {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .profile-info h3 {
-    font-size: 0.9rem;
+
+  .btn-login {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
   }
 }
 </style>
