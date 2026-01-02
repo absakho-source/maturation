@@ -123,31 +123,75 @@
         ⏳ Chargement des statistiques par pôle...
       </div>
 
-      <!-- Message si aucune donnée -->
-      <div v-else-if="!stats.poles || Object.keys(stats.poles).length === 0" class="no-data-message">
-        Aucune donnée disponible pour les pôles territoriaux
-      </div>
+      <!-- Section 1: Tous les projets soumis -->
+      <div v-else class="poles-comparison">
+        <div class="poles-subsection">
+          <h4 class="subsection-title">📋 Tous les projets soumis</h4>
 
-      <!-- Données des pôles -->
-      <div v-else class="poles-grid">
-        <div
-          v-for="(data, pole) in stats.poles"
-          :key="pole"
-          class="pole-card"
-        >
-          <h4>{{ pole }}</h4>
-          <div class="pole-metrics">
-            <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
-            <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
-            <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+          <!-- Message si aucune donnée -->
+          <div v-if="!stats.polesAll || Object.keys(stats.polesAll).length === 0" class="no-data-message">
+            Aucune donnée disponible
           </div>
 
-          <div class="mini-chart">
-            <h5>Secteurs dans ce pôle:</h5>
-            <div v-for="(count, secteur) in data.secteurs" :key="secteur" class="mini-bar">
-              <span>{{ secteur }}: </span>
-              <div class="mini-bar-fill pole" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
-              <span>{{ count }}</span>
+          <!-- Données des pôles (tous projets) -->
+          <div v-else class="poles-grid">
+            <div
+              v-for="(data, pole) in stats.polesAll"
+              :key="'all-' + pole"
+              class="pole-card"
+            >
+              <h5>{{ pole }}</h5>
+              <div class="pole-metrics">
+                <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
+                <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
+                <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+              </div>
+
+              <div class="mini-chart">
+                <h6>Secteurs dans ce pôle:</h6>
+                <div v-for="(count, secteur) in data.secteurs" :key="secteur" class="mini-bar">
+                  <span>{{ secteur }}: </span>
+                  <div class="mini-bar-fill pole" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
+                  <span>{{ count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="poles-divider"></div>
+
+        <!-- Section 2: Projets avec avis favorable -->
+        <div class="poles-subsection">
+          <h4 class="subsection-title">✅ Projets avec avis favorable ou favorable sous conditions</h4>
+
+          <!-- Message si aucune donnée -->
+          <div v-if="!stats.polesFavorable || Object.keys(stats.polesFavorable).length === 0" class="no-data-message">
+            Aucun projet avec avis favorable
+          </div>
+
+          <!-- Données des pôles (favorables) -->
+          <div v-else class="poles-grid">
+            <div
+              v-for="(data, pole) in stats.polesFavorable"
+              :key="'fav-' + pole"
+              class="pole-card favorable"
+            >
+              <h5>{{ pole }}</h5>
+              <div class="pole-metrics">
+                <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
+                <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
+                <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+              </div>
+
+              <div class="mini-chart">
+                <h6>Secteurs dans ce pôle:</h6>
+                <div v-for="(count, secteur) in data.secteurs" :key="secteur" class="mini-bar">
+                  <span>{{ secteur }}: </span>
+                  <div class="mini-bar-fill pole" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
+                  <span>{{ count }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -188,7 +232,8 @@ export default {
       stats: {
         overview: null,
         secteurs: null,
-        poles: null
+        polesAll: null,
+        polesFavorable: null
       }
     }
   },
@@ -236,11 +281,22 @@ export default {
     },
 
     async loadPolesStats() {
-      const response = await fetch(`/api/stats/poles?role=${this.role}&username=${this.username}`);
-      if (!response.ok) throw new Error('Erreur chargement pôles');
-      this.stats.poles = await response.json();
-      console.log('[StatsDashboard] Pôles chargés:', this.stats.poles);
-      console.log('[StatsDashboard] Nombre de pôles:', Object.keys(this.stats.poles || {}).length);
+      // Charger les deux jeux de données en parallèle
+      const [responseAll, responseFavorable] = await Promise.all([
+        fetch(`/api/stats/poles?role=${this.role}&username=${this.username}`),
+        fetch(`/api/stats/poles?role=${this.role}&username=${this.username}&filter=favorable`)
+      ]);
+
+      if (!responseAll.ok) throw new Error('Erreur chargement pôles (tous projets)');
+      if (!responseFavorable.ok) throw new Error('Erreur chargement pôles (favorables)');
+
+      this.stats.polesAll = await responseAll.json();
+      this.stats.polesFavorable = await responseFavorable.json();
+
+      console.log('[StatsDashboard] Pôles (tous) chargés:', this.stats.polesAll);
+      console.log('[StatsDashboard] Nombre de pôles (tous):', Object.keys(this.stats.polesAll || {}).length);
+      console.log('[StatsDashboard] Pôles (favorables) chargés:', this.stats.polesFavorable);
+      console.log('[StatsDashboard] Nombre de pôles (favorables):', Object.keys(this.stats.polesFavorable || {}).length);
     },
 
     formatCurrency(amount) {
@@ -393,6 +449,34 @@ export default {
   font-size: 12px;
 }
 
+/* Comparaison des pôles */
+.poles-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.poles-subsection {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.subsection-title {
+  color: #2c3e50;
+  font-size: 1.3em;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #007bff;
+}
+
+.poles-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #dee2e6, transparent);
+  margin: 20px 0;
+}
+
 /* Grilles secteurs/pôles */
 .secteurs-grid, .poles-grid {
   display: grid;
@@ -405,11 +489,26 @@ export default {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.secteur-card h4, .pole-card h4 {
+.pole-card.favorable {
+  border-left: 4px solid #28a745;
+}
+
+.pole-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.secteur-card h4, .pole-card h4, .pole-card h5 {
   color: #2c3e50;
   margin-bottom: 15px;
+}
+
+.pole-card h5 {
+  font-size: 1.1em;
+  font-weight: 600;
 }
 
 .secteur-metrics, .pole-metrics {
@@ -421,10 +520,11 @@ export default {
   color: #6c757d;
 }
 
-.mini-chart h5 {
+.mini-chart h5, .mini-chart h6 {
   color: #495057;
   font-size: 14px;
   margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .mini-bar {
