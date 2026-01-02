@@ -16,59 +16,138 @@
 
     <!-- Vue d'ensemble -->
     <div v-if="activeTab === 'overview'" class="stats-section">
-      <div class="stats-cards">
-        <div class="stat-card">
-          <h3>📋 Total Projets</h3>
-          <div class="stat-value">{{ stats.overview?.total_projets || 0 }}</div>
-        </div>
-        <div class="stat-card">
-          <h3>💰 Coût Total</h3>
-          <div class="stat-value">{{ formatCurrency(stats.overview?.cout_total || 0) }}</div>
-        </div>
-        <div class="stat-card">
-          <h3>📊 Coût Moyen</h3>
-          <div class="stat-value">{{ formatCurrency(stats.overview?.cout_moyen || 0) }}</div>
-        </div>
+      <!-- Message de chargement -->
+      <div v-if="loading" class="loading-message-inline">
+        ⏳ Chargement de la vue d'ensemble...
       </div>
 
-      <!-- Graphique répartition par statut -->
-      <div class="chart-container">
-        <h3>Répartition par Statut</h3>
-        <div class="chart-placeholder" v-if="stats.overview?.statuts">
-          <div 
-            v-for="(count, statut) in stats.overview.statuts" 
-            :key="statut"
-            class="bar-item"
-          >
-            <div class="bar-label">{{ statut }}</div>
-            <div class="bar">
-              <div 
-                class="bar-fill" 
-                :style="{ width: (count / stats.overview.total_projets * 100) + '%' }"
-              ></div>
-              <span class="bar-value">{{ count }}</span>
+      <!-- Comparaison des deux vues -->
+      <div v-else class="overview-comparison">
+        <!-- Section 1: Tous les projets soumis -->
+        <div class="overview-subsection">
+          <h4 class="subsection-title">📋 Tous les projets soumis</h4>
+
+          <div class="stats-cards">
+            <div class="stat-card">
+              <h5>📋 Total Projets</h5>
+              <div class="stat-value">{{ stats.overviewAll?.total_projets || 0 }}</div>
+            </div>
+            <div class="stat-card">
+              <h5>💰 Coût Total</h5>
+              <div class="stat-value">{{ formatCurrency(stats.overviewAll?.cout_total || 0) }}</div>
+            </div>
+            <div class="stat-card">
+              <h5>📊 Coût Moyen</h5>
+              <div class="stat-value">{{ formatCurrency(stats.overviewAll?.cout_moyen || 0) }}</div>
+            </div>
+          </div>
+
+          <!-- Graphique répartition par statut -->
+          <div class="chart-container">
+            <h5>Répartition par Statut</h5>
+            <div class="chart-placeholder" v-if="stats.overviewAll?.statuts">
+              <div
+                v-for="(count, statut) in stats.overviewAll.statuts"
+                :key="statut"
+                class="bar-item"
+              >
+                <div class="bar-label">{{ statut }}</div>
+                <div class="bar">
+                  <div
+                    class="bar-fill"
+                    :style="{ width: (count / stats.overviewAll.total_projets * 100) + '%' }"
+                  ></div>
+                  <span class="bar-value">{{ count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graphique secteurs -->
+          <div class="chart-container">
+            <h5>Projets par Secteur</h5>
+            <div class="chart-placeholder" v-if="stats.overviewAll?.secteurs">
+              <div
+                v-for="(count, secteur) in stats.overviewAll.secteurs"
+                :key="secteur"
+                class="bar-item"
+              >
+                <div class="bar-label">{{ secteur }}</div>
+                <div class="bar">
+                  <div
+                    class="bar-fill secteur"
+                    :style="{ width: (count / stats.overviewAll.total_projets * 100) + '%' }"
+                  ></div>
+                  <span class="bar-value">{{ count }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Graphique secteurs -->
-      <div class="chart-container">
-        <h3>Projets par Secteur</h3>
-        <div class="chart-placeholder" v-if="stats.overview?.secteurs">
-          <div 
-            v-for="(count, secteur) in stats.overview.secteurs" 
-            :key="secteur"
-            class="bar-item"
-          >
-            <div class="bar-label">{{ secteur }}</div>
-            <div class="bar">
-              <div 
-                class="bar-fill secteur" 
-                :style="{ width: (count / stats.overview.total_projets * 100) + '%' }"
-              ></div>
-              <span class="bar-value">{{ count }}</span>
+        <div class="overview-divider"></div>
+
+        <!-- Section 2: Projets favorables -->
+        <div class="overview-subsection">
+          <h4 class="subsection-title">✅ Projets avec avis favorable ou favorable sous conditions</h4>
+
+          <div class="stats-cards">
+            <div class="stat-card favorable">
+              <h5>📋 Total Projets</h5>
+              <div class="stat-value">{{ stats.overviewFavorable?.total_projets || 0 }}</div>
             </div>
+            <div class="stat-card favorable">
+              <h5>💰 Coût Total</h5>
+              <div class="stat-value">{{ formatCurrency(stats.overviewFavorable?.cout_total || 0) }}</div>
+            </div>
+            <div class="stat-card favorable">
+              <h5>📊 Coût Moyen</h5>
+              <div class="stat-value">{{ formatCurrency(stats.overviewFavorable?.cout_moyen || 0) }}</div>
+            </div>
+          </div>
+
+          <!-- Graphique répartition par statut -->
+          <div class="chart-container">
+            <h5>Répartition par Statut</h5>
+            <div class="chart-placeholder" v-if="stats.overviewFavorable?.statuts && Object.keys(stats.overviewFavorable.statuts).length > 0">
+              <div
+                v-for="(count, statut) in stats.overviewFavorable.statuts"
+                :key="statut"
+                class="bar-item"
+              >
+                <div class="bar-label">{{ statut }}</div>
+                <div class="bar">
+                  <div
+                    class="bar-fill favorable-bar"
+                    :style="{ width: (count / stats.overviewFavorable.total_projets * 100) + '%' }"
+                  ></div>
+                  <span class="bar-value">{{ count }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data-message-small">Aucun projet favorable</div>
+          </div>
+
+          <!-- Graphique secteurs -->
+          <div class="chart-container">
+            <h5>Projets par Secteur</h5>
+            <div class="chart-placeholder" v-if="stats.overviewFavorable?.secteurs && Object.keys(stats.overviewFavorable.secteurs).length > 0">
+              <div
+                v-for="(count, secteur) in stats.overviewFavorable.secteurs"
+                :key="secteur"
+                class="bar-item"
+              >
+                <div class="bar-label">{{ secteur }}</div>
+                <div class="bar">
+                  <div
+                    class="bar-fill favorable-bar"
+                    :style="{ width: (count / stats.overviewFavorable.total_projets * 100) + '%' }"
+                  ></div>
+                  <span class="bar-value">{{ count }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data-message-small">Aucun projet favorable</div>
           </div>
         </div>
       </div>
@@ -83,31 +162,76 @@
         ⏳ Chargement des statistiques par secteur...
       </div>
 
-      <!-- Message si aucune donnée -->
-      <div v-else-if="!stats.secteurs || Object.keys(stats.secteurs).length === 0" class="no-data-message">
-        Aucune donnée disponible pour les secteurs
-      </div>
+      <!-- Comparaison des deux vues -->
+      <div v-else class="secteurs-comparison">
+        <!-- Section 1: Tous les projets soumis -->
+        <div class="secteurs-subsection">
+          <h4 class="subsection-title">📋 Tous les projets soumis</h4>
 
-      <!-- Données des secteurs -->
-      <div v-else class="secteurs-grid">
-        <div 
-          v-for="(data, secteur) in stats.secteurs" 
-          :key="secteur"
-          class="secteur-card"
-        >
-          <h4>{{ secteur }}</h4>
-          <div class="secteur-metrics">
-            <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
-            <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
-            <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+          <!-- Message si aucune donnée -->
+          <div v-if="!stats.secteursAll || Object.keys(stats.secteursAll).length === 0" class="no-data-message">
+            Aucune donnée disponible
           </div>
-          
-          <div class="mini-chart">
-            <h5>Statuts dans ce secteur:</h5>
-            <div v-for="(count, statut) in data.statuts" :key="statut" class="mini-bar">
-              <span>{{ statut }}: </span>
-              <div class="mini-bar-fill" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
-              <span>{{ count }}</span>
+
+          <!-- Données des secteurs (tous) -->
+          <div v-else class="secteurs-grid">
+            <div
+              v-for="(data, secteur) in stats.secteursAll"
+              :key="'all-' + secteur"
+              class="secteur-card"
+            >
+              <h5>{{ secteur }}</h5>
+              <div class="secteur-metrics">
+                <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
+                <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
+                <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+              </div>
+
+              <div class="mini-chart">
+                <h6>Statuts dans ce secteur:</h6>
+                <div v-for="(count, statut) in data.statuts" :key="statut" class="mini-bar">
+                  <span>{{ statut }}: </span>
+                  <div class="mini-bar-fill" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
+                  <span>{{ count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="secteurs-divider"></div>
+
+        <!-- Section 2: Projets favorables -->
+        <div class="secteurs-subsection">
+          <h4 class="subsection-title">✅ Projets avec avis favorable ou favorable sous conditions</h4>
+
+          <!-- Message si aucune donnée -->
+          <div v-if="!stats.secteursFavorable || Object.keys(stats.secteursFavorable).length === 0" class="no-data-message">
+            Aucun projet avec avis favorable
+          </div>
+
+          <!-- Données des secteurs (favorables) -->
+          <div v-else class="secteurs-grid">
+            <div
+              v-for="(data, secteur) in stats.secteursFavorable"
+              :key="'fav-' + secteur"
+              class="secteur-card favorable"
+            >
+              <h5>{{ secteur }}</h5>
+              <div class="secteur-metrics">
+                <p><strong>Projets:</strong> {{ data.nombre_projets }}</p>
+                <p><strong>Coût total:</strong> {{ formatCurrency(data.cout_total) }}</p>
+                <p><strong>Coût moyen:</strong> {{ formatCurrency(data.cout_total / data.nombre_projets) }}</p>
+              </div>
+
+              <div class="mini-chart">
+                <h6>Statuts dans ce secteur:</h6>
+                <div v-for="(count, statut) in data.statuts" :key="statut" class="mini-bar">
+                  <span>{{ statut }}: </span>
+                  <div class="mini-bar-fill favorable-bar" :style="{ width: (count / data.nombre_projets * 100) + '%' }"></div>
+                  <span>{{ count }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -230,8 +354,10 @@ export default {
       loading: false,
       error: null,
       stats: {
-        overview: null,
-        secteurs: null,
+        overviewAll: null,
+        overviewFavorable: null,
+        secteursAll: null,
+        secteursFavorable: null,
         polesAll: null,
         polesFavorable: null
       }
@@ -269,15 +395,37 @@ export default {
     },
 
     async loadOverviewStats() {
-      const response = await fetch(`/api/stats/overview?role=${this.role}&username=${this.username}`);
-      if (!response.ok) throw new Error('Erreur chargement vue d\'ensemble');
-      this.stats.overview = await response.json();
+      // Charger les deux jeux de données en parallèle
+      const [responseAll, responseFavorable] = await Promise.all([
+        fetch(`/api/stats/overview?role=${this.role}&username=${this.username}`),
+        fetch(`/api/stats/overview?role=${this.role}&username=${this.username}&filter=favorable`)
+      ]);
+
+      if (!responseAll.ok) throw new Error('Erreur chargement vue d\'ensemble (tous projets)');
+      if (!responseFavorable.ok) throw new Error('Erreur chargement vue d\'ensemble (favorables)');
+
+      this.stats.overviewAll = await responseAll.json();
+      this.stats.overviewFavorable = await responseFavorable.json();
+
+      console.log('[StatsDashboard] Vue d\'ensemble (tous) chargée:', this.stats.overviewAll);
+      console.log('[StatsDashboard] Vue d\'ensemble (favorables) chargée:', this.stats.overviewFavorable);
     },
 
     async loadSecteursStats() {
-      const response = await fetch(`/api/stats/secteurs?role=${this.role}&username=${this.username}`);
-      if (!response.ok) throw new Error('Erreur chargement secteurs');
-      this.stats.secteurs = await response.json();
+      // Charger les deux jeux de données en parallèle
+      const [responseAll, responseFavorable] = await Promise.all([
+        fetch(`/api/stats/secteurs?role=${this.role}&username=${this.username}`),
+        fetch(`/api/stats/secteurs?role=${this.role}&username=${this.username}&filter=favorable`)
+      ]);
+
+      if (!responseAll.ok) throw new Error('Erreur chargement secteurs (tous projets)');
+      if (!responseFavorable.ok) throw new Error('Erreur chargement secteurs (favorables)');
+
+      this.stats.secteursAll = await responseAll.json();
+      this.stats.secteursFavorable = await responseFavorable.json();
+
+      console.log('[StatsDashboard] Secteurs (tous) chargés:', this.stats.secteursAll);
+      console.log('[StatsDashboard] Secteurs (favorables) chargés:', this.stats.secteursFavorable);
     },
 
     async loadPolesStats() {
@@ -376,9 +524,19 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.stat-card h3 {
+.stat-card.favorable {
+  border-top: 4px solid #28a745;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.stat-card h3, .stat-card h5 {
   color: #6c757d;
   font-size: 14px;
   margin-bottom: 10px;
@@ -399,9 +557,10 @@ export default {
   margin-bottom: 20px;
 }
 
-.chart-container h3 {
+.chart-container h3, .chart-container h5 {
   color: #2c3e50;
   margin-bottom: 20px;
+  font-weight: 600;
 }
 
 .bar-item {
@@ -449,13 +608,17 @@ export default {
   font-size: 12px;
 }
 
-/* Comparaison des pôles */
+/* Comparaisons des sections */
+.overview-comparison,
+.secteurs-comparison,
 .poles-comparison {
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
+.overview-subsection,
+.secteurs-subsection,
 .poles-subsection {
   background: #f8f9fa;
   padding: 25px;
@@ -471,6 +634,8 @@ export default {
   border-bottom: 3px solid #007bff;
 }
 
+.overview-divider,
+.secteurs-divider,
 .poles-divider {
   height: 2px;
   background: linear-gradient(to right, transparent, #dee2e6, transparent);
@@ -545,6 +710,22 @@ export default {
   margin: 0 10px;
   border-radius: 8px;
   min-width: 10px;
+}
+
+.mini-bar-fill.favorable-bar {
+  background: #28a745;
+}
+
+.bar-fill.favorable-bar {
+  background: #28a745 !important;
+}
+
+.no-data-message-small {
+  text-align: center;
+  padding: 1rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 /* États loading/error */

@@ -3929,19 +3929,42 @@ def get_stats_overview():
     """Statistiques générales accessibles selon le rôle"""
     role = request.args.get('role', '')
     username = request.args.get('username', '')
+    status_filter = request.args.get('filter', '')  # 'favorable' pour filtrer uniquement les projets avec avis favorable
 
-    # Pour les rôles internes (admin, secrétariat, présidence): montrer uniquement les projets confirmés
-    # Pour les rôles externes (invite, soumissionnaire): montrer TOUS les projets qu'ils peuvent voir
+    # Déterminer la base de projets selon le rôle
     if role == 'admin':
-        projects = Project.query.filter_by(decision_finale='confirme').all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            # Filtrer uniquement les projets avec avis favorable
+            projects = Project.query.filter(
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            # Tous les projets soumis (actifs, non supprimés)
+            projects = Project.query.filter(Project.deleted_at.is_(None)).all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-        projects = Project.query.filter_by(decision_finale='confirme').all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter(Project.deleted_at.is_(None)).all()
     elif role in ['invite', 'soumissionnaire']:
         # Pour invite/soumissionnaire: montrer TOUS les projets (pas seulement ceux confirmés)
-        projects = Project.query.all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter(Project.deleted_at.is_(None)).all()
     else:
-        # Autres rôles (évaluateurs) - limités à leurs projets validés
-        projects = Project.query.filter_by(auteur_nom=username, decision_finale='confirme').all()
+        # Autres rôles (évaluateurs) - limités à leurs projets
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.auteur_nom == username,
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter_by(auteur_nom=username).filter(Project.deleted_at.is_(None)).all()
     
     # Calculs statistiques
     total_projets = len(projects)
@@ -3990,14 +4013,32 @@ def get_stats_overview():
 def get_stats_secteurs():
     """Statistiques détaillées par secteur"""
     role = request.args.get('role', '')
+    username = request.args.get('username', '')
+    status_filter = request.args.get('filter', '')  # 'favorable' pour filtrer uniquement les projets avec avis favorable
 
-    # Filtrer uniquement les projets validés par presidencecomite avec décision favorable
+    # Déterminer la base de projets selon le rôle et le filtre
     if role == 'admin':
-        projects = Project.query.filter_by(decision_finale='confirme').all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter(Project.deleted_at.is_(None)).all()
     elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
-        projects = Project.query.filter_by(decision_finale='confirme').all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter(Project.deleted_at.is_(None)).all()
     else:
-        projects = Project.query.filter_by(auteur_nom=request.args.get('username', ''), decision_finale='confirme').all()
+        if status_filter in ['favorable_avis', 'favorable']:
+            projects = Project.query.filter(
+                Project.auteur_nom == username,
+                Project.avis.in_(['favorable', 'favorable sous conditions'])
+            ).all()
+        else:
+            projects = Project.query.filter_by(auteur_nom=username).filter(Project.deleted_at.is_(None)).all()
     
     secteurs_stats = {}
     
