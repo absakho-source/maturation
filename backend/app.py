@@ -2088,7 +2088,7 @@ def enregistrer_decision_comite(project_id):
         log_entry = Log(
             projet_id=project_id,
             action="decision_comite",
-            details=action,
+            commentaire=action,
             auteur=auteur,
             role=role
         )
