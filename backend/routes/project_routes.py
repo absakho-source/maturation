@@ -100,10 +100,18 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             if role == "invite":
                 return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux fiches d'évaluation"}), 403
 
-            fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            # Récupérer le projet pour vérifier sa date de soumission
+            project = Project.query.get_or_404(project_id)
+
+            # Filtrer la fiche pour ne retourner que celle créée après la date de soumission
+            # Cela évite d'afficher les fiches d'anciens projets supprimés qui avaient le même ID
+            fiche_query = FicheEvaluation.query.filter_by(project_id=project_id)
+            if project.date_soumission:
+                fiche_query = fiche_query.filter(FicheEvaluation.date_evaluation >= project.date_soumission)
+            fiche = fiche_query.first()
+
             if not fiche:
                 # Si aucune fiche, retourner l'évaluateur affecté au projet (si existant)
-                project = Project.query.get_or_404(project_id)
                 evaluateur_nom = project.evaluateur_nom or ''
                 return jsonify({
                     'id': None,
@@ -232,7 +240,15 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
     def download_fiche_evaluation_pdf(project_id):
         """Route pour télécharger le PDF de la fiche d'évaluation"""
         try:
-            fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            # Récupérer le projet pour filtrer par date de soumission
+            project = Project.query.get_or_404(project_id)
+
+            # Filtrer la fiche pour ne retourner que celle créée après la date de soumission
+            fiche_query = FicheEvaluation.query.filter_by(project_id=project_id)
+            if project.date_soumission:
+                fiche_query = fiche_query.filter(FicheEvaluation.date_evaluation >= project.date_soumission)
+            fiche = fiche_query.first()
+
             if not fiche:
                 return jsonify({"error": "Fiche d'évaluation non trouvée"}), 404
 
@@ -294,7 +310,11 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
                 return jsonify({"error": erreur}), 403
             
             # Chercher une fiche existante
-            fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            # Filtrer pour ne récupérer que celle créée après la date de soumission du projet
+            fiche_query = FicheEvaluation.query.filter_by(project_id=project_id)
+            if project.date_soumission:
+                fiche_query = fiche_query.filter(FicheEvaluation.date_evaluation >= project.date_soumission)
+            fiche = fiche_query.first()
 
             # Si la fiche existe déjà, l'archiver avant modification
             if fiche and archiver_fiche:

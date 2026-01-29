@@ -143,6 +143,21 @@ def set_statut_comite(projet, valeur):
     except Exception:
         return False
 
+def get_fiche_evaluation_valide(project_id):
+    """
+    Retourne la fiche d'évaluation valide pour un projet.
+    Filtre les fiches pour ne retourner que celles créées après la date de soumission du projet.
+    Cela évite d'afficher les fiches d'anciens projets supprimés qui avaient le même ID.
+    """
+    project = Project.query.get(project_id)
+    if not project:
+        return None
+
+    fiche_query = FicheEvaluation.query.filter_by(project_id=project_id)
+    if project.date_soumission:
+        fiche_query = fiche_query.filter(FicheEvaluation.date_evaluation >= project.date_soumission)
+    return fiche_query.first()
+
 # Fonction pour simplifier les statuts vus par le soumissionnaire
 def get_statut_soumissionnaire(projet):
     """Convertit les statuts internes en statuts simplifiés pour le soumissionnaire"""
@@ -957,7 +972,7 @@ def traiter_project(project_id):
             nouveau_evaluateur = data["evaluateur_nom"]
 
             # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
-            fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            fiche_existante = get_fiche_evaluation_valide(project_id)
             if fiche_existante and fiche_existante.fichier_pdf:
                 try:
                     print(f"[INFO] Archivage de la fiche pour le projet {project_id} (assignation/réassignation)")
@@ -1016,7 +1031,7 @@ def traiter_project(project_id):
             nouveau_evaluateur = data["evaluateur_nom"]
 
             # Archiver et supprimer la fiche d'évaluation existante
-            fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+            fiche_existante = get_fiche_evaluation_valide(project_id)
             if fiche_existante and fiche_existante.fichier_pdf:
                 try:
                     print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation explicite)")
@@ -1079,7 +1094,7 @@ def traiter_project(project_id):
             statut_action = data.get("statut_action")
             if statut_action == "reevaluer_complements":
                 # Archiver et supprimer la fiche d'évaluation existante pour une nouvelle évaluation
-                fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                fiche_existante = get_fiche_evaluation_valide(project_id)
                 if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réévaluation après compléments)")
@@ -1130,7 +1145,7 @@ def traiter_project(project_id):
                     return jsonify({"error": "evaluateur_nom requis pour la réassignation"}), 400
 
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
-                fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                fiche_existante = get_fiche_evaluation_valide(project_id)
                 if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation après rejet)")
@@ -1195,7 +1210,7 @@ def traiter_project(project_id):
                 p.evaluateur_nom = None
 
                 # Synchroniser l'avis du projet avec la fiche d'évaluation (si elle existe)
-                fiche_eval = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                fiche_eval = get_fiche_evaluation_valide(project_id)
                 if fiche_eval and fiche_eval.proposition:
                     p.avis = fiche_eval.proposition
 
@@ -1210,7 +1225,7 @@ def traiter_project(project_id):
                             pass  # Ignorer silencieusement si la colonne n'existe pas
 
                     # Récupérer les données de la fiche d'évaluation pour le log
-                    fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                    fiche = get_fiche_evaluation_valide(project_id)
                     if fiche:
                         action = (f"Projet soumis à la Présidence SCT malgré le rejet - "
                                 f"Score: {fiche.score_total}/100, "
@@ -1230,7 +1245,7 @@ def traiter_project(project_id):
                     return jsonify({"error": "evaluateur_nom requis pour la réassignation"}), 400
 
                 # Archiver et supprimer la fiche d'évaluation existante lors d'une réassignation
-                fiche_existante = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                fiche_existante = get_fiche_evaluation_valide(project_id)
                 if fiche_existante and fiche_existante.fichier_pdf:
                     try:
                         print(f"[INFO] Archivage de la fiche pour le projet {project_id} (réassignation par SecretariatSCT)")
@@ -1286,7 +1301,7 @@ def traiter_project(project_id):
                 # Ajouter la fiche d'évaluation PDF à la documenthèque
                 try:
                     import shutil
-                    fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+                    fiche = get_fiche_evaluation_valide(project_id)
                     if fiche and fiche.fichier_pdf:
                         # Chemin source du PDF (dans routes/pdfs/fiches_evaluation/)
                         pdf_source_dir = os.path.join(os.path.dirname(__file__), 'routes', 'pdfs', 'fiches_evaluation')
@@ -1703,7 +1718,7 @@ def soumettre_fiche_evaluation_legacy(project_id):
         evaluateur_nom = data.get('evaluateur_nom', p.evaluateur_nom or 'inconnu')
 
         # Vérifier si une fiche existe déjà
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche = get_fiche_evaluation_valide(project_id)
 
         if not fiche:
             # Créer une nouvelle fiche
@@ -5440,7 +5455,7 @@ def sync_project_avis():
         projects = Project.query.all()
 
         for project in projects:
-            fiche = FicheEvaluation.query.filter_by(project_id=project.id).first()
+            fiche = get_fiche_evaluation_valide(project.id)
 
             if fiche and fiche.proposition:
                 # Si l'avis du projet diffère de la proposition de la fiche
