@@ -21,6 +21,21 @@ except ImportError:
 
 evaluation_bp = Blueprint('evaluation', __name__)
 
+def get_fiche_evaluation_valide(project_id):
+    """
+    Retourne la fiche d'évaluation valide pour un projet.
+    Filtre les fiches pour ne retourner que celles créées après la date de soumission du projet.
+    Cela évite d'afficher les fiches d'anciens projets supprimés qui avaient le même ID.
+    """
+    project = Project.query.get(project_id)
+    if not project:
+        return None
+
+    fiche_query = FicheEvaluation.query.filter_by(project_id=project_id)
+    if project.date_soumission:
+        fiche_query = fiche_query.filter(FicheEvaluation.date_evaluation >= project.date_soumission)
+    return fiche_query.first()
+
 @evaluation_bp.route('/api/projects/<int:project_id>/presentation', methods=['GET'])
 def get_project_presentation(project_id):
     """Récupération des données de présentation du projet (Section I)"""
@@ -115,7 +130,7 @@ def get_fiche_evaluation(project_id):
             if not fiche_visible:
                 return jsonify({'error': 'La fiche d\'évaluation n\'est pas encore disponible'}), 403
 
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche = get_fiche_evaluation_valide(project_id)
 
         if not fiche:
             # Chercher une fiche archivée dans les documents du projet
@@ -192,7 +207,7 @@ def create_or_update_fiche_evaluation(project_id):
             return jsonify({'error': 'Projet non trouvé'}), 404
 
         # Récupérer ou créer la fiche d'évaluation
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche = get_fiche_evaluation_valide(project_id)
 
         is_update = fiche is not None
 
@@ -593,7 +608,7 @@ def generate_fiche_evaluation_pdf(project_id):
             if not fiche_visible:
                 return jsonify({'error': 'La fiche d\'évaluation n\'est pas encore disponible'}), 403
 
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche = get_fiche_evaluation_valide(project_id)
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
 
@@ -741,7 +756,7 @@ def save_fiche_evaluation_brouillon(project_id):
             return jsonify({'error': 'Données manquantes'}), 400
 
         # Vérifier si une fiche existe déjà pour ce projet
-        fiche_brouillon = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche_brouillon = get_fiche_evaluation_valide(project_id)
 
         # Extraire les critères
         criteres = data.get('criteres', {})
@@ -830,7 +845,7 @@ def delete_fiche_evaluation(project_id):
                 'message': 'Seuls les administrateurs peuvent supprimer une fiche d\'évaluation'
             }), 403
 
-        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche = get_fiche_evaluation_valide(project_id)
 
         if not fiche:
             return jsonify({'error': 'Aucune fiche d\'évaluation trouvée'}), 404
@@ -980,10 +995,14 @@ def get_fiches_archives(project_id):
             return jsonify({'error': 'Projet non trouvé'}), 404
 
         # Récupérer les archives depuis la table DocumentProjet
-        archives_docs = DocumentProjet.query.filter_by(
+        # Filtrer pour ne retourner que les archives créées après la date de soumission du projet
+        archives_query = DocumentProjet.query.filter_by(
             project_id=project_id,
             type_document='fiche_evaluation_archivee'
-        ).order_by(DocumentProjet.date_ajout.desc()).all()
+        )
+        if project.date_soumission:
+            archives_query = archives_query.filter(DocumentProjet.date_ajout >= project.date_soumission)
+        archives_docs = archives_query.order_by(DocumentProjet.date_ajout.desc()).all()
 
         # Construire la liste des archives avec les métadonnées
         archives_list = []
@@ -1013,7 +1032,7 @@ def get_fiches_archives(project_id):
             })
 
         # Récupérer la fiche actuelle
-        fiche_actuelle = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        fiche_actuelle = get_fiche_evaluation_valide(project_id)
 
         return jsonify({
             'project_id': project_id,
