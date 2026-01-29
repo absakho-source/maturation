@@ -2251,7 +2251,12 @@ def get_project_logs(project_id):
         # On les masque tant que le projet n'est pas approuvé ou rejeté (validation complète)
         should_hide_scores = project.statut not in ['approuvé', 'rejeté']
 
-        logs = Historique.query.filter_by(project_id=project_id).order_by(Historique.date_action.desc()).all()
+        # Filtrer l'historique pour ne montrer que les entrées créées après la date de soumission du projet
+        # Cela évite d'afficher l'historique d'anciens projets supprimés qui avaient le même ID
+        logs_query = Historique.query.filter_by(project_id=project_id)
+        if project.date_soumission:
+            logs_query = logs_query.filter(Historique.date_action >= project.date_soumission)
+        logs = logs_query.order_by(Historique.date_action.desc()).all()
         result = []
 
         for log in logs:
@@ -4332,7 +4337,12 @@ def get_project_documents(project_id):
             return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux documents des projets"}), 403
 
         # Récupérer tous les documents du projet
-        documents = DocumentProjet.query.filter_by(project_id=project_id).order_by(DocumentProjet.date_ajout.desc()).all()
+        # Filtrer pour ne montrer que les documents ajoutés après la date de soumission du projet
+        # Cela évite d'afficher les documents d'anciens projets supprimés qui avaient le même ID
+        docs_query = DocumentProjet.query.filter_by(project_id=project_id)
+        if project.date_soumission:
+            docs_query = docs_query.filter(DocumentProjet.date_ajout >= project.date_soumission)
+        documents = docs_query.order_by(DocumentProjet.date_ajout.desc()).all()
 
         # Fonction helper pour vérifier la visibilité selon visible_pour_roles
         def is_visible_for_role(doc, role):
@@ -4439,7 +4449,10 @@ def get_project_documents(project_id):
                 db.session.rollback()
 
             # Recharger les documents après migration
-            documents = DocumentProjet.query.filter_by(project_id=project_id).order_by(DocumentProjet.date_ajout.desc()).all()
+            docs_query = DocumentProjet.query.filter_by(project_id=project_id)
+            if project.date_soumission:
+                docs_query = docs_query.filter(DocumentProjet.date_ajout >= project.date_soumission)
+            documents = docs_query.order_by(DocumentProjet.date_ajout.desc()).all()
 
             # Réappliquer le filtrage après rechargement
             if user_role == "soumissionnaire":
@@ -4630,7 +4643,11 @@ def get_project_messages(project_id):
             return jsonify({"error": "Accès refusé: Les invités ne peuvent pas accéder aux discussions des projets"}), 403
 
         # Récupérer tous les messages du projet, triés par date (plus anciens en premier)
-        messages = MessageProjet.query.filter_by(project_id=project_id).order_by(MessageProjet.date_creation.asc()).all()
+        # Filtrer pour ne montrer que les messages créés après la date de soumission du projet
+        messages_query = MessageProjet.query.filter_by(project_id=project_id)
+        if project.date_soumission:
+            messages_query = messages_query.filter(MessageProjet.date_creation >= project.date_soumission)
+        messages = messages_query.order_by(MessageProjet.date_creation.asc()).all()
 
         return jsonify([message.to_dict() for message in messages]), 200
     except Exception as e:
