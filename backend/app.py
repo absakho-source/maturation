@@ -1608,11 +1608,12 @@ def evaluation_prealable(project_id):
         # Changer le statut en fonction de la décision
         action = ""
         if decision == "dossier_evaluable":
-            p.statut = "en évaluation"
+            # Le statut reste inchangé (assigné) — il passera à "en évaluation"
+            # uniquement après confirmation de l'évaluabilité du dossier
             if commentaires:
-                action = f"Évaluation préalable: dossier évaluable - {commentaires}"
+                action = f"Évaluation préalable: dossier recevable - {commentaires}"
             else:
-                action = "Évaluation préalable: dossier évaluable - passage à l'évaluation détaillée"
+                action = "Évaluation préalable: dossier recevable - en attente de confirmation d'évaluabilité"
         elif decision == "complements_requis":
             p.statut = "compléments demandés"
             p.complements_demande_message = commentaires
@@ -1683,7 +1684,10 @@ def set_evaluabilite(project_id):
         p.evaluabilite_date = datetime.utcnow()
         p.evaluabilite_commentaire = commentaire
 
-        action = f"Dossier marqué comme évaluable - {commentaire}"
+        # C'est maintenant que le statut passe à "en évaluation"
+        p.statut = "en évaluation"
+
+        action = f"Dossier marqué comme évaluable - passage à l'évaluation détaillée - {commentaire}"
 
         db.session.commit()
 
