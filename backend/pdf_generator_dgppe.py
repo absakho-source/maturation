@@ -646,15 +646,14 @@ class FicheEvaluationDGPPEPDF:
         criteres = self.fiche.get('criteres', {})
 
         # Liste des 12 critères (total 100 points)
-        # Note: impact_emploi retiré car pas dans le formulaire frontend
         criteria_list = [
-            ('PERTINENCE', 'pertinence', 10),
+            ('PERTINENCE', 'pertinence', 5),
             ('ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', 'alignement', 10),
             ('PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', 'activites_couts', 15),
             ('ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', 'equite', 15),
             ('VIABILITÉ/RENTABILITÉ FINANCIÈRE', 'viabilite', 5),
             ('RENTABILITÉ SOCIO-ÉCONOMIQUE (ACA/MPR)', 'rentabilite', 5),
-            ('BÉNÉFICES STRATÉGIQUES (SÉCURITÉ-RÉSILIENCE-INNOVATION-COMPÉTITIVITÉ-CONTENU LOCAL, ETC.)', 'benefices_strategiques', 10),
+            ('BÉNÉFICES STRATÉGIQUES (SÉCURITÉ-RÉSILIENCE-INNOVATION-COMPÉTITIVITÉ-CONTENU LOCAL, ETC.)', 'benefices_strategiques', 15),
             ('PÉRENNITÉ ET DURABILITÉ DES EFFETS ET IMPACTS DU PROJET', 'perennite', 5),
             ('AVANTAGES ET COÛTS INTANGIBLES', 'avantages_intangibles', 10),
             ('FAISABILITÉ DU PROJET / RISQUES POTENTIELS', 'faisabilite', 5),
@@ -772,7 +771,7 @@ class FicheEvaluationDGPPEPDF:
         total_score = sum((criteres.get(key, {}).get('score') or 0) for key in [
             'pertinence', 'alignement', 'activites_couts', 'equite', 'viabilite',
             'rentabilite', 'benefices_strategiques', 'perennite', 'avantages_intangibles',
-            'faisabilite', 'ppp', 'impact_environnemental', 'impact_emploi'
+            'faisabilite', 'ppp', 'impact_environnemental'
         ])
 
         # Déterminer la proposition automatique

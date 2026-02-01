@@ -288,9 +288,9 @@ def create_or_update_fiche_evaluation(project_id):
         # Mise à jour des critères d'évaluation selon le nouveau format
         criteres = data.get('criteres', {})
         
-        # PERTINENCE (/10)
+        # PERTINENCE (/5)
         if 'pertinence' in criteres:
-            fiche.pertinence_score = min(criteres['pertinence'].get('score', 0), 10)
+            fiche.pertinence_score = min(criteres['pertinence'].get('score', 0), 5)
             fiche.pertinence_description = criteres['pertinence'].get('description', '')
             fiche.pertinence_recommandations = criteres['pertinence'].get('recommandations', '')
         
@@ -324,9 +324,9 @@ def create_or_update_fiche_evaluation(project_id):
             fiche.rentabilite_description = criteres['rentabilite'].get('description', '')
             fiche.rentabilite_recommandations = criteres['rentabilite'].get('recommandations', '')
 
-        # BENEFICES STRATEGIQUES (/10)
+        # BENEFICES STRATEGIQUES (/15)
         if 'benefices_strategiques' in criteres:
-            fiche.benefices_strategiques_score = min(criteres['benefices_strategiques'].get('score', 0), 10)
+            fiche.benefices_strategiques_score = min(criteres['benefices_strategiques'].get('score', 0), 15)
             fiche.benefices_strategiques_description = criteres['benefices_strategiques'].get('description', '')
             fiche.benefices_strategiques_recommandations = criteres['benefices_strategiques'].get('recommandations', '')
 

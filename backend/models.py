@@ -273,7 +273,7 @@ class FicheEvaluation(db.Model):
             (self.equite_score or 0) +                        # /15
             (self.viabilite_score or 0) +                     # /5
             (self.rentabilite_score or 0) +                   # /5
-            (self.benefices_strategiques_score or 0) +        # /10
+            (self.benefices_strategiques_score or 0) +        # /15
             (self.perennite_score or 0) +                     # /5
             (self.avantages_intangibles_score or 0) +         # /10
             (self.faisabilite_score or 0) +                   # /5
