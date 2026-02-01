@@ -118,6 +118,22 @@ try:
     else:
         print("[PRE-MIGRATION] ✓ Toutes les colonnes recommandations existent déjà")
 
+    # Migration 6: Corriger les projets "en évaluation" sans évaluabilité confirmée
+    # Ces projets doivent revenir au statut "assigné" (bug corrigé)
+    print("[PRE-MIGRATION] Correction des projets 'en évaluation' sans évaluabilité confirmée...")
+    cur.execute("""
+        UPDATE project
+        SET statut = 'assigné'
+        WHERE statut = 'en évaluation'
+          AND (evaluabilite IS NULL OR evaluabilite != 'evaluable')
+    """)
+    fixed_count = cur.rowcount
+    if fixed_count > 0:
+        con.commit()
+        print(f"[PRE-MIGRATION] ✓ {fixed_count} projet(s) corrigé(s) → statut remis à 'assigné'")
+    else:
+        print("[PRE-MIGRATION] ✓ Aucun projet à corriger")
+
     con.close()
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)
