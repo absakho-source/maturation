@@ -9,16 +9,29 @@ from sqlalchemy import create_engine, text, inspect
 import os
 
 
-def migrate_database(db_path):
+def migrate_database(db_path=None):
     """
     Exécute toutes les migrations nécessaires sur la base de données
     Retourne True si succès, False sinon
     """
-    print(f"[MIGRATION] Connexion à la base de données: {db_path}")
+    # Déterminer l'URI de la base de données
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        is_postgres = True
+        print(f"[MIGRATION] Connexion à PostgreSQL")
+    elif db_path:
+        database_url = f"sqlite:///{db_path}"
+        is_postgres = False
+        print(f"[MIGRATION] Connexion à SQLite: {db_path}")
+    else:
+        database_url = "sqlite:///maturation.db"
+        is_postgres = False
+        print(f"[MIGRATION] Connexion à SQLite: maturation.db")
 
     try:
-        # Utiliser SQLAlchemy au lieu de sqlite3 directement
-        engine = create_engine(f"sqlite:///{db_path}")
+        engine = create_engine(database_url)
 
         with engine.connect() as conn:
             # Migration 1: Ajouter la colonne statut_comite à la table project (singulier)
@@ -171,21 +184,18 @@ def migrate_database(db_path):
             # Migration 6: Créer la table historique_messages si elle n'existe pas
             print("[MIGRATION] Vérification de la table 'historique_messages'...")
 
-            try:
-                # Vérifier si la table existe
-                conn.execute(text("SELECT 1 FROM historique_messages LIMIT 1"))
-                print("[MIGRATION] ✓ La table 'historique_messages' existe déjà")
-            except:
+            if 'historique_messages' not in inspector.get_table_names():
                 print("[MIGRATION] Création de la table 'historique_messages'...")
-                conn.execute(text("""
+                pk_type = "SERIAL PRIMARY KEY" if is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
+                conn.execute(text(f"""
                     CREATE TABLE historique_messages (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        id {pk_type},
                         message_id INTEGER NOT NULL,
                         project_id INTEGER NOT NULL,
                         contenu_avant TEXT,
                         contenu_apres TEXT,
                         modifie_par VARCHAR(100) NOT NULL,
-                        date_modification DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         type_modification VARCHAR(50) NOT NULL,
                         raison TEXT,
                         FOREIGN KEY (message_id) REFERENCES messages_projet(id),
@@ -194,6 +204,8 @@ def migrate_database(db_path):
                 """))
                 conn.commit()
                 print("[MIGRATION] ✓ Table 'historique_messages' créée avec succès")
+            else:
+                print("[MIGRATION] ✓ La table 'historique_messages' existe déjà")
 
             # Migration 7: Ajouter les nouveaux champs au projet (nouveauté, priorité, financement)
             print("[MIGRATION] Vérification des nouveaux champs projet...")
@@ -261,6 +273,6 @@ def migrate_database(db_path):
 if __name__ == "__main__":
     # Permet d'exécuter le script directement pour tester
     import sys
-    db_path = sys.argv[1] if len(sys.argv) > 1 else "maturation.db"
+    db_path = sys.argv[1] if len(sys.argv) > 1 else None
     success = migrate_database(db_path)
     exit(0 if success else 1)

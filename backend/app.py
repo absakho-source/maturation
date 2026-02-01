@@ -46,40 +46,54 @@ print(f"[CONFIG] DATA_DIR: {DATA_DIR}")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 # Configuration de la base de données
-app.config["DB_PATH"] = os.path.join(DATA_DIR, "maturation.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + app.config["DB_PATH"]
-print(f"[CONFIG] Using DB: {app.config['DB_PATH']}")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    # Render fournit 'postgres://' mais SQLAlchemy 2.x exige 'postgresql://'
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["DB_TYPE"] = "postgresql"
+    print(f"[CONFIG] Using PostgreSQL database")
+else:
+    app.config["DB_PATH"] = os.path.join(DATA_DIR, "maturation.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + app.config["DB_PATH"]
+    app.config["DB_TYPE"] = "sqlite"
+    print(f"[CONFIG] Using SQLite: {app.config['DB_PATH']}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# --- Protection SQLite WAL contre la perte de données ---
-def wal_checkpoint():
-    """Force l'écriture du WAL dans le fichier principal SQLite"""
-    import sqlite3
-    try:
-        con = sqlite3.connect(app.config["DB_PATH"])
-        con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-        con.close()
-        print("[WAL] Checkpoint effectué")
-    except Exception as e:
-        print(f"[WAL] Erreur checkpoint: {e}")
+# --- Protection SQLite WAL (uniquement si SQLite) ---
+if app.config.get("DB_TYPE") == "sqlite":
+    def wal_checkpoint():
+        """Force l'écriture du WAL dans le fichier principal SQLite"""
+        import sqlite3
+        try:
+            con = sqlite3.connect(app.config["DB_PATH"])
+            con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            con.close()
+            print("[WAL] Checkpoint effectué")
+        except Exception as e:
+            print(f"[WAL] Erreur checkpoint: {e}")
 
-def wal_checkpoint_periodique():
-    """Checkpoint WAL toutes les 60 secondes pour minimiser la perte de données"""
-    wal_checkpoint()
-    timer = threading.Timer(60, wal_checkpoint_periodique)
-    timer.daemon = True
-    timer.start()
+    def wal_checkpoint_periodique():
+        """Checkpoint WAL toutes les 60 secondes"""
+        wal_checkpoint()
+        timer = threading.Timer(60, wal_checkpoint_periodique)
+        timer.daemon = True
+        timer.start()
 
-def shutdown_handler(signum, frame):
-    """Checkpoint WAL à l'arrêt du serveur (redéploiement Render)"""
-    print(f"[WAL] Signal {signum} reçu, checkpoint avant arrêt...")
-    wal_checkpoint()
-    sys.exit(0)
+    def shutdown_handler(signum, frame):
+        """Checkpoint WAL à l'arrêt du serveur"""
+        print(f"[WAL] Signal {signum} reçu, checkpoint avant arrêt...")
+        wal_checkpoint()
+        sys.exit(0)
 
-# Intercepter les signaux d'arrêt de Render (SIGTERM)
-signal.signal(signal.SIGTERM, shutdown_handler)
-signal.signal(signal.SIGINT, shutdown_handler)
-atexit.register(wal_checkpoint)
+    signal.signal(signal.SIGTERM, shutdown_handler)
+    signal.signal(signal.SIGINT, shutdown_handler)
+    atexit.register(wal_checkpoint)
+else:
+    # PostgreSQL gère ses propres transactions, pas besoin de WAL checkpoint
+    def wal_checkpoint_periodique():
+        pass
 
 # Configuration du dossier uploads
 app.config["UPLOAD_FOLDER"] = os.path.join(DATA_DIR, "uploads")
@@ -269,138 +283,74 @@ def notify_project_owner(project, notif_type, titre, message, lien=None, priorit
     return None
 
 # Migration de base de données: ajout automatique des colonnes manquantes
-def ensure_sqlite_columns():
-    import sqlite3
-    con = sqlite3.connect(app.config["DB_PATH"])
-    cur = con.cursor()
+# Fonctionne avec SQLite ET PostgreSQL via SQLAlchemy inspect()
+def ensure_db_columns():
+    from sqlalchemy import inspect as sa_inspect, text
 
-    # Migration pour la table projects
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='projects'")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(projects)")
-        cols = {r[1] for r in cur.fetchall()}
-        needed = {
-            "numero_projet": "TEXT",
-            "validation_secretariat": "TEXT",
-            "commentaires_finaux": "TEXT",
-            "complements_demande_message": "TEXT",
-            "complements_reponse_message": "TEXT",
-            "complements_reponse_pieces": "TEXT",
-            "auteur_nom": "TEXT",
-        }
-        for c, cdef in needed.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding projects.{c}")
-                cur.execute(f"ALTER TABLE projects ADD COLUMN {c} {cdef}")
+    inspector = sa_inspect(db.engine)
+    table_names = inspector.get_table_names()
 
-    # Migration pour la table connexion_log (geolocation columns)
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='connexion_log'")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(connexion_log)")
-        cols = {r[1] for r in cur.fetchall()}
-        needed_geo = {
-            "pays": "VARCHAR(100)",
-            "ville": "VARCHAR(100)",
-            "region": "VARCHAR(100)"
-        }
-        for c, cdef in needed_geo.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding connexion_log.{c}")
-                cur.execute(f"ALTER TABLE connexion_log ADD COLUMN {c} {cdef}")
+    def get_columns(table_name):
+        if table_name not in table_names:
+            return set()
+        return {col['name'] for col in inspector.get_columns(table_name)}
 
-    # Migration pour la table project (lieu de soumission - territorialisation)
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project'")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(project)")
-        cols = {r[1] for r in cur.fetchall()}
-        needed_lieu = {
-            "lieu_soumission_pays": "VARCHAR(100)",
-            "lieu_soumission_ville": "VARCHAR(100)",
-            "lieu_soumission_region": "VARCHAR(100)"
-        }
-        for c, cdef in needed_lieu.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding project.{c}")
-                cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
+    def add_missing_columns(table_name, needed_cols):
+        cols = get_columns(table_name)
+        if not cols:
+            return
+        for col_name, col_type in needed_cols.items():
+            if col_name not in cols:
+                print(f"[DB MIGRATION] Adding {table_name}.{col_name}")
+                db.session.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+        db.session.commit()
 
-        # Migration pour la matrice d'évaluation préalable
-        needed_matrice = {
-            "evaluation_prealable_matrice": "TEXT"
-        }
-        for c, cdef in needed_matrice.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding project.{c}")
-                cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
+    # Migration pour la table projects (ancien nom)
+    add_missing_columns("projects", {
+        "numero_projet": "TEXT",
+        "validation_secretariat": "TEXT",
+        "commentaires_finaux": "TEXT",
+        "complements_demande_message": "TEXT",
+        "complements_reponse_message": "TEXT",
+        "complements_reponse_pieces": "TEXT",
+        "auteur_nom": "TEXT",
+    })
 
-        # Migration pour le point focal / responsable du projet
-        needed_point_focal = {
-            "point_focal_nom": "VARCHAR(200)",
-            "point_focal_fonction": "VARCHAR(200)",
-            "point_focal_telephone": "VARCHAR(50)",
-            "point_focal_email": "VARCHAR(200)"
-        }
-        for c, cdef in needed_point_focal.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding project.{c}")
-                cur.execute(f"ALTER TABLE project ADD COLUMN {c} {cdef}")
+    # Migration pour la table connexion_log
+    add_missing_columns("connexion_log", {
+        "pays": "VARCHAR(100)",
+        "ville": "VARCHAR(100)",
+        "region": "VARCHAR(100)",
+    })
+
+    # Migration pour la table project
+    add_missing_columns("project", {
+        "lieu_soumission_pays": "VARCHAR(100)",
+        "lieu_soumission_ville": "VARCHAR(100)",
+        "lieu_soumission_region": "VARCHAR(100)",
+        "evaluation_prealable_matrice": "TEXT",
+        "point_focal_nom": "VARCHAR(200)",
+        "point_focal_fonction": "VARCHAR(200)",
+        "point_focal_telephone": "VARCHAR(50)",
+        "point_focal_email": "VARCHAR(200)",
+    })
 
     # Migration pour la table contact_messages
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contact_messages'")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(contact_messages)")
-        cols = {r[1] for r in cur.fetchall()}
-        needed_contact = {
-            "pieces_jointes": "TEXT",
-            "assigne_a": "VARCHAR(100)",
-            "date_assignation": "DATETIME",
-            "date_reponse": "DATETIME"
-        }
-        for c, cdef in needed_contact.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding contact_messages.{c}")
-                cur.execute(f"ALTER TABLE contact_messages ADD COLUMN {c} {cdef}")
+    add_missing_columns("contact_messages", {
+        "pieces_jointes": "TEXT",
+        "assigne_a": "VARCHAR(100)",
+        "date_assignation": "TIMESTAMP",
+        "date_reponse": "TIMESTAMP",
+    })
 
-    # Migration pour la table users (Point Focal + ministère/tutelle + must_change_password)
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(users)")
-        cols = {r[1] for r in cur.fetchall()}
-        needed_user_cols = {
-            "is_point_focal": "BOOLEAN DEFAULT 0",
-            "point_focal_organisme": "VARCHAR(300)",
-            "nom_ministere": "VARCHAR(300)",
-            "tutelle_agence": "VARCHAR(300)",
-            "must_change_password": "BOOLEAN DEFAULT 0"
-        }
-        for c, cdef in needed_user_cols.items():
-            if c not in cols:
-                print(f"[DB MIGRATION] Adding users.{c}")
-                cur.execute(f"ALTER TABLE users ADD COLUMN {c} {cdef}")
-
-    # Migration pour la table project_version (versioning)
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='project_version'")
-    if not cur.fetchone():
-        print(f"[DB MIGRATION] Creating project_version table")
-        cur.execute("""
-            CREATE TABLE project_version (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id INTEGER NOT NULL,
-                version_number INTEGER NOT NULL,
-                modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                modified_by VARCHAR(100),
-                modification_type VARCHAR(50),
-                change_summary TEXT,
-                project_data TEXT NOT NULL,
-                statut_before VARCHAR(100),
-                statut_after VARCHAR(100),
-                FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
-            )
-        """)
-        cur.execute("CREATE INDEX idx_project_version_project_id ON project_version(project_id)")
-        cur.execute("CREATE INDEX idx_project_version_modified_at ON project_version(modified_at)")
-
-    con.commit()
-    con.close()
+    # Migration pour la table users
+    add_missing_columns("users", {
+        "is_point_focal": "BOOLEAN DEFAULT FALSE",
+        "point_focal_organisme": "VARCHAR(300)",
+        "nom_ministere": "VARCHAR(300)",
+        "tutelle_agence": "VARCHAR(300)",
+        "must_change_password": "BOOLEAN DEFAULT FALSE",
+    })
 
 def _save_files(files):
     upload_folder = app.config["UPLOAD_FOLDER"]
@@ -3896,49 +3846,28 @@ def change_password():
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-def check_and_reset_db():
-    import sqlite3
-    db_path = app.config["DB_PATH"]
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    cur.execute("PRAGMA table_info(projects)")
-    cols = [r[1] for r in cur.fetchall()]
-    con.close()
-    if "auteur_nom" not in cols:
-        print("[DB] La colonne 'auteur_nom' est absente, suppression et régénération de la base...")
-        os.remove(db_path)
-
 @app.route("/api/admin/diagnostic-projets", methods=["GET"])
 def diagnostic_projets():
-    """Endpoint de diagnostic: liste TOUS les projets en base avec requête SQL brute"""
-    import sqlite3
+    """Endpoint de diagnostic: liste TOUS les projets en base"""
     try:
-        con = sqlite3.connect(app.config["DB_PATH"])
-        cur = con.cursor()
-        cur.execute("SELECT id, titre, statut, deleted_at, evaluabilite, evaluation_prealable, auteur_nom FROM project ORDER BY id")
-        rows = cur.fetchall()
-        con.close()
+        projects = Project.query.order_by(Project.id).all()
         return jsonify([{
-            "id": r[0], "titre": r[1], "statut": r[2],
-            "deleted_at": r[3], "evaluabilite": r[4],
-            "evaluation_prealable": r[5], "auteur_nom": r[6]
-        } for r in rows]), 200
+            "id": p.id, "titre": p.titre, "statut": p.statut,
+            "deleted_at": p.deleted_at.isoformat() if p.deleted_at else None,
+            "evaluabilite": p.evaluabilite,
+            "evaluation_prealable": p.evaluation_prealable,
+            "auteur_nom": p.auteur_nom
+        } for p in projects]), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # check_and_reset_db()  # Désactivé pour éviter les réinitialisations automatiques
     with app.app_context():
         db.create_all()
-        ensure_sqlite_columns()
+        ensure_db_columns()
 
-        # Compter les users avec raw SQL pour éviter erreur si colonne manquante
-        import sqlite3
-        con = sqlite3.connect(app.config["DB_PATH"])
-        cur = con.cursor()
-        cur.execute("SELECT COUNT(*) FROM users")
-        user_count = cur.fetchone()[0]
-        con.close()
+        # Compter les utilisateurs existants
+        user_count = User.query.count()
 
         target_pwd = "    "
         if user_count == 0:
@@ -5726,11 +5655,11 @@ def reload_modules():
 def run_migration():
     """Execute the migration script to add motivation_resoumission column"""
     try:
-        from sqlalchemy import text
+        from sqlalchemy import text, inspect as sa_inspect
 
         # Vérifier si la colonne existe déjà
-        result = db.session.execute(text("PRAGMA table_info(project)"))
-        columns = [row[1] for row in result.fetchall()]
+        inspector = sa_inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('project')]
 
         if 'motivation_resoumission' in columns:
             return jsonify({"message": "La colonne 'motivation_resoumission' existe déjà."}), 200
@@ -6203,8 +6132,7 @@ if __name__ == '__main__':
     print("[STARTUP] Vérification et exécution des migrations...")
     try:
         from migrate_render import migrate_database
-        db_path = app.config.get("DB_PATH", "maturation.db")
-        success = migrate_database(db_path)
+        success = migrate_database()
         if success:
             print("[STARTUP] ✓ Migrations terminées avec succès")
         else:
@@ -6214,9 +6142,12 @@ if __name__ == '__main__':
         import traceback
         traceback.print_exc()
 
-    # Démarrer le checkpoint WAL périodique (toutes les 60s)
-    wal_checkpoint_periodique()
-    print("[WAL] Checkpoint périodique activé (toutes les 60s)")
+    # Démarrer le checkpoint WAL périodique uniquement pour SQLite
+    if app.config.get("DB_TYPE") == "sqlite":
+        wal_checkpoint_periodique()
+        print("[WAL] Checkpoint périodique activé (toutes les 60s)")
+    else:
+        print("[CONFIG] PostgreSQL détecté, pas de WAL checkpoint nécessaire")
 
     port = int(os.environ.get('PORT', 5002))
     print(f"Starting Flask app on port {port}...")
