@@ -2,6 +2,9 @@ import sys
 import os
 import json
 import shutil
+import signal
+import atexit
+import threading
 import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -47,6 +50,36 @@ app.config["DB_PATH"] = os.path.join(DATA_DIR, "maturation.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + app.config["DB_PATH"]
 print(f"[CONFIG] Using DB: {app.config['DB_PATH']}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# --- Protection SQLite WAL contre la perte de données ---
+def wal_checkpoint():
+    """Force l'écriture du WAL dans le fichier principal SQLite"""
+    import sqlite3
+    try:
+        con = sqlite3.connect(app.config["DB_PATH"])
+        con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        con.close()
+        print("[WAL] Checkpoint effectué")
+    except Exception as e:
+        print(f"[WAL] Erreur checkpoint: {e}")
+
+def wal_checkpoint_periodique():
+    """Checkpoint WAL toutes les 60 secondes pour minimiser la perte de données"""
+    wal_checkpoint()
+    timer = threading.Timer(60, wal_checkpoint_periodique)
+    timer.daemon = True
+    timer.start()
+
+def shutdown_handler(signum, frame):
+    """Checkpoint WAL à l'arrêt du serveur (redéploiement Render)"""
+    print(f"[WAL] Signal {signum} reçu, checkpoint avant arrêt...")
+    wal_checkpoint()
+    sys.exit(0)
+
+# Intercepter les signaux d'arrêt de Render (SIGTERM)
+signal.signal(signal.SIGTERM, shutdown_handler)
+signal.signal(signal.SIGINT, shutdown_handler)
+atexit.register(wal_checkpoint)
 
 # Configuration du dossier uploads
 app.config["UPLOAD_FOLDER"] = os.path.join(DATA_DIR, "uploads")
@@ -6180,6 +6213,10 @@ if __name__ == '__main__':
         print(f"[STARTUP] ⚠️ Erreur lors de l'exécution des migrations: {e}")
         import traceback
         traceback.print_exc()
+
+    # Démarrer le checkpoint WAL périodique (toutes les 60s)
+    wal_checkpoint_periodique()
+    print("[WAL] Checkpoint périodique activé (toutes les 60s)")
 
     port = int(os.environ.get('PORT', 5002))
     print(f"Starting Flask app on port {port}...")

@@ -21,6 +21,13 @@ try:
     con = sqlite3.connect(db_path)
     cur = con.cursor()
 
+    # Checkpoint WAL au démarrage: forcer l'écriture des données du WAL dans le fichier principal
+    # Cela évite la perte de données récentes lors des redéploiements Render
+    print("[PRE-MIGRATION] Checkpoint WAL en cours...")
+    cur.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    result = cur.fetchone()
+    print(f"[PRE-MIGRATION] ✓ WAL checkpoint terminé (busy={result[0]}, checkpointed={result[1]}, total={result[2]})")
+
     # Migration 1: Colonne must_change_password dans users
     cur.execute("PRAGMA table_info(users)")
     cols = [row[1] for row in cur.fetchall()]
