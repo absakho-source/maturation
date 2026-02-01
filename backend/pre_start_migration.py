@@ -76,20 +76,25 @@ try:
         else:
             print("[PRE-MIGRATION] ✓ Colonnes GPS existent déjà")
 
-        # Migration 3: Activer must_change_password pour les comptes admin existants
-        print("[PRE-MIGRATION] Activation du changement de mot de passe obligatoire pour les comptes admin...")
-        result = conn.execute(text("""
-            UPDATE users
-            SET must_change_password = TRUE
-            WHERE role IN ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite')
-            AND (must_change_password IS NULL OR must_change_password = FALSE)
-        """))
-        conn.commit()
-        print(f"[PRE-MIGRATION] ✓ {result.rowcount} compte(s) admin mis à jour")
-
-        # Migration 4: Table project_version
+        # Récupérer la liste des tables existantes
         table_names = inspector.get_table_names()
-        if 'project_version' not in table_names:
+
+        # Migration 3: Activer must_change_password pour les comptes admin existants
+        if 'users' in table_names:
+            print("[PRE-MIGRATION] Activation du changement de mot de passe obligatoire pour les comptes admin...")
+            result = conn.execute(text("""
+                UPDATE users
+                SET must_change_password = TRUE
+                WHERE role IN ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite')
+                AND (must_change_password IS NULL OR must_change_password = FALSE)
+            """))
+            conn.commit()
+            print(f"[PRE-MIGRATION] ✓ {result.rowcount} compte(s) admin mis à jour")
+        else:
+            print("[PRE-MIGRATION] ✓ Table users n'existe pas encore (premier démarrage)")
+
+        # Migration 4: Table project_version (nécessite que 'project' existe pour la FK)
+        if 'project' in table_names and 'project_version' not in table_names:
             print("[PRE-MIGRATION] Création de la table project_version...")
             pk_type = "SERIAL PRIMARY KEY" if is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
             conn.execute(text(f"""
@@ -145,18 +150,21 @@ try:
             print("[PRE-MIGRATION] ✓ Toutes les colonnes recommandations existent déjà")
 
         # Migration 6: Corriger les projets "en évaluation" sans évaluabilité confirmée
-        print("[PRE-MIGRATION] Correction des projets 'en évaluation' sans évaluabilité confirmée...")
-        result = conn.execute(text("""
-            UPDATE project
-            SET statut = 'assigné'
-            WHERE statut = 'en évaluation'
-              AND (evaluabilite IS NULL OR evaluabilite != 'evaluable')
-        """))
-        if result.rowcount > 0:
-            conn.commit()
-            print(f"[PRE-MIGRATION] ✓ {result.rowcount} projet(s) corrigé(s) → statut remis à 'assigné'")
+        if 'project' in table_names:
+            print("[PRE-MIGRATION] Correction des projets 'en évaluation' sans évaluabilité confirmée...")
+            result = conn.execute(text("""
+                UPDATE project
+                SET statut = 'assigné'
+                WHERE statut = 'en évaluation'
+                  AND (evaluabilite IS NULL OR evaluabilite != 'evaluable')
+            """))
+            if result.rowcount > 0:
+                conn.commit()
+                print(f"[PRE-MIGRATION] ✓ {result.rowcount} projet(s) corrigé(s) → statut remis à 'assigné'")
+            else:
+                print("[PRE-MIGRATION] ✓ Aucun projet à corriger")
         else:
-            print("[PRE-MIGRATION] ✓ Aucun projet à corriger")
+            print("[PRE-MIGRATION] ✓ Table project n'existe pas encore (premier démarrage)")
 
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)
