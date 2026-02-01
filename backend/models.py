@@ -43,7 +43,7 @@ class Project(db.Model):
     titre = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     secteur = db.Column(db.String(150), nullable=True)
-    poles = db.Column(db.String(150), nullable=True)
+    poles = db.Column(db.Text, nullable=True)
     cout_estimatif = db.Column(db.Float, nullable=True)
     budget = db.Column(db.Float, nullable=True)
     pieces_jointes = db.Column(db.Text, nullable=True)

@@ -149,6 +149,15 @@ try:
         else:
             print("[PRE-MIGRATION] ✓ Toutes les colonnes recommandations existent déjà")
 
+        # Migration 7: Élargir project.poles de VARCHAR(150) à TEXT (PostgreSQL uniquement)
+        if is_postgres and 'project' in table_names:
+            try:
+                conn.execute(text("ALTER TABLE project ALTER COLUMN poles TYPE TEXT"))
+                conn.commit()
+                print("[PRE-MIGRATION] ✓ Colonne project.poles élargie à TEXT")
+            except Exception:
+                conn.rollback()
+
         # Migration 6: Corriger les projets "en évaluation" sans évaluabilité confirmée
         if 'project' in table_names:
             print("[PRE-MIGRATION] Correction des projets 'en évaluation' sans évaluabilité confirmée...")
