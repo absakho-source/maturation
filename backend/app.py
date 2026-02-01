@@ -3875,6 +3875,24 @@ def check_and_reset_db():
         print("[DB] La colonne 'auteur_nom' est absente, suppression et régénération de la base...")
         os.remove(db_path)
 
+@app.route("/api/admin/diagnostic-projets", methods=["GET"])
+def diagnostic_projets():
+    """Endpoint de diagnostic: liste TOUS les projets en base avec requête SQL brute"""
+    import sqlite3
+    try:
+        con = sqlite3.connect(app.config["DB_PATH"])
+        cur = con.cursor()
+        cur.execute("SELECT id, titre, statut, deleted_at, evaluabilite, evaluation_prealable, auteur_nom FROM project ORDER BY id")
+        rows = cur.fetchall()
+        con.close()
+        return jsonify([{
+            "id": r[0], "titre": r[1], "statut": r[2],
+            "deleted_at": r[3], "evaluabilite": r[4],
+            "evaluation_prealable": r[5], "auteur_nom": r[6]
+        } for r in rows]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     # check_and_reset_db()  # Désactivé pour éviter les réinitialisations automatiques
     with app.app_context():
