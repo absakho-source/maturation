@@ -157,7 +157,7 @@
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails complets</button>
             </div>
             <div class="final-section">
-              <h4>Votre décision finale</h4>
+              <h4>Votre recommandation au Comité</h4>
               <p class="instruction">Confirmez-vous l'avis de l'évaluateur ou souhaitez-vous l'infirmer ?</p>
               <div class="decision-buttons">
                 <button @click="confirmer(p.id, 'confirme')" class="btn-success">✓ Confirmer l'avis</button>
@@ -463,10 +463,10 @@ export default {
         return;
       }
 
-      // Confirmation avant décision finale pour éviter clics accidentels
+      // Confirmation avant recommandation pour éviter clics accidentels
       const actionMessage = decision === 'confirme'
-        ? "Êtes-vous sûr de vouloir confirmer cet avis ? Cette décision est finale."
-        : `Êtes-vous sûr de vouloir infirmer cet avis ? Cette décision est finale.\n\nMotif: "${com}"`;
+        ? "Êtes-vous sûr de vouloir confirmer cet avis ? Cette recommandation sera transmise au Comité."
+        : `Êtes-vous sûr de vouloir infirmer cet avis ? Cette recommandation sera transmise au Comité.\n\nMotif: "${com}"`;
 
       if (!confirm(actionMessage)) {
         return;
@@ -541,7 +541,7 @@ export default {
       this.financingStats.countSubmitted = this.allProjects.length;
       this.financingStats.totalSubmitted = this.allProjects.reduce((sum, p) => sum + (p.cout_estimatif || 0), 0);
 
-      // Projets avec décision finale confirmée par la Présidence du Comité
+      // Projets avec recommandation confirmée par la Présidence du Comité
       // ET avec avis favorable ou favorable sous conditions uniquement
       const approvedProjects = this.allProjects.filter(p =>
         p.decision_finale === 'confirme' &&
