@@ -173,18 +173,22 @@
       </div>
 
       <div class="form-group">
-        <label>Avis global (automatique basé sur le score):</label>
-        <div class="proposition-automatique" :class="{
-          'proposition-favorable': calculerScoreTotal() >= 80,
-          'proposition-conditionnel': calculerScoreTotal() >= 70 && calculerScoreTotal() < 80,
-          'proposition-defavorable': calculerScoreTotal() < 70
-        }">
-          {{ getAvisAutomatique() }}
+        <label>Avis global:</label>
+        <!-- Score < 70: Défavorable automatique (pas de choix) -->
+        <div v-if="calculerScoreTotal() < 70" class="proposition-automatique proposition-defavorable">
+          défavorable
         </div>
+        <!-- Score >= 70: L'utilisateur choisit entre "favorable" et "favorable sous conditions" -->
+        <select v-else v-model="ficheEdition.proposition" class="form-control proposition-select" :class="{
+          'proposition-favorable': ficheEdition.proposition === 'favorable',
+          'proposition-conditionnel': ficheEdition.proposition === 'favorable sous conditions'
+        }">
+          <option value="favorable">Favorable</option>
+          <option value="favorable sous conditions">Favorable sous conditions</option>
+        </select>
         <small class="help-text">
-          • 0-69 points = Défavorable
-          <br>• 70-79 points = Favorable sous conditions
-          <br>• 80-100 points = Favorable
+          • Score &lt; 70 points = Défavorable (automatique)
+          <br>• Score ≥ 70 points = Vous choisissez entre "Favorable" ou "Favorable sous conditions"
         </small>
       </div>
 
@@ -423,9 +427,8 @@ export default {
     },
     getAvisAutomatique() {
       const score = this.calculerScoreTotal();
-      if (score >= 80) return 'favorable';
-      if (score >= 70) return 'favorable sous conditions';
-      return 'défavorable';
+      if (score < 70) return 'défavorable';
+      return 'favorable';
     }
   },
   watch: {
@@ -433,7 +436,15 @@ export default {
     'ficheEdition.criteres': {
       handler() {
         if (this.ficheEdition) {
-          this.ficheEdition.proposition = this.getAvisAutomatique();
+          const score = this.calculerScoreTotal();
+          if (score < 70) {
+            // Score < 70: Défavorable automatique
+            this.ficheEdition.proposition = 'défavorable';
+          } else if (!this.ficheEdition.proposition || this.ficheEdition.proposition === 'défavorable') {
+            // Score >= 70 et pas encore de choix valide: défaut "favorable"
+            this.ficheEdition.proposition = 'favorable';
+          }
+          // Si déjà "favorable" ou "favorable sous conditions", on ne change pas
         }
       },
       deep: true

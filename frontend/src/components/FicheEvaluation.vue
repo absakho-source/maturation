@@ -365,7 +365,12 @@
 
         <div class="avis-final">
           <h4>Avis final de l'évaluateur :</h4>
-          <div class="radio-group">
+          <!-- Score < 70: Défavorable automatique -->
+          <div v-if="scoreTotal < 70" class="avis-defavorable-auto">
+            <span class="radio-label defavorable">Défavorable - Score insuffisant (&lt; 70 points)</span>
+          </div>
+          <!-- Score >= 70: Choix entre Favorable et Favorable sous conditions -->
+          <div v-else class="radio-group">
             <label class="radio-item">
               <input type="radio" value="favorable" v-model="fiche.avis_final" required>
               <span class="radio-label favorable">Favorable - Le projet est recommandé pour validation</span>
@@ -374,11 +379,8 @@
               <input type="radio" value="favorable_sous_conditions" v-model="fiche.avis_final" required>
               <span class="radio-label conditionnel">Favorable sous conditions - Le projet est recommandé sous réserve des améliorations suggérées</span>
             </label>
-            <label class="radio-item">
-              <input type="radio" value="defavorable" v-model="fiche.avis_final" required>
-              <span class="radio-label defavorable">Défavorable - Le projet n'est pas recommandé pour validation</span>
-            </label>
           </div>
+          <small class="help-text">Score &lt; 70 = Défavorable (automatique) | Score ≥ 70 = Vous choisissez</small>
         </div>
 
         <div class="textarea-group">
@@ -485,13 +487,10 @@ export default {
       return 'insuffisant'
     },
     avisAutomatique() {
-      // Calcul automatique de l'avis selon les seuils définis
-      // Score 0-69: Avis défavorable
-      // Score 70-79: Avis favorable sous conditions
-      // Score 80-105: Avis favorable
-      if (this.scoreTotal >= 80) return 'favorable'
-      if (this.scoreTotal >= 70) return 'favorable_sous_conditions'
-      return 'defavorable'
+      // Score < 70: Défavorable (automatique)
+      // Score >= 70: Défaut "favorable" (l'utilisateur peut choisir "favorable_sous_conditions")
+      if (this.scoreTotal < 70) return 'defavorable'
+      return 'favorable'
     },
     formulaireValide() {
       // Le bouton est actif dès qu'au moins une note est donnée
@@ -503,8 +502,14 @@ export default {
       handler(newScore) {
         this.fiche.score_total = newScore
         this.fiche.appreciation_globale = this.appreciationGlobale
-        // Mise à jour automatique de l'avis final selon le score
-        this.fiche.avis_final = this.avisAutomatique
+        // Score < 70: Défavorable automatique
+        // Score >= 70: Défaut "favorable" si pas encore de choix valide
+        if (newScore < 70) {
+          this.fiche.avis_final = 'defavorable'
+        } else if (!this.fiche.avis_final || this.fiche.avis_final === 'defavorable') {
+          this.fiche.avis_final = 'favorable'
+        }
+        // Si déjà "favorable" ou "favorable_sous_conditions", on ne change pas
       },
       immediate: true
     }

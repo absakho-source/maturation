@@ -264,21 +264,24 @@
         <div class="form-group">
           <label>AVIS FINAL</label>
           <div class="avis-automatique">
-            <div class="radio-group">
+            <!-- Score < 70: Défavorable automatique -->
+            <div v-if="scoreTotal < 70" class="avis-defavorable-auto">
+              <span class="radio-label defavorable">Avis défavorable (score &lt; 70 points)</span>
+            </div>
+            <!-- Score >= 70: Choix entre Favorable et Favorable sous conditions -->
+            <div v-else class="radio-group">
               <label class="radio-item">
                 <input type="radio" value="favorable" v-model="fiche.avis_final" required>
-                <span class="radio-label favorable">Avis favorable (80 points et plus)</span>
+                <span class="radio-label favorable">Avis favorable</span>
               </label>
               <label class="radio-item">
                 <input type="radio" value="favorable_sous_conditions" v-model="fiche.avis_final" required>
-                <span class="radio-label conditionnel">Avis favorable sous conditions (70-79 points)</span>
-              </label>
-              <label class="radio-item">
-                <input type="radio" value="defavorable" v-model="fiche.avis_final" required>
-                <span class="radio-label defavorable">Avis défavorable (0-69 points)</span>
+                <span class="radio-label conditionnel">Avis favorable sous conditions</span>
               </label>
             </div>
-            <p class="avis-note">Avis automatiquement sélectionné selon le score: <strong>{{ avisAutomatique }}</strong></p>
+            <p class="avis-note">
+              Score &lt; 70 = Défavorable (automatique) | Score ≥ 70 = Vous choisissez
+            </p>
           </div>
         </div>
         <div class="form-group">
@@ -412,26 +415,23 @@ export default {
       return 'Insuffisant';
     },
     avisAutomatique() {
-      // Calcul automatique de l'avis selon les seuils définis
-      // Score 0-69: Avis défavorable
-      // Score 70-79: Avis favorable sous conditions
-      // Score 80+: Avis favorable
-      if (this.scoreTotal >= 80) return 'Avis favorable';
-      if (this.scoreTotal >= 70) return 'Avis favorable sous conditions';
-      return 'Avis défavorable';
+      // Score < 70: Défavorable (automatique)
+      // Score >= 70: L'évaluateur choisit entre Favorable et Favorable sous conditions
+      if (this.scoreTotal < 70) return 'Avis défavorable';
+      return 'Vous choisissez entre Favorable ou Favorable sous conditions';
     }
   },
   watch: {
     scoreTotal: {
       handler(newScore) {
-        // Mise à jour automatique de l'avis final selon le score
-        if (newScore >= 80) {
-          this.fiche.avis_final = 'favorable';
-        } else if (newScore >= 70) {
-          this.fiche.avis_final = 'favorable_sous_conditions';
-        } else {
+        // Score < 70: Défavorable automatique
+        // Score >= 70: Défaut "favorable" si pas encore de choix valide
+        if (newScore < 70) {
           this.fiche.avis_final = 'defavorable';
+        } else if (!this.fiche.avis_final || this.fiche.avis_final === 'defavorable') {
+          this.fiche.avis_final = 'favorable';
         }
+        // Si déjà "favorable" ou "favorable_sous_conditions", on ne change pas
       },
       immediate: true
     }
