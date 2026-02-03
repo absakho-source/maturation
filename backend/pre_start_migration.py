@@ -175,6 +175,21 @@ try:
         else:
             print("[PRE-MIGRATION] ✓ Table project n'existe pas encore (premier démarrage)")
 
+        # Migration 8: Nettoyer les notifications incohérentes (orphelines après perte de données)
+        if 'notifications' in table_names and 'users' in table_names:
+            print("[PRE-MIGRATION] Nettoyage des notifications incohérentes...")
+            # Supprimer les notifications 'assignation' envoyées à des soumissionnaires (incohérent)
+            result = conn.execute(text("""
+                DELETE FROM notifications
+                WHERE type = 'assignation'
+                  AND user_id IN (SELECT id FROM users WHERE role = 'soumissionnaire')
+            """))
+            if result.rowcount > 0:
+                conn.commit()
+                print(f"[PRE-MIGRATION] ✓ {result.rowcount} notification(s) 'assignation' incorrecte(s) supprimée(s)")
+            else:
+                print("[PRE-MIGRATION] ✓ Aucune notification incohérente à nettoyer")
+
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)
 
