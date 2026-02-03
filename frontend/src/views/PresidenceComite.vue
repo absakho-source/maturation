@@ -36,26 +36,26 @@
         <div class="stat primary clickable" @click="filtrerParStatut(null)" :class="{ active: filtreStatut === null }">
           <span>Total projets</span><strong>{{ allProjects.length }}</strong>
         </div>
-        <div class="stat info clickable" @click="filtrerParStatut('soumis')" :class="{ active: filtreStatut === 'soumis' }">
-          <span>Soumis</span><strong>{{ countByStatus('soumis') }}</strong>
-        </div>
-        <div class="stat warning clickable" @click="filtrerParStatut('assigné')" :class="{ active: filtreStatut === 'assigné' }">
-          <span>Assignés</span><strong>{{ countByStatus('assigné') }}</strong>
-        </div>
-        <div class="stat clickable" @click="filtrerParStatut('évalué')" :class="{ active: filtreStatut === 'évalué' }">
-          <span>Évalués</span><strong>{{ countByStatus('évalué') }}</strong>
-        </div>
-        <div class="stat success clickable" @click="filtrerParStatut('validé par secrétariat')" :class="{ active: filtreStatut === 'validé par secrétariat' }">
-          <span>Validés secrétariat</span><strong>{{ countByStatus('validé par secrétariat') }}</strong>
-        </div>
-        <div class="stat success clickable" @click="filtrerParStatut('validé par presidencesct')" :class="{ active: filtreStatut === 'validé par presidencesct' }">
-          <span>Validés présidence</span><strong>{{ countByStatus('validé par presidencesct') }}</strong>
+        <div class="stat info clickable" @click="filtrerParStatut('en_instruction')" :class="{ active: filtreStatut === 'en_instruction' }">
+          <span>En instruction</span><strong>{{ countEnInstruction() }}</strong>
         </div>
         <div class="stat warning clickable" @click="filtrerParStatut('en attente validation presidencesct')" :class="{ active: filtreStatut === 'en attente validation presidencesct' }">
-          <span>En attente présidence</span><strong>{{ countByStatus('en attente validation presidencesct') }}</strong>
+          <span>En attente P-SCT</span><strong>{{ countByStatus('en attente validation presidencesct') }}</strong>
         </div>
-        <div class="stat success clickable" @click="filtrerParStatut('approuvé')" :class="{ active: filtreStatut === 'approuvé' }">
-          <span>Approuvés</span><strong>{{ countByStatus('approuvé') }}</strong>
+        <div class="stat clickable" @click="filtrerParStatut('validé par presidencesct')" :class="{ active: filtreStatut === 'validé par presidencesct' }">
+          <span>Validés P-SCT</span><strong>{{ countByStatus('validé par presidencesct') }}</strong>
+        </div>
+        <div class="stat success clickable" @click="filtrerParStatut('avis_favorable')" :class="{ active: filtreStatut === 'avis_favorable' }">
+          <span>Avis favorable</span><strong>{{ countAvisFavorable() }}</strong>
+        </div>
+        <div class="stat warning clickable" @click="filtrerParStatut('avis_sous_conditions')" :class="{ active: filtreStatut === 'avis_sous_conditions' }">
+          <span>Sous conditions</span><strong>{{ countAvisSousConditions() }}</strong>
+        </div>
+        <div class="stat danger clickable" @click="filtrerParStatut('avis_defavorable')" :class="{ active: filtreStatut === 'avis_defavorable' }">
+          <span>Défavorable</span><strong>{{ countAvisDefavorable() }}</strong>
+        </div>
+        <div class="stat success clickable" @click="filtrerParStatut('validé par presidencecomite')" :class="{ active: filtreStatut === 'validé par presidencecomite' }">
+          <span>Approuvés Comité</span><strong>{{ countByStatus('validé par presidencecomite') }}</strong>
         </div>
       </div>
 
@@ -72,7 +72,7 @@
         <h2>📋 Tous les projets</h2>
         <!-- Badge de filtre actif -->
         <div v-if="filtreStatut" class="filtre-actif">
-          <span>Filtre actif: <strong>{{ filtreStatut }}</strong></span>
+          <span>Filtre actif: <strong>{{ filtreStatutLabel }}</strong></span>
           <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
         </div>
 
@@ -367,7 +367,31 @@ export default {
       if (this.filtreStatut === null) {
         return this.allProjects;
       }
+      // Filtres spéciaux
+      if (this.filtreStatut === 'en_instruction') {
+        const statutsInstruction = ['soumis', 'assigné', 'en évaluation', 'évalué', 'compléments demandés', 'compléments fournis'];
+        return this.allProjects.filter(p => statutsInstruction.includes(p.statut));
+      }
+      if (this.filtreStatut === 'avis_favorable') {
+        return this.allProjects.filter(p => p.statut === 'favorable' || (p.avis === 'favorable' && p.statut === 'validé par presidencesct'));
+      }
+      if (this.filtreStatut === 'avis_sous_conditions') {
+        return this.allProjects.filter(p => p.statut === 'favorable sous conditions' || (p.avis === 'favorable sous conditions' && p.statut === 'validé par presidencesct'));
+      }
+      if (this.filtreStatut === 'avis_defavorable') {
+        return this.allProjects.filter(p => p.statut === 'défavorable' || p.statut === 'avis défavorable confirmé' || (p.avis === 'défavorable' && p.statut === 'validé par presidencesct'));
+      }
+      // Filtre standard par statut exact
       return this.allProjects.filter(p => p.statut === this.filtreStatut);
+    },
+    filtreStatutLabel() {
+      const labels = {
+        'en_instruction': 'En instruction',
+        'avis_favorable': 'Avis favorable',
+        'avis_sous_conditions': 'Favorable sous conditions',
+        'avis_defavorable': 'Avis défavorable'
+      };
+      return labels[this.filtreStatut] || this.filtreStatut;
     },
     projectsToDecide() {
       return this.allProjects.filter(p => p.statut === 'validé par presidencesct' && !p.decision_finale);
@@ -412,6 +436,20 @@ export default {
     },
     countByStatus(status) {
       return this.allProjects.filter(p => p.statut === status).length;
+    },
+    countEnInstruction() {
+      // Projets encore en cours d'instruction (pas encore soumis au comité)
+      const statutsInstruction = ['soumis', 'assigné', 'en évaluation', 'évalué', 'compléments demandés', 'compléments fournis'];
+      return this.allProjects.filter(p => statutsInstruction.includes(p.statut)).length;
+    },
+    countAvisFavorable() {
+      return this.allProjects.filter(p => p.statut === 'favorable' || (p.avis === 'favorable' && p.statut === 'validé par presidencesct')).length;
+    },
+    countAvisSousConditions() {
+      return this.allProjects.filter(p => p.statut === 'favorable sous conditions' || (p.avis === 'favorable sous conditions' && p.statut === 'validé par presidencesct')).length;
+    },
+    countAvisDefavorable() {
+      return this.allProjects.filter(p => p.statut === 'défavorable' || p.statut === 'avis défavorable confirmé' || (p.avis === 'défavorable' && p.statut === 'validé par presidencesct')).length;
     },
     confirmer(id, decision) {
       // Effacer l'erreur précédente
