@@ -442,14 +442,21 @@ def create_or_update_fiche_evaluation(project_id):
         # Calcul automatique du score total
         score_total = fiche.calculer_score_total()
 
-        # Calcul automatique de l'avis depuis le score (nouveau barème : <70: défavorable, ≥70: favorable par défaut)
-        # Note: L'évaluateur peut choisir "favorable sous conditions" au lieu de "favorable" si score ≥ 70
-        avis_calcule = fiche.calculer_avis_depuis_score()
+        # Déterminer l'avis final :
+        # - Score < 70 : Défavorable (automatique, pas de choix)
+        # - Score >= 70 : Respecter le choix de l'évaluateur ("favorable" ou "favorable sous conditions")
+        proposition_utilisateur = data.get('proposition', '')
+        if score_total < 70:
+            avis_final = "défavorable"
+        elif proposition_utilisateur in ["favorable", "favorable sous conditions"]:
+            avis_final = proposition_utilisateur
+        else:
+            avis_final = "favorable"
 
         # Mise à jour de la proposition dans la fiche ET de l'avis du projet
-        fiche.proposition = avis_calcule
+        fiche.proposition = avis_final
         project.statut = 'évalué'
-        project.avis = avis_calcule
+        project.avis = avis_final
         
         db.session.commit()
 
