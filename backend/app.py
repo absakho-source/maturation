@@ -1860,12 +1860,22 @@ def soumettre_fiche_evaluation_legacy(project_id):
         fiche.score_total = score_total
         p.score = score_total
 
-        # Proposition et recommandations finales
-        fiche.proposition = data.get('proposition', data.get('avis', ''))
+        # Déterminer l'avis final avec la logique du score :
+        # - Score < 70 : Défavorable (automatique, pas de choix)
+        # - Score >= 70 : Respecter le choix de l'utilisateur
+        proposition_utilisateur = data.get('proposition', data.get('avis', ''))
+        if score_total < 70:
+            avis_final = "défavorable"
+        elif proposition_utilisateur in ["favorable", "favorable sous conditions"]:
+            avis_final = proposition_utilisateur
+        else:
+            avis_final = "favorable"
+
+        fiche.proposition = avis_final
         fiche.recommandations = data.get('recommandations', '')
 
         # Mettre à jour le projet
-        p.avis = fiche.proposition
+        p.avis = avis_final
         p.commentaires = fiche.recommandations
         p.statut = "évalué"
 

@@ -452,10 +452,37 @@ def register_project_routes(app, Project, FicheEvaluation, db, User=None, Histor
             fiche.impact_environnemental_description = impact_environnemental.get('description', '')
             fiche.impact_environnemental_recommandations = impact_environnemental.get('recommandations', '')
 
-            # Mettre à jour le champ avis du projet pour qu'il se reflète dans les dashboards
-            if fiche.proposition:
-                project.avis = fiche.proposition
-                print(f"[FICHE UPDATE] Mise à jour de project.avis = {fiche.proposition}")
+            # Calculer le score total et déterminer l'avis
+            score_total = (
+                (fiche.pertinence_score or 0) +
+                (fiche.alignement_score or 0) +
+                (fiche.activites_couts_score or 0) +
+                (fiche.equite_score or 0) +
+                (fiche.viabilite_score or 0) +
+                (fiche.rentabilite_score or 0) +
+                (fiche.benefices_strategiques_score or 0) +
+                (fiche.perennite_score or 0) +
+                (fiche.avantages_intangibles_score or 0) +
+                (fiche.faisabilite_score or 0) +
+                (fiche.ppp_score or 0) +
+                (fiche.impact_environnemental_score or 0)
+            )
+            fiche.score_total = score_total
+
+            # Déterminer l'avis final avec la logique du score :
+            # - Score < 70 : Défavorable (automatique, pas de choix)
+            # - Score >= 70 : Respecter le choix de l'utilisateur
+            proposition_utilisateur = data.get('proposition', '')
+            if score_total < 70:
+                avis_final = "défavorable"
+            elif proposition_utilisateur in ["favorable", "favorable sous conditions"]:
+                avis_final = proposition_utilisateur
+            else:
+                avis_final = "favorable"
+
+            fiche.proposition = avis_final
+            project.avis = avis_final
+            print(f"[FICHE UPDATE] Score: {score_total}/100, Proposition utilisateur: '{proposition_utilisateur}', Avis final: '{avis_final}'")
 
             db.session.commit()
 
