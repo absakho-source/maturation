@@ -61,7 +61,7 @@
 
       <div class="tabs">
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous les projets</button>
-        <button @click="activeTab = 'decision'" :class="{ active: activeTab === 'decision' }" class="tab-btn">⚖️ Décision finale</button>
+        <button @click="activeTab = 'decision'" :class="{ active: activeTab === 'decision' }" class="tab-btn">⚖️ Recommandation au Comité</button>
         <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
@@ -107,7 +107,7 @@
                       v-if="p.statut === 'validé par presidencesct' && p.avis_presidencesct === 'valide' && !p.decision_finale"
                       @click="activeTab = 'decision'"
                       class="btn-sm btn-warning"
-                      title="Prendre décision finale"
+                      title="Faire une recommandation au Comité"
                     >
                       ⚖️ Décider
                     </button>
@@ -127,14 +127,14 @@
         </div>
       </div>
 
-      <!-- Décision finale -->
+      <!-- Recommandation au Comité -->
       <div v-if="activeTab === 'decision'" class="tab-content">
-        <h2>Projets à statuer (décision finale: confirmer ou infirmer l'avis)</h2>
+        <h2>Projets à statuer (recommandation au Comité : confirmer ou infirmer l'avis)</h2>
         <div v-if="projectsToDecide.length === 0" class="empty-state">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
-          <p>Aucun projet validé en attente de décision finale</p>
+          <p>Aucun projet validé en attente de recommandation</p>
         </div>
         <div v-else class="projects-grid">
           <div v-for="p in projectsToDecide" :key="p.id" class="project-card">
