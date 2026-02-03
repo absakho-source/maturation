@@ -61,6 +61,7 @@
       <div class="tabs">
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous</button>
         <button @click="activeTab = 'validation'" :class="{ active: activeTab === 'validation' }" class="tab-btn">✅ À valider</button>
+        <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
       </div>
@@ -162,10 +163,72 @@
         </div>
       </div>
 
+      <!-- Onglet Décisions du Comité -->
+      <div v-if="activeTab === 'decisions-comite'" class="tab-content">
+        <h2>🏛️ Décisions du Comité</h2>
+        <p class="info-text">Projets validés en attente de décision du Comité. Enregistrez ici les décisions prises lors des réunions du Comité.</p>
+
+        <div v-if="projectsEnAttenteComite.length === 0" class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>Aucun projet en attente de décision du Comité</p>
+        </div>
+
+        <div v-else class="projects-grid">
+          <div v-for="p in projectsEnAttenteComite" :key="p.id" class="project-card">
+            <div class="card-header">
+              <div class="card-title-section">
+                <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
+                <h3>{{ p.titre }}</h3>
+              </div>
+              <span class="badge status-comite">🟡 En attente Comité</span>
+            </div>
+            <div class="card-body">
+              <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
+              <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
+              <p v-if="p.avis"><strong>Avis évaluateur:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+              <p><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct || 'valide' }}</span></p>
+              <p v-if="p.decision_finale"><strong>Recommandation Présidence:</strong>
+                <span :class="p.decision_finale === 'confirme' ? 'text-success' : 'text-danger'">
+                  {{ p.decision_finale === 'confirme' ? 'Confirmé' : 'Infirmé' }}
+                </span>
+              </p>
+
+              <!-- Message d'avertissement important -->
+              <div class="warning-box" style="background: #fef3c7; border: 1px solid #f59e0b; padding: 0.75rem; border-radius: 6px; margin: 1rem 0;">
+                <p style="font-weight: 600; margin: 0; color: #92400e;">⚠️ ATTENTION: À renseigner uniquement après la tenue du Comité (le soumissionnaire sera notifié immédiatement).</p>
+              </div>
+
+              <!-- Boutons de décision du Comité -->
+              <div class="decision-comite-section">
+                <h4 style="margin-bottom: 0.5rem;">Décision du Comité</h4>
+                <textarea
+                  v-model="p.commentaires_comite_temp"
+                  placeholder="Commentaires sur la décision du Comité (obligatoire si contesté)"
+                  rows="3"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 0.5rem;"
+                ></textarea>
+                <div class="decision-buttons">
+                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-success">
+                    ✅ Entérine
+                  </button>
+                  <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-danger">
+                    ❌ Conteste
+                  </button>
+                </div>
+              </div>
+
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view" style="margin-top: 1rem;">Voir détails complets</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Onglet Statistiques -->
       <div v-if="activeTab === 'stats'" class="tab-content">
-        <StatsDashboard 
-          role="presidencesct" 
+        <StatsDashboard
+          role="presidencesct"
           username="presidencesct"
         />
       </div>
@@ -292,7 +355,15 @@ export default {
       }
       return this.allProjects.filter(p => p.statut === this.filtreStatut);
     },
-    projectsToValidate() { return this.allProjects.filter(p => p.statut === 'en attente validation presidencesct'); }
+    projectsToValidate() { return this.allProjects.filter(p => p.statut === 'en attente validation presidencesct'); },
+    projectsEnAttenteComite() {
+      // Projets validés par la présidence du comité, en attente de décision du Comité
+      return this.allProjects.filter(p =>
+        p.statut_comite === 'recommande_comite' ||
+        (p.statut === 'validé par presidencecomite' && !p.decision_comite) ||
+        (p.decision_finale && !p.decision_comite)
+      );
+    }
   },
   mounted() {
     const user = JSON.parse(localStorage.getItem("user") || "null") || {};
@@ -455,6 +526,47 @@ export default {
         console.error('Erreur téléchargement rapport élaboré:', error);
         alert('Erreur lors du téléchargement du rapport élaboré');
       }
+    },
+    enregistrerDecisionComite(projectId, decision, commentaires) {
+      // Validation: commentaire obligatoire si contesté
+      if (decision === 'conteste' && (!commentaires || !commentaires.trim())) {
+        alert('Le commentaire est obligatoire en cas de contestation par le Comité.');
+        return;
+      }
+
+      // Confirmation avant enregistrement
+      const actionText = decision === 'enterine' ? 'entériner' : 'contester';
+      const confirmMessage = `Êtes-vous sûr de vouloir ${actionText} cette décision ?\n\nLe soumissionnaire sera notifié immédiatement.`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+      fetch(`/api/projects/${projectId}/decision-comite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          decision: decision,
+          commentaires: commentaires || '',
+          auteur: user.username,
+          role: user.role
+        })
+      })
+      .then(async response => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erreur lors de l\'enregistrement');
+        }
+        const resultText = decision === 'enterine' ? 'entérinée' : 'contestée';
+        alert(`Décision du Comité ${resultText} avec succès. Le soumissionnaire a été notifié.`);
+        window.location.reload();
+      })
+      .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur: ' + error.message);
+      });
     }
   }
 };

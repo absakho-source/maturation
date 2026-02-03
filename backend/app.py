@@ -2062,9 +2062,9 @@ def enregistrer_decision_comite(project_id):
         decision = data.get("decision", "")  # 'enterine' ou 'conteste'
         commentaires = data.get("commentaires", "").strip()
 
-        # Vérifier les permissions (SecretariatSCT OU PresidenceComite)
-        if role not in ['secretariatsct', 'presidencecomite', 'admin']:
-            return jsonify({"error": "Seuls le Secrétariat SCT et la Présidence Comité peuvent enregistrer les décisions du Comité"}), 403
+        # Vérifier les permissions (SecretariatSCT OU PresidenceSCT OU PresidenceComite)
+        if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
+            return jsonify({"error": "Seuls le Secrétariat SCT, la Présidence SCT et la Présidence Comité peuvent enregistrer les décisions du Comité"}), 403
 
         # Vérifier que le projet est bien recommandé au Comité
         # Accepter soit les projets avec statut_comite='recommande_comite'
