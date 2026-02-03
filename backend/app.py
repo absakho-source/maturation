@@ -1455,6 +1455,14 @@ def traiter_project(project_id):
                     project_id,
                     lien_projet
                 )
+                # Notification au soumissionnaire de l'avancement
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Avis en cours de validation",
+                    f"L'avis sur votre projet '{projet_titre}' a été validé par le Secrétariat SCT et transmis pour validation finale.",
+                    lien_projet
+                )
 
             # Notification pour validation par présidence SCT (vers comité)
             if p.statut == "validé par presidencesct":
@@ -1464,6 +1472,14 @@ def traiter_project(project_id):
                     "Projet à examiner",
                     f"Le projet '{projet_titre}' a été validé par la Présidence SCT et attend votre décision.",
                     project_id,
+                    lien_projet
+                )
+                # Notification au soumissionnaire que son projet a été validé
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Projet validé",
+                    f"Votre projet '{projet_titre}' a été validé par la Présidence SCT. L'avis est : {p.avis or 'en cours'}.",
                     lien_projet
                 )
 
@@ -1980,6 +1996,34 @@ def submit_complements(project_id):
         )
         db.session.add(hist)
         db.session.commit()
+
+        # ============ NOTIFICATIONS ============
+        try:
+            projet_titre = p.titre[:50] + "..." if len(p.titre) > 50 else p.titre
+            lien_projet = f"/project/{project_id}"
+
+            # Notification à l'évaluateur si le projet est assigné
+            if p.evaluateur_nom:
+                notify_user_by_username(
+                    p.evaluateur_nom,
+                    "complement_fourni",
+                    "Compléments reçus",
+                    f"Le soumissionnaire a fourni des compléments pour le projet '{projet_titre}'.",
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification au secrétariat SCT
+            notify_users_by_role(
+                "secretariatsct",
+                "complement_fourni",
+                "Compléments reçus",
+                f"Des compléments ont été fournis pour le projet '{projet_titre}'.",
+                project_id,
+                lien_projet
+            )
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur lors de l'envoi des notifications: {notif_error}")
 
         return jsonify({"message": "Compléments envoyés"}), 200
     except Exception as e:

@@ -7,8 +7,9 @@ import os
 import sys
 import json
 from datetime import datetime
-from models import db, Project, FicheEvaluation, FicheEvaluationArchive, DocumentProjet
+from models import db, Project, FicheEvaluation, FicheEvaluationArchive, DocumentProjet, User
 from utils.archivage import archiver_fiche
+from routes.notification_routes import notify_users_by_role, notify_project_owner
 
 # Import pdf_generator DGPPE depuis le dossier parent
 try:
@@ -586,6 +587,35 @@ def create_or_update_fiche_evaluation(project_id):
             import traceback
             traceback.print_exc(file=sys.stderr)
             # Ne pas bloquer l'enregistrement si la génération PDF échoue
+
+        # ============ NOTIFICATIONS ============
+        try:
+            projet_titre = project.titre[:50] + "..." if len(project.titre) > 50 else project.titre
+            lien_projet = f"/project/{project_id}"
+
+            # Notification au secrétariat SCT qu'une évaluation est prête
+            notify_users_by_role(
+                "secretariatsct",
+                "avis_rendu",
+                "Nouvelle évaluation à valider",
+                f"Le projet '{projet_titre}' a reçu un avis '{avis_final}' et attend votre validation.",
+                project_id,
+                lien_projet
+            )
+
+            # Notification au soumissionnaire que son projet a été évalué
+            notify_project_owner(
+                project_id,
+                "evaluation",
+                "Projet évalué",
+                f"Votre projet '{projet_titre}' a été évalué. L'avis sera communiqué après validation.",
+                lien_projet
+            )
+
+            print(f"[NOTIFICATION] Notifications envoyées pour l'évaluation du projet {project_id}")
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur lors de l'envoi des notifications: {notif_error}")
+            # Ne pas bloquer si les notifications échouent
 
         return jsonify({
             'message': 'Fiche d\'évaluation enregistrée avec succès',
