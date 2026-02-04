@@ -5476,6 +5476,175 @@ def generer_rapport_statistiques():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/admin/rapport-elabore', methods=['GET'])
+def generer_rapport_elabore():
+    """Génère un rapport PDF élaboré avec liste détaillée des projets"""
+    try:
+        from io import BytesIO
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib import colors
+        from reportlab.lib.units import cm
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+        # Récupérer tous les projets
+        all_projects = Project.query.order_by(Project.date_soumission.desc()).all()
+
+        # Créer le PDF en mode paysage pour plus d'espace
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=1*cm, leftMargin=1*cm,
+                                topMargin=1.5*cm, bottomMargin=1.5*cm)
+
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Style personnalisé pour le titre
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            textColor=colors.HexColor('#2c3e50'),
+            spaceAfter=20,
+            alignment=1
+        )
+
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Heading2'],
+            fontSize=12,
+            textColor=colors.HexColor('#34495e'),
+            spaceAfter=10,
+            spaceBefore=15
+        )
+
+        cell_style = ParagraphStyle(
+            'CellStyle',
+            parent=styles['Normal'],
+            fontSize=8,
+            leading=10
+        )
+
+        # Titre
+        elements.append(Paragraph("RAPPORT ÉLABORÉ - PROJETS D'INVESTISSEMENT PUBLIC", title_style))
+        elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+        elements.append(Spacer(1, 20))
+
+        # Statistiques globales
+        elements.append(Paragraph("1. SYNTHÈSE GLOBALE", subtitle_style))
+
+        total = len(all_projects)
+        stats_data = [
+            ['Indicateur', 'Nombre', 'Pourcentage'],
+            ['Total projets', str(total), '100%'],
+            ['Soumis', str(len([p for p in all_projects if p.statut == 'soumis'])),
+             f"{len([p for p in all_projects if p.statut == 'soumis'])*100//max(total,1)}%"],
+            ['En instruction', str(len([p for p in all_projects if p.statut in ['assigné', 'en évaluation', 'évalué']])),
+             f"{len([p for p in all_projects if p.statut in ['assigné', 'en évaluation', 'évalué']])*100//max(total,1)}%"],
+            ['Validés SCT', str(len([p for p in all_projects if 'validé' in (p.statut or '')])),
+             f"{len([p for p in all_projects if 'validé' in (p.statut or '')])*100//max(total,1)}%"],
+            ['Avis favorable', str(len([p for p in all_projects if p.avis == 'favorable'])),
+             f"{len([p for p in all_projects if p.avis == 'favorable'])*100//max(total,1)}%"],
+            ['Avis favorable sous conditions', str(len([p for p in all_projects if p.avis == 'favorable sous conditions'])),
+             f"{len([p for p in all_projects if p.avis == 'favorable sous conditions'])*100//max(total,1)}%"],
+            ['Avis défavorable', str(len([p for p in all_projects if p.avis == 'défavorable'])),
+             f"{len([p for p in all_projects if p.avis == 'défavorable'])*100//max(total,1)}%"],
+        ]
+
+        stats_table = Table(stats_data, colWidths=[8*cm, 3*cm, 3*cm])
+        stats_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#ecf0f1')),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#bdc3c7')),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('TOPPADDING', (0, 1), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ]))
+        elements.append(stats_table)
+        elements.append(Spacer(1, 20))
+
+        # Liste détaillée des projets
+        elements.append(Paragraph("2. LISTE DÉTAILLÉE DES PROJETS", subtitle_style))
+
+        # En-tête du tableau
+        header = ['N°', 'Titre', 'Structure', 'Secteur', 'Coût (FCFA)', 'Statut', 'Avis', 'Date']
+
+        # Données des projets
+        project_data = [header]
+        for p in all_projects:
+            titre = p.titre[:40] + '...' if len(p.titre or '') > 40 else (p.titre or 'N/A')
+            structure = (p.structure_soumissionnaire or p.organisme_tutelle or p.auteur_nom or 'N/A')[:25]
+            secteur = (p.secteur or 'N/A')[:20]
+            cout = f"{p.cout_estimatif:,.0f}".replace(',', ' ') if p.cout_estimatif else 'N/A'
+            statut = (p.statut or 'N/A')[:20]
+            avis = (p.avis or '-')[:15]
+            date = p.date_soumission.strftime('%d/%m/%Y') if p.date_soumission else 'N/A'
+
+            project_data.append([
+                p.numero_projet or str(p.id),
+                Paragraph(titre, cell_style),
+                Paragraph(structure, cell_style),
+                Paragraph(secteur, cell_style),
+                cout,
+                Paragraph(statut, cell_style),
+                avis,
+                date
+            ])
+
+        # Créer le tableau avec largeurs adaptées au paysage
+        col_widths = [2*cm, 5*cm, 4*cm, 3*cm, 3*cm, 3.5*cm, 3*cm, 2.5*cm]
+        projects_table = Table(project_data, colWidths=col_widths, repeatRows=1)
+        projects_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('TOPPADDING', (0, 0), (-1, 0), 6),
+            ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+            ('ALIGN', (4, 1), (4, -1), 'RIGHT'),
+            ('ALIGN', (7, 1), (7, -1), 'CENTER'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#bdc3c7')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(projects_table)
+
+        # Volume financier total
+        total_cout = sum(p.cout_estimatif or 0 for p in all_projects)
+        elements.append(Spacer(1, 15))
+        elements.append(Paragraph(
+            f"<b>Volume financier total des projets soumis : {total_cout:,.0f} F CFA</b>".replace(',', ' '),
+            styles['Normal']
+        ))
+
+        # Construire le PDF
+        doc.build(elements)
+
+        # Préparer la réponse
+        buffer.seek(0)
+        filename = f"rapport_elabore_dgppe_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/admin/sync-project-avis", methods=["POST"])
 def sync_project_avis():
     """
