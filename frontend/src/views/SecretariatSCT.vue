@@ -807,7 +807,7 @@
               value="Défavorable"
               readonly
               class="form-control proposition-readonly proposition-defavorable">
-            <!-- Si score >= 70: choix entre "Favorable" et "Favorable sous conditions" -->
+            <!-- Si score >= 70: choix entre "Favorable sous conditions" et "Favorable" -->
             <select
               v-else
               v-model="ficheEdition.avis"
@@ -816,8 +816,9 @@
                 'proposition-favorable': ficheEdition.avis === 'favorable',
                 'proposition-conditionnel': ficheEdition.avis === 'favorable sous conditions'
               }">
-              <option value="favorable">Favorable</option>
+              <option value="" disabled>-- Choisir un avis --</option>
               <option value="favorable sous conditions">Favorable sous conditions</option>
+              <option value="favorable">Favorable</option>
             </select>
           </div>
           <div class="proposition-help-edit">
@@ -826,7 +827,7 @@
                 Score < 70 points = Défavorable (automatique)
               </span>
               <span v-else>
-                Score ≥ 70 points = Vous choisissez entre "Favorable" ou "Favorable sous conditions"
+                Score ≥ 70 points = Choisissez entre "Favorable sous conditions" ou "Favorable"
               </span>
             </small>
           </div>

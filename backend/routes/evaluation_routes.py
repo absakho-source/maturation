@@ -445,14 +445,15 @@ def create_or_update_fiche_evaluation(project_id):
 
         # Déterminer l'avis final :
         # - Score < 70 : Défavorable (automatique, pas de choix)
-        # - Score >= 70 : Respecter le choix de l'évaluateur ("favorable" ou "favorable sous conditions")
+        # - Score >= 70 : L'évaluateur DOIT choisir ("favorable" ou "favorable sous conditions")
         proposition_utilisateur = data.get('proposition', '')
         if score_total < 70:
             avis_final = "défavorable"
         elif proposition_utilisateur in ["favorable", "favorable sous conditions"]:
             avis_final = proposition_utilisateur
         else:
-            avis_final = "favorable"
+            # Score >= 70 mais pas de choix valide : erreur
+            return jsonify({'error': 'Veuillez choisir un avis : "favorable" ou "favorable sous conditions"'}), 400
 
         # Mise à jour de la proposition dans la fiche ET de l'avis du projet
         fiche.proposition = avis_final

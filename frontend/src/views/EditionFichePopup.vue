@@ -178,17 +178,18 @@
         <div v-if="calculerScoreTotal() < 70" class="proposition-automatique proposition-defavorable">
           défavorable
         </div>
-        <!-- Score >= 70: L'utilisateur choisit entre "favorable" et "favorable sous conditions" -->
+        <!-- Score >= 70: L'utilisateur choisit entre "favorable sous conditions" et "favorable" -->
         <select v-else v-model="ficheEdition.proposition" class="form-control proposition-select" :class="{
           'proposition-favorable': ficheEdition.proposition === 'favorable',
           'proposition-conditionnel': ficheEdition.proposition === 'favorable sous conditions'
         }">
-          <option value="favorable">Favorable</option>
+          <option value="" disabled>-- Choisir un avis --</option>
           <option value="favorable sous conditions">Favorable sous conditions</option>
+          <option value="favorable">Favorable</option>
         </select>
         <small class="help-text">
           • Score &lt; 70 points = Défavorable (automatique)
-          <br>• Score ≥ 70 points = Vous choisissez entre "Favorable" ou "Favorable sous conditions"
+          <br>• Score ≥ 70 points = Choisissez entre "Favorable sous conditions" ou "Favorable"
         </small>
       </div>
 

@@ -1862,14 +1862,15 @@ def soumettre_fiche_evaluation_legacy(project_id):
 
         # Déterminer l'avis final avec la logique du score :
         # - Score < 70 : Défavorable (automatique, pas de choix)
-        # - Score >= 70 : Respecter le choix de l'utilisateur
+        # - Score >= 70 : L'utilisateur DOIT choisir
         proposition_utilisateur = data.get('proposition', data.get('avis', ''))
         if score_total < 70:
             avis_final = "défavorable"
         elif proposition_utilisateur in ["favorable", "favorable sous conditions"]:
             avis_final = proposition_utilisateur
         else:
-            avis_final = "favorable"
+            # Score >= 70 mais pas de choix valide : erreur
+            return jsonify({"error": "Veuillez choisir un avis : 'favorable' ou 'favorable sous conditions'"}), 400
 
         fiche.proposition = avis_final
         fiche.recommandations = data.get('recommandations', '')
