@@ -755,97 +755,6 @@
       <div v-if="activeTab === 'carte'" class="tab-content">
         <CartesPolesComparaison />
       </div>
-    </div>
-
-    <!-- Modal d'édition de fiche d'évaluation -->
-    <div v-if="showModalEdition" class="modal-overlay" @click="fermerModalEdition">
-      <div class="modal-content-large" @click.stop>
-        <div class="modal-header">
-          <h2>Éditer la fiche d'évaluation - {{ projetEnEdition.titre }}</h2>
-          <button class="btn-close" @click="fermerModalEdition">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="warning-box">
-            ⚠️ Modification par le Secrétariat SCT - Cette action sera enregistrée dans l'historique
-          </div>
-
-          <!-- Messages de succès et d'erreur -->
-          <div v-if="messageSucces" class="alert alert-success">
-            ✓ {{ messageSucces }}
-          </div>
-          <div v-if="messageErreur" class="alert alert-danger">
-            ✗ {{ messageErreur }}
-          </div>
-
-          <div class="criteres-edition-grid">
-            <div v-for="critere in criteresConfig" :key="critere.key" class="critere-edit-item">
-              <h4>{{ critere.label }} ({{ critere.max }} pts)</h4>
-              <div class="critere-inputs">
-                <label>Score:
-                  <input type="number" :min="0" :max="critere.max"
-                    v-model.number="ficheEdition.criteres[critere.key].score" class="input-score"/>
-                  / {{ critere.max }}
-                </label>
-                <label>Commentaire:
-                  <textarea v-model="ficheEdition.criteres[critere.key].commentaire"
-                    class="textarea-commentaire" rows="2"></textarea>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="total-score-display">
-            Score total: <strong>{{ calculerScoreTotal() }} / 100</strong>
-          </div>
-
-          <div class="form-group">
-            <label><strong>Avis global:</strong></label>
-            <!-- Si score < 70: automatiquement "Défavorable" -->
-            <input
-              v-if="calculerScoreTotal() < 70"
-              type="text"
-              value="Défavorable"
-              readonly
-              class="form-control proposition-readonly proposition-defavorable">
-            <!-- Si score >= 70: choix entre "Favorable sous conditions" et "Favorable" -->
-            <select
-              v-else
-              v-model="ficheEdition.avis"
-              class="form-control proposition-select"
-              :class="{
-                'proposition-favorable': ficheEdition.avis === 'favorable',
-                'proposition-conditionnel': ficheEdition.avis === 'favorable sous conditions'
-              }">
-              <option value="" disabled>-- Choisir un avis --</option>
-              <option value="favorable sous conditions">Favorable sous conditions</option>
-              <option value="favorable">Favorable</option>
-            </select>
-          </div>
-          <div class="proposition-help-edit">
-            <small class="help-text">
-              <span v-if="calculerScoreTotal() < 70">
-                Score < 70 points = Défavorable (automatique)
-              </span>
-              <span v-else>
-                Score ≥ 70 points = Choisissez entre "Favorable sous conditions" ou "Favorable"
-              </span>
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label>Commentaires généraux:</label>
-            <textarea v-model="ficheEdition.commentaires" class="form-control" rows="4"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button @click="fermerModalEdition" class="btn-secondary" :disabled="enregistrementEnCours">Annuler</button>
-          <button @click="enregistrerEditionFiche" class="btn-primary"
-                  :disabled="enregistrementEnCours">
-            <span v-if="enregistrementEnCours">⏳ Enregistrement en cours...</span>
-            <span v-else>Enregistrer les modifications</span>
-          </button>
-        </div>
-      </div>
 
       <!-- Tableau de bord statistiques déplacé en bas -->
       <div class="dashboard-section bottom-dashboard">
@@ -1003,32 +912,6 @@ export default {
       // Évaluabilité
       evaluabiliteCommentaires: {},
       envoiEvaluabilite: {},
-      // Édition de fiche
-      showModalEdition: false,
-      projetEnEdition: {},
-      ficheEdition: {
-        criteres: {},
-        avis: '',
-        commentaires: ''
-      },
-      editionMotif: '',
-      enregistrementEnCours: false,
-      messageSucces: '',
-      messageErreur: '',
-      criteresConfig: [
-        { key: 'pertinence', label: 'PERTINENCE', max: 5 },
-        { key: 'alignement', label: 'ALIGNEMENT À LA DOCTRINE DE TRANSFORMATION SYSTÉMIQUE', max: 10 },
-        { key: 'activites_couts', label: 'PERTINENCE DES ACTIVITÉS ET BIEN FONDÉ DES COÛTS/PART DE FONCTIONNEMENT', max: 15 },
-        { key: 'equite', label: 'ÉQUITÉ (SOCIALE-TERRITORIALE-GENRE)', max: 15 },
-        { key: 'viabilite', label: 'VIABILITÉ/RENTABILITÉ FINANCIÈRE', max: 5 },
-        { key: 'rentabilite', label: 'RENTABILITÉ SOCIO-ÉCONOMIQUE (ACA/MPR)', max: 5 },
-        { key: 'benefices_strategiques', label: 'BÉNÉFICES STRATÉGIQUES', max: 10 },
-        { key: 'perennite', label: 'PÉRENNITÉ ET DURABILITÉ DES EFFETS ET IMPACTS DU PROJET', max: 5 },
-        { key: 'avantages_intangibles', label: 'AVANTAGES ET COÛTS INTANGIBLES', max: 10 },
-        { key: 'faisabilite', label: 'FAISABILITÉ DU PROJET / RISQUES POTENTIELS', max: 5 },
-        { key: 'ppp', label: 'POTENTIALITÉ OU OPPORTUNITÉ DU PROJET À ÊTRE RÉALISÉ EN PPP', max: 5 },
-        { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
-      ],
       // Filtres multi-sélection
       showFilters: true,
       selectedYears: [],
@@ -1209,24 +1092,6 @@ export default {
       }
 
       return alerts;
-    }
-  },
-  watch: {
-    'ficheEdition.criteres': {
-      handler() {
-        const score = this.calculerScoreTotal()
-
-        // Si score < 70: automatiquement "Défavorable"
-        if (score < 70) {
-          this.ficheEdition.avis = 'défavorable'
-        }
-        // Si score >= 70 et pas encore d'avis ou était "défavorable": initialiser avec "favorable"
-        else if (!this.ficheEdition.avis || this.ficheEdition.avis === 'défavorable') {
-          this.ficheEdition.avis = 'favorable'
-        }
-        // Sinon, garder le choix de l'utilisateur
-      },
-      deep: true
     }
   },
   mounted() {
@@ -1415,59 +1280,6 @@ export default {
       };
 
       window.addEventListener('message', messageHandler);
-    },
-    fermerModalEdition() {
-      this.showModalEdition = false;
-      this.projetEnEdition = {};
-      this.ficheEdition = { criteres: {}, avis: '', commentaires: '' };
-      this.editionMotif = '';
-      this.messageSucces = '';
-      this.messageErreur = '';
-      this.enregistrementEnCours = false;
-    },
-    calculerScoreTotal() {
-      return Object.values(this.ficheEdition.criteres).reduce((sum, c) => sum + (c.score || 0), 0);
-    },
-    async enregistrerEditionFiche() {
-      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-
-      // Réinitialiser les messages
-      this.messageSucces = '';
-      this.messageErreur = '';
-      this.enregistrementEnCours = true;
-
-      try {
-        const res = await fetch(`/api/projects/${this.projetEnEdition.id}/editer-fiche`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fiche: this.ficheEdition,
-            motif: this.editionMotif,
-            auteur: user.username,
-            role: user.role
-          })
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || 'Erreur lors de l\'enregistrement');
-        }
-
-        this.messageSucces = 'Fiche modifiée avec succès! Les modifications ont été enregistrées dans l\'historique.';
-
-        // Recharger les projets
-        await this.loadProjects();
-
-        // Fermer le modal après 2 secondes
-        setTimeout(() => {
-          this.fermerModalEdition();
-        }, 2000);
-      } catch (error) {
-        console.error('Erreur:', error);
-        this.messageErreur = 'Erreur lors de l\'enregistrement: ' + error.message;
-      } finally {
-        this.enregistrementEnCours = false;
-      }
     },
     async loadProjects() {
       try {

@@ -203,7 +203,7 @@
       </div>
 
       <div class="actions">
-        <button @click="enregistrer" class="btn-primary" :disabled="enregistrementEnCours">
+        <button @click="enregistrer" class="btn-primary" :disabled="enregistrementEnCours || !canSubmit">
           {{ enregistrementEnCours ? 'Enregistrement...' : 'Enregistrer' }}
         </button>
         <button @click="fermer" class="btn-secondary" :disabled="enregistrementEnCours">
@@ -241,6 +241,16 @@ export default {
         { key: 'impact_environnemental', label: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       ]
     };
+  },
+  computed: {
+    canSubmit() {
+      if (!this.ficheEdition) return false;
+      const score = this.calculerScoreTotal();
+      // Score < 70: défavorable automatique, toujours ok
+      if (score < 70) return true;
+      // Score >= 70: doit avoir choisi un avis valide
+      return this.ficheEdition.proposition === 'favorable' || this.ficheEdition.proposition === 'favorable sous conditions';
+    }
   },
   async mounted() {
     // Récupérer les données depuis les paramètres de l'URL
@@ -441,9 +451,9 @@ export default {
           if (score < 70) {
             // Score < 70: Défavorable automatique
             this.ficheEdition.proposition = 'défavorable';
-          } else if (!this.ficheEdition.proposition || this.ficheEdition.proposition === 'défavorable') {
-            // Score >= 70 et pas encore de choix valide: défaut "favorable"
-            this.ficheEdition.proposition = 'favorable';
+          } else if (this.ficheEdition.proposition === 'défavorable') {
+            // Score >= 70 et proposition était défavorable: on réinitialise pour forcer le choix
+            this.ficheEdition.proposition = '';
           }
           // Si déjà "favorable" ou "favorable sous conditions", on ne change pas
         }

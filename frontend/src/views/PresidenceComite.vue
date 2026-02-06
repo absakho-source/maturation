@@ -224,6 +224,9 @@
                   class="commentaires-comite"
                 ></textarea>
                 <div class="decision-buttons">
+                  <button @click="ouvrirEditionFiche(p)" class="btn-amend">
+                    ✏️ Amender
+                  </button>
                   <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-approve">
                     ✅ Entérine
                   </button>
@@ -649,6 +652,35 @@ export default {
         console.error('Erreur lors de l\'enregistrement de la décision:', error);
         alert(`❌ Erreur : ${error.message}`);
       });
+    },
+    ouvrirEditionFiche(projet) {
+      // Ouvrir un popup avec la page d'édition (même interface que l'évaluateur)
+      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
+      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
+      const uniqueWindowName = `EditionFiche_${Date.now()}`;
+      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
+
+      if (!popup) {
+        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
+        return;
+      }
+
+      // Écouter les messages du popup pour recharger après modification
+      const messageHandler = (event) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
+          // Recharger les projets
+          const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+          fetch(`/api/projects?role=${user.role}&username=${user.username}`)
+            .then(r => r.json())
+            .then(j => {
+              this.allProjects = j;
+              this.calculateFinancingStats();
+            });
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+      window.addEventListener('message', messageHandler);
     }
   }
 };
@@ -1034,7 +1066,8 @@ export default {
 }
 
 .decision-buttons .btn-approve,
-.decision-buttons .btn-reject {
+.decision-buttons .btn-reject,
+.decision-buttons .btn-amend {
   flex: 1;
   min-width: 140px;
   padding: 0.75rem 1.5rem;
@@ -1044,6 +1077,17 @@ export default {
   cursor: pointer;
   transition: all 0.3s;
   font-size: 0.95rem;
+}
+
+.decision-buttons .btn-amend {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.decision-buttons .btn-amend:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .decision-buttons .btn-approve {

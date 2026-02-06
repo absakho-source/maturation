@@ -292,8 +292,9 @@
                 'proposition-favorable': evaluationData.proposition === 'Favorable',
                 'proposition-conditionnel': evaluationData.proposition === 'Favorable sous conditions'
               }">
-              <option value="Favorable">Favorable</option>
+              <option value="" disabled>-- Choisir un avis --</option>
               <option value="Favorable sous conditions">Favorable sous conditions</option>
+              <option value="Favorable">Favorable</option>
             </select>
           </div>
           <div class="proposition-help">
@@ -398,9 +399,15 @@ export default {
       return this.projectInfo && this.projectInfo.est_assigne_a_moi === true
     },
     peutSauvegarder() {
-      return this.estAssigneAMoi &&
-             this.evaluationData.evaluateur_nom &&
-             this.calculerScoreTotal() > 0
+      if (!this.estAssigneAMoi || !this.evaluationData.evaluateur_nom || this.calculerScoreTotal() <= 0) {
+        return false;
+      }
+      const score = this.calculerScoreTotal();
+      const seuilMinimum = this.config?.seuil_minimum || 70;
+      // Score < 70: défavorable automatique, toujours ok
+      if (score < seuilMinimum) return true;
+      // Score >= 70: doit avoir choisi un avis valide
+      return this.evaluationData.proposition === 'Favorable' || this.evaluationData.proposition === 'Favorable sous conditions';
     }
   },
   watch: {
@@ -413,9 +420,9 @@ export default {
         if (score < seuilMinimum) {
           this.evaluationData.proposition = 'Défavorable'
         }
-        // Si score >= 70 et pas encore de proposition: initialiser avec "Favorable"
-        else if (!this.evaluationData.proposition || this.evaluationData.proposition === 'Défavorable') {
-          this.evaluationData.proposition = 'Favorable'
+        // Si score >= 70 et était "Défavorable": réinitialiser pour forcer le choix
+        else if (this.evaluationData.proposition === 'Défavorable') {
+          this.evaluationData.proposition = ''
         }
         // Sinon, garder le choix de l'évaluateur
       },

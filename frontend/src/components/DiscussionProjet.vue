@@ -86,8 +86,8 @@
         @keydown.ctrl.enter="envoyerMessage"
       ></textarea>
 
-      <!-- Sélecteur de fichiers -->
-      <div class="file-selector">
+      <!-- Sélecteur de fichiers (soumissionnaires: uniquement si compléments demandés) -->
+      <div v-if="canAttachFiles" class="file-selector">
         <input
           type="file"
           ref="fileInput"
@@ -151,6 +151,15 @@ export default {
   computed: {
     canAddMessage() {
       return this.currentUser !== null;
+    },
+    canAttachFiles() {
+      // Les soumissionnaires ne peuvent JAMAIS joindre de fichiers via la discussion
+      // Ils doivent utiliser le formulaire de soumission des compléments prévu dans le workflow
+      if (this.currentUser && this.currentUser.role === 'soumissionnaire') {
+        return false;
+      }
+      // Les autres rôles peuvent joindre des fichiers
+      return true;
     }
   },
   mounted() {

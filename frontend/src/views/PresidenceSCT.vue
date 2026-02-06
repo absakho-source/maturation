@@ -210,6 +210,9 @@
                   style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 0.5rem;"
                 ></textarea>
                 <div class="decision-buttons">
+                  <button @click="ouvrirEditionFiche(p)" class="btn-amend">
+                    ✏️ Amender
+                  </button>
                   <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-success">
                     ✅ Entérine
                   </button>
@@ -567,6 +570,28 @@ export default {
         console.error('Erreur:', error);
         alert('Erreur: ' + error.message);
       });
+    },
+    ouvrirEditionFiche(projet) {
+      // Ouvrir un popup avec la page d'édition (même interface que l'évaluateur)
+      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
+      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
+      const uniqueWindowName = `EditionFiche_${Date.now()}`;
+      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
+
+      if (!popup) {
+        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
+        return;
+      }
+
+      // Écouter les messages du popup pour recharger après modification
+      const messageHandler = (event) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
+          this.loadProjects();
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+      window.addEventListener('message', messageHandler);
     }
   }
 };
@@ -813,6 +838,8 @@ export default {
 .error-message { color: #dc2626; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
 .btn-success{background:#10b981;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
 .btn-danger{background:#ef4444;color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer}
+.btn-amend{background:linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);color:#fff;border:none;border-radius:8px;padding:.6rem .9rem;cursor:pointer;transition:all 0.3s}
+.btn-amend:hover{background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);transform:translateY(-2px);box-shadow:0 4px 12px rgba(139,92,246,0.3)}
 .avis-favorable{color:#10b981 !important;font-weight:600 !important}.avis-conditions{color:#f59e0b !important;font-weight:600 !important}.avis-defavorable{color:#ef4444 !important;font-weight:600 !important}.avis-complement{color:#f97316 !important;font-weight:600 !important}
 
 /* Badge filtre actif */
