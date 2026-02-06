@@ -224,15 +224,17 @@
                   class="commentaires-comite"
                 ></textarea>
                 <div class="decision-buttons">
-                  <button @click="ouvrirEditionFiche(p)" class="btn-amend">
-                    ✏️ Amender
+                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-approve btn-full-width">
+                    ✅ Entériner
                   </button>
-                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-approve">
-                    ✅ Entérine
-                  </button>
-                  <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-reject">
-                    ❌ Conteste
-                  </button>
+                  <div class="decision-buttons-row">
+                    <button @click="ouvrirEditionFiche(p)" class="btn-amend">
+                      ✏️ Amender
+                    </button>
+                    <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-reject">
+                      ❌ Rejeter
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1061,8 +1063,13 @@ export default {
 /* Boutons de décision Comité */
 .decision-buttons {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  flex-wrap: wrap;
+}
+
+.decision-buttons-row {
+  display: flex;
+  gap: 0.75rem;
 }
 
 .decision-buttons .btn-approve,
@@ -1077,6 +1084,12 @@ export default {
   cursor: pointer;
   transition: all 0.3s;
   font-size: 0.95rem;
+}
+
+.decision-buttons .btn-full-width {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
 }
 
 .decision-buttons .btn-amend {

@@ -53,7 +53,9 @@
       "Bash(timeout 60 ssh:*)",
       "Bash(./deploy_gmail_to_production.sh:*)",
       "Bash(xargs sed:*)",
-      "Bash(timeout 10 ssh:*)"
+      "Bash(timeout 10 ssh:*)",
+      "Bash(GIT_TERMINAL_PROMPT=0 git push:*)",
+      "Bash(gh auth status:*)"
     ],
     "deny": [],
     "ask": []

@@ -210,15 +210,17 @@
                   style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 0.5rem;"
                 ></textarea>
                 <div class="decision-buttons">
-                  <button @click="ouvrirEditionFiche(p)" class="btn-amend">
-                    ✏️ Amender
+                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-success btn-full-width">
+                    ✅ Entériner
                   </button>
-                  <button @click="enregistrerDecisionComite(p.id, 'enterine', p.commentaires_comite_temp)" class="btn-success">
-                    ✅ Entérine
-                  </button>
-                  <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-danger">
-                    ❌ Conteste
-                  </button>
+                  <div class="decision-buttons-row">
+                    <button @click="ouvrirEditionFiche(p)" class="btn-amend">
+                      ✏️ Amender
+                    </button>
+                    <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-danger">
+                      ❌ Rejeter
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -830,7 +832,9 @@ export default {
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }
 .btn-view { width: 100%; margin-top: .75rem; padding: .6rem; background: #6b7280; color: #fff; border: none; border-radius: 8px; }
 .decision-section { display:flex; flex-direction: column; gap:.5rem; margin-top:.5rem; }
-.decision-buttons { display: flex; gap: .5rem; }
+.decision-buttons { display: flex; flex-direction: column; gap: .5rem; }
+.decision-buttons-row { display: flex; gap: .5rem; }
+.btn-full-width { width: 100%; padding: .8rem !important; font-size: 1.05rem; }
 .motif-rejet-section { margin-bottom: 0.5rem; }
 .motif-label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; }
 .motif-hint { font-weight: 400; font-size: 0.85rem; color: #dc2626; }
