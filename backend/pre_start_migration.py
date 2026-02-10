@@ -190,7 +190,17 @@ try:
             else:
                 print("[PRE-MIGRATION] ✓ Aucune notification incohérente à nettoyer")
 
-        # Migration 9: Créer le compte membrecomite s'il n'existe pas
+        # Migration 9: Étendre la colonne password pour supporter les hashes longs
+        if 'users' in table_names and is_postgres:
+            try:
+                conn.execute(text("ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(255)"))
+                conn.commit()
+                print("[PRE-MIGRATION] ✓ Colonne password étendue à VARCHAR(255)")
+            except Exception:
+                conn.rollback()
+                # Colonne déjà étendue ou autre erreur, on continue
+
+        # Migration 10: Créer le compte membrecomite s'il n'existe pas
         if 'users' in table_names:
             result = conn.execute(text("SELECT id FROM users WHERE username = 'membrecomite'")).fetchone()
             if not result:
