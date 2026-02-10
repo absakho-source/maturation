@@ -8,6 +8,7 @@ import EvaluationDetaillee from '../views/EvaluationDetaillee.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
 import PresidenceSCT from '../views/PresidenceSCT.vue';
 import PresidenceComite from '../views/PresidenceComite.vue';
+import MembreComite from '../views/MembreComite.vue';
 import AdminDashboard from '../views/AdminDashboard.vue';
 import ProjectDetail from '../views/ProjectDetail.vue';
 import GestionComptes from '../views/GestionComptes.vue';
@@ -39,6 +40,7 @@ const routes = [
   { path: '/secretariatsct', name: 'SecretariatSCT', component: SecretariatSCT, meta: { requiresAuth: true } },
   { path: '/presidencesct', name: 'PresidenceSCT', component: PresidenceSCT, meta: { requiresAuth: true } },
   { path: '/presidencecomite', name: 'PresidenceComite', component: PresidenceComite, meta: { requiresAuth: true } },
+  { path: '/membrecomite', name: 'MembreComite', component: MembreComite, meta: { requiresAuth: true } },
   { path: '/admin', name: 'Admin', component: AdminDashboard, meta: { requiresAuth: true } },
   { path: '/gestion-comptes', name: 'GestionComptes', component: GestionComptes, meta: { requiresAuth: true } },
   { path: '/formulaire-editor', name: 'FormulaireEditor', component: FormulaireEditor, meta: { requiresAuth: true } },
@@ -72,6 +74,7 @@ router.beforeEach((to, from, next) => {
     'secretariatsct': ['secretariatsct', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
+    'membrecomite': ['membrecomite', 'mon-profil', 'project'], // Membres du comité: lecture seule, pas d'évaluation
     'invite': ['invite', 'mon-profil'] // Les invités n'ont accès qu'à leur dashboard et profil
   };
 

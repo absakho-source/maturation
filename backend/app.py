@@ -466,6 +466,9 @@ def projects():
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role == "presidencecomite":
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
+            elif role == "membrecomite":
+                # Membres du comité: voient tous les projets (filtrés côté frontend pour n'afficher que ceux recommandés)
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role in ["secretariatsct", "presidencesct", "admin"]:
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role == "invite":
@@ -476,7 +479,7 @@ def projects():
 
             # Filter out projects from suspended accounts
             # Note: Projects from non-verified accounts ARE visible but will be marked with soumissionnaire_statut_compte
-            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'admin']:
+            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'evaluateur', 'admin']:
                 # These roles should not see projects from suspended accounts in their workflow
                 # Get list of suspended user IDs
                 suspended_users = User.query.filter_by(statut_compte='suspendu').all()
@@ -3933,12 +3936,13 @@ if __name__ == "__main__":
                 ("secretariatsct", "secretariatsct"),
                 ("presidencesct", "presidencesct"),
                 ("presidencecomite", "presidencecomite"),
+                ("membrecomite", "membrecomite"),
                 ("admin", "admin"),
                 ("invite", "invite")
             ]
-            
+
             # Rôles qui doivent changer leur mot de passe à la première connexion
-            roles_changement_obligatoire = ["admin", "secretariatsct", "presidencesct", "presidencecomite"]
+            roles_changement_obligatoire = ["admin", "secretariatsct", "presidencesct", "presidencecomite", "membrecomite"]
 
             for username, role in user_data:
                 user = User()
@@ -3999,7 +4003,7 @@ def get_stats_overview():
         else:
             # Tous les projets soumis (actifs, non supprimés)
             projects = Project.query.filter(Project.deleted_at.is_(None)).all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
+    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
         if status_filter in ['favorable_avis', 'favorable']:
             projects = Project.query.filter(
                 Project.avis.in_(['favorable', 'favorable sous conditions'])
@@ -4734,6 +4738,9 @@ def add_project_message(project_id):
         # Les invités ne peuvent pas ajouter de messages
         if auteur_role.lower() == "invite":
             return jsonify({"error": "Accès refusé: Les invités ne peuvent pas ajouter de messages"}), 403
+
+        if auteur_role.lower() == "membrecomite":
+            return jsonify({"error": "Accès refusé: Les membres du comité ne peuvent pas ajouter de messages"}), 403
 
         # Vérifier qu'il y a au moins du contenu OU des fichiers
         files = request.files.getlist('files') if 'files' in request.files else []

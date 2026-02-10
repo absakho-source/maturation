@@ -150,6 +150,10 @@ export default {
   },
   computed: {
     canAddMessage() {
+      // Les membres du comité ne peuvent pas poster de messages (rôle consultatif)
+      if (this.currentUser && this.currentUser.role === 'membrecomite') {
+        return false;
+      }
       return this.currentUser !== null;
     },
     canAttachFiles() {
