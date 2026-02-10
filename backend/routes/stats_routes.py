@@ -15,7 +15,7 @@ def get_stats_overview():
     # Tous les projets selon les permissions du rôle
     if role == 'admin':
         projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
+    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
         projects = Project.query.all()  # Ces rôles voient tous les projets
     elif role == 'invite':
         # Rôle invité: accès en lecture seule à tous les projets
@@ -81,12 +81,13 @@ def get_stats_overview():
 @stats_bp.route('/api/stats/secteurs', methods=['GET'])
 def get_stats_secteurs():
     """Statistiques détaillées par secteur"""
+    from models import Project
     role = request.args.get('role', '')
 
     # Filtrer selon les permissions
     if role == 'admin':
         projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
+    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
         projects = Project.query.all()
     elif role == 'invite':
         # Rôle invité: accès autorisé en lecture seule
@@ -164,7 +165,7 @@ def get_stats_poles():
     # Filtrer selon les permissions
     if role == 'admin':
         projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
+    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
         projects = Project.query.all()
     elif role == 'invite':
         # Rôle invité: accès autorisé en lecture seule

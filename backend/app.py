@@ -4086,7 +4086,7 @@ def get_stats_secteurs():
             ).all()
         else:
             projects = Project.query.filter(Project.deleted_at.is_(None)).all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite']:
+    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
         if status_filter in ['favorable_avis', 'favorable']:
             projects = Project.query.filter(
                 Project.avis.in_(['favorable', 'favorable sous conditions'])
@@ -4101,7 +4101,7 @@ def get_stats_secteurs():
             ).all()
         else:
             projects = Project.query.filter_by(auteur_nom=username).filter(Project.deleted_at.is_(None)).all()
-    
+
     secteurs_stats = {}
     
     for project in projects:
@@ -4266,7 +4266,7 @@ def stats_poles_territorial():
         status_filter = request.args.get('filter', '')  # 'favorable_avis' pour filtrer uniquement les projets avec avis favorable
 
         # Les rôles administratifs voient tous les projets sans filtre d'auteur
-        administrative_roles = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite']
+        administrative_roles = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']
 
         # Filtrer les projets selon le paramètre filter
         # - 'favorable_avis' ou 'favorable' : uniquement les projets avec avis 'favorable' ou 'favorable sous conditions'
