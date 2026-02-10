@@ -81,9 +81,9 @@ def migrate_database(db_path=None):
             print("[MIGRATION] Mise à jour de fiche_evaluation_visible pour les projets entérinés...")
             result = conn.execute(text("""
                 UPDATE project
-                SET fiche_evaluation_visible = 1
+                SET fiche_evaluation_visible = TRUE
                 WHERE decision_finale = 'confirme'
-                AND (fiche_evaluation_visible = 0 OR fiche_evaluation_visible IS NULL)
+                AND (fiche_evaluation_visible = FALSE OR fiche_evaluation_visible IS NULL)
             """))
             conn.commit()
             count_updated = result.rowcount
