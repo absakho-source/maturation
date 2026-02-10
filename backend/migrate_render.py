@@ -3,6 +3,8 @@
 Script de migration pour la base de données
 Exécuté automatiquement au démarrage du backend
 Utilise SQLAlchemy pour éviter les conflits de connexion
+
+Version: 2.1 - Fix PostgreSQL boolean syntax
 """
 
 from sqlalchemy import create_engine, text, inspect
