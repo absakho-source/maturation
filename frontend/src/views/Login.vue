@@ -152,6 +152,9 @@ export default {
         }
         this.rolesByUsername = map;
 
+        // Ordre souhaité des rôles dans la liste déroulante
+        const roleOrder = ['soumissionnaire', 'evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'admin', 'invite'];
+
         // Construire la liste d'accounts pour l'affichage
         this.accounts = users.map(u => ({
           value: u.username,
@@ -159,8 +162,13 @@ export default {
           roleLabel: this.getRoleLabelByRole(u.role),
           email: u.email || null,
           telephone: u.telephone || null,
-          id: u.id
-        }));
+          id: u.id,
+          role: u.role
+        })).sort((a, b) => {
+          const indexA = roleOrder.indexOf(a.role);
+          const indexB = roleOrder.indexOf(b.role);
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
       } catch (e) {
         console.error("Erreur de chargement des comptes:", e);
         // Fallback: liste statique si le backend est indisponible
