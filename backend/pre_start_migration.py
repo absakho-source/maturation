@@ -190,6 +190,22 @@ try:
             else:
                 print("[PRE-MIGRATION] ✓ Aucune notification incohérente à nettoyer")
 
+        # Migration 9: Créer le compte membrecomite s'il n'existe pas
+        if 'users' in table_names:
+            result = conn.execute(text("SELECT id FROM users WHERE username = 'membrecomite'")).fetchone()
+            if not result:
+                print("[PRE-MIGRATION] Création du compte membrecomite...")
+                from werkzeug.security import generate_password_hash
+                hashed_pwd = generate_password_hash('membrecomite')
+                conn.execute(text("""
+                    INSERT INTO users (username, password, role, must_change_password, display_name)
+                    VALUES ('membrecomite', :password, 'membrecomite', TRUE, 'Membre Comité')
+                """), {"password": hashed_pwd})
+                conn.commit()
+                print("[PRE-MIGRATION] ✓ Compte membrecomite créé")
+            else:
+                print("[PRE-MIGRATION] ✓ Compte membrecomite existe déjà")
+
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)
 
