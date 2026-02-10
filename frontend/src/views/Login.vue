@@ -171,6 +171,7 @@ export default {
           { username: 'secretariatsct', role: 'secretariatsct', display_name: 'Chef de Division DP' },
           { username: 'presidencesct', role: 'presidencesct', display_name: 'Directeur Planification' },
           { username: 'presidencecomite', role: 'presidencecomite', display_name: 'DG DGPPE' },
+          { username: 'membrecomite', role: 'membrecomite', display_name: 'Membre Comité' },
           { username: 'admin', role: 'admin', display_name: 'CT DGPPE' },
           { username: 'invite', role: 'invite', display_name: 'Invite' }
         ];
@@ -191,6 +192,7 @@ export default {
         secretariatsct: "Secrétariat SCT",
         presidencesct: "Présidence SCT",
         presidencecomite: "Présidence Comité",
+        membrecomite: "Membre Comité",
         admin: "Administrateur",
         invite: "Invité"
       };
