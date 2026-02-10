@@ -14,7 +14,8 @@
       </div>
 
       <div v-else-if="messages.length === 0" class="empty-state">
-        <p>Aucun message pour le moment. Soyez le premier à démarrer la discussion!</p>
+        <p v-if="canAddMessage">Aucun message pour le moment. Soyez le premier à démarrer la discussion!</p>
+        <p v-else>Aucun message dans cette discussion pour le moment.</p>
       </div>
 
       <div v-else class="messages-list">
