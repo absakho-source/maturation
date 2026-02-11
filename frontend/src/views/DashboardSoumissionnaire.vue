@@ -298,13 +298,10 @@
           <div class="form-row">
             <div class="form-group">
               <label>Téléphone *</label>
-              <input
+              <PhoneInput
                 v-model="form.point_focal_telephone"
-                type="tel"
-                required
-                placeholder="Ex: +221 77 123 45 67"
-                @input="formatTelephone"
-                @focus="initTelephone"
+                :required="true"
+                placeholder="+221 77 123 45 67"
               />
             </div>
             <div class="form-group">
@@ -664,10 +661,11 @@
 
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
+import PhoneInput from '../components/PhoneInput.vue';
 
 export default {
   name: "DashboardSoumissionnaire",
-  components: { PageWrapper },
+  components: { PageWrapper, PhoneInput },
   data() {
     return {
       form: {

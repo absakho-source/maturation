@@ -360,11 +360,9 @@
             </div>
             <div class="form-group-modal">
               <label>Téléphone :</label>
-              <input
+              <PhoneInput
                 v-model="compteSelectionne.telephone"
-                type="tel"
-                placeholder="+221 XX XXX XX XX"
-                @focus="initTelephone"
+                placeholder="+221 77 123 45 67"
               />
             </div>
             <div class="form-group-modal">
@@ -708,6 +706,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import PageWrapper from '../components/PageWrapper.vue'
+import PhoneInput from '../components/PhoneInput.vue'
 
 const router = useRouter()
 

@@ -32,10 +32,11 @@
         <div class="form-section">
           <h3>Informations personnelles</h3>
           <input v-model="nomComplet" placeholder="Nom complet *" required />
-          <div class="phone-input-group">
-            <input v-model="indicatifTel" class="indicatif-input" placeholder="+221" pattern="\+\d{1,4}" required />
-            <input v-model="telephone" class="telephone-input" placeholder="77 123 45 67" type="tel" required />
-          </div>
+          <PhoneInput
+            v-model="telephone"
+            :required="true"
+            placeholder="+221 77 123 45 67"
+          />
           <input v-model="fonction" placeholder="Fonction/Poste *" required />
         </div>
 
@@ -312,11 +313,11 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import logo from '../assets/logo-dgppe.png'
+import PhoneInput from '../components/PhoneInput.vue'
 
 // Données du formulaire
 const nomComplet = ref('')
-const indicatifTel = ref('+221')
-const telephone = ref('')
+const telephone = ref('+221 ')
 const fonction = ref('')
 const typeStructure = ref('')
 const typeInstitution = ref('') // Nouveau: sous-type d'institution
@@ -512,7 +513,7 @@ async function register() {
   try {
     // 1. Créer le compte utilisateur
     const displayName = nomComplet.value.trim()
-    const telephoneComplet = `${indicatifTel.value} ${telephone.value}`.trim()
+    const telephoneComplet = telephone.value.trim()
 
     // Construction de la structure selon le nouveau système
     let structureFinal = nomStructure.value
@@ -606,8 +607,7 @@ async function register() {
 
     // Réinitialiser le formulaire
     nomComplet.value = ''
-    indicatifTel.value = '+221'
-    telephone.value = ''
+    telephone.value = '+221 '
     fonction.value = ''
     typeStructure.value = ''
     typeInstitution.value = ''

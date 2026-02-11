@@ -210,11 +210,9 @@
         <div class="form-row">
           <div class="form-group">
             <label for="telephone">Téléphone</label>
-            <input
-              type="tel"
-              id="telephone"
+            <PhoneInput
               v-model="form.telephone"
-              placeholder="+221 XX XXX XX XX"
+              placeholder="+221 77 123 45 67"
             />
           </div>
 
@@ -336,11 +334,13 @@
 <script>
 import logoUrl from '../assets/logo-dgppe.png'
 import PageWrapper from '../components/PageWrapper.vue'
+import PhoneInput from '../components/PhoneInput.vue'
 
 export default {
   name: 'Contact',
   components: {
-    PageWrapper
+    PageWrapper,
+    PhoneInput
   },
   data() {
     return {

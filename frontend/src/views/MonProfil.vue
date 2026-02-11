@@ -25,12 +25,9 @@
 
         <div class="form-group">
           <label for="telephone">Téléphone</label>
-          <input
-            type="tel"
-            id="telephone"
+          <PhoneInput
             v-model="profile.telephone"
-            placeholder="+221 XX XXX XX XX"
-            @focus="initTelephone"
+            placeholder="+221 77 123 45 67"
           />
         </div>
 
@@ -151,6 +148,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageWrapper from '../components/PageWrapper.vue'
+import PhoneInput from '../components/PhoneInput.vue'
 
 const router = useRouter()
 
