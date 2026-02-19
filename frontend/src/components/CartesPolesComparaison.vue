@@ -1,23 +1,15 @@
 <template>
   <div class="cartes-poles-comparaison">
-    <h3 class="titre-comparaison">Répartition des Projets par Pôles Territoriaux</h3>
+    <div class="titre-section">
+      <h3 class="titre-comparaison">Répartition Géographique des Projets Entérinés</h3>
+      <p class="sous-titre">Projets ayant reçu l'aval définitif du Comité de Maturation (avis favorable ou favorable sous conditions)</p>
+    </div>
 
-    <div class="cartes-grid">
-      <!-- Carte des projets soumis -->
-      <div class="carte-wrapper">
-        <CartePolesTerritoriaux
-          status-filter="all"
-          title="Tous les projets soumis"
-        />
-      </div>
-
-      <!-- Carte des projets avec avis favorable -->
-      <div class="carte-wrapper">
-        <CartePolesTerritoriaux
-          status-filter="favorable_avis"
-          title="Projets avec avis favorable"
-        />
-      </div>
+    <div class="carte-unique-wrapper">
+      <CartePolesTerritoriaux
+        status-filter="enterine"
+        title="Projets entérinés par le Comité de Maturation"
+      />
     </div>
   </div>
 </template>
@@ -40,34 +32,29 @@ export default {
   padding: 20px;
 }
 
-.titre-comparaison {
+.titre-section {
   text-align: center;
-  color: #2c3e50;
   margin-bottom: 30px;
+}
+
+.titre-comparaison {
+  color: #2c3e50;
+  margin-bottom: 8px;
   font-size: 1.8em;
   font-weight: 600;
 }
 
-.cartes-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-  margin-bottom: 20px;
+.sous-titre {
+  color: #6c757d;
+  font-size: 0.95em;
+  margin: 0;
 }
 
-.carte-wrapper {
+.carte-unique-wrapper {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border: 2px solid #e2e8f0;
-}
-
-/* Responsive : passer en colonne sur petits écrans */
-@media (max-width: 1400px) {
-  .cartes-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
 }
 </style>

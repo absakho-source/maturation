@@ -4269,9 +4269,15 @@ def stats_poles_territorial():
         administrative_roles = ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']
 
         # Filtrer les projets selon le paramètre filter
+        # - 'enterine' : uniquement les projets entérinés par le Comité (statut_comite = 'approuve_definitif')
         # - 'favorable_avis' ou 'favorable' : uniquement les projets avec avis 'favorable' ou 'favorable sous conditions'
         # - 'all' ou vide : tous les projets soumis
-        if status_filter in ['favorable_avis', 'favorable']:
+        if status_filter == 'enterine':
+            # Carte des projets entérinés par le Comité de maturation
+            projects = Project.query.filter(
+                Project.statut_comite == 'approuve_definitif'
+            ).all()
+        elif status_filter in ['favorable_avis', 'favorable']:
             # Carte des projets avec avis favorable
             if username and role not in administrative_roles:
                 projects = Project.query.filter(

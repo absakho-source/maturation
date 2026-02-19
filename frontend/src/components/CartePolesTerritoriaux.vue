@@ -269,8 +269,8 @@ export default {
   props: {
     statusFilter: {
       type: String,
-      default: 'all', // 'all', 'approved', ou 'favorable_avis'
-      validator: (value) => ['all', 'approved', 'favorable_avis'].includes(value)
+      default: 'all', // 'all', 'approved', 'favorable_avis', ou 'enterine'
+      validator: (value) => ['all', 'approved', 'favorable_avis', 'enterine'].includes(value)
     },
     title: {
       type: String,
@@ -452,7 +452,9 @@ export default {
       try {
         // Construire l'URL avec le filtre de statut si nécessaire
         let url = '/api/stats/poles'
-        if (this.statusFilter === 'approved') {
+        if (this.statusFilter === 'enterine') {
+          url += '?filter=enterine'
+        } else if (this.statusFilter === 'approved') {
           url += '?filter=approved'
         } else if (this.statusFilter === 'favorable_avis') {
           url += '?filter=favorable'
