@@ -3853,10 +3853,19 @@ def update_user(user_id):
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 def delete_user(user_id):
-    """Supprimer un utilisateur"""
+    """Supprimer un utilisateur et ses données liées"""
     try:
         user = User.query.get_or_404(user_id)
         username = user.username
+
+        # Supprimer les notifications liées
+        Notification.query.filter_by(user_id=user_id).delete()
+
+        # Dissocier les messages de contact (ne pas supprimer, garder la trace)
+        ContactMessage.query.filter_by(user_id=user_id).update({"user_id": None})
+
+        # Dissocier les projets soumis (ne pas supprimer les projets)
+        Project.query.filter_by(soumissionnaire_id=user_id).update({"soumissionnaire_id": None})
 
         db.session.delete(user)
         db.session.commit()
