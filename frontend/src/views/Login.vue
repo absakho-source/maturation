@@ -197,6 +197,7 @@ export default {
           { username: 'thiernoibrahima.gaye', role: 'evaluateur', display_name: 'Thierno Ibrahima GAYE' },
           { username: 'agnes.thiaw', role: 'evaluateur', display_name: 'Agnès THIAW' },
           { username: 'syleymane.niang', role: 'evaluateur', display_name: 'Syleymane NIANG' },
+          { username: 'mamoudououmar.kane', role: 'evaluateur', display_name: 'Mamoudou Oumar KANE' },
           { username: 'secretariatsct', role: 'secretariatsct', display_name: 'Chef de Division DP' },
           { username: 'presidencesct', role: 'presidencesct', display_name: 'Directeur Planification' },
           { username: 'presidencecomite', role: 'presidencecomite', display_name: 'DG DGPPE' },

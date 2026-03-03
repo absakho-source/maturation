@@ -242,6 +242,7 @@ try:
                 ("thiernoibrahima.gaye", "Thierno Ibrahima GAYE", "thiernoibrahima.gaye@economie.gouv.sn"),
                 ("agnes.thiaw", "Agnès THIAW", "agnes.thiaw@economie.gouv.sn"),
                 ("syleymane.niang", "Syleymane NIANG", "syleymane.niang@economie.gouv.sn"),
+                ("mamoudououmar.kane", "Mamoudou Oumar KANE", "mamoudououmar.kane@economie.gouv.sn"),
             ]
 
             from werkzeug.security import generate_password_hash
