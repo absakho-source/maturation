@@ -12,6 +12,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Lancer l'application
-echo "[START] Démarrage de l'application..."
-python app.py
+# Exécuter les migrations de données
+echo "[START] Exécution des migrations de données..."
+python -c "from migrate_render import migrate_database; migrate_database()" || echo "[START] ⚠️ Migrations de données ignorées"
+
+# Lancer l'application avec gunicorn (production)
+echo "[START] Démarrage de l'application avec gunicorn..."
+gunicorn app:app --workers 4 --threads 2 --bind 0.0.0.0:$PORT --timeout 120
