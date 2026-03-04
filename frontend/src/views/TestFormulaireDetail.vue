@@ -228,244 +228,103 @@
           </div>
         </template>
 
-        <!-- FICHE EVALUATION -->
+        <!-- FICHE D'EVALUATION (unique formulaire utilise sur la plateforme) -->
         <template v-if="formId === 'fiche-eval'">
-          <div class="fiche-header-bar">FICHE D'EVALUATION DE PROJET — DGPPE</div>
-
-          <fieldset>
-            <legend>1. Informations generales</legend>
-            <div class="readonly-grid">
-              <div><strong>Numero du projet :</strong> PRJ-2026-001</div>
-              <div><strong>Titre du projet :</strong> Projet exemple</div>
-              <div><strong>Soumissionnaire :</strong> Structure X</div>
-              <div><strong>Pole territorial :</strong> Dakar</div>
-              <div><strong>Secteur d'activite :</strong> Infrastructures</div>
-              <div><strong>Cout estimatif :</strong> 500 000 000 FCFA</div>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>2. Evaluateur</legend>
-            <div class="readonly-grid">
-              <div><strong>Nom de l'evaluateur :</strong> Nom Evaluateur</div>
-              <div><strong>Date d'evaluation :</strong> 04/03/2026</div>
-              <div><strong>Reference de la fiche :</strong> EVAL-PRJ-2026-001-20260304</div>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>3. Criteres d'evaluation</legend>
-
-            <div class="critere-section-box">
-              <h4 class="critere-cat">A. PERTINENCE ET ALIGNEMENT STRATEGIQUE (20 points)</h4>
-              <div v-for="c in criteresEvalA" :key="c.nom" class="critere-item-box">
-                <label>{{ c.nom }}</label>
-                <div class="slider-row"><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-                <p class="critere-desc">{{ c.desc }}</p>
-              </div>
-              <div class="sous-total-box">Sous-total A : 0/20 points</div>
-            </div>
-
-            <div class="critere-section-box">
-              <h4 class="critere-cat">B. FAISABILITE TECHNIQUE (20 points)</h4>
-              <div v-for="c in criteresEvalB" :key="c.nom" class="critere-item-box">
-                <label>{{ c.nom }}</label>
-                <div class="slider-row"><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-                <p class="critere-desc">{{ c.desc }}</p>
-              </div>
-              <div class="sous-total-box">Sous-total B : 0/20 points</div>
-            </div>
-
-            <div class="critere-section-box">
-              <h4 class="critere-cat">C. VIABILITE FINANCIERE (20 points)</h4>
-              <div v-for="c in criteresEvalC" :key="c.nom" class="critere-item-box">
-                <label>{{ c.nom }}</label>
-                <div class="slider-row"><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-                <p class="critere-desc">{{ c.desc }}</p>
-              </div>
-              <div class="sous-total-box">Sous-total C : 0/20 points</div>
-            </div>
-
-            <div class="critere-section-box">
-              <h4 class="critere-cat">D. IMPACT ET BENEFICES (20 points)</h4>
-              <div v-for="c in criteresEvalD" :key="c.nom" class="critere-item-box">
-                <label>{{ c.nom }}</label>
-                <div class="slider-row"><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-                <p class="critere-desc">{{ c.desc }}</p>
-              </div>
-              <div class="sous-total-box">Sous-total D : 0/20 points</div>
-            </div>
-
-            <div class="critere-section-box">
-              <h4 class="critere-cat">E. GESTION ET GOUVERNANCE (20 points)</h4>
-              <div v-for="c in criteresEvalE" :key="c.nom" class="critere-item-box">
-                <label>{{ c.nom }}</label>
-                <div class="slider-row"><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-                <p class="critere-desc">{{ c.desc }}</p>
-              </div>
-              <div class="sous-total-box">Sous-total E : 0/20 points</div>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>4. Evaluation detaillee</legend>
-            <div class="field-group"><label>Points forts identifies</label><textarea disabled rows="2" placeholder="Decrivez les principaux atouts du projet..."></textarea><span class="hint">0/500 caracteres</span></div>
-            <div class="field-group"><label>Points faibles et risques</label><textarea disabled rows="2" placeholder="Identifiez les faiblesses et risques potentiels..."></textarea><span class="hint">0/500 caracteres</span></div>
-            <div class="field-group"><label>Recommandations d'amelioration</label><textarea disabled rows="2" placeholder="Suggerez des ameliorations specifiques..."></textarea><span class="hint">0/500 caracteres</span></div>
-            <div class="field-group"><label>Conditions particulieres (si applicable)</label><textarea disabled rows="2" placeholder="Conditions speciales a respecter..."></textarea><span class="hint">0/300 caracteres</span></div>
-          </fieldset>
-
-          <fieldset>
-            <legend>5. Synthese</legend>
-            <div class="score-total-bar">
-              <strong>Score total : 0/100 points</strong>
-              <div class="score-bar"><div class="score-fill" style="width:0%"></div></div>
-            </div>
-            <div class="field-group mt">
-              <label>Appreciation globale (calculee automatiquement)</label>
-              <div class="radio-group-vertical">
-                <label class="rb"><input type="radio" disabled name="appreciation" /> Excellent (90-100 points)</label>
-                <label class="rb"><input type="radio" disabled name="appreciation" /> Tres bien (80-89 points)</label>
-                <label class="rb"><input type="radio" disabled name="appreciation" /> Bien (70-79 points)</label>
-                <label class="rb"><input type="radio" disabled name="appreciation" /> Passable (60-69 points)</label>
-                <label class="rb"><input type="radio" disabled name="appreciation" checked /> Insuffisant (&lt; 60 points)</label>
-              </div>
-            </div>
-            <div class="field-group mt">
-              <label>Avis final de l'evaluateur</label>
-              <div class="avis-info-box">Score &lt; 70 = Defavorable (automatique) | Score &ge; 70 = Vous choisissez</div>
-              <div class="radio-group-vertical">
-                <label class="rb"><input type="radio" disabled name="avis" /> Favorable — Le projet est recommande pour validation</label>
-                <label class="rb"><input type="radio" disabled name="avis" /> Favorable sous conditions — Recommande sous reserve des ameliorations</label>
-              </div>
-            </div>
-            <div class="field-group mt"><label>Commentaires finaux</label><textarea disabled rows="3" placeholder="Ajoutez vos commentaires finaux..."></textarea><span class="hint">0/1000 caracteres</span></div>
-          </fieldset>
-
-          <div class="btn-row">
-            <button class="btn-mock secondary">Sauvegarder le brouillon</button>
-            <button class="btn-mock primary">Finaliser et generer le PDF</button>
+          <div class="dgppe-official-header">
+            <div class="dgppe-ministry">MINISTERE DE L'ECONOMIE, DU PLAN ET DE LA COOPERATION</div>
+            <div class="dgppe-direction">DIRECTION GENERALE DE LA PLANIFICATION ET DES POLITIQUES ECONOMIQUES</div>
+            <div class="dgppe-platform">PLATEFORME DE SUIVI DE LA MATURATION DES PROJETS</div>
           </div>
-        </template>
 
-        <!-- FICHE DGPPE -->
-        <template v-if="formId === 'fiche-dgppe'">
-          <div class="dgppe-header-box">
-            <div class="dgppe-header-text">
-              <div>REPUBLIQUE DU SENEGAL</div>
-              <div>Ministere de l'Economie, du Plan et de la Cooperation</div>
-              <div>Direction Generale de la Planification des Politiques Economiques</div>
-              <div><strong>Plateforme de Suivi de la Maturation des Projets (PLASMAP)</strong></div>
-            </div>
-            <div class="dgppe-doc-title">FICHE D'EVALUATION DE PROJET</div>
-            <div class="dgppe-ref">Reference: FICHE-20260304-1 | Numero: PRJ-2026-001</div>
-          </div>
+          <h2 class="fiche-main-title">FICHE D'EVALUATION <span class="numero-badge">DGPPE-25-007</span></h2>
+          <div class="version-line">v.1.0 - Novembre 2025</div>
 
           <div class="section-bar">I - PRESENTATION DU PROJET</div>
 
-          <div class="field-row">
-            <div class="field-group"><label>COUT DU PROJET</label><input disabled placeholder="ex: 3,982 Milliards FCFA" /></div>
-            <div class="field-group">
-              <label>ORIGINE DU PROJET</label>
-              <div class="radio-group">
-                <label class="rb"><input type="radio" disabled name="origine" /> MATURATION</label>
-                <label class="rb"><input type="radio" disabled name="origine" /> OFFRE SPONTANEE</label>
-                <label class="rb"><input type="radio" disabled name="origine" /> AUTRES</label>
+          <div class="field-group"><label>INTITULE DU PROJET</label><textarea disabled rows="2" placeholder="Projet de developpement de la peche artisanale"></textarea></div>
+          <div class="info-grid-2col">
+            <div class="field-group"><label>SECTEUR DE PLANIFICATION:</label><input disabled value="agriculture-elevage-peche" /></div>
+            <div class="field-group"><label>POLES TERRITORIAUX:</label><input disabled value="Sud (Ziguinchor, Sedhiou, Kolda)" /></div>
+            <div class="field-group"><label>COUT DU PROJET (FCFA):</label><input disabled value="90 000 000 000" /></div>
+            <div class="field-group"><label>ORGANISME DE TUTELLE:</label><input disabled value="Ministere des Peches et de l'Economie Maritime" /></div>
+          </div>
+          <div class="field-group"><label>DESCRIPTION DU PROJET:</label><textarea disabled rows="4" placeholder="Description du projet..."></textarea></div>
+
+          <div class="section-bar">II - CLASSIFICATION DU PROJET</div>
+
+          <div class="classification-2col">
+            <div>
+              <label class="section-label">ORIGINE DU PROJET</label>
+              <div class="radio-group-vertical">
+                <label class="rb"><input type="radio" disabled name="origine" /> Maturation</label>
+                <label class="rb"><input type="radio" disabled name="origine" /> Offre spontanee</label>
+                <label class="rb"><input type="radio" disabled name="origine" /> Autres</label>
+              </div>
+            </div>
+            <div>
+              <label class="section-label">DIMENSIONS TRANSVERSALES</label>
+              <div class="dimensions-box">
+                <div><strong>Changement climatique</strong>
+                  <label class="cb"><input type="checkbox" disabled /> Adaptation</label>
+                  <label class="cb"><input type="checkbox" disabled /> Attenuation</label>
+                </div>
+                <div><strong>Genre</strong>
+                  <label class="cb"><input type="checkbox" disabled /> Prise en compte du genre</label>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="field-group">
-            <label>DIMENSIONS TRANSVERSALES</label>
-            <div class="dimensions-box">
-              <div><strong>CHANGEMENT CLIMATIQUE :</strong>
-                <label class="cb"><input type="checkbox" disabled /> Adaptation</label>
-                <label class="cb"><input type="checkbox" disabled /> Attenuation</label>
-              </div>
-              <div><strong>GENRE :</strong> <label class="cb"><input type="checkbox" disabled /> Oui</label></div>
-            </div>
-          </div>
+          <table class="mock-table dgppe-table"><thead><tr><th>ARTICULATION</th><th>AXE(S)</th><th>OBJECTIF(S) STRATEGIQUE(S)</th><th>OBJECTIFS DE DEVELOPPEMENT DURABLE</th></tr></thead>
+            <tbody><tr><td><textarea disabled rows="2"></textarea></td><td><textarea disabled rows="2"></textarea></td><td><textarea disabled rows="2"></textarea></td><td><textarea disabled rows="2"></textarea></td></tr></tbody></table>
+          <table class="mock-table dgppe-table"><thead><tr><th>DUREE D'ANALYSE</th><th>REALISATION</th><th>EXPLOITATION</th></tr></thead>
+            <tbody><tr><td><textarea disabled rows="2"></textarea></td><td><textarea disabled rows="2"></textarea></td><td><textarea disabled rows="2"></textarea></td></tr></tbody></table>
+          <table class="mock-table dgppe-table"><thead><tr><th>LOCALISATION</th><th>PARTIES PRENANTES</th><th>AUTRES PROJETS/PROG. CONNEXES</th></tr></thead>
+            <tbody><tr><td><textarea disabled rows="3"></textarea></td><td><textarea disabled rows="3"></textarea></td><td><textarea disabled rows="3"></textarea></td></tr></tbody></table>
+          <table class="mock-table dgppe-table"><thead><tr><th>OBJECTIF DU PROJET</th><th>ACTIVITES PRINCIPALES</th><th>EXTRANTS / RESULTATS / IMPACTS ATTENDUS</th></tr></thead>
+            <tbody><tr><td><textarea disabled rows="4"></textarea></td><td><textarea disabled rows="4"></textarea></td><td><textarea disabled rows="4"></textarea></td></tr></tbody></table>
 
-          <table class="mock-table dgppe-table">
-            <thead><tr><th>ARTICULATION</th><th>AXE(S)</th><th>OBJECTIF(S) STRATEGIQUE(S)</th><th>ODD</th></tr></thead>
-            <tbody><tr>
-              <td><textarea disabled rows="2" placeholder="Articulation..."></textarea></td>
-              <td><textarea disabled rows="2" placeholder="Axe(s)..."></textarea></td>
-              <td><textarea disabled rows="2" placeholder="Objectifs..."></textarea></td>
-              <td><textarea disabled rows="2" placeholder="ODD..."></textarea></td>
-            </tr></tbody>
+          <div class="section-bar">III - RESULTATS DE L'EVALUATION</div>
+
+          <table class="mock-table eval-criteria-table">
+            <thead><tr><th>CRITERES</th><th>VALEUR ET/OU DESCRIPTION</th><th>SCORE</th><th>RECOMMANDATIONS</th></tr></thead>
+            <tbody>
+              <tr v-for="c in criteresEvaluation" :key="c.nom">
+                <td class="col-critere"><strong>{{ c.nom }}</strong></td>
+                <td><textarea disabled rows="2" :placeholder="'Analyser ' + c.nom.toLowerCase() + '...'"></textarea></td>
+                <td class="col-score-cell"><input type="number" disabled value="0" style="width:40px" /> /{{ c.max }}</td>
+                <td><textarea disabled rows="2" placeholder="Recommandations..."></textarea></td>
+              </tr>
+              <tr class="total-row-eval">
+                <td><strong>SCORE TOTAL =</strong></td>
+                <td></td>
+                <td class="col-score-cell"><strong class="score-defavorable">0/100</strong></td>
+                <td></td>
+              </tr>
+            </tbody>
           </table>
 
-          <table class="mock-table dgppe-table">
-            <thead><tr><th>DUREE D'ANALYSE</th><th>REALISATION</th><th>EXPLOITATION</th></tr></thead>
-            <tbody><tr>
-              <td><input disabled placeholder="25 ans" /></td>
-              <td><input disabled placeholder="02 ans" /></td>
-              <td><input disabled placeholder="20 ans" /></td>
-            </tr></tbody>
-          </table>
-
-          <table class="mock-table dgppe-table">
-            <thead><tr><th>LOCALISATION</th><th>PARTIES PRENANTES</th><th>AUTRES PROJETS/PROG. CONNEXES</th></tr></thead>
-            <tbody><tr>
-              <td><textarea disabled rows="3"></textarea></td>
-              <td><textarea disabled rows="3"></textarea></td>
-              <td><textarea disabled rows="3"></textarea></td>
-            </tr></tbody>
-          </table>
-
-          <table class="mock-table dgppe-table">
-            <thead><tr><th>OBJECTIF DU PROJET</th><th>ACTIVITES PRINCIPALES</th><th>EXTRANTS / RESULTATS / IMPACTS ATTENDUS</th></tr></thead>
-            <tbody><tr>
-              <td><textarea disabled rows="4"></textarea></td>
-              <td><textarea disabled rows="4"></textarea></td>
-              <td><textarea disabled rows="4"></textarea></td>
-            </tr></tbody>
-          </table>
-
-          <div class="section-bar">II - RESULTATS DE L'EVALUATION</div>
-
-          <div v-for="c in criteresDGPPE" :key="c.nom" class="criterion-box">
-            <div class="criterion-header-bar">
-              <strong>{{ c.nom }}</strong>
-              <span class="criterion-score-badge">0/{{ c.max }}</span>
-            </div>
-            <div class="criterion-content-box">
-              <div class="slider-row"><label>SCORE</label><input type="range" :min="0" :max="c.max" :value="0" disabled /><span class="slider-val">0/{{ c.max }}</span></div>
-              <div class="field-row">
-                <div class="field-group"><label>APPRECIATION</label><textarea disabled rows="2" placeholder="Votre appreciation..."></textarea></div>
-                <div class="field-group"><label>RECOMMANDATIONS</label><textarea disabled rows="2" placeholder="Vos recommandations..."></textarea></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="total-score-bar">TOTAL SCORE = 0/100 | Appreciation: Insuffisant</div>
-
-          <div class="section-bar">III - CONCLUSION</div>
+          <div class="section-bar">IV - CONCLUSION</div>
 
           <div class="field-group">
-            <label>AVIS FINAL</label>
-            <div class="avis-info-box">Score &lt; 70 = Defavorable (automatique) | Score &ge; 70 = Vous choisissez</div>
-            <div class="radio-group-vertical">
-              <label class="rb"><input type="radio" disabled name="avis-dgppe" /> Avis favorable</label>
-              <label class="rb"><input type="radio" disabled name="avis-dgppe" /> Avis favorable sous conditions</label>
-            </div>
+            <label><strong>PROPOSITION:</strong></label>
+            <input disabled value="Defavorable" class="proposition-defavorable-input" />
+            <span class="hint">Score &lt; 70 points = Defavorable (automatique)</span>
           </div>
-          <div class="field-group"><label>PROPOSITION</label><textarea disabled rows="2" placeholder="Votre proposition..."></textarea></div>
-          <div class="field-group"><label>RECOMMANDATIONS</label><textarea disabled rows="3" placeholder="Vos recommandations generales..."></textarea></div>
-          <div class="field-group"><label>EVALUATEUR</label><input disabled value="Nom Evaluateur" style="background:#e9ecef" /></div>
-          <div class="field-group">
-            <label>IMPACT SUR L'EMPLOI</label>
-            <select disabled><option>Selectionner...</option><option>Favorable</option><option>Tres conditionnel</option><option>D'execution techniques pour determiner les couts</option></select>
-          </div>
-
-          <div class="section-bar">IV - DOCUMENTS ANNEXES</div>
-          <div class="field-group"><label>EVALUATEUR (signature)</label><input disabled placeholder="ex: SOD" /></div>
+          <div class="field-group"><label><strong>RECOMMANDATIONS:</strong></label><textarea disabled rows="4" placeholder="Saisir les recommandations finales..."></textarea></div>
+          <div class="field-group"><label><strong>NOM DE L'EVALUATEUR:</strong></label><input disabled value="secretariatsct" style="background:#e9ecef" /></div>
 
           <div class="btn-row">
-            <button class="btn-mock secondary">Sauvegarder</button>
-            <button class="btn-mock primary">Generer PDF</button>
+            <button class="btn-mock secondary">Sauvegarder brouillon</button>
             <button class="btn-mock success">Finaliser l'evaluation</button>
+          </div>
+        </template>
+
+        <!-- Redirection fiche-dgppe vers fiche-eval (c'est le meme formulaire) -->
+        <template v-if="formId === 'fiche-dgppe'">
+          <div class="info-redirect">
+            Ce formulaire est identique a la Fiche d'evaluation (formulaire n°8). Sur la plateforme, il n'y a qu'un seul formulaire d'evaluation.
+            <br/><a href="/test-formulaires/fiche-eval" target="_blank">Voir la Fiche d'evaluation</a>
           </div>
         </template>
 
@@ -609,11 +468,10 @@ const FORMS = {
   'discussion': { number: 6, title: 'Discussion projet', role: 'Soumissionnaire / Evaluateur', category: 'soumissionnaire' },
   'matrice': { number: 7, title: 'Matrice de recevabilite', role: 'Evaluateur', category: 'evaluateur' },
   'fiche-eval': { number: 8, title: "Fiche d'evaluation", role: 'Evaluateur', category: 'evaluateur' },
-  'fiche-dgppe': { number: 9, title: "Fiche d'evaluation DGPPE", role: 'Evaluateur', category: 'evaluateur' },
-  'gestion-comptes': { number: 10, title: 'Gestion des comptes', role: 'Admin / Secretariat SCT', category: 'admin' },
-  'config-emails': { number: 11, title: 'Configuration emails', role: 'Admin', category: 'admin' },
-  'ministeres': { number: 12, title: 'Gestion des ministeres', role: 'Admin / Secretariat SCT', category: 'admin' },
-  'formulaire-editor': { number: 13, title: "Configuration formulaire d'evaluation", role: 'Admin / Secretariat SCT', category: 'admin' }
+  'gestion-comptes': { number: 9, title: 'Gestion des comptes', role: 'Admin / Secretariat SCT', category: 'admin' },
+  'config-emails': { number: 10, title: 'Configuration emails', role: 'Admin', category: 'admin' },
+  'ministeres': { number: 11, title: 'Gestion des ministeres', role: 'Admin / Secretariat SCT', category: 'admin' },
+  'formulaire-editor': { number: 12, title: "Configuration formulaire d'evaluation", role: 'Admin / Secretariat SCT', category: 'admin' }
 };
 
 export default {
@@ -621,39 +479,19 @@ export default {
   components: { PageWrapper },
   data() {
     return {
-      criteresEvalA: [
-        { nom: '3.1. Alignement avec les priorites nationales (0-5)', max: 5, desc: 'Coherence avec les plans de developpement nationaux et contribution aux ODD' },
-        { nom: '3.2. Pertinence territoriale (0-5)', max: 5, desc: 'Adequation avec les besoins du pole territorial et impact sur le developpement local' },
-        { nom: '3.3. Innovation et valeur ajoutee (0-5)', max: 5, desc: 'Caractere innovant de l\'approche et differenciation par rapport aux projets existants' },
-        { nom: '3.4. Urgence et priorite (0-5)', max: 5, desc: 'Caractere urgent du besoin et niveau de priorite pour la population cible' }
-      ],
-      criteresEvalB: [
-        { nom: '3.5. Solidite technique (0-10)', max: 10, desc: 'Qualite de l\'approche technique et maitrise des technologies proposees' },
-        { nom: '3.6. Capacites de mise en oeuvre (0-5)', max: 5, desc: 'Competences de l\'equipe projet et experience similaire du soumissionnaire' },
-        { nom: '3.7. Gestion des risques (0-5)', max: 5, desc: 'Identification des risques et strategies d\'attenuation' }
-      ],
-      criteresEvalC: [
-        { nom: '3.8. Realisme du budget (0-10)', max: 10, desc: 'Coherence des couts et justification des postes budgetaires' },
-        { nom: '3.9. Rapport cout/benefice (0-5)', max: 5, desc: 'Efficience economique et retour sur investissement' },
-        { nom: '3.10. Durabilite financiere (0-5)', max: 5, desc: 'Modele de financement et perennite des ressources' }
-      ],
-      criteresEvalD: [
-        { nom: '3.11. Impact social (0-5)', max: 5, desc: 'Nombre de beneficiaires directs/indirects et amelioration des conditions de vie' },
-        { nom: '3.12. Impact economique (0-5)', max: 5, desc: 'Creation d\'emplois et dynamisation de l\'economie locale' },
-        { nom: '3.13. Impact environnemental (0-5)', max: 5, desc: 'Respect de l\'environnement et contribution au developpement durable' },
-        { nom: '3.14. Effet multiplicateur (0-5)', max: 5, desc: 'Potentiel de replication et effet d\'entrainement' }
-      ],
-      criteresEvalE: [
-        { nom: '3.15. Organisation du projet (0-5)', max: 5, desc: 'Structure de gouvernance et mecanismes de pilotage' },
-        { nom: '3.16. Planification (0-5)', max: 5, desc: 'Chronogramme realiste et jalons et livrables clairs' },
-        { nom: '3.17. Suivi-evaluation (0-5)', max: 5, desc: 'Indicateurs de performance et mecanismes de suivi' },
-        { nom: '3.18. Transparence et redevabilite (0-5)', max: 5, desc: 'Mecanismes de transparence et reddition de comptes' }
-      ],
-      criteresDGPPE: [
+      criteresEvaluation: [
         { nom: 'PERTINENCE', max: 5 },
         { nom: 'ALIGNEMENT A LA DOCTRINE DE TRANSFORMATION SYSTEMIQUE', max: 10 },
-        { nom: 'PERTINENCE DES ACTIVITES EN FONCTION DES COUTS, PART DE FONCTIONNEMENT', max: 15 },
-        { nom: 'EQUITE (SOCIALE-TERRITORIALE-GENRE)', max: 15 }
+        { nom: 'PERTINENCE DES ACTIVITES ET BIEN FONDE DES COUTS / PART DE FONCTIONNEMENT', max: 15 },
+        { nom: 'EQUITE (SOCIALE-TERRITORIALE-GENRE)', max: 15 },
+        { nom: 'VIABILITE / RENTABILITE FINANCIERE', max: 5 },
+        { nom: 'RENTABILITE SOCIO-ECONOMIQUE (ACA/MPR)', max: 5 },
+        { nom: 'BENEFICES STRATEGIQUES (SECURITE-RESILIENCE-INNOVATION-COMPETITIVITE-CONTENU LOCAL, ETC.)', max: 15 },
+        { nom: 'PERENNITE ET DURABILITE DES EFFETS ET IMPACTS DU PROJET', max: 5 },
+        { nom: 'AVANTAGES ET COUTS INTANGIBLES', max: 10 },
+        { nom: 'FAISABILITE DU PROJET / RISQUES POTENTIELS', max: 5 },
+        { nom: 'POTENTIALITE OU OPPORTUNITE DU PROJET A ETRE REALISE EN PPP', max: 5 },
+        { nom: 'IMPACTS ENVIRONNEMENTAUX', max: 5 }
       ]
     };
   },

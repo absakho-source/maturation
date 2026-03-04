@@ -45,12 +45,11 @@ export default {
         { id: 'soumission', number: 5, title: 'Soumission de projet', desc: 'Titre, tutelle, point focal, poles, secteur, couts, documents', role: 'Soumissionnaire', category: 'soumissionnaire' },
         { id: 'discussion', number: 6, title: 'Discussion projet', desc: 'Messagerie avec pieces jointes', role: 'Soumissionnaire / Evaluateur', category: 'soumissionnaire' },
         { id: 'matrice', number: 7, title: 'Matrice de recevabilite', desc: 'Documents requis/transmis, commentaires, 3 decisions', role: 'Evaluateur', category: 'evaluateur' },
-        { id: 'fiche-eval', number: 8, title: "Fiche d'evaluation", desc: '18 criteres avec curseurs, analyse textuelle, avis final', role: 'Evaluateur', category: 'evaluateur' },
-        { id: 'fiche-dgppe', number: 9, title: "Fiche d'evaluation DGPPE", desc: 'Cout, origine, dimensions transversales, strategie, ODD', role: 'Evaluateur', category: 'evaluateur' },
-        { id: 'gestion-comptes', number: 10, title: 'Gestion des comptes', desc: 'Verification, suspension, creation utilisateurs', role: 'Admin / SCT', category: 'admin' },
-        { id: 'config-emails', number: 11, title: 'Configuration emails', desc: 'SMTP, templates, activation/desactivation', role: 'Admin', category: 'admin' },
-        { id: 'ministeres', number: 12, title: 'Gestion des ministeres', desc: 'Ajout, modification, ordre, activation', role: 'Admin / SCT', category: 'admin' },
-        { id: 'formulaire-editor', number: 13, title: "Configuration formulaire d'evaluation", desc: 'Criteres, scores max, seuil minimum', role: 'Admin / SCT', category: 'admin' }
+        { id: 'fiche-eval', number: 8, title: "Fiche d'evaluation", desc: '12 criteres /100, classification, dimensions transversales, conclusion', role: 'Evaluateur', category: 'evaluateur' },
+        { id: 'gestion-comptes', number: 9, title: 'Gestion des comptes', desc: 'Verification, suspension, creation utilisateurs', role: 'Admin / SCT', category: 'admin' },
+        { id: 'config-emails', number: 10, title: 'Configuration emails', desc: 'SMTP, templates, activation/desactivation', role: 'Admin', category: 'admin' },
+        { id: 'ministeres', number: 11, title: 'Gestion des ministeres', desc: 'Ajout, modification, ordre, activation', role: 'Admin / SCT', category: 'admin' },
+        { id: 'formulaire-editor', number: 12, title: "Configuration formulaire d'evaluation", desc: 'Criteres, scores max, seuil minimum', role: 'Admin / SCT', category: 'admin' }
       ]
     };
   },
