@@ -23,6 +23,7 @@ import Contact from '../views/Contact.vue';
 import ProjetsTutelle from '../views/ProjetsTutelle.vue';
 import TestRoutes from '../views/TestRoutes.vue';
 import TestFormulaires from '../views/TestFormulaires.vue';
+import TestFormulaireDetail from '../views/TestFormulaireDetail.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -31,6 +32,7 @@ const routes = [
   { path: '/contact', name: 'Contact', component: Contact },
   { path: '/test-routes', name: 'TestRoutes', component: TestRoutes },
   { path: '/test-formulaires', name: 'TestFormulaires', component: TestFormulaires },
+  { path: '/test-formulaires/:id', name: 'TestFormulaireDetail', component: TestFormulaireDetail },
   { path: '/mon-profil', name: 'MonProfil', component: MonProfil, meta: { requiresAuth: true } },
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },
   { path: '/projets-tutelle', name: 'ProjetsTutelle', component: ProjetsTutelle, meta: { requiresAuth: true } },
