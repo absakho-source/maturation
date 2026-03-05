@@ -55,7 +55,9 @@
       "Bash(xargs sed:*)",
       "Bash(timeout 10 ssh:*)",
       "Bash(GIT_TERMINAL_PROMPT=0 git push:*)",
-      "Bash(gh auth status:*)"
+      "Bash(gh auth status:*)",
+      "Bash(rm -f TestFormulaires.vue TestFormulaireDetail.vue TestRoutes.vue)",
+      "Bash(ls Test*)"
     ],
     "deny": [],
     "ask": []
