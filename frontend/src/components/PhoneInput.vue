@@ -54,11 +54,7 @@ export default {
     }
   },
   mounted() {
-    // Initialiser avec l'indicatif par défaut si vide
-    if (!this.modelValue || this.modelValue.trim() === '') {
-      this.displayValue = this.defaultIndicatif + ' ';
-      this.$emit('update:modelValue', this.displayValue.trim());
-    }
+    // Ne pas pré-remplir l'indicatif automatiquement
   },
   methods: {
     // Patterns de formatage par pays
