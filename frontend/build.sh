@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script de build avec nettoyage du cache Vite
 # Force un rebuild complet pour Render
-# Build version: 1.0.39 - 2025-12-11 - Move Fatick left x: -0.15, y: -0.30
+# Build version: 1.0.40 - 2026-03-05 - Fix: une seule fiche evaluation, 12 formulaires
 
 echo "🧹 Nettoyage du cache Vite et du dossier dist..."
 rm -rf dist
