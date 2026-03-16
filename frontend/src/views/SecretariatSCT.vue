@@ -157,9 +157,9 @@
                 <tr>
                   <th class="col-num">N°</th>
                   <th class="col-titre">Projet</th>
-                  <th class="col-responsable">Responsable</th>
                   <th class="col-structure">Structure</th>
                   <th class="col-secteur">Secteur</th>
+                  <th class="col-poles">Pôles</th>
                   <th class="col-statut">Statut</th>
                   <th class="col-evaluateur">Évaluateur</th>
                   <th class="col-action">Actions</th>
@@ -188,9 +188,9 @@
                       </div>
                     </div>
                   </td>
-                  <td class="col-responsable">{{ projet.point_focal_nom || projet.auteur_nom || '—' }}</td>
                   <td class="col-structure" :title="projet.structure_soumissionnaire || projet.organisme_tutelle || ''">{{ projet.structure_soumissionnaire || projet.organisme_tutelle || '—' }}</td>
                   <td class="col-secteur" :title="projet.secteur || ''">{{ projet.secteur || '—' }}</td>
+                  <td class="col-poles" :title="projet.poles_territoriaux || projet.lieu_soumission || ''">{{ projet.poles_territoriaux || projet.lieu_soumission || '—' }}</td>
                   <td class="col-statut">
                     <span class="badge" :class="getStatutBadge(projet).class">{{ getStatutBadge(projet).text }}</span>
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
@@ -232,6 +232,7 @@
                         v-if="(estProjetAssignable(projet) || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         class="btn-sm btn-primary"
                         :disabled="!assignation[projet.id]"
+                        :title="['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.statut === 'en réexamen par le Secrétariat SCT' ? 'Réassigner à un autre évaluateur' : 'Assigner à un évaluateur'"
                         @click="projet.statut === 'en réexamen par le Secrétariat SCT' ? reassignerProjetRejete(projet.id) : assigner(projet.id)">
                         {{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.statut === 'en réexamen par le Secrétariat SCT' ? '🔄' : '➕' }}
                       </button>
@@ -3727,11 +3728,11 @@ export default {
 
 .assign-table .col-num { width: 50px; text-align: center; }
 .assign-table .col-titre { width: 220px; max-width: 250px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; }
-.assign-table .col-responsable { width: 120px; white-space: normal; word-wrap: break-word; }
-.assign-table .col-structure { width: 140px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
-.assign-table .col-secteur { width: 120px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
-.assign-table .col-statut { width: 110px; text-align: center; }
-.assign-table .col-evaluateur { width: 170px; }
+.assign-table .col-structure { width: 130px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
+.assign-table .col-secteur { width: 110px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
+.assign-table .col-poles { width: 100px; white-space: normal; word-wrap: break-word; line-height: 1.3; font-size: 0.8rem; }
+.assign-table .col-statut { width: 105px; text-align: center; }
+.assign-table .col-evaluateur { width: 130px; }
 .assign-table .col-action { width: 100px; text-align: center; }
 
 .num-badge {
@@ -3799,13 +3800,26 @@ export default {
   font-size: 0.78rem;
   font-weight: 500;
   white-space: nowrap;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.btn-sm:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-sm.btn-primary { background: var(--dgppe-primary, #003366); color: white; }
-.btn-sm.btn-primary:hover { opacity: 0.9; }
+.btn-sm.btn-primary:hover:not(:disabled) { background: #002244; }
 .btn-sm.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-sm.btn-success { background: #059669; color: white; }
+.btn-sm.btn-success:hover:not(:disabled) { background: #047857; }
 .btn-sm.btn-warning { background: #d97706; color: white; }
+.btn-sm.btn-warning:hover:not(:disabled) { background: #b45309; }
+
+.btn-sm.btn-view { background: #e8eef4; color: #003366; }
+.btn-sm.btn-view:hover:not(:disabled) { background: #003366; color: white; }
+.btn-sm.btn-secondary:hover:not(:disabled) { background: #4b5563; }
 .btn-sm.btn-warning:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .text-muted { color: #9ca3af; font-size: 0.8rem; }
@@ -3857,7 +3871,10 @@ export default {
 @media (max-width: 900px) {
   .assign-table { font-size: 0.75rem; }
   .assign-table .col-structure,
-  .assign-table .col-secteur { display: none; }
+  .assign-table .col-secteur,
+  .assign-table .col-poles { display: none; }
+  .assign-table th:nth-child(3),
+  .assign-table td:nth-child(3),
   .assign-table th:nth-child(4),
   .assign-table td:nth-child(4),
   .assign-table th:nth-child(5),
