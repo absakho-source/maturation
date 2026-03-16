@@ -3696,6 +3696,7 @@ export default {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
+  table-layout: fixed;
 }
 
 .assign-table thead {
@@ -3724,14 +3725,14 @@ export default {
   background: #f8fafc;
 }
 
-.assign-table .col-num { width: 55px; }
-.assign-table .col-titre { min-width: 180px; }
-.assign-table .col-responsable { width: 120px; }
-.assign-table .col-structure { width: 140px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.assign-table .col-secteur { width: 110px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.assign-table .col-statut { width: 120px; }
+.assign-table .col-num { width: 50px; text-align: center; }
+.assign-table .col-titre { width: 220px; max-width: 250px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; }
+.assign-table .col-responsable { width: 120px; white-space: normal; word-wrap: break-word; }
+.assign-table .col-structure { width: 140px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
+.assign-table .col-secteur { width: 120px; white-space: normal; word-wrap: break-word; line-height: 1.3; }
+.assign-table .col-statut { width: 110px; text-align: center; }
 .assign-table .col-evaluateur { width: 170px; }
-.assign-table .col-action { width: 110px; }
+.assign-table .col-action { width: 100px; text-align: center; }
 
 .num-badge {
   font-size: 0.75rem;
