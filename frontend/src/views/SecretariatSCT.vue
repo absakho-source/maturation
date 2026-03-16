@@ -190,7 +190,7 @@
                   </td>
                   <td class="col-structure" :title="projet.structure_soumissionnaire || projet.organisme_tutelle || ''">{{ projet.structure_soumissionnaire || projet.organisme_tutelle || '—' }}</td>
                   <td class="col-secteur" :title="projet.secteur || ''">{{ projet.secteur || '—' }}</td>
-                  <td class="col-poles" :title="projet.poles_territoriaux || projet.lieu_soumission || ''">{{ projet.poles_territoriaux || projet.lieu_soumission || '—' }}</td>
+                  <td class="col-poles" :title="projet.poles || ''">{{ projet.poles || '—' }}</td>
                   <td class="col-statut">
                     <span class="badge" :class="getStatutBadge(projet).class">{{ getStatutBadge(projet).text }}</span>
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
