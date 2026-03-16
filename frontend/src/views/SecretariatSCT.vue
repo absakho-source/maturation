@@ -34,8 +34,7 @@
       </div>
 
       <div class="tabs">
-        <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous</button>
-        <button @click="activeTab = 'assignation'" :class="{ active: activeTab === 'assignation' }" class="tab-btn">✅ Assignation / Réassignation</button>
+        <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous les projets</button>
         <button @click="activeTab = 'validation'" :class="{ active: activeTab === 'validation' }" class="tab-btn">🔎 Validation d'avis</button>
         <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'evaluation'" :class="{ active: activeTab === 'evaluation' }" class="tab-btn">✍️ Mes évaluations</button>
@@ -151,247 +150,155 @@
             <button @click="resetFilters" class="btn-reset">Réinitialiser</button>
           </div>
 
-          <!-- Tableau des projets -->
-          <div class="projects-table-container">
-            <table class="projects-table">
+          <!-- Tableau des projets avec assignation intégrée -->
+          <div class="assign-table-wrapper">
+            <table class="assign-table">
               <thead>
                 <tr>
-                  <th>N° Projet</th>
-                  <th>Titre</th>
-                  <th>Responsable</th>
-                  <th>Structure porteuse</th>
-                  <th>Secteur</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
+                  <th class="col-num">N°</th>
+                  <th class="col-titre">Projet</th>
+                  <th class="col-responsable">Responsable</th>
+                  <th class="col-structure">Structure</th>
+                  <th class="col-secteur">Secteur</th>
+                  <th class="col-statut">Statut</th>
+                  <th class="col-evaluateur">Évaluateur</th>
+                  <th class="col-action">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="projetsFiltres.length === 0">
-                  <td colspan="7" class="empty-state">Aucun projet trouvé</td>
+                  <td colspan="8" class="empty-state">Aucun projet trouvé</td>
                 </tr>
                 <tr v-for="projet in projetsFiltres" :key="projet.id"
                     :class="{
-                      'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie',
+                      'row-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie',
+                      'row-reexamen': projet.statut === 'en réexamen par le Secrétariat SCT',
+                      'row-complements': projet.statut === 'compléments fournis',
                       'row-prioritaire': projet.niveau_priorite === 'prioritaire_ant'
                     }">
-                  <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
-                  <td class="project-title">
-                    <router-link :to="`/project/${projet.id}`" class="titre-link">{{ projet.titre }}</router-link>
-                    <div class="titre-badges">
-                      <span v-if="projet.niveau_priorite === 'prioritaire_ant'" class="badge-small badge-prioritaire">PRIORITAIRE</span>
-                      <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="badge-small status-warning">🔒 Non vérifié</span>
+                  <td class="col-num">
+                    <span class="num-badge">{{ projet.numero_projet || '—' }}</span>
+                  </td>
+                  <td class="col-titre">
+                    <div class="titre-cell">
+                      <router-link :to="`/project/${projet.id}`" class="titre-link">{{ projet.titre }}</router-link>
+                      <div class="titre-badges">
+                        <span v-if="projet.niveau_priorite === 'prioritaire_ant'" class="badge-small badge-prioritaire">PRIORITAIRE</span>
+                        <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="badge-small status-warning">🔒 Non vérifié</span>
+                      </div>
                     </div>
                   </td>
-                  <td>{{ projet.point_focal_nom || projet.auteur_nom || 'N/A' }}</td>
-                  <td>{{ projet.structure_soumissionnaire || projet.organisme_tutelle || 'N/A' }}</td>
-                  <td>{{ projet.secteur || 'N/A' }}</td>
-                  <td>
+                  <td class="col-responsable">{{ projet.point_focal_nom || projet.auteur_nom || '—' }}</td>
+                  <td class="col-structure" :title="projet.structure_soumissionnaire || projet.organisme_tutelle || ''">{{ projet.structure_soumissionnaire || projet.organisme_tutelle || '—' }}</td>
+                  <td class="col-secteur" :title="projet.secteur || ''">{{ projet.secteur || '—' }}</td>
+                  <td class="col-statut">
                     <span class="badge" :class="getStatutBadge(projet).class">{{ getStatutBadge(projet).text }}</span>
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
-                          class="badge status-rejected" style="margin-left: 4px;">⚠️</span>
-                    <div v-if="projet.evaluateur_nom" class="current-eval-small">
-                      → {{ getEvaluateurLabel(projet.evaluateur_nom) }}
-                    </div>
+                          class="badge-small status-rejected" style="margin-left: 4px;">⚠️</span>
                   </td>
-                  <td>
-                    <div class="action-buttons">
-                      <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋</button>
+                  <td class="col-evaluateur">
+                    <!-- Évaluateur actuel affiché -->
+                    <div v-if="projet.evaluateur_nom && !estProjetAssignable(projet)" class="current-eval-small">
+                      {{ getEvaluateurLabel(projet.evaluateur_nom) }}
+                    </div>
+                    <!-- Compte non vérifié : pas d'action -->
+                    <span v-else-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="text-muted">—</span>
+                    <!-- Sélecteur d'évaluateur inline pour projets assignables -->
+                    <template v-else-if="estProjetAssignable(projet) || projet.statut === 'en réexamen par le Secrétariat SCT'">
+                      <div v-if="projet.evaluateur_nom" class="current-eval-small" style="margin-bottom:4px">
+                        Actuel: {{ getEvaluateurLabel(projet.evaluateur_nom) }}
+                      </div>
+                      <select v-model="assignation[projet.id]" class="inline-select">
+                        <option value="">--Choisir--</option>
+                        <option v-if="!['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même</option>
+                        <option v-for="autre in autresSecretariatSCT" :key="'sct-' + autre.username" :value="autre.username">
+                          {{ autre.display_name || autre.username }} (SCT)
+                        </option>
+                        <option v-for="evaluateur in (['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
+                          {{ evaluateur.display_name || evaluateur.username }}
+                        </option>
+                      </select>
+                    </template>
+                    <!-- Projets terminés sans action possible -->
+                    <div v-else-if="projet.evaluateur_nom" class="current-eval-small">
+                      {{ getEvaluateurLabel(projet.evaluateur_nom) }}
+                    </div>
+                    <span v-else class="text-muted">—</span>
+                  </td>
+                  <td class="col-action">
+                    <div class="action-buttons-inline">
+                      <!-- Assigner / Réassigner -->
                       <button
-                        v-if="['soumis', 'compléments fournis'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
-                        @click="activeTab = 'assignation'"
+                        v-if="(estProjetAssignable(projet) || projet.statut === 'en réexamen par le Secrétariat SCT') && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         class="btn-sm btn-primary"
-                        title="Assigner à un évaluateur">➕ Assigner</button>
-                      <button
-                        v-if="['assigné', 'en évaluation'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
-                        @click="activeTab = 'assignation'"
-                        class="btn-sm btn-secondary"
-                        title="Réassigner">🔄</button>
+                        :disabled="!assignation[projet.id]"
+                        @click="projet.statut === 'en réexamen par le Secrétariat SCT' ? reassignerProjetRejete(projet.id) : assigner(projet.id)">
+                        {{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.statut === 'en réexamen par le Secrétariat SCT' ? '🔄' : '➕' }}
+                      </button>
+                      <!-- Compléments fournis : boutons spéciaux -->
+                      <template v-if="projet.statut === 'compléments fournis' && projet.soumissionnaire_statut_compte !== 'non_verifie'">
+                        <button @click="reassignerComplementsPourEvaluation(projet.id)" class="btn-sm btn-success" title="Réassigner pour réévaluation">✓</button>
+                        <button @click="validerComplementsDirectement(projet.id)" class="btn-sm btn-primary" title="Valider directement">📋</button>
+                      </template>
+                      <!-- Valider avis -->
                       <button
                         v-if="(projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'validation'"
                         class="btn-sm btn-success"
-                        title="Valider l'avis">✓</button>
+                        title="Valider l'avis">✓ Avis</button>
+                      <!-- Réexamen : option resoumission hiérarchique -->
                       <button
                         v-if="projet.statut === 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie'"
-                        @click="activeTab = 'assignation'"
-                        class="btn-sm btn-warning"
-                        title="Traiter">🔄</button>
+                        class="btn-sm btn-secondary"
+                        @click="expandedProjects[projet.id] = !expandedProjects[projet.id]"
+                        title="Options avancées (resoumission hiérarchique)">⋯</button>
+                      <!-- Détails -->
+                      <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋</button>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
 
-      <!-- Assignation -->
-      <div v-if="activeTab === 'assignation'" class="tab-content">
-        <h2>Assignation / Réassignation</h2>
-        <div v-if="projectsToAssign.length === 0" class="empty-state">
-          <p>Aucun projet trouvé</p>
-        </div>
-
-        <!-- Tableau d'assignation rapide -->
-        <div v-else class="assign-table-wrapper">
-          <table class="assign-table">
-            <thead>
-              <tr>
-                <th class="col-num">N°</th>
-                <th class="col-titre">Projet</th>
-                <th class="col-responsable">Responsable</th>
-                <th class="col-structure">Structure</th>
-                <th class="col-secteur">Secteur</th>
-                <th class="col-statut">Statut</th>
-                <th class="col-evaluateur">Assigner à</th>
-                <th class="col-action">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="projet in projectsToAssign" :key="projet.id"
-                  :class="{
-                    'row-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie',
-                    'row-reexamen': projet.statut === 'en réexamen par le Secrétariat SCT',
-                    'row-complements': projet.statut === 'compléments fournis',
-                    'row-prioritaire': projet.niveau_priorite === 'prioritaire_ant'
-                  }">
-                <td class="col-num">
-                  <span class="num-badge">{{ projet.numero_projet || '—' }}</span>
-                </td>
-                <td class="col-titre">
-                  <div class="titre-cell">
-                    <router-link :to="`/project/${projet.id}`" class="titre-link">{{ projet.titre }}</router-link>
-                    <div class="titre-badges">
-                      <span v-if="projet.niveau_priorite === 'prioritaire_ant'" class="badge-small badge-prioritaire">PRIORITAIRE</span>
-                      <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="badge-small status-warning">🔒 Non vérifié</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="col-responsable">{{ projet.point_focal_nom || projet.auteur_nom || '—' }}</td>
-                <td class="col-structure">{{ projet.structure_soumissionnaire || projet.organisme_tutelle || '—' }}</td>
-                <td class="col-secteur">{{ projet.secteur || '—' }}</td>
-                <td class="col-statut">
-                  <span :class="'badge-small status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
-                  <div v-if="projet.evaluateur_nom" class="current-eval-small">
-                    → {{ getEvaluateurLabel(projet.evaluateur_nom) }}
-                  </div>
-                </td>
-                <td class="col-evaluateur">
-                  <!-- Compte non vérifié : pas d'action -->
-                  <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="text-muted">—</span>
-                  <!-- Projet non réassignable -->
-                  <span v-else-if="(projet.statut === 'assigné' || projet.statut === 'en évaluation') && !estProjetAssignable(projet)" class="text-muted">Verrouillé</span>
-                  <!-- Sélecteur d'évaluateur inline -->
-                  <select v-else-if="projet.statut !== 'en réexamen par le Secrétariat SCT'" v-model="assignation[projet.id]" class="inline-select">
-                    <option value="">--Choisir--</option>
-                    <option v-if="!['assigné', 'en évaluation', 'évalué'].includes(projet.statut) || projet.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même</option>
-                    <option v-for="autre in autresSecretariatSCT" :key="'sct-' + autre.username" :value="autre.username">
-                      {{ autre.display_name || autre.username }} (SCT)
-                    </option>
-                    <option v-for="evaluateur in (['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? getAvailableEvaluateurs(projet) : evaluateurs)" :key="evaluateur.username" :value="evaluateur.username">
-                      {{ evaluateur.display_name || evaluateur.username }}
-                    </option>
-                  </select>
-                  <!-- Réexamen : sélecteur spécifique -->
-                  <select v-else v-model="assignation[projet.id]" class="inline-select">
-                    <option value="">--Choisir--</option>
-                    <option v-if="projet.evaluateur_nom !== currentUser?.username" :value="currentUser?.username">Moi-même</option>
-                    <option v-for="autre in autresSecretariatSCT" :key="autre.username" :value="autre.username">
-                      {{ autre.display_name || autre.username }} (SCT)
-                    </option>
-                    <option v-for="evaluateur in evaluateurs" :key="evaluateur.username" :value="evaluateur.username">
-                      {{ evaluateur.display_name || evaluateur.username }}
-                    </option>
-                  </select>
-                </td>
-                <td class="col-action">
-                  <div class="action-buttons-inline">
-                    <!-- Compléments fournis : boutons spéciaux -->
-                    <template v-if="projet.statut === 'compléments fournis' && projet.soumissionnaire_statut_compte !== 'non_verifie'">
-                      <button @click="reassignerComplementsPourEvaluation(projet.id)" class="btn-sm btn-success" title="Réassigner pour réévaluation">✓</button>
-                      <button @click="validerComplementsDirectement(projet.id)" class="btn-sm btn-primary" title="Valider directement">📋</button>
-                    </template>
-                    <!-- Réexamen : boutons spéciaux -->
-                    <template v-else-if="projet.statut === 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie'">
-                      <button class="btn-sm btn-warning"
-                              :disabled="!assignation[projet.id]"
-                              @click="reassignerProjetRejete(projet.id)"
-                              title="Réassigner">🔄</button>
-                      <button class="btn-sm btn-primary" @click="expandedProjects[projet.id] = !expandedProjects[projet.id]" title="Plus d'options">⋯</button>
-                    </template>
-                    <!-- Assignation normale -->
-                    <template v-else-if="projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)">
-                      <button class="btn-sm btn-primary"
-                              :disabled="!assignation[projet.id]"
-                              @click="assigner(projet.id)">
-                        {{ ['assigné', 'en évaluation', 'évalué'].includes(projet.statut) ? 'Réassigner' : 'Assigner' }}
-                      </button>
-                    </template>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- Panneau de détail expandé (sous le tableau, pour réexamen et compléments) -->
-          <div v-for="projet in projectsToAssign" :key="'detail-' + projet.id">
-            <div v-if="expandedProjects[projet.id] && projet.statut === 'en réexamen par le Secrétariat SCT'" class="expanded-detail-panel">
-              <div class="panel-header">
-                <strong>{{ projet.numero_projet }} — {{ projet.titre }}</strong>
-                <button class="btn-close-panel" @click="expandedProjects[projet.id] = false">✕</button>
-              </div>
-              <div class="rejected-info">
-                <div class="alert alert-danger">
-                  <template v-if="projet.avis_presidencesct === 'rejete' && projet.decision_finale !== 'infirme'">
-                    ⚠️ <strong>Avis rejeté par la Présidence SCT</strong>
-                  </template>
-                  <template v-else-if="projet.decision_finale === 'infirme'">
-                    ⚠️ <strong>Avis infirmé par la Présidence du Comité</strong>
-                  </template>
-                  <template v-else>
-                    ⚠️ <strong>Projet en réexamen</strong>
-                  </template>
+            <!-- Panneaux de détail pour réexamen -->
+            <div v-for="projet in projetsFiltres" :key="'detail-' + projet.id">
+              <div v-if="expandedProjects[projet.id] && projet.statut === 'en réexamen par le Secrétariat SCT'" class="expanded-detail-panel">
+                <div class="panel-header">
+                  <strong>{{ projet.numero_projet }} — {{ projet.titre }}</strong>
+                  <button class="btn-close-panel" @click="expandedProjects[projet.id] = false">✕</button>
                 </div>
-                <p v-if="projet.commentaires_finaux">
-                  <strong>Motif:</strong> {{ projet.commentaires_finaux }}
-                </p>
-                <p v-else-if="projet.commentaires"><strong>Motif:</strong> {{ projet.commentaires }}</p>
-              </div>
-              <div class="panel-actions">
-                <div class="panel-action-group">
+                <div class="rejected-info">
+                  <div class="alert alert-danger">
+                    <template v-if="projet.avis_presidencesct === 'rejete' && projet.decision_finale !== 'infirme'">
+                      ⚠️ <strong>Avis rejeté par la Présidence SCT</strong>
+                    </template>
+                    <template v-else-if="projet.decision_finale === 'infirme'">
+                      ⚠️ <strong>Avis infirmé par la Présidence du Comité</strong>
+                    </template>
+                    <template v-else>
+                      ⚠️ <strong>Projet en réexamen</strong>
+                    </template>
+                  </div>
+                  <p v-if="projet.commentaires_finaux"><strong>Motif:</strong> {{ projet.commentaires_finaux }}</p>
+                  <p v-else-if="projet.commentaires"><strong>Motif:</strong> {{ projet.commentaires }}</p>
+                </div>
+                <div class="panel-actions">
                   <label>Motivation resoumission hiérarchique (obligatoire):</label>
                   <textarea v-model="motivationsResoumission[projet.id]" rows="2"
                     placeholder="Expliquez pourquoi soumettre malgré le rejet..."
                     :class="{ 'error-border': erreursResoumission[projet.id] }"
                     class="panel-textarea"></textarea>
                   <p v-if="erreursResoumission[projet.id]" class="error-message">{{ erreursResoumission[projet.id] }}</p>
-                  <button class="btn-primary" @click="soumettreVoieHierarchique(projet.id)">
+                  <button class="btn-primary" @click="soumettreVoieHierarchique(projet.id)" style="margin-top:8px">
                     ⬆️ Soumettre à la Présidence SCT
                   </button>
                 </div>
               </div>
             </div>
-
-            <!-- Panneau compléments fournis -->
-            <div v-if="expandedProjects[projet.id] && projet.statut === 'compléments fournis'" class="expanded-detail-panel">
-              <div class="panel-header">
-                <strong>{{ projet.numero_projet }} — Compléments fournis</strong>
-                <button class="btn-close-panel" @click="expandedProjects[projet.id] = false">✕</button>
-              </div>
-              <div v-if="projet.complements_reponse_message" class="complements-message">
-                {{ projet.complements_reponse_message }}
-              </div>
-              <div v-if="projet.complements_reponse_pieces" class="complements-files">
-                <strong>📎 Pièces :</strong>
-                <span v-for="(fichier, index) in parseComplementsFiles(projet.complements_reponse_pieces)"
-                      :key="index" class="file-link" @click="ouvrirFichier(projet.id, fichier)">
-                  {{ fichier }}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
+
 
       <!-- Validation d'avis -->
       <div v-if="activeTab === 'validation'" class="tab-content">
