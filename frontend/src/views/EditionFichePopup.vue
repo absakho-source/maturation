@@ -4,6 +4,7 @@
       <h2>✏️ Éditer la fiche d'évaluation</h2>
       <p class="projet-info" v-if="projet">
         <strong>{{ projet.numero_projet }}</strong> - {{ projet.titre }}
+        <span v-if="projet.niveau_priorite === 'prioritaire_ant'" class="badge-prioritaire-inline">PRIORITAIRE</span>
       </p>
     </div>
 
@@ -746,5 +747,18 @@ export default {
 
 .checkbox-block input[type="checkbox"] {
   cursor: pointer;
+}
+
+.badge-prioritaire-inline {
+  display: inline-block;
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #f59e0b;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 </style>

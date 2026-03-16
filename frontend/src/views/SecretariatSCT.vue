@@ -158,7 +158,8 @@
                 <tr>
                   <th>N° Projet</th>
                   <th>Titre</th>
-                  <th>Structure soumissionnaire</th>
+                  <th>Responsable</th>
+                  <th>Structure porteuse</th>
                   <th>Secteur</th>
                   <th>Statut</th>
                   <th>Actions</th>
@@ -166,70 +167,55 @@
               </thead>
               <tbody>
                 <tr v-if="projetsFiltres.length === 0">
-                  <td colspan="6" class="empty-state">Aucun projet trouvé</td>
+                  <td colspan="7" class="empty-state">Aucun projet trouvé</td>
                 </tr>
-                <tr v-for="projet in projetsFiltres" :key="projet.id" :class="{ 'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie' }">
+                <tr v-for="projet in projetsFiltres" :key="projet.id"
+                    :class="{
+                      'compte-non-verifie': projet.soumissionnaire_statut_compte === 'non_verifie',
+                      'row-prioritaire': projet.niveau_priorite === 'prioritaire_ant'
+                    }">
                   <td><strong class="project-number-table">{{ projet.numero_projet || 'N/A' }}</strong></td>
                   <td class="project-title">
-                    {{ projet.titre }}
-                    <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'"
-                          class="badge status-warning"
-                          style="margin-left: 8px; font-size: 11px;"
-                          title="Le compte du soumissionnaire n'est pas encore vérifié. Aucune action ne peut être effectuée sur ce projet tant que le compte n'est pas validé.">
-                      🔒 Compte non vérifié
-                    </span>
+                    <router-link :to="`/project/${projet.id}`" class="titre-link">{{ projet.titre }}</router-link>
+                    <div class="titre-badges">
+                      <span v-if="projet.niveau_priorite === 'prioritaire_ant'" class="badge-small badge-prioritaire">PRIORITAIRE</span>
+                      <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="badge-small status-warning">🔒 Non vérifié</span>
+                    </div>
                   </td>
-                  <td>{{ projet.structure_soumissionnaire || projet.organisme_tutelle || projet.auteur_nom || 'N/A' }}</td>
+                  <td>{{ projet.point_focal_nom || projet.auteur_nom || 'N/A' }}</td>
+                  <td>{{ projet.structure_soumissionnaire || projet.organisme_tutelle || 'N/A' }}</td>
                   <td>{{ projet.secteur || 'N/A' }}</td>
                   <td>
                     <span class="badge" :class="getStatutBadge(projet).class">{{ getStatutBadge(projet).text }}</span>
                     <span v-if="projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté'"
                           class="badge status-rejected" style="margin-left: 4px;">⚠️</span>
+                    <div v-if="projet.evaluateur_nom" class="current-eval-small">
+                      → {{ getEvaluateurLabel(projet.evaluateur_nom) }}
+                    </div>
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <!-- Détails - toujours disponible -->
-                      <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋 Détails</button>
-
-                      <!-- Assigner : projets soumis ou compléments fournis (sans statut définitif) -->
+                      <button @click="$router.push(`/project/${projet.id}`)" class="btn-sm btn-view" title="Voir les détails">📋</button>
                       <button
                         v-if="['soumis', 'compléments fournis'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-primary"
-                        title="Assigner à un évaluateur"
-                      >
-                        ➕ Assigner
-                      </button>
-
-                      <!-- Réassigner : projets assignés ou en évaluation (sans statut définitif) -->
+                        title="Assigner à un évaluateur">➕ Assigner</button>
                       <button
                         v-if="['assigné', 'en évaluation'].includes(projet.statut) && projet.soumissionnaire_statut_compte !== 'non_verifie' && estProjetAssignable(projet)"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-secondary"
-                        title="Réassigner à un autre évaluateur"
-                      >
-                        🔄 Réassigner
-                      </button>
-
-                      <!-- Valider : projets évalués ou rejet proposé -->
+                        title="Réassigner">🔄</button>
                       <button
                         v-if="(projet.statut === 'évalué' || (projet.evaluation_prealable === 'dossier_rejete' && projet.statut !== 'rejeté')) && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'validation'"
                         class="btn-sm btn-success"
-                        title="Valider l'avis de l'évaluateur"
-                      >
-                        ✓ Valider avis
-                      </button>
-
-                      <!-- Traiter : projets en réexamen (rejetés par présidence SCT ou comité) -->
+                        title="Valider l'avis">✓</button>
                       <button
                         v-if="projet.statut === 'en réexamen par le Secrétariat SCT' && projet.soumissionnaire_statut_compte !== 'non_verifie'"
                         @click="activeTab = 'assignation'"
                         class="btn-sm btn-warning"
-                        title="Traiter ce projet en réexamen"
-                      >
-                        🔄 Traiter
-                      </button>
+                        title="Traiter">🔄</button>
                     </div>
                   </td>
                 </tr>
@@ -253,8 +239,10 @@
               <tr>
                 <th class="col-num">N°</th>
                 <th class="col-titre">Projet</th>
+                <th class="col-responsable">Responsable</th>
+                <th class="col-structure">Structure</th>
+                <th class="col-secteur">Secteur</th>
                 <th class="col-statut">Statut</th>
-                <th class="col-auteur">Auteur</th>
                 <th class="col-evaluateur">Assigner à</th>
                 <th class="col-action">Action</th>
               </tr>
@@ -279,13 +267,15 @@
                     </div>
                   </div>
                 </td>
+                <td class="col-responsable">{{ projet.point_focal_nom || projet.auteur_nom || '—' }}</td>
+                <td class="col-structure">{{ projet.structure_soumissionnaire || projet.organisme_tutelle || '—' }}</td>
+                <td class="col-secteur">{{ projet.secteur || '—' }}</td>
                 <td class="col-statut">
                   <span :class="'badge-small status-' + projet.statut.replace(/ /g, '-')">{{ projet.statut }}</span>
                   <div v-if="projet.evaluateur_nom" class="current-eval-small">
                     → {{ getEvaluateurLabel(projet.evaluateur_nom) }}
                   </div>
                 </td>
-                <td class="col-auteur">{{ projet.auteur_nom }}</td>
                 <td class="col-evaluateur">
                   <!-- Compte non vérifié : pas d'action -->
                   <span v-if="projet.soumissionnaire_statut_compte === 'non_verifie'" class="text-muted">—</span>
@@ -3827,12 +3817,14 @@ export default {
   background: #f8fafc;
 }
 
-.assign-table .col-num { width: 60px; }
-.assign-table .col-titre { min-width: 200px; }
-.assign-table .col-statut { width: 130px; }
-.assign-table .col-auteur { width: 120px; }
-.assign-table .col-evaluateur { width: 180px; }
-.assign-table .col-action { width: 130px; }
+.assign-table .col-num { width: 55px; }
+.assign-table .col-titre { min-width: 180px; }
+.assign-table .col-responsable { width: 120px; }
+.assign-table .col-structure { width: 140px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assign-table .col-secteur { width: 110px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assign-table .col-statut { width: 120px; }
+.assign-table .col-evaluateur { width: 170px; }
+.assign-table .col-action { width: 110px; }
 
 .num-badge {
   font-size: 0.75rem;
@@ -3954,11 +3946,14 @@ export default {
   margin: 6px 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .assign-table { font-size: 0.75rem; }
-  .assign-table .col-auteur { display: none; }
+  .assign-table .col-structure,
+  .assign-table .col-secteur { display: none; }
   .assign-table th:nth-child(4),
-  .assign-table td:nth-child(4) { display: none; }
+  .assign-table td:nth-child(4),
+  .assign-table th:nth-child(5),
+  .assign-table td:nth-child(5) { display: none; }
 }
 
 .projects-compact-grid {
