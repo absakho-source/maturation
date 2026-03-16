@@ -25,6 +25,9 @@
           <span v-if="projectInfo && projectInfo.numero_projet" class="numero-projet-badge">
             {{ projectInfo.numero_projet }}
           </span>
+          <span v-if="projectInfo && projectInfo.niveau_priorite === 'prioritaire_ant'" class="badge-prioritaire-fiche">
+            PROJET PRIORITAIRE
+          </span>
         </h1>
 
         <!-- Informations sur la version du formulaire -->
@@ -274,16 +277,22 @@
         <h2 class="section-title">IV - CONCLUSION</h2>
 
         <div class="conclusion-form">
+          <!-- Alerte pertinence éliminatoire -->
+          <div v-if="pertinenceEliminatoire" class="alert-eliminatoire">
+            <strong>⚠️ CRITÈRE ÉLIMINATOIRE :</strong> Le score de pertinence est inférieur à 3/5.
+            L'avis est automatiquement défavorable.
+          </div>
+
           <div class="form-group form-group-inline">
             <label><strong>PROPOSITION:</strong></label>
-            <!-- Si score < 70: automatiquement "Défavorable" -->
+            <!-- Si pertinence éliminatoire ou score < seuil: automatiquement "Défavorable" -->
             <input
-              v-if="calculerScoreTotal() < (config?.seuil_minimum || 70)"
+              v-if="pertinenceEliminatoire || calculerScoreTotal() < (config?.seuil_minimum || 70)"
               type="text"
               value="Défavorable"
               readonly
               class="proposition-readonly proposition-defavorable">
-            <!-- Si score >= 70: l'évaluateur choisit entre "Favorable" et "Favorable sous conditions" -->
+            <!-- Sinon: l'évaluateur choisit entre "Favorable" et "Favorable sous conditions" -->
             <select
               v-else
               v-model="evaluationData.proposition"
@@ -299,7 +308,10 @@
           </div>
           <div class="proposition-help">
             <small class="help-text">
-              <span v-if="calculerScoreTotal() < (config?.seuil_minimum || 70)">
+              <span v-if="pertinenceEliminatoire">
+                Pertinence < 3/5 = Défavorable (critère éliminatoire)
+              </span>
+              <span v-else-if="calculerScoreTotal() < (config?.seuil_minimum || 70)">
                 Score < {{ config?.seuil_minimum || 70 }} points = Défavorable (automatique)
               </span>
               <span v-else>
@@ -309,12 +321,16 @@
           </div>
 
           <div class="form-group">
-            <label><strong>RECOMMANDATIONS:</strong></label>
+            <label>
+              <strong>RECOMMANDATION GÉNÉRALE{{ recommandationObligatoire ? ' *' : '' }}:</strong>
+              <span v-if="recommandationObligatoire" class="required-hint">(obligatoire pour un avis défavorable)</span>
+            </label>
             <textarea
               v-model="evaluationData.recommandations"
-              placeholder="Saisir les recommandations finales..."
+              :placeholder="recommandationObligatoire ? 'Obligatoire — Saisir la recommandation générale...' : 'Saisir les recommandations finales...'"
               rows="5"
-              class="recommendations-textarea">
+              class="recommendations-textarea"
+              :class="{ 'field-required': recommandationObligatoire && !evaluationData.recommandations?.trim() }">
             </textarea>
           </div>
 
@@ -398,15 +414,36 @@ export default {
     estAssigneAMoi() {
       return this.projectInfo && this.projectInfo.est_assigne_a_moi === true
     },
+    pertinenceEliminatoire() {
+      // Si le critère "pertinence" a un score < 3/5, c'est éliminatoire
+      const pertinence = this.evaluationData.criteres['pertinence'];
+      if (!pertinence) return false;
+      return pertinence.score > 0 && pertinence.score < 3;
+    },
+    propositionEffective() {
+      if (this.pertinenceEliminatoire) return 'Défavorable';
+      const score = this.calculerScoreTotal();
+      const seuilMinimum = this.config?.seuil_minimum || 70;
+      if (score < seuilMinimum) return 'Défavorable';
+      return this.evaluationData.proposition;
+    },
+    recommandationObligatoire() {
+      // Obligatoire si l'avis n'est ni "Favorable" ni "Favorable sous conditions"
+      return this.propositionEffective === 'Défavorable';
+    },
     peutSauvegarder() {
       if (!this.estAssigneAMoi || !this.evaluationData.evaluateur_nom || this.calculerScoreTotal() <= 0) {
         return false;
       }
+      // Si recommandation obligatoire (avis défavorable), vérifier qu'elle est remplie
+      if (this.recommandationObligatoire && (!this.evaluationData.recommandations || !this.evaluationData.recommandations.trim())) {
+        return false;
+      }
       const score = this.calculerScoreTotal();
       const seuilMinimum = this.config?.seuil_minimum || 70;
-      // Score < 70: défavorable automatique, toujours ok
-      if (score < seuilMinimum) return true;
-      // Score >= 70: doit avoir choisi un avis valide
+      // Pertinence éliminatoire ou score < seuil: défavorable automatique, ok
+      if (this.pertinenceEliminatoire || score < seuilMinimum) return true;
+      // Score >= seuil: doit avoir choisi un avis valide
       return this.evaluationData.proposition === 'Favorable' || this.evaluationData.proposition === 'Favorable sous conditions';
     }
   },
@@ -416,11 +453,11 @@ export default {
         const score = this.calculerScoreTotal()
         const seuilMinimum = this.config?.seuil_minimum || 70
 
-        // Si score < 70: automatiquement "Défavorable"
-        if (score < seuilMinimum) {
+        // Si pertinence éliminatoire ou score < seuil: automatiquement "Défavorable"
+        if (this.pertinenceEliminatoire || score < seuilMinimum) {
           this.evaluationData.proposition = 'Défavorable'
         }
-        // Si score >= 70 et était "Défavorable": réinitialiser pour forcer le choix
+        // Si score >= seuil et était "Défavorable": réinitialiser pour forcer le choix
         else if (this.evaluationData.proposition === 'Défavorable') {
           this.evaluationData.proposition = ''
         }
@@ -686,16 +723,11 @@ export default {
     },
 
     getAppreciation() {
-      // Avec le nouveau système à 1 seul seuil:
-      // - Score < seuil_minimum: automatiquement "Défavorable"
-      // - Score >= seuil_minimum: l'évaluateur choisit (retourner la proposition choisie)
+      // Pertinence < 3/5 = éliminatoire
+      if (this.pertinenceEliminatoire) return 'Défavorable'
       const score = this.calculerScoreTotal()
       const seuilMinimum = this.config?.seuil_minimum || 70
-
-      if (score < seuilMinimum) {
-        return 'Défavorable'
-      }
-      // Si score >= seuil, retourner la proposition choisie par l'évaluateur
+      if (score < seuilMinimum) return 'Défavorable'
       return this.evaluationData.proposition || 'Favorable'
     },
 
@@ -1702,6 +1734,28 @@ textarea::placeholder {
   color: #dc2626;
 }
 
+.alert-eliminatoire {
+  background: #fef2f2;
+  border: 2px solid #dc2626;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.required-hint {
+  font-weight: 400;
+  font-size: 12px;
+  color: #dc2626;
+  margin-left: 6px;
+}
+
+.field-required {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
 .evaluateur-input {
   width: 100%;
   max-width: 350px;
@@ -1886,6 +1940,19 @@ textarea::placeholder {
   font-size: 18px;
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.badge-prioritaire-fiche {
+  display: inline-block;
+  background: #fef3c7;
+  color: #d97706;
+  border: 2px solid #f59e0b;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
 }
 
 .centered-row {

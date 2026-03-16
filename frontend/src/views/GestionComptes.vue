@@ -384,15 +384,14 @@
               <label for="edit-type-structure">Type de structure *</label>
               <select id="edit-type-structure" v-model="editTypeStructure" @change="onEditTypeStructureChange" required>
                 <option value="">-- Sélectionnez --</option>
-                <option value="institution">Institution</option>
+                <option value="ministere">Ministère / Direction nationale</option>
                 <option value="collectivite">Collectivité territoriale</option>
-                <option value="agence">Agence / Établissement public</option>
-                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+                <option value="entite">Entité publique</option>
               </select>
             </div>
 
             <!-- Institution - avec sous-catégories -->
-            <div v-if="editTypeStructure === 'institution'">
+            <div v-if="editTypeStructure === 'ministere'">
               <div class="form-group-modal">
                 <label for="edit-type-institution">Type d'institution *</label>
                 <select id="edit-type-institution" v-model="editTypeInstitution" @change="onEditTypeInstitutionChange" required>
@@ -535,7 +534,7 @@
             </div>
 
             <!-- Agence - champ libre + autorité de tutelle -->
-            <div v-else-if="editTypeStructure === 'agence'">
+            <div v-else-if="editTypeStructure === 'entite'">
               <div class="form-group-modal">
                 <label for="edit-nom-agence">Nom de l'agence / établissement *</label>
                 <input
@@ -588,7 +587,7 @@
             </div>
 
             <!-- Autre - champ libre -->
-            <div v-else-if="editTypeStructure === 'autre'" class="form-group-modal">
+            <div v-else-if="editTypeStructure === 'entite'" class="form-group-modal">
               <label for="edit-nom-structure-autre">Nom de la structure *</label>
               <input
                 id="edit-nom-structure-autre"
@@ -806,11 +805,10 @@ const editCommunesFiltered = computed(() => {
 const showNomStructureField = computed(() => {
   if (!compteSelectionne.value) return false
   const type = compteSelectionne.value.type_structure
-  if (type === 'institution') {
-    const typeInst = compteSelectionne.value.type_institution
-    return typeInst === 'ministere' || typeInst === 'autre_institution'
+  if (type === 'ministere') {
+    return true
   }
-  return type === 'collectivite' || type === 'agence' || type === 'autre'
+  return type === 'collectivite' || type === 'entite'
 })
 
 const showDirectionField = computed(() => {
@@ -1181,20 +1179,12 @@ function getOrganismeTutelle(compte) {
 
   const typeStructure = editTypeStructure.value || compte.type_structure
 
-  if (typeStructure === 'institution') {
-    // Pour les institutions (Présidence, Primature, Ministère)
-    const typeInst = editTypeInstitution.value || compte.type_institution
-    if (typeInst === 'presidence') return 'Présidence de la République'
-    if (typeInst === 'primature') return 'Primature'
-    if (typeInst === 'ministere') {
-      // Utiliser la valeur éditée si disponible (vérifier !== '' car '' est falsy)
-      if (editNomMinistere.value && editNomMinistere.value !== '') {
-        return editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
-      }
-      // Fallback: utiliser nom_ministere, nom_structure, ou point_focal_organisme existant
-      return compte.nom_ministere || compte.nom_structure || compte.point_focal_organisme || null
+  if (typeStructure === 'ministere') {
+    if (editNomMinistere.value && editNomMinistere.value !== '') {
+      return editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
     }
-  } else if (typeStructure === 'agence') {
+    return compte.nom_ministere || compte.nom_structure || compte.point_focal_organisme || null
+  } else if (typeStructure === 'entite') {
     // Pour les agences, la tutelle est le ministère de rattachement
     // Utiliser la valeur éditée si disponible
     if (editTutelleAgence.value && editTutelleAgence.value !== '') {
@@ -1315,51 +1305,27 @@ async function sauvegarderModifications() {
   enregistrementEnCours.value = true
 
   try {
-    // Construction de la structure selon le nouveau système (comme dans Register.vue)
+    // Construction de la structure selon le type simplifié
     let structureFinal = editNomStructure.value
-    let typeInstitutionFinal = ''
     let directionServiceFinal = ''
-
-    if (editTypeStructure.value === 'institution') {
-      typeInstitutionFinal = editTypeInstitution.value
-      directionServiceFinal = editDirectionService.value
-
-      // Déterminer le nom de la structure selon le type d'institution
-      if (editTypeInstitution.value === 'presidence') {
-        structureFinal = 'Présidence de la République'
-      } else if (editTypeInstitution.value === 'primature') {
-        structureFinal = 'Primature'
-      } else if (editTypeInstitution.value === 'ministere') {
-        // Utiliser le champ libre si "Autre" est sélectionné
-        structureFinal = editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
-      } else if (editTypeInstitution.value === 'autre_institution') {
-        structureFinal = editNomInstitution.value
-      }
-    }
-
-    // Pour les agences, combiner nom agence et tutelle
-    if (editTypeStructure.value === 'agence' && editNomAgence.value && editTutelleAgence.value) {
-      let tutelleFinal = editTutelleAgence.value
-      if (editTutelleAgence.value === '__ministere__') {
-        // Utiliser le champ libre si "Autre" est sélectionné pour le ministère de tutelle
-        tutelleFinal = editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
-      }
-      structureFinal = `${editNomAgence.value} - ${tutelleFinal}`
-    }
-
-    // Calculer nom_ministere
     let nomMinistereFinal = null
-    if (editTypeStructure.value === 'institution' && editTypeInstitution.value === 'ministere') {
+    let tutelleAgenceFinal = null
+
+    if (editTypeStructure.value === 'ministere') {
+      directionServiceFinal = editDirectionService.value
       nomMinistereFinal = editNomMinistere.value === '__autre__' ? editNomMinistereLibre.value : editNomMinistere.value
+      structureFinal = nomMinistereFinal
     }
 
-    // Calculer tutelle_agence
-    let tutelleAgenceFinal = null
-    if (editTypeStructure.value === 'agence') {
-      if (editTutelleAgence.value === '__ministere__') {
-        tutelleAgenceFinal = editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
-      } else {
-        tutelleAgenceFinal = editTutelleAgence.value
+    if (editTypeStructure.value === 'entite') {
+      structureFinal = editNomAgence.value
+      if (editTutelleAgence.value && editTutelleAgence.value !== '') {
+        if (editTutelleAgence.value === '__ministere__') {
+          tutelleAgenceFinal = editTutelleAgenceLibre.value === '__autre__' ? editTutelleAgenceAutre.value : editTutelleAgenceLibre.value
+        } else {
+          tutelleAgenceFinal = editTutelleAgence.value
+        }
+        structureFinal = `${editNomAgence.value} - ${tutelleAgenceFinal}`
       }
     }
 
@@ -1370,7 +1336,7 @@ async function sauvegarderModifications() {
       telephone: compteSelectionne.value.telephone,
       fonction: compteSelectionne.value.fonction,
       type_structure: editTypeStructure.value,
-      type_institution: typeInstitutionFinal,
+      type_institution: '',
       nom_structure: structureFinal,
       direction_service: directionServiceFinal,
       nom_ministere: nomMinistereFinal,
@@ -1435,10 +1401,9 @@ function retourDashboard() {
 // Fonctions helper pour les labels de structure hiérarchique
 function getTypeStructureLabel(type) {
   const labels = {
-    'institution': 'Institution',
+    'ministere': 'Ministère / Direction nationale',
     'collectivite': 'Collectivité territoriale',
-    'agence': 'Agence / Établissement public',
-    'autre': 'Autre (ONG, Association, Cabinet, etc.)'
+    'entite': 'Entité publique'
   }
   return labels[type] || type
 }

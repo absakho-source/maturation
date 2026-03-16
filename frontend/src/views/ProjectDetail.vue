@@ -10,6 +10,7 @@
           Retour
         </button>
         <span class="badge" :class="getStatusBadgeClass()">{{ getStatusBadgeText() }}</span>
+        <span v-if="project.niveau_priorite === 'prioritaire_ant'" class="badge badge-prioritaire">PRIORITAIRE</span>
       </div>
 
       <div class="detail-content">
@@ -58,16 +59,16 @@
             </div>
 
             <div class="info-row" v-if="project.structure_soumissionnaire">
-              <span class="label">Structure soumissionnaire:</span>
+              <span class="label">Structure porteuse du projet:</span>
               <span class="value">{{ project.structure_soumissionnaire }}</span>
+            </div>
+            <div class="info-row" v-if="project.nom_ministere || project.tutelle_agence">
+              <span class="label">Ministère de tutelle:</span>
+              <span class="value">{{ project.nom_ministere || project.tutelle_agence }}</span>
             </div>
             <div class="info-row">
               <span class="label">Date de soumission:</span>
               <span class="value">{{ formatDateTime(project.date_soumission) }}</span>
-            </div>
-            <div class="info-row" v-if="project.lieu_soumission_ville || project.lieu_soumission_pays">
-              <span class="label">Lieu de soumission:</span>
-              <span class="value">{{ formatLieuSoumission() }}</span>
             </div>
             <div class="info-row">
               <span class="label">Secteur de planification:</span>
@@ -82,7 +83,7 @@
               <span class="value">{{ formatCurrency(project.cout_estimatif) }} FCFA</span>
             </div>
             <div class="info-row" v-if="project.type_financement">
-              <span class="label">Type de financement:</span>
+              <span class="label">Type de financement envisagé:</span>
               <span class="value">{{ formatTypeFinancement(project.type_financement) }}</span>
             </div>
           </div>
@@ -395,37 +396,19 @@ export default {
         // Type d'organisme
         if (data.type_organisme) {
           const typeLabels = {
-            'institution': 'Institution',
+            'ministere': 'Ministère / Direction nationale',
             'collectivite': 'Collectivité territoriale',
-            'agence': 'Agence / Établissement public',
-            'autre': 'Autre organisme'
+            'entite': 'Entité publique'
           };
           hierarchy.push({
             label: 'Type d\'organisme',
             value: typeLabels[data.type_organisme] || data.type_organisme
           });
 
-          // Institution
-          if (data.type_organisme === 'institution' && data.type_institution) {
-            const instLabels = {
-              'presidence': 'Présidence de la République',
-              'primature': 'Primature',
-              'ministere': 'Ministère',
-              'autre_institution': 'Autre institution'
-            };
-            hierarchy.push({
-              label: 'Type d\'institution',
-              value: instLabels[data.type_institution] || data.type_institution
-            });
-
-            if (data.type_institution === 'ministere') {
-              if (data.nom_ministere === '__autre__' && data.nom_ministere_libre) {
-                hierarchy.push({ label: 'Ministère', value: data.nom_ministere_libre });
-              } else if (data.nom_ministere) {
-                hierarchy.push({ label: 'Ministère', value: data.nom_ministere });
-              }
-            } else if (data.type_institution === 'autre_institution' && data.nom_institution) {
-              hierarchy.push({ label: 'Institution', value: data.nom_institution });
+          // Ministère
+          if (data.type_organisme === 'ministere') {
+            if (data.nom_ministere) {
+              hierarchy.push({ label: 'Ministère', value: data.nom_ministere });
             }
           }
 
@@ -448,38 +431,13 @@ export default {
             if (data.departement_parent && data.niveau_collectivite !== 'region') {
               hierarchy.push({ label: 'Département', value: data.departement_parent });
             }
-            // Note: On n'affiche pas le nom de la collectivité ici car il est déjà affiché
-            // dans le champ "Structure soumissionnaire" juste en dessous
           }
 
-          // Agence
-          if (data.type_organisme === 'agence') {
-            // Note: On n'affiche pas le nom de l'agence ici car il est déjà affiché
-            // dans le champ "Structure soumissionnaire" juste en dessous
+          // Entité publique
+          if (data.type_organisme === 'entite') {
             if (data.tutelle_agence) {
-              let tutelle = '';
-              if (data.tutelle_agence === 'presidence') {
-                tutelle = 'Présidence de la République';
-              } else if (data.tutelle_agence === 'primature') {
-                tutelle = 'Primature';
-              } else if (data.tutelle_agence === '__ministere__') {
-                if (data.tutelle_agence_libre === '__autre__' && data.tutelle_agence_autre) {
-                  tutelle = data.tutelle_agence_autre;
-                } else if (data.tutelle_agence_libre) {
-                  tutelle = data.tutelle_agence_libre;
-                }
-              }
-              if (tutelle) {
-                hierarchy.push({ label: 'Autorité de tutelle', value: tutelle });
-              }
+              hierarchy.push({ label: 'Autorité de tutelle', value: data.tutelle_agence });
             }
-          }
-
-          // Autre
-          // Note: On n'affiche pas le nom de la structure ici car il est déjà affiché
-          // dans le champ "Structure soumissionnaire" juste en dessous
-          if (data.type_organisme === 'autre') {
-            // Pas de hiérarchie supplémentaire à afficher
           }
         }
 

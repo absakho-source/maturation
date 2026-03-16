@@ -331,10 +331,9 @@ function cancelPasswordChanges() {
 // Fonctions helper pour les labels
 function getTypeStructureLabel(type) {
   const labels = {
-    'institution': 'Institution',
+    'ministere': 'Ministère / Direction nationale',
     'collectivite': 'Collectivité territoriale',
-    'agence': 'Agence / Établissement public',
-    'autre': 'Autre (ONG, Association, Cabinet, etc.)'
+    'entite': 'Entité publique'
   }
   return labels[type] || type
 }

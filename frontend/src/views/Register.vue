@@ -31,13 +31,36 @@
         <!-- Informations personnelles -->
         <div class="form-section">
           <h3>Informations personnelles</h3>
-          <input v-model="nomComplet" placeholder="Nom complet *" required />
-          <PhoneInput
-            v-model="telephone"
-            :required="true"
-            placeholder="+221 77 123 45 67"
-          />
-          <input v-model="fonction" placeholder="Fonction/Poste *" required />
+          <div class="form-row-inline">
+            <div class="form-field">
+              <label for="prenom">Prénom *</label>
+              <input id="prenom" v-model="prenom" @blur="formatPrenom" placeholder="Ex: Mamadou" required />
+            </div>
+            <div class="form-field">
+              <label for="nom">Nom *</label>
+              <input id="nom" v-model="nom" @blur="formatNom" placeholder="Ex: DIALLO" required style="text-transform: uppercase;" />
+            </div>
+          </div>
+          <label for="fonction">Fonction / Poste *</label>
+          <input id="fonction" v-model="fonction" placeholder="Ex: Directeur, Chef de service..." required />
+          <label for="telephone">Téléphone *</label>
+          <div class="phone-row">
+            <input
+              id="indicatif"
+              v-model="indicatif"
+              class="indicatif-field"
+              placeholder="+221"
+              @input="onIndicatifInput"
+            />
+            <input
+              id="numero"
+              v-model="numeroTelephone"
+              class="numero-field"
+              :placeholder="phonePlaceholder"
+              @input="formatNumero"
+              required
+            />
+          </div>
         </div>
 
         <!-- Type de structure -->
@@ -46,63 +69,38 @@
           <label for="type-structure">Type de structure *</label>
           <select id="type-structure" v-model="typeStructure" @change="onTypeStructureChange" required>
             <option value="">-- Sélectionnez --</option>
-            <option value="institution">Institution</option>
+            <option value="ministere">Ministère / Direction nationale</option>
             <option value="collectivite">Collectivité territoriale</option>
-            <option value="agence">Agence / Établissement public</option>
-            <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+            <option value="entite">Entité publique</option>
           </select>
 
-          <!-- Institution - avec sous-catégories -->
-          <div v-if="typeStructure === 'institution'">
-            <label for="type-institution">Type d'institution *</label>
-            <select id="type-institution" v-model="typeInstitution" @change="onTypeInstitutionChange" required>
-              <option value="">-- Sélectionnez --</option>
-              <option value="presidence">Présidence de la République</option>
-              <option value="primature">Primature</option>
-              <option value="ministere">Ministère / Direction nationale</option>
-              <option value="autre_institution">Autre Institution</option>
+          <!-- Ministère / Direction nationale -->
+          <div v-if="typeStructure === 'ministere'">
+            <label for="nom-ministere">Nom du ministère / Direction nationale *</label>
+            <select
+              id="nom-ministere"
+              v-model="nomMinistere"
+              @change="onMinistereChange"
+              required
+            >
+              <option value="">-- Sélectionnez un ministère --</option>
+              <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
+                {{ ministere.nom_complet }}
+              </option>
+              <option value="__autre__">Autre (non listé)</option>
             </select>
 
-            <!-- Champ pour préciser l'institution si "Autre Institution" -->
-            <div v-if="typeInstitution === 'autre_institution'">
-              <label for="nom-institution">Nom de l'institution *</label>
+            <!-- Champ libre si "Autre" est sélectionné -->
+            <div v-if="nomMinistere === '__autre__'">
+              <label for="nom-ministere-libre">Nom du ministère *</label>
               <input
-                id="nom-institution"
-                v-model="nomInstitution"
-                placeholder="Ex: Assemblée nationale"
+                id="nom-ministere-libre"
+                v-model="nomMinistereLibre"
+                placeholder="Ex: Autre ministère ou direction nationale"
                 required
               />
             </div>
 
-            <!-- Champ pour sélectionner le ministère -->
-            <div v-if="typeInstitution === 'ministere'">
-              <label for="nom-ministere">Nom du ministère / Direction nationale *</label>
-              <select
-                id="nom-ministere"
-                v-model="nomMinistere"
-                @change="onMinistereChange"
-                required
-              >
-                <option value="">-- Sélectionnez un ministère --</option>
-                <option v-for="ministere in ministeresActifs" :key="ministere.id" :value="ministere.nom_complet">
-                  {{ ministere.nom_complet }}
-                </option>
-                <option value="__autre__">Autre (non listé)</option>
-              </select>
-
-              <!-- Champ libre si "Autre" est sélectionné -->
-              <div v-if="nomMinistere === '__autre__'">
-                <label for="nom-ministere-libre">Nom du ministère *</label>
-                <input
-                  id="nom-ministere-libre"
-                  v-model="nomMinistereLibre"
-                  placeholder="Ex: Autre ministère ou direction nationale"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- Direction/Service - commun à tous les types d'institution -->
             <label for="direction-service">Direction / Service *</label>
             <input
               id="direction-service"
@@ -179,30 +177,30 @@
             </div>
           </div>
 
-          <!-- Agence - champ libre + autorité de tutelle -->
-          <div v-else-if="typeStructure === 'agence'">
-            <label for="nom-agence">Nom de l'agence / établissement *</label>
+          <!-- Entité publique (agences, établissements, institutions) -->
+          <div v-else-if="typeStructure === 'entite'">
+            <label for="nom-entite">Nom de l'entité *</label>
             <input
-              id="nom-agence"
-              v-model="nomAgence"
-              placeholder="Ex: APIX SA, SENELEC, etc."
+              id="nom-entite"
+              v-model="nomEntite"
+              placeholder="Ex: APIX SA, Présidence de la République, Assemblée nationale, etc."
               required
             />
 
-            <label for="tutelle-agence">Autorité de tutelle *</label>
-            <select id="tutelle-agence" v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
-              <option value="">-- Sélectionnez l'autorité de tutelle --</option>
+            <label for="tutelle-entite">Autorité de tutelle (si applicable)</label>
+            <select id="tutelle-entite" v-model="tutelleEntite" @change="onTutelleEntiteChange">
+              <option value="">-- Aucune / Non applicable --</option>
               <option value="Primature">Primature</option>
               <option value="Présidence de la République">Présidence de la République</option>
               <option value="__ministere__">Ministère sectoriel</option>
             </select>
 
             <!-- Sélection du ministère de tutelle si ministère sélectionné -->
-            <div v-if="tutelleAgence === '__ministere__'">
+            <div v-if="tutelleEntite === '__ministere__'">
               <label for="tutelle-ministere-select">Ministère de tutelle *</label>
               <select
                 id="tutelle-ministere-select"
-                v-model="tutelleAgenceLibre"
+                v-model="tutelleEntiteMinistere"
                 @change="onTutelleMinistereChange"
                 required
               >
@@ -214,27 +212,16 @@
               </select>
 
               <!-- Champ libre si "Autre" est sélectionné -->
-              <div v-if="tutelleAgenceLibre === '__autre__'">
-                <label for="tutelle-agence-autre">Nom du ministère de tutelle *</label>
+              <div v-if="tutelleEntiteMinistere === '__autre__'">
+                <label for="tutelle-entite-autre">Nom du ministère de tutelle *</label>
                 <input
-                  id="tutelle-agence-autre"
-                  v-model="tutelleAgenceAutre"
+                  id="tutelle-entite-autre"
+                  v-model="tutelleEntiteAutre"
                   placeholder="Ex: Autre ministère de tutelle"
                   required
                 />
               </div>
             </div>
-          </div>
-
-          <!-- Autre - champ libre -->
-          <div v-else-if="typeStructure === 'autre'">
-            <label for="nom-structure">Nom de la structure *</label>
-            <input
-              id="nom-structure"
-              v-model="nomStructure"
-              placeholder="Ex: ONG XYZ, Cabinet ABC, etc."
-              required
-            />
           </div>
         </div>
 
@@ -313,23 +300,21 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import logo from '../assets/logo-dgppe.png'
-import PhoneInput from '../components/PhoneInput.vue'
-
 // Données du formulaire
-const nomComplet = ref('')
-const telephone = ref('+221 ')
+const prenom = ref('')
+const nom = ref('')
 const fonction = ref('')
+const indicatif = ref('+221')
+const numeroTelephone = ref('')
 const typeStructure = ref('')
-const typeInstitution = ref('') // Nouveau: sous-type d'institution
-const nomInstitution = ref('') // Nom de l'institution (si "autre_institution")
-const directionService = ref('') // Direction/Service pour les institutions
-const niveauCollectivite = ref('') // Nouveau: pour gérer le niveau de collectivité
+const directionService = ref('') // Direction/Service pour les ministères
+const niveauCollectivite = ref('') // Pour gérer le niveau de collectivité
 const nomMinistere = ref('') // Pour les ministères - select
 const nomMinistereLibre = ref('') // Pour le nom du ministère si saisie libre
-const nomAgence = ref('') // Pour les agences
-const tutelleAgence = ref('') // Tutelle agence - select
-const tutelleAgenceLibre = ref('') // Nom ministère si ministère sectoriel sélectionné
-const tutelleAgenceAutre = ref('') // Champ libre si "Autre" sélectionné pour la tutelle
+const nomEntite = ref('') // Pour les entités publiques
+const tutelleEntite = ref('') // Tutelle entité - select
+const tutelleEntiteMinistere = ref('') // Ministère de tutelle sélectionné
+const tutelleEntiteAutre = ref('') // Champ libre si "Autre" sélectionné pour la tutelle
 const nomStructure = ref('')
 const regionParente = ref('')
 const departementParent = ref('') // Pour la sélection de commune
@@ -347,8 +332,6 @@ const regions = ref([])
 const departements = ref({}) // Format: { region: [dept1, dept2, ...] }
 const communes = ref({}) // Format: { departement: [commune1, commune2, ...] }
 const ministeresActifs = ref([]) // Liste des ministères actifs depuis la base de données
-const agences = ref([])
-
 // Départements filtrés selon la région sélectionnée
 const departementsFiltered = computed(() => {
   if (!regionParente.value) return []
@@ -363,6 +346,63 @@ const communesFiltered = computed(() => {
 
 // Année actuelle pour le footer
 const currentYear = computed(() => new Date().getFullYear())
+
+// Patterns de formatage par indicatif
+const phonePatterns = {
+  '+221': { placeholder: '77 123 45 67', groups: [2, 3, 2, 2] },
+  '+33': { placeholder: '6 12 34 56 78', groups: [1, 2, 2, 2, 2] },
+  '+1': { placeholder: '555 123 4567', groups: [3, 3, 4] },
+  '+44': { placeholder: '7911 123 456', groups: [4, 3, 3] },
+  '+212': { placeholder: '6 12 34 56 78', groups: [1, 2, 2, 2, 2] },
+  '+225': { placeholder: '07 12 34 56 78', groups: [2, 2, 2, 2, 2] },
+}
+
+const phonePlaceholder = computed(() => {
+  const pattern = phonePatterns[indicatif.value]
+  return pattern ? pattern.placeholder : 'Numéro de téléphone'
+})
+
+function formatPrenom() {
+  prenom.value = prenom.value
+    .toLowerCase()
+    .replace(/(^|\s|-)\S/g, c => c.toUpperCase())
+}
+
+function formatNom() {
+  nom.value = nom.value.toUpperCase()
+}
+
+function onIndicatifInput() {
+  // S'assurer que l'indicatif commence par +
+  if (indicatif.value && !indicatif.value.startsWith('+')) {
+    indicatif.value = '+' + indicatif.value
+  }
+  // Reformater le numéro quand l'indicatif change
+  formatNumero()
+}
+
+function formatNumero() {
+  // Extraire uniquement les chiffres
+  const digits = numeroTelephone.value.replace(/\D/g, '')
+  const pattern = phonePatterns[indicatif.value]
+  if (!pattern || !digits) {
+    numeroTelephone.value = digits
+    return
+  }
+  // Formater selon le pattern
+  let formatted = ''
+  let pos = 0
+  for (const size of pattern.groups) {
+    if (pos >= digits.length) break
+    if (formatted) formatted += ' '
+    formatted += digits.substring(pos, pos + size)
+    pos += size
+  }
+  if (pos < digits.length) {
+    formatted += ' ' + digits.substring(pos)
+  }
+  numeroTelephone.value = formatted
+}
 
 // Charger les données au montage
 onMounted(async () => {
@@ -387,10 +427,6 @@ async function loadDataLists() {
     const resMinisteres = await axios.get('/api/ministeres')
     ministeresActifs.value = resMinisteres.data
 
-    // Charger les agences
-    const resAgences = await axios.get('/api/data/agences')
-    agences.value = resAgences.data
-
   } catch (err) {
     console.error('Erreur lors du chargement des données:', err)
     // Pas d'affichage d'erreur pour ne pas bloquer l'utilisateur
@@ -400,44 +436,36 @@ async function loadDataLists() {
 
 function onTypeStructureChange() {
   // Réinitialiser tous les champs quand le type change
-  typeInstitution.value = ''
-  nomInstitution.value = ''
   directionService.value = ''
   nomMinistere.value = ''
-  nomAgence.value = ''
-  tutelleAgence.value = ''
-  tutelleAgenceLibre.value = ''
+  nomMinistereLibre.value = ''
+  nomEntite.value = ''
+  tutelleEntite.value = ''
+  tutelleEntiteMinistere.value = ''
+  tutelleEntiteAutre.value = ''
   nomStructure.value = ''
   niveauCollectivite.value = ''
   regionParente.value = ''
-}
-
-function onTypeInstitutionChange() {
-  // Réinitialiser les champs spécifiques quand le type d'institution change
-  nomInstitution.value = ''
-  nomMinistere.value = ''
-  nomMinistereLibre.value = ''
+  departementParent.value = ''
+  communeSelectionnee.value = ''
 }
 
 function onMinistereChange() {
-  // Réinitialiser le champ libre si on change la sélection
   if (nomMinistere.value !== '__autre__') {
     nomMinistereLibre.value = ''
   }
 }
 
-function onTutelleAgenceChange() {
-  // Réinitialiser les champs de tutelle si on change le type de tutelle
-  if (tutelleAgence.value !== '__ministere__') {
-    tutelleAgenceLibre.value = ''
-    tutelleAgenceAutre.value = ''
+function onTutelleEntiteChange() {
+  if (tutelleEntite.value !== '__ministere__') {
+    tutelleEntiteMinistere.value = ''
+    tutelleEntiteAutre.value = ''
   }
 }
 
 function onTutelleMinistereChange() {
-  // Réinitialiser le champ libre si on change la sélection de ministère
-  if (tutelleAgenceLibre.value !== '__autre__') {
-    tutelleAgenceAutre.value = ''
+  if (tutelleEntiteMinistere.value !== '__autre__') {
+    tutelleEntiteAutre.value = ''
   }
 }
 
@@ -512,54 +540,32 @@ async function register() {
 
   try {
     // 1. Créer le compte utilisateur
-    const displayName = nomComplet.value.trim()
-    const telephoneComplet = telephone.value.trim()
+    const nomComplet = `${prenom.value.trim()} ${nom.value.trim()}`
+    const displayName = nomComplet
+    const telephoneComplet = `${indicatif.value} ${numeroTelephone.value}`.trim()
 
-    // Construction de la structure selon le nouveau système
+    // Construction de la structure selon le type
     let structureFinal = nomStructure.value
-    let typeInstitutionFinal = ''
     let directionServiceFinal = ''
-
-    if (typeStructure.value === 'institution') {
-      typeInstitutionFinal = typeInstitution.value
-      directionServiceFinal = directionService.value
-
-      // Déterminer le nom de la structure selon le type d'institution
-      if (typeInstitution.value === 'presidence') {
-        structureFinal = 'Présidence de la République'
-      } else if (typeInstitution.value === 'primature') {
-        structureFinal = 'Primature'
-      } else if (typeInstitution.value === 'ministere') {
-        // Utiliser le champ libre si "Autre" est sélectionné
-        structureFinal = nomMinistere.value === '__autre__' ? nomMinistereLibre.value : nomMinistere.value
-      } else if (typeInstitution.value === 'autre_institution') {
-        structureFinal = nomInstitution.value
-      }
-    }
-
-    // Pour les agences, combiner nom agence et tutelle
-    if (typeStructure.value === 'agence' && nomAgence.value && tutelleAgence.value) {
-      let tutelleFinal = tutelleAgence.value
-      if (tutelleAgence.value === '__ministere__') {
-        // Utiliser le champ libre si "Autre" est sélectionné pour le ministère de tutelle
-        tutelleFinal = tutelleAgenceLibre.value === '__autre__' ? tutelleAgenceAutre.value : tutelleAgenceLibre.value
-      }
-      structureFinal = `${nomAgence.value} - ${tutelleFinal}`
-    }
-
-    // Calculer nom_ministere
     let nomMinistereFinal = null
-    if (typeStructure.value === 'institution' && typeInstitution.value === 'ministere') {
+    let tutelleAgenceFinal = null
+
+    if (typeStructure.value === 'ministere') {
+      directionServiceFinal = directionService.value
       nomMinistereFinal = nomMinistere.value === '__autre__' ? nomMinistereLibre.value : nomMinistere.value
+      structureFinal = nomMinistereFinal
     }
 
-    // Calculer tutelle_agence
-    let tutelleAgenceFinal = null
-    if (typeStructure.value === 'agence') {
-      if (tutelleAgence.value === '__ministere__') {
-        tutelleAgenceFinal = tutelleAgenceLibre.value === '__autre__' ? tutelleAgenceAutre.value : tutelleAgenceLibre.value
-      } else {
-        tutelleAgenceFinal = tutelleAgence.value
+    if (typeStructure.value === 'entite') {
+      structureFinal = nomEntite.value
+      // Calculer la tutelle
+      if (tutelleEntite.value && tutelleEntite.value !== '') {
+        if (tutelleEntite.value === '__ministere__') {
+          tutelleAgenceFinal = tutelleEntiteMinistere.value === '__autre__' ? tutelleEntiteAutre.value : tutelleEntiteMinistere.value
+        } else {
+          tutelleAgenceFinal = tutelleEntite.value
+        }
+        structureFinal = `${nomEntite.value} - ${tutelleAgenceFinal}`
       }
     }
 
@@ -568,11 +574,11 @@ async function register() {
       password: password.value,
       role: 'soumissionnaire', // Tous les comptes créés via ce formulaire sont soumissionnaires
       display_name: displayName,
-      nom_complet: nomComplet.value,
+      nom_complet: nomComplet,
       telephone: telephoneComplet,
       fonction: fonction.value,
       type_structure: typeStructure.value,
-      type_institution: typeInstitutionFinal,
+      type_institution: '',
       nom_structure: structureFinal,
       direction_service: directionServiceFinal,
       nom_ministere: nomMinistereFinal,
@@ -606,18 +612,20 @@ async function register() {
     message.value = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.'
 
     // Réinitialiser le formulaire
-    nomComplet.value = ''
-    telephone.value = '+221 '
+    prenom.value = ''
+    nom.value = ''
+    indicatif.value = '+221'
+    numeroTelephone.value = ''
     fonction.value = ''
     typeStructure.value = ''
-    typeInstitution.value = ''
-    nomInstitution.value = ''
     directionService.value = ''
     niveauCollectivite.value = ''
     nomMinistere.value = ''
-    nomAgence.value = ''
-    tutelleAgence.value = ''
-    tutelleAgenceLibre.value = ''
+    nomMinistereLibre.value = ''
+    nomEntite.value = ''
+    tutelleEntite.value = ''
+    tutelleEntiteMinistere.value = ''
+    tutelleEntiteAutre.value = ''
     nomStructure.value = ''
     regionParente.value = ''
     departementParent.value = ''
@@ -858,6 +866,34 @@ form {
   flex-direction: column;
   gap: 15px;
   text-align: left;
+}
+
+.form-row-inline {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row-inline .form-field {
+  flex: 1;
+}
+
+.form-row-inline .form-field label {
+  margin-top: 0;
+}
+
+.phone-row {
+  display: flex;
+  gap: 8px;
+}
+
+.indicatif-field {
+  width: 90px !important;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.numero-field {
+  flex: 1;
 }
 
 .form-section {

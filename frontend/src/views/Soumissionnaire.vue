@@ -90,15 +90,14 @@
             <label>Type d'organisme de tutelle *</label>
             <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
               <option value="">-- Sélectionnez --</option>
-              <option value="institution">Institution</option>
+              <option value="ministere">Ministère / Direction nationale</option>
               <option value="collectivite">Collectivité territoriale</option>
-              <option value="agence">Agence / Établissement public</option>
-              <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+              <option value="entite">Entité publique</option>
             </select>
           </div>
 
           <!-- Institution - avec sous-catégories -->
-          <div v-if="typeOrganisme === 'institution'" class="form-group">
+          <div v-if="typeOrganisme === 'ministere'" class="form-group">
             <label>Type d'institution *</label>
             <select v-model="typeInstitution" @change="onTypeInstitutionChange" required>
               <option value="">-- Sélectionnez --</option>
@@ -207,17 +206,17 @@
             </div>
           </div>
 
-          <!-- Agence - champ libre + autorité de tutelle -->
-          <div v-if="typeOrganisme === 'agence'">
+          <!-- Entité publique -->
+          <div v-if="typeOrganisme === 'entite'">
             <div class="form-group">
-              <label>Nom de l'agence / établissement *</label>
-              <input v-model="nomAgence" placeholder="Ex: APIX SA, SENELEC, etc." required />
+              <label>Nom de l'entité *</label>
+              <input v-model="nomAgence" placeholder="Ex: APIX SA, Présidence de la République, Assemblée nationale, etc." required />
             </div>
 
             <div class="form-group">
-              <label>Autorité de tutelle *</label>
-              <select v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
-                <option value="">-- Sélectionnez l'autorité de tutelle --</option>
+              <label>Autorité de tutelle (si applicable)</label>
+              <select v-model="tutelleAgence" @change="onTutelleAgenceChange">
+                <option value="">-- Aucune / Non applicable --</option>
                 <option value="Primature">Primature</option>
                 <option value="Présidence de la République">Présidence de la République</option>
                 <option value="__ministere__">Ministère sectoriel</option>
@@ -241,12 +240,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Autre - champ libre simple -->
-          <div v-if="typeOrganisme === 'autre'" class="form-group">
-            <label>Nom de l'organisme *</label>
-            <input v-model="nomStructure" placeholder="Ex: ONG, Association, Cabinet privé..." required />
           </div>
 
           <div class="form-group">
@@ -301,14 +294,6 @@
               <label class="checkbox-label">
                 <input type="checkbox" v-model="typesFinancement.collectivite" />
                 Collectivités territoriales
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="typesFinancement.international" />
-                Financement international (bailleurs, banques de développement)
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="typesFinancement.mixte" />
-                Financement mixte
               </label>
               <label class="checkbox-label">
                 <input type="checkbox" v-model="typesFinancement.presume" />
@@ -470,8 +455,6 @@ export default {
         public: false,
         prive: false,
         collectivite: false,
-        international: false,
-        mixte: false,
         presume: false
       },
       fichiers: [],
@@ -636,32 +619,23 @@ export default {
 
     // Construire la valeur finale de l'organisme de tutelle
     construireOrganismeTutelle() {
-      if (this.typeOrganisme === 'institution') {
-        if (this.typeInstitution === 'presidence') {
-          return 'Présidence de la République';
-        } else if (this.typeInstitution === 'primature') {
-          return 'Primature';
-        } else if (this.typeInstitution === 'ministere') {
-          if (this.nomMinistere === '__autre__') {
-            return this.nomMinistereLibre;
-          } else {
-            return this.nomMinistere;
-          }
-        } else if (this.typeInstitution === 'autre_institution') {
-          return this.nomInstitution;
-        }
+      if (this.typeOrganisme === 'ministere') {
+        const nom = this.nomMinistere === '__autre__' ? this.nomMinistereLibre : this.nomMinistere;
+        return nom || '';
       } else if (this.typeOrganisme === 'collectivite') {
         return this.nomStructure;
-      } else if (this.typeOrganisme === 'agence') {
+      } else if (this.typeOrganisme === 'entite') {
+        let result = this.nomAgence || '';
         let tutelle = '';
         if (this.tutelleAgence === '__ministere__') {
           tutelle = this.tutelleAgenceLibre === '__autre__' ? this.tutelleAgenceAutre : this.tutelleAgenceLibre;
-        } else {
+        } else if (this.tutelleAgence) {
           tutelle = this.tutelleAgence;
         }
-        return `${this.nomAgence} (Tutelle: ${tutelle})`;
-      } else if (this.typeOrganisme === 'autre') {
-        return this.nomStructure;
+        if (tutelle) {
+          result += ` (Tutelle: ${tutelle})`;
+        }
+        return result;
       }
       return '';
     },
@@ -726,8 +700,6 @@ export default {
       if (this.typesFinancement.public) typesFinancementArray.push('Public');
       if (this.typesFinancement.prive) typesFinancementArray.push('Privé');
       if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivités');
-      if (this.typesFinancement.international) typesFinancementArray.push('International');
-      if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
       if (this.typesFinancement.presume) typesFinancementArray.push('Présumé');
 
       if (typesFinancementArray.length > 0) {
@@ -917,8 +889,6 @@ export default {
         public: false,
         prive: false,
         collectivite: false,
-        international: false,
-        mixte: false,
         presume: false
       };
 

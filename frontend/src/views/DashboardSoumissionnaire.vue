@@ -78,7 +78,7 @@
           <!-- Structure soumissionnaire -->
           <div class="form-row">
             <div class="form-group full-width">
-              <label>Structure soumissionnaire / Maître d'ouvrage *</label>
+              <label>Structure soumissionnaire *</label>
               <input v-model="form.structure_soumissionnaire" type="text" required placeholder="Ex: Direction des Infrastructures Sanitaires" />
             </div>
           </div>
@@ -132,16 +132,15 @@
               <label>Type d'organisme de tutelle *</label>
               <select v-model="typeOrganisme" @change="onTypeOrganismeChange" required>
                 <option value="">-- Sélectionnez --</option>
-                <option value="institution">Institution</option>
+                <option value="ministere">Ministère / Direction nationale</option>
                 <option value="collectivite">Collectivité territoriale</option>
-                <option value="agence">Agence / Établissement public</option>
-                <option value="autre">Autre (ONG, Association, Cabinet, etc.)</option>
+                <option value="entite">Entité publique</option>
               </select>
             </div>
           </div>
 
           <!-- Institution -->
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'institution'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'ministere'" class="form-row">
             <div class="form-group full-width">
               <label>Type d'institution *</label>
               <select v-model="typeInstitution" @change="onTypeInstitutionChange" required>
@@ -154,7 +153,7 @@
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'institution' && typeInstitution === 'ministere'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'ministere' && typeInstitution === 'ministere'" class="form-row">
             <div class="form-group full-width">
               <label>Ministère *</label>
               <select v-model="nomMinistere" required>
@@ -165,14 +164,14 @@
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'institution' && typeInstitution === 'ministere' && nomMinistere === '__autre__'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'ministere' && typeInstitution === 'ministere' && nomMinistere === '__autre__'" class="form-row">
             <div class="form-group full-width">
               <label>Préciser le ministère *</label>
               <input v-model="nomMinistereLibre" type="text" required placeholder="Ex: Ministère de..." />
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'institution' && typeInstitution === 'autre_institution'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'ministere' && typeInstitution === 'autre_institution'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de l'institution *</label>
               <input v-model="nomInstitution" type="text" required placeholder="Ex: Conseil économique, social et environnemental" />
@@ -237,14 +236,14 @@
           </div>
 
           <!-- Agence / Établissement public -->
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'agence'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'entite'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de l'agence / établissement *</label>
               <input v-model="nomAgence" type="text" required placeholder="Ex: ADIE, APIX, ARTP..." />
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'agence'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'entite'" class="form-row">
             <div class="form-group full-width">
               <label>Autorité de tutelle *</label>
               <select v-model="tutelleAgence" @change="onTutelleAgenceChange" required>
@@ -256,7 +255,7 @@
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'agence' && tutelleAgence === '__ministere__'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'entite' && tutelleAgence === '__ministere__'" class="form-row">
             <div class="form-group full-width">
               <label>Ministère de tutelle *</label>
               <select v-model="tutelleAgenceLibre" required>
@@ -267,7 +266,7 @@
             </div>
           </div>
 
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'agence' && tutelleAgence === '__ministere__' && tutelleAgenceLibre === '__autre__'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'entite' && tutelleAgence === '__ministere__' && tutelleAgenceLibre === '__autre__'" class="form-row">
             <div class="form-group full-width">
               <label>Préciser le ministère de tutelle *</label>
               <input v-model="tutelleAgenceAutre" type="text" required placeholder="Ex: Ministère de..." />
@@ -275,15 +274,15 @@
           </div>
 
           <!-- Autre -->
-          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'autre'" class="form-row">
+          <div v-if="!isOrganismeTutelleFrozen && typeOrganisme === 'entite'" class="form-row">
             <div class="form-group full-width">
               <label>Nom de la structure *</label>
               <input v-model="nomStructure" type="text" required placeholder="Ex: ONG Caritas, Cabinet XYZ..." />
             </div>
           </div>
 
-          <!-- Point focal -->
-          <div class="form-section-title">Point focal / Responsable du projet</div>
+          <!-- Point focal / Contact de la structure soumissionnaire -->
+          <div class="form-section-title">Point focal / Contact</div>
           <div class="form-row">
             <div class="form-group">
               <label>Nom complet *</label>
@@ -291,10 +290,9 @@
             </div>
             <div class="form-group">
               <label>Fonction *</label>
-              <input v-model="form.point_focal_fonction" type="text" required placeholder="Ex: Chef de projet" />
+              <input v-model="form.point_focal_fonction" type="text" required placeholder="Ex: Chef CEP, Directeur..." />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Téléphone *</label>
@@ -307,6 +305,41 @@
             <div class="form-group">
               <label>Email *</label>
               <input v-model="form.point_focal_email" type="email" required placeholder="Ex: prenom.nom@gouv.sn" />
+            </div>
+          </div>
+
+          <!-- Option : structure porteuse différente -->
+          <label class="checkbox-label porteur-different-toggle">
+            <input type="checkbox" v-model="porteurDifferent" />
+            <span>La structure porteuse du projet est différente de la structure soumissionnaire</span>
+          </label>
+
+          <!-- Contact de la structure porteuse (visible uniquement si différente) -->
+          <div v-if="porteurDifferent" class="contact-zone porteur-zone">
+            <div class="form-section-title">Contact de la structure porteuse du projet</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nom complet *</label>
+                <input v-model="form.porteur_nom" type="text" required placeholder="Ex: Prénom NOM" />
+              </div>
+              <div class="form-group">
+                <label>Fonction *</label>
+                <input v-model="form.porteur_fonction" type="text" required placeholder="Ex: Chef de projet, Responsable..." />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Téléphone *</label>
+                <PhoneInput
+                  v-model="form.porteur_telephone"
+                  :required="true"
+                  placeholder="+221 77 123 45 67"
+                />
+              </div>
+              <div class="form-group">
+                <label>Email *</label>
+                <input v-model="form.porteur_email" type="email" required placeholder="Ex: prenom.nom@gouv.sn" />
+              </div>
             </div>
           </div>
 
@@ -443,14 +476,6 @@
                   <input type="checkbox" v-model="typesFinancement.collectivite" />
                   Collectivité territoriale
                 </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="typesFinancement.international" />
-                  International
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="typesFinancement.mixte" />
-                  Mixte
-                </label>
               </div>
               <small>Sélectionnez au moins un type de financement envisagé</small>
             </div>
@@ -460,18 +485,28 @@
           <div class="form-section-title">Pièces jointes</div>
           <p class="file-info">📎 Formats autorisés : .pdf, .docx, .xlsx, .pptx, .jpg, .png — Taille max. 10 Mo / fichier</p>
 
+          <!-- Pièces jointes -->
+          <div class="form-section-title">Pièces jointes</div>
+
           <div class="form-row">
             <div class="form-group" :class="{ 'has-error': fieldErrors.lettre_soumission }">
               <label>
-                Lettre de soumission signée *
-                <span v-if="fieldErrors.lettre_soumission" class="error-indicator" title="Ce fichier est requis">⚠️</span>
+                Requête ou Lettre de soumission signée *
+                <span v-if="fieldErrors.lettre_soumission" class="error-indicator" title="Ce fichier est requis"></span>
               </label>
-              <input
-                type="file"
-                @change="handleLettreFile"
-                accept=".pdf,.doc,.docx"
-                ref="lettreInput"
-              />
+              <div
+                class="drop-zone"
+                :class="{ 'drop-zone-active': dragActive.lettre }"
+                @dragenter.prevent="dragActive.lettre = true"
+                @dragover.prevent="dragActive.lettre = true"
+                @dragleave.prevent="dragActive.lettre = false"
+                @drop.prevent="handleDrop('lettre_soumission', $event); dragActive.lettre = false"
+                @click="$refs.lettreInput.click()"
+              >
+                <span v-if="!form.lettre_soumission.length">Glissez-déposez ou cliquez pour ajouter</span>
+                <span v-else>{{ form.lettre_soumission.length }} fichier(s)</span>
+              </div>
+              <input type="file" @change="handleLettreFile" accept=".pdf,.doc,.docx" ref="lettreInput" style="display:none" />
               <ul v-if="form.lettre_soumission.length" class="file-list">
                 <li v-for="(f,i) in form.lettre_soumission" :key="f.name + '_' + i">
                   <span class="file-name">{{ f.name }}</span>
@@ -483,15 +518,22 @@
 
             <div class="form-group" :class="{ 'has-error': fieldErrors.note_conceptuelle }">
               <label>
-                Note conceptuelle du projet *
-                <span v-if="fieldErrors.note_conceptuelle" class="error-indicator" title="Ce fichier est requis">⚠️</span>
+                Note Conceptuelle ou Fiche d'identification du projet *
+                <span v-if="fieldErrors.note_conceptuelle" class="error-indicator" title="Ce fichier est requis"></span>
               </label>
-              <input
-                type="file"
-                @change="handleNoteFile"
-                accept=".pdf,.doc,.docx"
-                ref="noteInput"
-              />
+              <div
+                class="drop-zone"
+                :class="{ 'drop-zone-active': dragActive.note }"
+                @dragenter.prevent="dragActive.note = true"
+                @dragover.prevent="dragActive.note = true"
+                @dragleave.prevent="dragActive.note = false"
+                @drop.prevent="handleDrop('note_conceptuelle', $event); dragActive.note = false"
+                @click="$refs.noteInput.click()"
+              >
+                <span v-if="!form.note_conceptuelle.length">Glissez-déposez ou cliquez pour ajouter</span>
+                <span v-else>{{ form.note_conceptuelle.length }} fichier(s)</span>
+              </div>
+              <input type="file" @change="handleNoteFile" accept=".pdf,.doc,.docx" ref="noteInput" style="display:none" />
               <ul v-if="form.note_conceptuelle.length" class="file-list">
                 <li v-for="(f,i) in form.note_conceptuelle" :key="f.name + '_' + i">
                   <span class="file-name">{{ f.name }}</span>
@@ -503,19 +545,21 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group" :class="{ 'has-error': fieldErrors.etudes_plans }">
-              <label>
-                Études ou plans techniques *
-                <span v-if="fieldErrors.etudes_plans" class="error-indicator" title="Ce fichier est requis">⚠️</span>
-              </label>
-              <input
-                type="file"
-                multiple
-                @change="handleEtudesFile"
-                accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png"
-                ref="etudesInput"
-              />
-              <small class="hint">Vous pouvez sélectionner plusieurs fichiers</small>
+            <div class="form-group">
+              <label>Études ou plans techniques (facultatif)</label>
+              <div
+                class="drop-zone"
+                :class="{ 'drop-zone-active': dragActive.etudes }"
+                @dragenter.prevent="dragActive.etudes = true"
+                @dragover.prevent="dragActive.etudes = true"
+                @dragleave.prevent="dragActive.etudes = false"
+                @drop.prevent="handleDrop('etudes_plans', $event); dragActive.etudes = false"
+                @click="$refs.etudesInput.click()"
+              >
+                <span v-if="!form.etudes_plans.length">Glissez-déposez ou cliquez pour ajouter</span>
+                <span v-else>{{ form.etudes_plans.length }} fichier(s)</span>
+              </div>
+              <input type="file" multiple @change="handleEtudesFile" accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png" ref="etudesInput" style="display:none" />
               <ul v-if="form.etudes_plans.length" class="file-list">
                 <li v-for="(f,i) in form.etudes_plans" :key="f.name + '_' + i">
                   <span class="file-name">{{ f.name }}</span>
@@ -527,14 +571,19 @@
 
             <div class="form-group">
               <label>Autres pièces justificatives (facultatif)</label>
-              <input
-                type="file"
-                multiple
-                @change="handleAutresFile"
-                accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png"
-                ref="autresInput"
-              />
-              <small class="hint">Vous pouvez sélectionner plusieurs fichiers</small>
+              <div
+                class="drop-zone"
+                :class="{ 'drop-zone-active': dragActive.autres }"
+                @dragenter.prevent="dragActive.autres = true"
+                @dragover.prevent="dragActive.autres = true"
+                @dragleave.prevent="dragActive.autres = false"
+                @drop.prevent="handleDrop('autres_pieces', $event); dragActive.autres = false"
+                @click="$refs.autresInput.click()"
+              >
+                <span v-if="!form.autres_pieces.length">Glissez-déposez ou cliquez pour ajouter</span>
+                <span v-else>{{ form.autres_pieces.length }} fichier(s)</span>
+              </div>
+              <input type="file" multiple @change="handleAutresFile" accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png" ref="autresInput" style="display:none" />
               <ul v-if="form.autres_pieces.length" class="file-list">
                 <li v-for="(f,i) in form.autres_pieces" :key="f.name + '_' + i">
                   <span class="file-name">{{ f.name }}</span>
@@ -551,7 +600,7 @@
               <label class="checkbox-label certification">
                 <input type="checkbox" v-model="form.certification" required />
                 <span>
-                  ✅ Je certifie que les informations fournies sont exactes et conformes aux documents joints, et que le projet a été validé par ma hiérarchie.
+                  ✅ Je certifie que les informations fournies sont exactes et conformes aux documents joints, et que le projet a été validé par l'autorité.
                   <span v-if="fieldErrors.certification" class="error-indicator" title="Vous devez certifier ces informations">⚠️</span>
                 </span>
               </label>
@@ -682,6 +731,10 @@ export default {
         point_focal_fonction: "",
         point_focal_telephone: "",
         point_focal_email: "",
+        porteur_nom: "",
+        porteur_fonction: "",
+        porteur_telephone: "",
+        porteur_email: "",
         // lieu_soumission_* : Géolocalisation automatique côté backend (pas de champs manuels)
         nouveaute: "",
         projet_initial_ref: "",
@@ -697,8 +750,6 @@ export default {
         public: false,
         prive: false,
         collectivite: false,
-        international: false,
-        mixte: false
       },
       coutFormate: "", // Pour afficher le coût avec séparateur de milliers
       files: [],
@@ -708,6 +759,8 @@ export default {
       submitErrors: [],
       submitSuccess: "",
       fieldErrors: {}, // Pour marquer visuellement les champs avec erreur
+      dragActive: { lettre: false, note: false, etudes: false, autres: false },
+      porteurDifferent: false,
       complements: {},
       showSubmissionForm: false, // Nouveau: contrôle l'affichage du formulaire
       userAccountStatus: null, // Statut du compte utilisateur (verifie, non_verifie, suspendu)
@@ -903,10 +956,9 @@ export default {
     // Helper methods pour afficher les labels dans le résumé de l'organisme de tutelle
     getTypeOrganismeLabel(type) {
       const labels = {
-        'institution': 'Institution',
+        'ministere': 'Ministère / Direction nationale',
         'collectivite': 'Collectivité territoriale',
-        'agence': 'Agence / Établissement public',
-        'autre': 'Autre (ONG, Association, Cabinet, etc.)'
+        'entite': 'Entité publique'
       };
       return labels[type] || type;
     },
@@ -998,34 +1050,23 @@ export default {
 
     // Construire la valeur finale de l'organisme de tutelle
     construireOrganismeTutelle() {
-      if (this.typeOrganisme === 'institution') {
-        if (this.typeInstitution === 'presidence') {
-          return 'Présidence de la République';
-        } else if (this.typeInstitution === 'primature') {
-          return 'Primature';
-        } else if (this.typeInstitution === 'ministere') {
-          if (this.nomMinistere === '__autre__') {
-            return this.nomMinistereLibre;
-          } else {
-            return this.nomMinistere;
-          }
-        } else if (this.typeInstitution === 'autre_institution') {
-          return this.nomInstitution;
-        }
+      if (this.typeOrganisme === 'ministere') {
+        const nom = this.nomMinistere === '__autre__' ? this.nomMinistereLibre : this.nomMinistere;
+        return nom || '';
       } else if (this.typeOrganisme === 'collectivite') {
         return this.nomStructure;
-      } else if (this.typeOrganisme === 'agence') {
+      } else if (this.typeOrganisme === 'entite') {
+        let result = this.nomAgence || '';
         let tutelle = '';
-        if (this.tutelleAgence === 'presidence') {
-          tutelle = 'Présidence de la République';
-        } else if (this.tutelleAgence === 'primature') {
-          tutelle = 'Primature';
-        } else if (this.tutelleAgence === '__ministere__') {
+        if (this.tutelleAgence === '__ministere__') {
           tutelle = this.tutelleAgenceLibre === '__autre__' ? this.tutelleAgenceAutre : this.tutelleAgenceLibre;
+        } else if (this.tutelleAgence) {
+          tutelle = this.tutelleAgence;
         }
-        return `${this.nomAgence} (Tutelle: ${tutelle})`;
-      } else if (this.typeOrganisme === 'autre') {
-        return this.nomStructure;
+        if (tutelle) {
+          result += ` (Tutelle: ${tutelle})`;
+        }
+        return result;
       }
       return '';
     },
@@ -1110,7 +1151,7 @@ export default {
             console.log('[DASHBOARD] typeOrganisme défini à:', this.typeOrganisme);
 
             // Si c'est une institution, pré-remplir aussi type_institution
-            if (userData.type_structure === 'institution' && userData.type_institution) {
+            if (userData.type_structure === 'ministere' && userData.type_institution) {
               this.typeInstitution = userData.type_institution.trim();
               console.log('[DASHBOARD] typeInstitution défini à:', this.typeInstitution);
 
@@ -1169,15 +1210,10 @@ export default {
                 console.log('[DASHBOARD] Collectivité non reconnue, nomStructure:', this.nomStructure);
               }
             }
-            // Si c'est une agence, pré-remplir le nom de l'agence
-            else if (userData.type_structure === 'agence' && userData.nom_structure) {
+            // Si c'est une entité publique, pré-remplir le nom
+            else if (userData.type_structure === 'entite' && userData.nom_structure) {
               this.nomAgence = userData.nom_structure;
-              console.log('[DASHBOARD] nomAgence défini à:', this.nomAgence);
-            }
-            // Si c'est "autre", pré-remplir le nom de la structure
-            else if (userData.type_structure === 'autre' && userData.nom_structure) {
-              this.nomAutreStructure = userData.nom_structure;
-              console.log('[DASHBOARD] nomAutreStructure défini à:', this.nomAutreStructure);
+              console.log('[DASHBOARD] nomAgence (entité) défini à:', this.nomAgence);
             }
 
             // Note: Les champs seront automatiquement désactivés grâce à isOrganismeTutelleFrozen
@@ -1294,6 +1330,11 @@ export default {
         console.error(e); alert("Erreur chargement projets");
       } finally { this.loading = false; }
     },
+    // Drag and drop
+    handleDrop(field, event) {
+      const files = Array.from(event.dataTransfer.files || []);
+      this.form[field] = this.form[field].concat(files);
+    },
     // Gestion des fichiers séparés
     handleLettreFile(e) {
       const added = Array.from(e.target.files || []);
@@ -1372,18 +1413,14 @@ export default {
         this.fieldErrors.organisme_tutelle = true;
       }
 
-      // Vérifier que les 3 documents requis sont fournis
+      // Vérifier les 2 documents obligatoires
       if (this.form.lettre_soumission.length === 0) {
-        errors.push("La lettre de soumission signée est requise");
+        errors.push("La requête ou lettre de soumission signée est requise");
         this.fieldErrors.lettre_soumission = true;
       }
       if (this.form.note_conceptuelle.length === 0) {
-        errors.push("La note conceptuelle du projet est requise");
+        errors.push("La note conceptuelle ou fiche d'identification est requise");
         this.fieldErrors.note_conceptuelle = true;
-      }
-      if (this.form.etudes_plans.length === 0) {
-        errors.push("Les études ou plans techniques sont requis");
-        this.fieldErrors.etudes_plans = true;
       }
 
       // Vérifier les pôles territoriaux
@@ -1426,6 +1463,15 @@ export default {
         formData.append("point_focal_fonction", this.form.point_focal_fonction || "");
         formData.append("point_focal_telephone", this.form.point_focal_telephone || "");
         formData.append("point_focal_email", this.form.point_focal_email || "");
+        // Si structure porteuse identique, copier les infos du point focal
+        const porteurNom = this.porteurDifferent ? this.form.porteur_nom : this.form.point_focal_nom;
+        const porteurFonction = this.porteurDifferent ? this.form.porteur_fonction : this.form.point_focal_fonction;
+        const porteurTelephone = this.porteurDifferent ? this.form.porteur_telephone : this.form.point_focal_telephone;
+        const porteurEmail = this.porteurDifferent ? this.form.porteur_email : this.form.point_focal_email;
+        formData.append("porteur_nom", porteurNom || "");
+        formData.append("porteur_fonction", porteurFonction || "");
+        formData.append("porteur_telephone", porteurTelephone || "");
+        formData.append("porteur_email", porteurEmail || "");
         // lieu_soumission_* : Géolocalisation automatique côté backend
 
         // Nouveaux champs (Décembre 2025)
@@ -1439,8 +1485,6 @@ export default {
         if (this.typesFinancement.public) typesFinancementArray.push('Public');
         if (this.typesFinancement.prive) typesFinancementArray.push('Privé');
         if (this.typesFinancement.collectivite) typesFinancementArray.push('Collectivité territoriale');
-        if (this.typesFinancement.international) typesFinancementArray.push('International');
-        if (this.typesFinancement.mixte) typesFinancementArray.push('Mixte');
 
         if (typesFinancementArray.length > 0) {
           formData.append("type_financement", JSON.stringify(typesFinancementArray));
@@ -1496,6 +1540,10 @@ export default {
           point_focal_fonction: "",
           point_focal_telephone: "",
           point_focal_email: "",
+          porteur_nom: "",
+          porteur_fonction: "",
+          porteur_telephone: "",
+          porteur_email: "",
           // lieu_soumission_* : Géolocalisation automatique côté backend
           nouveaute: "",
           projet_initial_ref: "",
@@ -1672,6 +1720,10 @@ export default {
         point_focal_fonction: "",
         point_focal_telephone: "",
         point_focal_email: "",
+        porteur_nom: "",
+        porteur_fonction: "",
+        porteur_telephone: "",
+        porteur_email: "",
         nouveaute: "",
         projet_initial_ref: "",
         niveau_priorite: "",
@@ -1687,8 +1739,6 @@ export default {
         public: false,
         prive: false,
         collectivite: false,
-        international: false,
-        mixte: false
       };
       // Réinitialiser les champs hiérarchiques
       this.typeOrganisme = "";
@@ -1733,6 +1783,9 @@ export default {
 .form-group label { margin-bottom: 0.5rem; font-weight: 600; color: #2c3e50; }
 .form-group input, .form-group textarea, .form-group select { padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; }
 .hint { color:#6b7280; font-size:.85rem; }
+.drop-zone { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; color: #64748b; font-size: 0.9rem; }
+.drop-zone:hover { border-color: #2563eb; background: #f0f7ff; }
+.drop-zone-active { border-color: #2563eb; background: #eff6ff; }
 .file-list { list-style: none; padding-left: 0; margin: .5rem 0 0; }
 .file-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .4rem .6rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: .4rem; }
 .btn-link { background: transparent; border: none; color: #2563eb; cursor: pointer; padding: 0; }
@@ -2012,6 +2065,33 @@ export default {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
+}
+
+/* Zone structure porteuse différente */
+.porteur-different-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 1rem 0 0.5rem;
+  cursor: pointer;
+}
+
+.porteur-different-toggle input[type="checkbox"] {
+  width: auto;
+}
+
+.porteur-zone {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.porteur-zone .form-section-title {
+  margin-top: 0;
 }
 
 /* Full width form group */
