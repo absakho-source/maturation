@@ -955,17 +955,17 @@ export default {
 <style scoped>
 .evaluation-container {
   position: relative;
-  max-width: 1400px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 30px 24px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  background: #f0f2f5;
   min-height: 100vh;
 }
 
 .header-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .dgppe-header {
@@ -973,13 +973,12 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin-bottom: 30px;
-  padding: 25px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  padding: 28px 32px;
+  background: #003366;
+  border-radius: 10px;
   text-align: center;
+  border-bottom: 4px solid #006633;
 }
 
 .ministere-info {
@@ -988,48 +987,49 @@ export default {
 }
 
 .ministere-info h2 {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
   margin: 0;
-  color: #1a202c;
+  color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .ministere-info h3 {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 8px 0;
-  color: #2d3748;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 6px 0;
+  color: #c5d5e8;
   text-align: center;
 }
 
 .ministere-info h4 {
-  font-size: 13px;
-  font-weight: normal;
-  margin: 8px 0 0;
-  color: #718096;
+  font-size: 12px;
+  font-weight: 400;
+  margin: 6px 0 0;
+  color: #8eabc4;
   text-align: center;
+  letter-spacing: 0.3px;
 }
 
 .form-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #1a202c;
-  margin: 25px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 24px;
+  font-weight: 800;
+  color: #003366;
+  margin: 20px 0;
+  letter-spacing: 1px;
 }
 
 .version-info {
   text-align: center;
-  margin: 15px 0 25px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-radius: 8px;
-  font-size: 13px;
-  color: #1565c0;
-  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.15);
+  margin: 10px 0 20px;
+  padding: 8px 16px;
+  background: #e8eef4;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #003366;
+  border: 1px solid #c5d5e8;
 }
 
 .version-label {
@@ -1039,37 +1039,33 @@ export default {
 
 .version-value {
   font-style: italic;
-  color: #0d47a1;
-  font-weight: 500;
+  color: #003366;
+  font-weight: 600;
 }
 
 .section {
-  margin-bottom: 35px;
-  border: none;
-  border-radius: 12px;
+  margin-bottom: 28px;
+  border: 1px solid #d1d9e0;
+  border-radius: 8px;
   overflow: hidden;
   background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .section-title {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: #003366;
   color: white;
-  padding: 18px 20px;
+  padding: 14px 20px;
   margin: 0;
-  font-size: 19px;
-  font-weight: bold;
-  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .section-presentation {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #fafbfc;
 }
 
 .project-info {
@@ -1156,8 +1152,8 @@ export default {
 
 .input-text:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .input-text::placeholder {
@@ -1181,8 +1177,8 @@ export default {
 
 .textarea-text:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .textarea-text::placeholder {
@@ -1227,8 +1223,8 @@ export default {
 
 .input-intitule-fullwidth:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .input-intitule-fullwidth::placeholder {
@@ -1292,10 +1288,10 @@ export default {
 .classification-header {
   font-weight: 700;
   font-size: 14px;
-  color: #2c3e50;
+  color: #003366;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 3px solid #3498db;
+  border-bottom: 3px solid #006633;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -1321,8 +1317,8 @@ export default {
 }
 
 .radio-group-vertical label:hover {
-  background: #e3f2fd;
-  border-color: #90caf9;
+  background: #e8eef4;
+  border-color: #003366;
 }
 
 .radio-group-vertical input[type="radio"] {
@@ -1330,7 +1326,7 @@ export default {
   cursor: pointer;
   width: 18px;
   height: 18px;
-  accent-color: #3498db;
+  accent-color: #003366;
 }
 
 .autres-precisions-inline {
@@ -1350,7 +1346,7 @@ export default {
   padding: 12px 15px;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #006633;
 }
 
 .dimension-subtitle {
@@ -1380,7 +1376,7 @@ export default {
 }
 
 .checkbox-group-compact label:hover {
-  background: #e3f2fd;
+  background: #e8eef4;
   transform: translateX(3px);
 }
 
@@ -1389,7 +1385,7 @@ export default {
   cursor: pointer;
   width: 18px;
   height: 18px;
-  accent-color: #3498db;
+  accent-color: #003366;
 }
 
 /* Anciens styles - conservés pour compatibilité */
@@ -1402,7 +1398,7 @@ export default {
 
 .dimension-group {
   padding: 15px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
@@ -1435,7 +1431,7 @@ export default {
 }
 
 .dimension-options label:hover {
-  background: #e3f2fd;
+  background: #e8eef4;
   transform: translateX(3px);
 }
 
@@ -1492,8 +1488,8 @@ export default {
 
 .autres-precisions .input-text:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .criteria-table {
@@ -1510,13 +1506,14 @@ export default {
 }
 
 .table-header > div {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: #003366;
   color: white;
-  padding: 18px 15px;
+  padding: 14px 12px;
   font-weight: 600;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .criteria-row {
@@ -1536,12 +1533,13 @@ export default {
 
 .criteria-row .col-criteria {
   font-weight: 600;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
-  color: #2d3748;
+  background: #f0f4f8 !important;
+  color: #003366;
+  font-size: 12px;
 }
 
 .table-header .col-criteria {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+  background: #003366 !important;
 }
 
 .score-max {
@@ -1567,27 +1565,28 @@ export default {
 
 .score-input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.15);
   transform: scale(1.05);
 }
 
 .total-row > div {
-  background: #e8f5e8 !important;
+  background: #e8eef4 !important;
   font-weight: bold;
+  border-top: 2px solid #003366;
 }
 
 .total-score {
-  color: #27ae60;
+  color: #003366;
   font-size: 18px;
 }
 
 .score-acceptable {
-  color: #2d7a2d !important;
+  color: #006633 !important;
 }
 
 .score-defavorable {
-  color: #dc2626 !important;
+  color: #b91c1c !important;
 }
 
 /* Style pour le select de proposition */
@@ -1604,8 +1603,8 @@ export default {
 
 .proposition-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .no-description,
@@ -1633,8 +1632,8 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 textarea::placeholder {
@@ -1651,18 +1650,18 @@ textarea::placeholder {
 }
 
 .section-evaluateur {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border: none;
+  background: #e8eef4;
+  border: 1px solid #c5d5e8;
   margin-top: 20px;
 }
 
 .section-evaluateur .evaluateur-info {
-  background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
-  border: 2px solid #64b5f6;
+  background: white;
+  border: 2px solid #c5d5e8;
 }
 
 .evaluateur-input[readonly] {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: #f0f2f5;
   color: #4a5568;
   cursor: not-allowed;
   border: 2px solid #cbd5e0;
@@ -1768,8 +1767,8 @@ textarea::placeholder {
 
 .evaluateur-input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 
 .recommendations-textarea {
@@ -1783,9 +1782,9 @@ textarea::placeholder {
   justify-content: center;
   margin-top: 40px;
   padding: 30px 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #e8eef4;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #c5d5e8;
 }
 
 .actions-group {
@@ -1831,39 +1830,39 @@ textarea::placeholder {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  background: #006633;
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+  background: #005528;
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: #003366;
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+  background: #002244;
 }
 
 .btn-outline {
   background: white;
-  color: #3498db;
-  border: 2px solid #3498db;
+  color: #003366;
+  border: 2px solid #003366;
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: #003366;
   color: white;
-  border-color: #3498db;
+  border-color: #003366;
 }
 
 .btn-retour {
   background: white;
-  color: #3498db;
-  border: 2px solid #3498db;
+  color: #003366;
+  border: 2px solid #003366;
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -1873,10 +1872,10 @@ textarea::placeholder {
 }
 
 .btn-retour:hover {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: #003366;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);
 }
 
 .navigation-section {
@@ -1892,7 +1891,7 @@ textarea::placeholder {
   padding: 15px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border: 2px solid #3498db;
+  border: 2px solid #003366;
   z-index: 100;
 }
 
@@ -1933,13 +1932,13 @@ textarea::placeholder {
 
 .numero-projet-badge {
   display: inline-block;
-  background: #007bff;
+  background: #003366;
   color: white;
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 18px;
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 51, 102, 0.3);
 }
 
 .badge-prioritaire-fiche {
@@ -2066,7 +2065,7 @@ textarea::placeholder {
 }
 
 .project-details-table th {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: #003366;
   color: white;
   padding: 15px 12px;
   text-align: center;
@@ -2102,7 +2101,7 @@ textarea::placeholder {
 
 .project-details-table textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
 }
 </style>
