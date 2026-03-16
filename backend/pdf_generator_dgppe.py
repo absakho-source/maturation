@@ -39,8 +39,8 @@ class FicheEvaluationDGPPEPDF:
         self.styles = getSampleStyleSheet()
 
         # Couleurs DGPPE
-        self.dgppe_green = HexColor('#2d7a2d')
-        self.dgppe_blue = HexColor('#3498db')
+        self.dgppe_green = HexColor('#006633')
+        self.dgppe_blue = HexColor('#003366')
 
         self._setup_custom_styles()
         self.story = []
@@ -161,7 +161,7 @@ class FicheEvaluationDGPPEPDF:
             parent=self.styles['Normal'],
             fontSize=9,
             fontName='Helvetica',
-            textColor=HexColor('#1a4d7a'),
+            textColor=HexColor('#003366'),
             alignment=TA_CENTER,
             leading=12
         )
@@ -172,7 +172,7 @@ class FicheEvaluationDGPPEPDF:
             parent=self.styles['Normal'],
             fontSize=9,
             fontName='Helvetica-Bold',
-            textColor=HexColor('#1a4d7a'),
+            textColor=HexColor('#003366'),
             alignment=TA_CENTER,
             leading=12
         )
@@ -183,7 +183,7 @@ class FicheEvaluationDGPPEPDF:
             parent=self.styles['Normal'],
             fontSize=14,
             fontName='Helvetica-Bold',
-            textColor=HexColor('#27ae60'),
+            textColor=HexColor('#006633'),
             alignment=TA_CENTER,
             leading=18
         )
@@ -207,7 +207,7 @@ class FicheEvaluationDGPPEPDF:
                 parent=self.styles['Normal'],
                 fontSize=10,
                 fontName='Helvetica-Bold',
-                textColor=HexColor('#1a4d7a'),
+                textColor=HexColor('#003366'),
                 alignment=TA_CENTER
             )
         )
@@ -232,7 +232,7 @@ class FicheEvaluationDGPPEPDF:
             name='SepStyle',
             parent=self.styles['Normal'],
             fontSize=8,
-            textColor=HexColor('#27ae60'),
+            textColor=HexColor('#006633'),
             alignment=TA_CENTER
         ))
 
@@ -281,7 +281,7 @@ class FicheEvaluationDGPPEPDF:
         # Encadrer tout l'en-tête dans un cadre avec fond
         outer_table = Table([[header_table]], colWidths=[17.5*cm])
         outer_table.setStyle(TableStyle([
-            ('BOX', (0, 0), (0, 0), 2, HexColor('#1a4d7a')),
+            ('BOX', (0, 0), (0, 0), 2, HexColor('#003366')),
             ('BACKGROUND', (0, 0), (0, 0), HexColor('#f8f9fa')),
             ('TOPPADDING', (0, 0), (0, 0), 10),
             ('BOTTOMPADDING', (0, 0), (0, 0), 10),
@@ -744,7 +744,7 @@ class FicheEvaluationDGPPEPDF:
     def _get_score_color(self, score):
         """Retourne la couleur selon le score"""
         if score >= 80:
-            return HexColor('#2d7a2d')  # Vert (Favorable)
+            return HexColor('#006633')  # Vert (Favorable)
         elif score >= 70:
             return HexColor('#d97706')  # Orange (Conditionnel)
         else:
@@ -777,7 +777,7 @@ class FicheEvaluationDGPPEPDF:
         # Déterminer la proposition automatique
         if total_score >= 80:
             proposition_text = "Favorable"
-            proposition_color = HexColor('#2d7a2d')
+            proposition_color = HexColor('#006633')
             proposition_bg = Color(0.91, 0.96, 0.91)
         elif total_score >= 70:
             proposition_text = "Favorable sous condition"
