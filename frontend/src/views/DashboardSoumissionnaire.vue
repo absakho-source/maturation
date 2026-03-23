@@ -400,8 +400,8 @@
               <small class="hint">Le montant sera automatiquement formaté</small>
             </div>
             <div class="form-group">
-              <label>Durée estimée du projet (en mois)</label>
-              <input v-model.number="form.duree_mois" type="number" min="1" placeholder="Ex: 24" />
+              <label>Durée estimée du projet (en années)</label>
+              <input v-model.number="form.duree_annees" type="number" min="1" placeholder="Ex: 3" />
               <small class="hint">Facultatif</small>
             </div>
           </div>
@@ -676,6 +676,7 @@
               <p v-if="p.secteur"><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
               <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
               <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
+              <p v-if="p.duree_annees"><strong>Durée:</strong> {{ p.duree_annees }} an{{ p.duree_annees > 1 ? 's' : '' }}</p>
 
               <p v-if="p.statut === 'compléments demandés' && p.complements_demande_message">
                 <strong>Demande de compléments:</strong> {{ p.complements_demande_message }}
@@ -723,7 +724,7 @@ export default {
         secteur: "",
         poles: [],
         cout_estimatif: null,
-        duree_mois: null,
+        duree_annees: null,
         organisme_tutelle: "",
         autre_administration: "",
         structure_soumissionnaire: "",
@@ -1457,7 +1458,7 @@ export default {
         formData.append("secteur", this.form.secteur || "");
         formData.append("poles", (this.form.poles || []).join(","));
         formData.append("cout_estimatif", this.form.cout_estimatif || "");
-        formData.append("duree_mois", this.form.duree_mois || "");
+        formData.append("duree_annees", this.form.duree_annees || "");
         formData.append("structure_soumissionnaire", this.form.structure_soumissionnaire || "");
         formData.append("point_focal_nom", this.form.point_focal_nom || "");
         formData.append("point_focal_fonction", this.form.point_focal_fonction || "");
@@ -1532,7 +1533,7 @@ export default {
           secteur: "",
           poles: [],
           cout_estimatif: null,
-          duree_mois: null,
+          duree_annees: null,
           organisme_tutelle: "",
           autre_administration: "",
           structure_soumissionnaire: "",
@@ -1712,7 +1713,7 @@ export default {
         secteur: "",
         poles: [],
         cout_estimatif: null,
-        duree_mois: null,
+        duree_annees: null,
         organisme_tutelle: "",
         autre_administration: "",
         structure_soumissionnaire: "",

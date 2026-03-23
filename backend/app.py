@@ -574,6 +574,7 @@ def projects():
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
                             "type_financement": str(p.type_financement) if p.type_financement else "",
+                            "duree_annees": p.duree_annees if hasattr(p, 'duree_annees') and p.duree_annees else None,
                             "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte)
                         })
                     else:
@@ -618,6 +619,7 @@ def projects():
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
                             "type_financement": str(p.type_financement) if p.type_financement else "",
+                            "duree_annees": p.duree_annees if hasattr(p, 'duree_annees') and p.duree_annees else None,
                             "soumissionnaire_statut_compte": str(soumissionnaire_statut_compte),
                             # Coordonnées du point focal / responsable du projet
                             "point_focal_nom": str(p.point_focal_nom) if hasattr(p, 'point_focal_nom') and p.point_focal_nom else "",
@@ -663,6 +665,8 @@ def projects():
         projet_initial_ref = request.form.get("projet_initial_ref")
         niveau_priorite = request.form.get("niveau_priorite")
         type_financement = request.form.get("type_financement")  # JSON array
+        duree_annees_raw = request.form.get("duree_annees")
+        duree_annees = int(duree_annees_raw) if duree_annees_raw and duree_annees_raw.isdigit() else None
 
         # Point focal / Responsable du projet
         point_focal_nom = request.form.get("point_focal_nom")
@@ -749,6 +753,7 @@ def projects():
             projet_initial_ref=projet_initial_ref,
             niveau_priorite=niveau_priorite,
             type_financement=type_financement,
+            duree_annees=duree_annees,
             point_focal_nom=point_focal_nom,
             point_focal_fonction=point_focal_fonction,
             point_focal_telephone=point_focal_telephone,
@@ -857,6 +862,7 @@ def get_project(project_id):
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
             "type_financement": p.type_financement,
+            "duree_annees": p.duree_annees if hasattr(p, 'duree_annees') else None,
             "soumissionnaire_statut_compte": soumissionnaire_statut_compte,
             # Coordonnées du point focal / responsable du projet
             "point_focal_nom": p.point_focal_nom if hasattr(p, 'point_focal_nom') else None,

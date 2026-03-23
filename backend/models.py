@@ -105,6 +105,7 @@ class Project(db.Model):
     projet_initial_ref = db.Column(db.String(50), nullable=True)  # Référence au projet initial si phase 2
     niveau_priorite = db.Column(db.String(50), nullable=True)  # "prioritaire_ant" ou "standard"
     type_financement = db.Column(db.Text, nullable=True)  # JSON: liste des types de financement
+    duree_annees = db.Column(db.Integer, nullable=True)  # Durée estimée du projet en années
 
     # Point focal / Responsable du projet (pour notifications)
     point_focal_nom = db.Column(db.String(200), nullable=True)
