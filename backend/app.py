@@ -773,6 +773,18 @@ def projects():
         except Exception as notif_err:
             print(f"Erreur notification point focal: {notif_err}")
 
+        # Email de confirmation au soumissionnaire
+        try:
+            soumissionnaire = User.query.filter_by(username=auteur_nom).first()
+            if soumissionnaire and soumissionnaire.email:
+                email_service.send_submission_confirmation_email(
+                    project=project,
+                    user_email=soumissionnaire.email,
+                    user_name=soumissionnaire.nom_complet or soumissionnaire.display_name or soumissionnaire.username
+                )
+        except Exception as email_err:
+            print(f"[EMAIL] Erreur confirmation soumission: {email_err}")
+
         return jsonify({
             "message": "Projet soumis avec succès",
             "id": project.id,
@@ -1528,7 +1540,7 @@ def traiter_project(project_id):
                 print(f"[EMAIL_DEBUG] Soumissionnaire trouvé: {soumissionnaire.username if soumissionnaire else 'None'}, Email: {soumissionnaire.email if soumissionnaire else 'None'}")
                 if soumissionnaire and soumissionnaire.email:
                     # Déterminer si on doit envoyer un email selon le statut
-                    statuts_avec_email = ["assigné", "en évaluation", "compléments demandés", "évalué",
+                    statuts_avec_email = ["compléments demandés",
                                          "favorable", "favorable sous conditions", "défavorable"]
 
                     if p.statut in statuts_avec_email:

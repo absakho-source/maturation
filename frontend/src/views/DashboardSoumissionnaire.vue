@@ -655,7 +655,7 @@
           <div class="stat"><span>Total</span><strong>{{ projects.length }}</strong></div>
           <div class="stat"><span>En instruction</span><strong>{{ countByStatus('en instruction') }}</strong></div>
           <div class="stat warning"><span>Compléments demandés</span><strong>{{ countByStatus('compléments demandés') }}</strong></div>
-          <div class="stat info"><span>Compléments fournis</span><strong>{{ countByStatus('compléments soumis') }}</strong></div>
+          <div class="stat info"><span>Compléments fournis</span><strong>{{ countByStatus('compléments fournis') }}</strong></div>
           <div class="stat"><span>Évalués</span><strong>{{ countEvaluated() }}</strong></div>
         </div>
 
@@ -676,7 +676,7 @@
               <p v-if="p.secteur"><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
               <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
               <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-              <p v-if="p.evaluateur_nom"><strong>Assigné à:</strong> {{ labelEval(p.evaluateur_nom) }}</p>
+
               <p v-if="p.statut === 'compléments demandés' && p.complements_demande_message">
                 <strong>Demande de compléments:</strong> {{ p.complements_demande_message }}
               </p>

@@ -427,6 +427,42 @@ def _send_status_change_email_fallback(project, user_email, user_name):
     return success
 
 
+def send_submission_confirmation_email(project, user_email, user_name):
+    """
+    Envoie un email de confirmation au soumissionnaire après la soumission d'un projet.
+    Envoie également au point focal si son email est différent.
+    """
+    recipients = []
+    if user_email:
+        recipients.append({'email': user_email, 'name': user_name})
+
+    point_focal_email = getattr(project, 'point_focal_email', None)
+    point_focal_nom = getattr(project, 'point_focal_nom', None)
+    if point_focal_email and point_focal_email.lower() != (user_email or '').lower():
+        recipients.append({'email': point_focal_email, 'name': point_focal_nom or 'Point Focal'})
+
+    success = False
+    for recipient in recipients:
+        content = f"""
+            <p>Bonjour {recipient['name']},</p>
+            <p>Nous accusons réception de votre projet <strong>« {project.titre} »</strong>
+            enregistré sous le numéro <strong>{project.numero_projet}</strong>.</p>
+            <p>Votre dossier est en cours d'instruction par le Secrétariat SCT de la DGPPE.
+            Vous serez notifié(e) de toute évolution.</p>
+            <p>Merci de votre confiance.</p>
+        """
+        html_content = get_email_template(
+            title="Confirmation de soumission de projet",
+            content=content,
+            cta_text="Suivre mon projet",
+            cta_url=PLATFORM_URL
+        )
+        subject = f"[DGPPE] Confirmation de soumission — {project.numero_projet}"
+        if send_email(to_email=recipient['email'], subject=subject, html_content=html_content):
+            success = True
+    return success
+
+
 def send_evaluator_assignment_email(project, evaluator_email, evaluator_name):
     """
     Envoie un email à l'évaluateur lors de l'assignation d'un projet
