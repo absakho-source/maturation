@@ -778,6 +778,19 @@ def projects():
         except Exception as notif_err:
             print(f"Erreur notification point focal: {notif_err}")
 
+        # Notifier le Secrétariat SCT d'un nouveau projet soumis
+        try:
+            notify_users_by_role(
+                "secretariatsct",
+                "nouveau_projet",
+                "Nouveau projet soumis",
+                f"Le projet '{project.titre[:50]}{'...' if len(project.titre) > 50 else ''}' (N° {project.numero_projet}) vient d'être soumis.",
+                project.id,
+                f"/project/{project.id}"
+            )
+        except Exception as notif_err:
+            print(f"Erreur notification secretariatsct: {notif_err}")
+
         # Email de confirmation au soumissionnaire
         try:
             soumissionnaire = User.query.filter_by(username=auteur_nom).first()

@@ -118,6 +118,18 @@
                   <span>Assigné</span>
                 </label>
                 <label class="checkbox-label">
+                  <input type="checkbox" value="en évaluation" v-model="selectedStatuts">
+                  <span>En évaluation</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="compléments demandés" v-model="selectedStatuts">
+                  <span>Compléments demandés</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="compléments fournis" v-model="selectedStatuts">
+                  <span>Compléments fournis</span>
+                </label>
+                <label class="checkbox-label">
                   <input type="checkbox" value="évalué" v-model="selectedStatuts">
                   <span>Évalué</span>
                 </label>
@@ -132,6 +144,10 @@
                 <label class="checkbox-label">
                   <input type="checkbox" value="défavorable" v-model="selectedStatuts">
                   <span>Défavorable</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" value="en réexamen par le Secrétariat SCT" v-model="selectedStatuts">
+                  <span>En réexamen</span>
                 </label>
               </div>
             </div>
@@ -591,7 +607,7 @@
       <div v-if="activeTab === 'stats'" class="tab-content">
         <StatsDashboard
           role="secretariatsct"
-          username="secretariatsct"
+          :username="currentUser?.username || 'secretariatsct'"
         />
       </div>
 
