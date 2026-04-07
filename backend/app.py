@@ -971,6 +971,8 @@ def traiter_project(project_id):
             data.get("validation_secretariat") == "reassigne" or
             (p.evaluateur_nom and "evaluateur_nom" in data and "avis" not in data)
         )
+        # Sauvegarder l'ancien évaluateur avant tout changement (pour notification de retrait)
+        ancien_evaluateur_nom = p.evaluateur_nom
 
         # Assignation (mais pas pour la réassignation de projets rejetés)
         if ("evaluateur_nom" in data and "avis" not in data and data.get("validation_secretariat") != "reassigne"
@@ -1457,6 +1459,17 @@ def traiter_project(project_id):
                     lien_projet
                 )
 
+            # Notification pour l'ancien évaluateur en cas de réassignation
+            if is_reassignment and ancien_evaluateur_nom and ancien_evaluateur_nom != p.evaluateur_nom:
+                notify_user_by_username(
+                    ancien_evaluateur_nom,
+                    "reassignation",
+                    "Projet retiré",
+                    f"Le projet '{projet_titre}' vous a été retiré et réassigné à un autre évaluateur.",
+                    project_id,
+                    lien_projet
+                )
+
             # Notification pour compléments demandés au soumissionnaire
             if p.statut == "compléments demandés":
                 notify_project_owner(
@@ -1529,7 +1542,38 @@ def traiter_project(project_id):
                     priorite_email=True
                 )
 
-            # Notification pour rejet
+            # Notification quand un dossier est retourné au Secrétariat SCT pour réexamen
+            if p.statut == "en réexamen par le Secrétariat SCT":
+                if "avis_presidencesct" in data:
+                    titre_retour = "Avis rejeté par Présidence SCT — action requise"
+                    msg_retour = f"La Présidence SCT a rejeté l'avis sur le projet '{projet_titre}'. Le dossier est retourné pour décision."
+                elif "decision_finale" in data:
+                    titre_retour = "Avis infirmé par Présidence Comité — action requise"
+                    msg_retour = f"La Présidence du Comité a infirmé l'avis sur le projet '{projet_titre}'. Le dossier est retourné pour réexamen."
+                else:
+                    titre_retour = "Dossier retourné pour réexamen"
+                    msg_retour = f"Le projet '{projet_titre}' est retourné au Secrétariat SCT pour réexamen."
+                notify_users_by_role(
+                    "secretariatsct",
+                    "statut_change",
+                    titre_retour,
+                    msg_retour,
+                    project_id,
+                    lien_projet
+                )
+
+            # Notification au soumissionnaire quand avis défavorable confirmé (fin de vie du projet)
+            if p.statut == "avis défavorable confirmé":
+                notify_project_owner(
+                    p,
+                    "statut_change",
+                    "Décision finale : avis défavorable",
+                    f"La Présidence du Comité a confirmé l'avis défavorable sur votre projet '{projet_titre}'. Le dossier est clôturé.",
+                    lien_projet,
+                    priorite_email=True
+                )
+
+            # Notification pour rejet définitif
             if p.statut == "rejeté" and "avis_presidencesct" in data:
                 notify_project_owner(
                     p,
@@ -1681,6 +1725,63 @@ def evaluation_prealable(project_id):
             hist = Historique(project_id=project_id, action=action, auteur=auteur, role=role)
             db.session.add(hist)
             db.session.commit()
+
+        # ============ NOTIFICATIONS ============
+        try:
+            projet_titre = p.titre[:50] + "..." if len(p.titre) > 50 else p.titre
+            lien_projet = f"/project/{project_id}"
+
+            if decision == "complements_requis":
+                # Notifier le soumissionnaire
+                notify_project_owner(
+                    p,
+                    "complement_requis",
+                    "Compléments demandés",
+                    f"Des compléments ont été demandés pour votre projet '{projet_titre}' suite à l'évaluation de la recevabilité.",
+                    lien_projet,
+                    priorite_email=True
+                )
+                # Notifier le secrétariat SCT
+                notify_users_by_role(
+                    "secretariatsct",
+                    "statut_change",
+                    "Compléments demandés (recevabilité)",
+                    f"L'évaluateur a demandé des compléments pour le projet '{projet_titre}'.",
+                    project_id,
+                    lien_projet
+                )
+            elif decision == "dossier_rejete":
+                if role == "secretariatsct" and previous_evaluation_prealable == "dossier_rejete":
+                    # SCT a validé le rejet → notifier l'évaluateur + le soumissionnaire
+                    if p.evaluateur_nom:
+                        notify_user_by_username(
+                            p.evaluateur_nom,
+                            "statut_change",
+                            "Proposition de rejet validée",
+                            f"Votre proposition de rejet du projet '{projet_titre}' a été validée par le Secrétariat SCT.",
+                            project_id,
+                            lien_projet
+                        )
+                    notify_project_owner(
+                        p,
+                        "statut_change",
+                        "Dossier non recevable",
+                        f"Votre projet '{projet_titre}' a été déclaré non recevable après évaluation de la recevabilité.",
+                        lien_projet,
+                        priorite_email=True
+                    )
+                else:
+                    # Évaluateur propose un rejet → notifier le secrétariat SCT pour validation
+                    notify_users_by_role(
+                        "secretariatsct",
+                        "statut_change",
+                        "Rejet proposé — validation requise",
+                        f"L'évaluateur a proposé le rejet du projet '{projet_titre}'. Votre validation est requise.",
+                        project_id,
+                        lien_projet
+                    )
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur evaluation_prealable: {notif_error}")
 
         return jsonify({"message": "Évaluation préalable enregistrée"}), 200
 
@@ -6400,6 +6501,23 @@ def creer_projets_exemple():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/seed-demo', methods=['POST'])
+def seed_demo_endpoint():
+    """Endpoint temporaire pour initialiser les données de démo (protégé par clé secrète)"""
+    secret = request.args.get('secret') or (request.get_json(silent=True) or {}).get('secret')
+    if secret != 'plasmap-demo-2026':
+        return jsonify({"error": "Non autorisé"}), 403
+    try:
+        import seed_demo
+        import importlib
+        importlib.reload(seed_demo)
+        seed_demo.seed()
+        return jsonify({"message": "Seed terminé avec succès"}), 200
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
 
 if __name__ == '__main__':
     import os
