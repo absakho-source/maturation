@@ -6509,15 +6509,101 @@ def seed_demo_endpoint():
     if secret != 'plasmap-demo-2026':
         return jsonify({"error": "Non autorisé"}), 403
     try:
+        from sqlalchemy import text, inspect as sa_inspect
         import importlib
-        # 1. Migrations d'abord
-        from migrate_render import migrate_database
-        migrate_database()
+
+        # 1. Ajouter les colonnes manquantes via le même moteur que l'app
+        migration_log = []
+        with db.engine.connect() as conn:
+            inspector = sa_inspect(db.engine)
+
+            # Colonnes manquantes sur la table project
+            project_cols = {c['name'] for c in inspector.get_columns('project')}
+            project_nouvelles = [
+                ("duree_annees",                  "INTEGER"),
+                ("point_focal_nom",               "VARCHAR(200)"),
+                ("point_focal_fonction",          "VARCHAR(200)"),
+                ("point_focal_telephone",         "VARCHAR(50)"),
+                ("point_focal_email",             "VARCHAR(200)"),
+                ("deleted_at",                    "TIMESTAMP"),
+                ("motivation_resoumission",       "TEXT"),
+                ("evaluation_prealable",          "VARCHAR(50)"),
+                ("evaluation_prealable_date",     "TIMESTAMP"),
+                ("evaluation_prealable_commentaire", "TEXT"),
+                ("evaluation_prealable_matrice",  "TEXT"),
+                ("evaluabilite",                  "VARCHAR(50)"),
+                ("evaluabilite_date",             "TIMESTAMP"),
+                ("evaluabilite_commentaire",      "TEXT"),
+                ("organisme_tutelle",             "VARCHAR(300)"),
+                ("organisme_tutelle_data",        "TEXT"),
+                ("structure_soumissionnaire",     "VARCHAR(300)"),
+                ("origine_projet",                "TEXT"),
+                ("cc_adaptation",                 "BOOLEAN DEFAULT FALSE"),
+                ("cc_attenuation",                "BOOLEAN DEFAULT FALSE"),
+                ("genre",                         "BOOLEAN DEFAULT FALSE"),
+                ("gps_latitude",                  "FLOAT"),
+                ("gps_longitude",                 "FLOAT"),
+                ("gps_accuracy",                  "INTEGER"),
+                ("lieu_soumission_pays",          "VARCHAR(100)"),
+                ("lieu_soumission_ville",         "VARCHAR(100)"),
+                ("lieu_soumission_region",        "VARCHAR(100)"),
+                ("complements_demande_message",   "TEXT"),
+                ("complements_reponse_message",   "TEXT"),
+                ("complements_reponse_pieces",    "TEXT"),
+                ("commentaires_finaux",           "TEXT"),
+                ("validation_secretariat",        "VARCHAR(100)"),
+                ("avis_presidencesct",            "VARCHAR(100)"),
+                ("decision_finale",               "VARCHAR(100)"),
+                ("nouveaute",                     "VARCHAR(50)"),
+                ("projet_initial_ref",            "VARCHAR(50)"),
+                ("niveau_priorite",               "VARCHAR(50)"),
+                ("type_financement",              "TEXT"),
+                ("statut_comite",                 "VARCHAR(50)"),
+                ("fiche_evaluation_visible",      "BOOLEAN DEFAULT FALSE"),
+                ("commentaires",                  "TEXT"),
+                ("auteur_nom",                    "VARCHAR(100)"),
+                ("soumissionnaire_id",            "INTEGER"),
+                ("evaluateur_nom",                "VARCHAR(100)"),
+                ("avis",                          "VARCHAR(100)"),
+            ]
+            for col_name, col_type in project_nouvelles:
+                if col_name not in project_cols:
+                    conn.execute(text(f"ALTER TABLE project ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                    migration_log.append(f"+ project.{col_name}")
+
+            # Colonnes manquantes sur users
+            user_cols = {c['name'] for c in inspector.get_columns('users')}
+            user_nouvelles = [
+                ("display_name",      "VARCHAR(100)"),
+                ("email",             "VARCHAR(150)"),
+                ("nom_complet",       "VARCHAR(200)"),
+                ("fonction",          "VARCHAR(255)"),
+                ("telephone",         "VARCHAR(20)"),
+                ("type_structure",    "VARCHAR(50)"),
+                ("type_institution",  "VARCHAR(50)"),
+                ("nom_structure",     "VARCHAR(255)"),
+                ("direction_service", "VARCHAR(255)"),
+                ("nom_ministere",     "VARCHAR(300)"),
+                ("tutelle_agence",    "VARCHAR(300)"),
+                ("justificatif_path", "VARCHAR(500)"),
+                ("statut_compte",     "VARCHAR(50) DEFAULT 'non_verifie'"),
+            ]
+            for col_name, col_type in user_nouvelles:
+                if col_name not in user_cols:
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                    migration_log.append(f"+ users.{col_name}")
+
         # 2. Seed
         import seed_demo
         importlib.reload(seed_demo)
         seed_demo.seed()
-        return jsonify({"message": "Migrations + seed terminés avec succès"}), 200
+
+        return jsonify({
+            "message": "Migrations + seed terminés avec succès",
+            "migrations": migration_log
+        }), 200
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
