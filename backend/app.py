@@ -6502,6 +6502,52 @@ def creer_projets_exemple():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/cleanup-demo', methods=['POST'])
+def cleanup_demo_endpoint():
+    """Supprime tous les projets qui ne font PAS partie du seed de démo"""
+    secret = request.args.get('secret') or (request.get_json(silent=True) or {}).get('secret')
+    if secret != 'plasmap-demo-2026':
+        return jsonify({"error": "Non autorisé"}), 403
+    try:
+        from sqlalchemy import text
+        # Titres des projets de démo — on garde ceux-là, on supprime tout le reste
+        titres_demo = [
+            "Création d'un centre de santé communautaire à Vélingara",
+            "Aménagement de la plaine de Ndiaël pour l'agriculture irriguée",
+            "Parc industriel agro-alimentaire de Kaolack",
+            "Réhabilitation du réseau routier urbain de Thiès",
+            "Construction de 200 forages pastoraux dans le Ferlo",
+            "Programme d'électrification rurale solaire – Zones enclavées du Sud-Est",
+            "Aménagement touristique de l'île de Carabane",
+            "Modernisation du Port de Ziguinchor et développement de la filière pêche",
+            "Hub numérique et centre d'innovation de Dakar",
+            "Programme de construction de 500 salles de classe au primaire",
+        ]
+        # Récupérer les IDs à supprimer
+        all_projects = Project.query.filter(Project.deleted_at.is_(None)).all()
+        ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
+
+        deleted = 0
+        for pid in ids_to_delete:
+            # Supprimer les dépendances
+            db.session.execute(text(f"DELETE FROM fiche_evaluation WHERE project_id = {pid}"))
+            db.session.execute(text(f"DELETE FROM historique WHERE project_id = {pid}"))
+            db.session.execute(text(f"DELETE FROM log WHERE projet_id = {pid}"))
+            try:
+                db.session.execute(text(f"DELETE FROM messages_projet WHERE project_id = {pid}"))
+            except Exception:
+                pass
+            db.session.execute(text(f"DELETE FROM project WHERE id = {pid}"))
+            deleted += 1
+
+        db.session.commit()
+        return jsonify({"message": f"{deleted} projet(s) supprimé(s)", "ids": ids_to_delete}), 200
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
+
 @app.route('/api/seed-demo', methods=['POST'])
 def seed_demo_endpoint():
     """Endpoint temporaire pour initialiser les données de démo (protégé par clé secrète)"""
