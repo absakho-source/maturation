@@ -253,14 +253,86 @@ def migrate_database(db_path=None):
             # Ajouter type_financement
             if 'type_financement' not in columns:
                 print("[MIGRATION] Ajout de la colonne 'type_financement'...")
-                conn.execute(text("""
-                    ALTER TABLE project
-                    ADD COLUMN type_financement TEXT
-                """))
+                conn.execute(text("ALTER TABLE project ADD COLUMN type_financement TEXT"))
                 conn.commit()
                 print("[MIGRATION] ✓ Colonne 'type_financement' ajoutée")
             else:
                 print("[MIGRATION] ✓ La colonne 'type_financement' existe déjà")
+
+            # Migration 8: Colonnes duree_annees et point_focal_*
+            columns = [col['name'] for col in inspector.get_columns('project')]
+
+            nouvelles_colonnes = [
+                ("duree_annees",           "INTEGER"),
+                ("point_focal_nom",        "VARCHAR(200)"),
+                ("point_focal_fonction",   "VARCHAR(200)"),
+                ("point_focal_telephone",  "VARCHAR(50)"),
+                ("point_focal_email",      "VARCHAR(200)"),
+                ("deleted_at",             "TIMESTAMP"),
+                ("motivation_resoumission","TEXT"),
+                ("evaluation_prealable",   "VARCHAR(50)"),
+                ("evaluation_prealable_date", "TIMESTAMP"),
+                ("evaluation_prealable_commentaire", "TEXT"),
+                ("evaluation_prealable_matrice", "TEXT"),
+                ("evaluabilite",           "VARCHAR(50)"),
+                ("evaluabilite_date",      "TIMESTAMP"),
+                ("evaluabilite_commentaire","TEXT"),
+                ("organisme_tutelle",      "VARCHAR(300)"),
+                ("organisme_tutelle_data", "TEXT"),
+                ("structure_soumissionnaire","VARCHAR(300)"),
+                ("origine_projet",         "TEXT"),
+                ("cc_adaptation",          "BOOLEAN DEFAULT FALSE"),
+                ("cc_attenuation",         "BOOLEAN DEFAULT FALSE"),
+                ("genre",                  "BOOLEAN DEFAULT FALSE"),
+                ("gps_latitude",           "FLOAT"),
+                ("gps_longitude",          "FLOAT"),
+                ("gps_accuracy",           "INTEGER"),
+                ("lieu_soumission_pays",   "VARCHAR(100)"),
+                ("lieu_soumission_ville",  "VARCHAR(100)"),
+                ("lieu_soumission_region", "VARCHAR(100)"),
+                ("complements_demande_message", "TEXT"),
+                ("complements_reponse_message", "TEXT"),
+                ("complements_reponse_pieces",  "TEXT"),
+                ("commentaires_finaux",    "TEXT"),
+                ("validation_secretariat", "VARCHAR(100)"),
+                ("avis_presidencesct",     "VARCHAR(100)"),
+                ("decision_finale",        "VARCHAR(100)"),
+            ]
+
+            for col_name, col_type in nouvelles_colonnes:
+                if col_name not in columns:
+                    print(f"[MIGRATION] Ajout colonne '{col_name}'...")
+                    conn.execute(text(f"ALTER TABLE project ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                    print(f"[MIGRATION] ✓ '{col_name}' ajoutée")
+
+            # Migration 9 : Colonnes manquantes sur users
+            try:
+                user_cols = [col['name'] for col in inspector.get_columns('users')]
+            except Exception:
+                user_cols = []
+
+            user_nouvelles = [
+                ("display_name",     "VARCHAR(100)"),
+                ("email",            "VARCHAR(150)"),
+                ("nom_complet",      "VARCHAR(200)"),
+                ("fonction",         "VARCHAR(255)"),
+                ("telephone",        "VARCHAR(20)"),
+                ("type_structure",   "VARCHAR(50)"),
+                ("type_institution", "VARCHAR(50)"),
+                ("nom_structure",    "VARCHAR(255)"),
+                ("direction_service","VARCHAR(255)"),
+                ("nom_ministere",    "VARCHAR(300)"),
+                ("tutelle_agence",   "VARCHAR(300)"),
+                ("justificatif_path","VARCHAR(500)"),
+                ("statut_compte",    "VARCHAR(50) DEFAULT 'non_verifie'"),
+            ]
+            for col_name, col_type in user_nouvelles:
+                if col_name not in user_cols:
+                    print(f"[MIGRATION] Ajout colonne users.'{col_name}'...")
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                    print(f"[MIGRATION] ✓ users.'{col_name}' ajoutée")
 
         print("[MIGRATION] ✓ Toutes les migrations ont été appliquées avec succès!")
         return True

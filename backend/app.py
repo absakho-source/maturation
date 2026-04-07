@@ -6509,11 +6509,15 @@ def seed_demo_endpoint():
     if secret != 'plasmap-demo-2026':
         return jsonify({"error": "Non autorisé"}), 403
     try:
-        import seed_demo
         import importlib
+        # 1. Migrations d'abord
+        from migrate_render import migrate_database
+        migrate_database()
+        # 2. Seed
+        import seed_demo
         importlib.reload(seed_demo)
         seed_demo.seed()
-        return jsonify({"message": "Seed terminé avec succès"}), 200
+        return jsonify({"message": "Migrations + seed terminés avec succès"}), 200
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
