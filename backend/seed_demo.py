@@ -369,7 +369,7 @@ PROJETS = [
             ),
             "organisme_tutelle": "Ministère de l'Énergie, du Pétrole et des Mines",
             "snd_2025_2029": "Axe stratégique 2 – Développement du capital humain et réduction des inégalités spatiales",
-            # Scores (/105) — total ~82 → Favorable
+            # Scores (/100) — total ~82 → Favorable
             "pertinence_score": 4.5,
             "pertinence_description": "Le projet répond à un besoin avéré et prioritaire : le taux d'électrification des zones ciblées est inférieur à 8%. La cohérence avec les objectifs nationaux d'accès universel à l'énergie est totale.",
             "pertinence_recommandations": "Veiller à l'implication des communautés dès la phase de conception pour assurer l'appropriation.",
@@ -409,7 +409,7 @@ PROJETS = [
             "impact_emploi_score": 4.5,
             "impact_emploi_description": "Création de 120 emplois permanents locaux et 350 emplois temporaires en phase travaux. Forte valeur ajoutée pour les techniciens formés.",
             "impact_emploi_recommandations": "Contractualiser les engagements d'emploi local avec les entreprises adjudicataires.",
-            "score_total": 82.5,
+            "score_total": 82.5,  # /100 — sum des 12 critères hors impact_emploi
             "proposition": "Favorable",
             "recommandations": (
                 "La Commission recommande l'inscription de ce projet au programme d'investissement prioritaire. "
@@ -478,7 +478,7 @@ PROJETS = [
             "activites_principales": "Construction hôtel, marina, golf, centre de conférences. Aménagement des accès.",
             "resultats_attendus": "80 chambres, 500 employés, 5 000 touristes/an, 2 Md FCFA de recettes annuelles",
             "organisme_tutelle": "Ministère du Tourisme et de l'Artisanat",
-            # Scores — total ~53 → Défavorable
+            # Scores (/100) — total 48 → Défavorable
             "pertinence_score": 2.5,
             "pertinence_description": "La pertinence du projet pour les populations locales est limitée. Un hôtel de luxe sur une île accessible bénéficiera peu aux communautés rurales de Casamance.",
             "pertinence_recommandations": "Revoir la stratégie pour intégrer davantage les communautés locales.",
@@ -518,7 +518,7 @@ PROJETS = [
             "impact_emploi_score": 3.0,
             "impact_emploi_description": "500 emplois annoncés mais la part locale n'est pas garantie. Risque d'importation de main-d'œuvre.",
             "impact_emploi_recommandations": "Contractualiser un minimum de 60% d'emplois locaux.",
-            "score_total": 53.0,
+            "score_total": 48.0,  # /100
             "proposition": "Défavorable",
             "recommandations": (
                 "La Commission émet un avis défavorable sur ce projet en l'état. Les principales insuffisances "
@@ -594,7 +594,7 @@ PROJETS = [
             "ppp_score": 3.0, "ppp_description": "Opportunités PPP pour la gestion de la chambre froide.", "ppp_recommandations": None,
             "impact_environnemental_score": 3.5, "impact_environnemental_description": "Impact limité. ÉIES réalisée et plan de gestion environnementale satisfaisant.", "impact_environnemental_recommandations": None,
             "impact_emploi_score": 4.0, "impact_emploi_description": "850 emplois permanents créés (pêche, transformation, logistique).", "impact_emploi_recommandations": None,
-            "score_total": 80.0,
+            "score_total": 76.0,  # /100 — 4.5+8+11+12+3.5+3.5+12+4+7.5+3.5+3+3.5
             "proposition": "Favorable sous condition",
             "recommandations": (
                 "La Commission recommande le projet sous deux conditions : (1) finalisation du plan de dragage "
@@ -670,7 +670,7 @@ PROJETS = [
             "ppp_score": 4.5, "ppp_description": "Modèle PPP exemplaire avec Microsoft et Orange. Réplicable.", "ppp_recommandations": None,
             "impact_environnemental_score": 4.0, "impact_environnemental_description": "Bâtiment à haute performance énergétique, certification EDGE visée.", "impact_environnemental_recommandations": None,
             "impact_emploi_score": 4.5, "impact_emploi_description": "2 500 emplois en 5 ans. 70% de jeunes de moins de 35 ans.", "impact_emploi_recommandations": None,
-            "score_total": 92.0,
+            "score_total": 87.5,  # /100 — 5+9.5+13+11+4.5+4+14+4.5+9+4.5+4.5+4
             "proposition": "Favorable",
             "recommandations": (
                 "La Commission recommande très favorablement ce projet. Il représente un investissement "
