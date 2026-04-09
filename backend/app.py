@@ -6528,16 +6528,24 @@ def cleanup_demo_endpoint():
         ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
 
         deleted = 0
+        # Tables dépendantes à vider pour chaque projet (ordre important)
+        dep_tables = [
+            ("fiche_evaluation",            "project_id"),
+            ("fiche_evaluation_archive",    "project_id"),
+            ("historique",                  "project_id"),
+            ("log",                         "projet_id"),
+            ("documents_projet",            "project_id"),
+            ("messages_projet",             "project_id"),
+            ("notifications",               "projet_id"),
+        ]
         for pid in ids_to_delete:
-            # Supprimer les dépendances
-            db.session.execute(text(f"DELETE FROM fiche_evaluation WHERE project_id = {pid}"))
-            db.session.execute(text(f"DELETE FROM historique WHERE project_id = {pid}"))
-            db.session.execute(text(f"DELETE FROM log WHERE projet_id = {pid}"))
-            try:
-                db.session.execute(text(f"DELETE FROM messages_projet WHERE project_id = {pid}"))
-            except Exception:
-                pass
+            for table, col in dep_tables:
+                try:
+                    db.session.execute(text(f"DELETE FROM {table} WHERE {col} = {pid}"))
+                except Exception:
+                    db.session.rollback()
             db.session.execute(text(f"DELETE FROM project WHERE id = {pid}"))
+            db.session.commit()
             deleted += 1
 
         db.session.commit()
