@@ -6528,25 +6528,25 @@ def cleanup_demo_endpoint():
         ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
 
         deleted = 0
-        # Tables dépendantes à vider pour chaque projet (ordre important)
-        dep_tables = [
-            ("fiche_evaluation",            "project_id"),
-            ("fiche_evaluation_archive",    "project_id"),
-            ("historique",                  "project_id"),
-            ("log",                         "projet_id"),
-            ("documents_projet",            "project_id"),
-            ("messages_projet",             "project_id"),
-            ("notifications",               "projet_id"),
-        ]
-        for pid in ids_to_delete:
-            for table, col in dep_tables:
+        if ids_to_delete:
+            ids_sql = ",".join(str(i) for i in ids_to_delete)
+            # Supprimer les dépendances en cascade (ordre FK)
+            for stmt in [
+                f"DELETE FROM fiche_evaluation_archive WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM fiche_evaluation         WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM historique                WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM log                       WHERE projet_id  IN ({ids_sql})",
+                f"DELETE FROM documents_projet          WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM messages_projet           WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM notifications             WHERE projet_id  IN ({ids_sql})",
+                f"DELETE FROM project                   WHERE id         IN ({ids_sql})",
+            ]:
                 try:
-                    db.session.execute(text(f"DELETE FROM {table} WHERE {col} = {pid}"))
+                    db.session.execute(text(stmt))
                 except Exception:
-                    db.session.rollback()
-            db.session.execute(text(f"DELETE FROM project WHERE id = {pid}"))
+                    pass  # table absente → ignorer
             db.session.commit()
-            deleted += 1
+            deleted = len(ids_to_delete)
 
         db.session.commit()
         return jsonify({"message": f"{deleted} projet(s) supprimé(s)", "ids": ids_to_delete}), 200
