@@ -30,7 +30,7 @@
           <form @submit.prevent="register">
         <!-- Informations personnelles -->
         <div class="form-section">
-          <h3>Informations personnelles</h3>
+          <h3><span class="step-num">1</span> Informations personnelles</h3>
           <div class="form-row-inline">
             <div class="form-field">
               <label for="prenom">Prénom *</label>
@@ -65,7 +65,7 @@
 
         <!-- Type de structure -->
         <div class="form-section">
-          <h3>Structure d'appartenance</h3>
+          <h3><span class="step-num">2</span> Structure d'appartenance</h3>
           <label for="type-structure">Type de structure *</label>
           <select id="type-structure" v-model="typeStructure" @change="onTypeStructureChange" required>
             <option value="">-- Sélectionnez --</option>
@@ -227,7 +227,7 @@
 
         <!-- Justificatifs (facultatif) -->
         <div class="form-section">
-          <h3>Justificatifs</h3>
+          <h3><span class="step-num">3</span> Justificatifs <small>(facultatif)</small></h3>
           <p class="info-text">
             Upload facultatif mais recommandé pour une validation rapide de votre compte
             (carte professionnelle, attestation, etc.)
@@ -260,10 +260,16 @@
 
         <!-- Identifiants de connexion -->
         <div class="form-section">
-          <h3>Identifiants de connexion</h3>
+          <h3><span class="step-num">4</span> Identifiants de connexion</h3>
           <input v-model="username" placeholder="Adresse email professionnelle (de préférence) *" type="email" required />
           <input v-model="password" placeholder="Mot de passe (min. 6 caractères) *" type="password" required minlength="6" />
           <input v-model="passwordConfirm" placeholder="Confirmer le mot de passe *" type="password" required minlength="6" />
+          <p v-if="passwordConfirm && password !== passwordConfirm" class="field-error">
+            ⚠️ Les mots de passe ne correspondent pas.
+          </p>
+          <p v-else-if="passwordConfirm && password === passwordConfirm && password.length >= 6" class="field-ok">
+            ✅ Mots de passe identiques.
+          </p>
         </div>
 
         <button type="submit" :disabled="loading">
@@ -908,6 +914,43 @@ form {
   font-size: 1rem;
   color: #004080;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section h3 small {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: #2E6B6B;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.field-error {
+  margin-top: 0.4rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.field-ok {
+  margin-top: 0.4rem;
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 label {

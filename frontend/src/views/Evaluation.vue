@@ -13,27 +13,27 @@
           Tableau de bord - Évaluateur
         </h2>
         <div class="stats-grid">
-          <div class="stat-card stat-total">
+          <div class="stat-card stat-card--primary">
             <div class="stat-number">{{ projetsAssignes.length }}</div>
             <div class="stat-label">Mes projets</div>
           </div>
-          <div class="stat-card stat-recevabilite">
+          <div class="stat-card stat-card--warning">
             <div class="stat-number">{{ statsEvaluateur.enRecevabilite }}</div>
             <div class="stat-label">En recevabilité</div>
           </div>
-          <div class="stat-card stat-evaluabilite">
+          <div class="stat-card stat-card--info">
             <div class="stat-number">{{ statsEvaluateur.enEvaluabilite }}</div>
             <div class="stat-label">En évaluabilité</div>
           </div>
-          <div class="stat-card stat-evaluation">
+          <div class="stat-card stat-card--info">
             <div class="stat-number">{{ statsEvaluateur.enEvaluation }}</div>
             <div class="stat-label">En évaluation</div>
           </div>
-          <div class="stat-card stat-complements">
+          <div class="stat-card stat-card--warning">
             <div class="stat-number">{{ statsEvaluateur.complementsEnAttente }}</div>
             <div class="stat-label">Compléments attendus</div>
           </div>
-          <div class="stat-card stat-evalues">
+          <div class="stat-card stat-card--success">
             <div class="stat-number">{{ statsEvaluateur.evalues }}</div>
             <div class="stat-label">Avis rendus</div>
           </div>
@@ -390,11 +390,11 @@ export default {
           const err = await resp.json().catch(() => ({}));
           throw new Error(err.error || "Erreur lors de la soumission");
         }
-        alert("✅ Évaluation soumise avec succès.");
+        this.$toast.success("Évaluation soumise avec succès.");
         this.modalEvalSimpleId = null;
         await this.loadProjects();
       } catch (err) {
-        alert("Erreur : " + err.message);
+        this.$toast.error(err.message);
       } finally {
         this.evalSimple.enCours = false;
       }
@@ -404,7 +404,7 @@ export default {
       const commentaire = (this.evaluabiliteCommentaires[projectId] || "").trim();
 
       if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
-        alert("⚠️ La motivation est obligatoire pour cette décision.");
+        this.$toast.warning("La motivation est obligatoire pour cette décision.");
         return;
       }
 
@@ -427,19 +427,17 @@ export default {
           throw new Error(errorData.error || "Erreur lors de l'enregistrement");
         }
 
-        let message;
         if (decision === "evaluable") {
-          message = "✅ Dossier évaluable. Vous pouvez soumettre votre évaluation.";
+          this.$toast.success("Dossier évaluable. Vous pouvez soumettre votre évaluation.");
         } else if (decision === "complements_requis") {
-          message = "📝 Compléments demandés. Le soumissionnaire a été notifié.";
+          this.$toast.info("Compléments demandés. Le soumissionnaire a été notifié.");
         } else {
-          message = "✕ Rejet proposé. En attente de validation par le Secrétariat SCT.";
+          this.$toast.info("Rejet proposé. En attente de validation par le Secrétariat SCT.");
         }
-        alert(message);
         this.evaluabiliteCommentaires[projectId] = "";
         await this.loadProjects();
       } catch (error) {
-        alert("Erreur: " + error.message);
+        this.$toast.error(error.message);
       } finally {
         this.envoiEvaluabilite[projectId] = false;
       }
@@ -448,9 +446,8 @@ export default {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const commentaire = (this.evaluationPrealableCommentaires[projectId] || "").trim();
 
-      // Validation: commentaire obligatoire si compléments requis ou dossier rejeté
       if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
-        alert("Commentaire obligatoire pour justifier la décision");
+        this.$toast.warning("La motivation est obligatoire pour cette décision.");
         return;
       }
 
@@ -473,19 +470,17 @@ export default {
           throw new Error(error.error || "Erreur lors de l'envoi");
         }
 
-        let message;
         if (decision === "dossier_evaluable") {
-          message = "Dossier déclaré recevable. Étape suivante : évaluabilité.";
+          this.$toast.success("Dossier déclaré recevable. Étape suivante : évaluabilité.");
         } else if (decision === "complements_requis") {
-          message = "Compléments demandés. Le soumissionnaire a été notifié.";
+          this.$toast.info("Compléments demandés. Le soumissionnaire a été notifié.");
         } else if (decision === "dossier_rejete") {
-          message = "Rejet proposé. En attente de validation par le Secrétariat SCT.";
+          this.$toast.info("Rejet proposé. En attente de validation par le Secrétariat SCT.");
         }
-        alert(message);
         await this.loadProjects();
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de l'envoi de l'évaluation de la recevabilité: " + error.message);
+        this.$toast.error(error.message);
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }

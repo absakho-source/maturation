@@ -1,11 +1,15 @@
 <!-- filepath: /Users/abou/Documents/DGPPE/2025/Plateforme de soumission/maturation/frontend/src/App.vue -->
 <template>
   <router-view />
+  <ToastContainer />
 </template>
 
 <script>
+import ToastContainer from './components/ToastContainer.vue';
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: { ToastContainer }
 }
 </script>
 

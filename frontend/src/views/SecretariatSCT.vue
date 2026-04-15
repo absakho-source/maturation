@@ -1195,7 +1195,7 @@ export default {
     },
     async assigner(id) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const ev = this.assignation[id]; if (!ev) return alert("Choisir un évaluateur");
+      const ev = this.assignation[id]; if (!ev) return this.$toast.warning("Choisir un évaluateur");
       const motivation = (this.motivations[id] || "").trim();
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -1206,7 +1206,7 @@ export default {
           role: user.role
         })
       });
-      alert("Assigné");
+      this.$toast.success("Projet assigné");
       this.motivations[id] = ""; // Réinitialiser la motivation
       this.loadProjects();
     },
@@ -1225,7 +1225,7 @@ export default {
           role: user.role 
         })
       });
-      alert("Projet réassigné pour réévaluation"); 
+      this.$toast.success("Projet réassigné pour réévaluation");
       this.loadProjects();
     },
 
@@ -1234,7 +1234,7 @@ export default {
       const evaluateur = this.assignation[id];
 
       if (!evaluateur) {
-        alert("Veuillez choisir un évaluateur");
+        this.$toast.warning("Veuillez choisir un évaluateur");
         return;
       }
 
@@ -1260,12 +1260,12 @@ export default {
           throw new Error("Erreur lors de la réassignation");
         }
 
-        alert("Avis rejeté réassigné avec succès ! Le projet sera évalué à nouveau.");
-        this.assignation[id] = ""; // Réinitialiser le sélecteur
-        this.motivations[id] = ""; // Réinitialiser la motivation
+        this.$toast.success("Avis rejeté réassigné. Le projet sera évalué à nouveau.");
+        this.assignation[id] = "";
+        this.motivations[id] = "";
         this.loadProjects();
       } catch (error) {
-        alert("Erreur lors de la réassignation : " + error.message);
+        this.$toast.error("Erreur lors de la réassignation : " + error.message);
       }
     },
 
@@ -1284,7 +1284,7 @@ export default {
           role: user.role 
         })
       });
-      alert("Compléments validés directement"); 
+      this.$toast.success("Compléments validés");
       this.loadProjects();
     },
 
@@ -1306,12 +1306,12 @@ export default {
     },
     async reassigner(id) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-      const ev = this.assignation[id]; if (!ev) return alert("Choisir un évaluateur");
+      const ev = this.assignation[id]; if (!ev) return this.$toast.warning("Choisir un évaluateur");
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ validation_secretariat: "reassigne", evaluateur_nom: ev, auteur: user.username, role: user.role })
       });
-      alert("Réassigné"); this.loadProjects();
+      this.$toast.success("Projet réassigné"); this.loadProjects();
     },
     async validerAvis(id) {
       // Confirmation avant validation pour éviter clics accidentels
@@ -1324,7 +1324,7 @@ export default {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ validation_secretariat: "valide", auteur: user.username, role: user.role })
       });
-      alert("Avis validé ➜ Présidence SCT"); this.loadProjects();
+      this.$toast.success("Avis validé ➜ Présidence SCT"); this.loadProjects();
     },
 
     async soumettreVoieHierarchique(id) {
@@ -1370,11 +1370,11 @@ export default {
         this.motivationsResoumission[id] = "";
         this.erreursResoumission[id] = null;
 
-        alert("Projet soumis à la Présidence SCT");
+        this.$toast.success("Projet soumis à la Présidence SCT");
         this.loadProjects();
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de la soumission");
+        this.$toast.error("Erreur lors de la soumission");
       }
     },
 
@@ -1414,7 +1414,7 @@ export default {
         data
       });
 
-      alert("Rejet validé. Le dossier a été rejeté définitivement.");
+      this.$toast.success("Rejet validé. Le dossier a été rejeté définitivement.");
       await this.loadProjects();
 
       // DEBUG: Vérifier l'état du projet après la validation
@@ -1442,7 +1442,7 @@ export default {
           role: user.role
         })
       });
-      alert("Rejet refusé. Le dossier a été renvoyé en assignation pour réévaluation.");
+      this.$toast.info("Rejet refusé. Le dossier a été renvoyé en assignation pour réévaluation.");
       this.loadProjects();
     },
     async enregistrerDecisionComite(projectId, decision) {
@@ -1467,7 +1467,7 @@ export default {
         }
         // Validation : commentaires obligatoires
         if (!commentaires || commentaires.trim() === '') {
-          alert("❌ Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.");
+          this.$toast.warning("Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.");
           return;
         }
       }
@@ -1486,7 +1486,7 @@ export default {
 
         if (!response.ok) {
           const error = await response.json();
-          alert(`Erreur: ${error.error || 'Impossible d\'enregistrer la décision'}`);
+          this.$toast.error(error.error || "Impossible d'enregistrer la décision");
           return;
         }
 
@@ -1494,11 +1494,11 @@ export default {
           ? "Décision enregistrée : Projet entériné par le Comité (approuvé définitivement)"
           : "Décision enregistrée : Projet contesté par le Comité, retourné pour réévaluation";
 
-        alert(successMessage);
+        this.$toast.success(successMessage);
         await this.loadProjects();
       } catch (error) {
         console.error("Erreur lors de l'enregistrement de la décision:", error);
-        alert("Erreur lors de l'enregistrement de la décision");
+        this.$toast.error("Erreur lors de l'enregistrement de la décision");
       }
     },
     prepareContesterDecision(projet) {
@@ -1644,7 +1644,7 @@ export default {
 
       // Validation: commentaire obligatoire si compléments requis ou dossier rejeté
       if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
-        alert("Commentaire obligatoire pour justifier cette décision");
+        this.$toast.warning("Commentaire obligatoire pour justifier cette décision");
         return;
       }
 
@@ -1723,7 +1723,7 @@ export default {
           throw new Error(errorData.error || "Erreur lors de la validation");
         }
 
-        alert("✅ Rejet validé. Le soumissionnaire a été notifié.");
+        this.$toast.success("Rejet validé. Le soumissionnaire a été notifié.");
         this.evaluationPrealableCommentaires[projectId] = "";
         this.loadProjects();
       } catch (error) {
@@ -1768,7 +1768,7 @@ export default {
 
       // Validation: commentaires obligatoires
       if (!commentaire) {
-        alert("⚠️ Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier.");
+        this.$toast.warning("Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier.");
         return;
       }
 

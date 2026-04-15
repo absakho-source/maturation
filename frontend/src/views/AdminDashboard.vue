@@ -743,14 +743,14 @@ export default {
           const data = await res.json();
           await this.loadAllProjects(); // Recharger la liste
           await this.loadCorbeille(); // Recharger la corbeille
-          alert(data.message || 'Projet déplacé vers la corbeille avec succès');
+          this.$toast.success(data.message || 'Projet déplacé vers la corbeille');
         } else {
           const error = await res.json();
-          alert(error.error || 'Erreur lors de la suppression');
+          this.$toast.error(error.error || 'Erreur lors de la suppression');
         }
       } catch (error) {
         console.error("Erreur lors de la suppression:", error);
-        alert("Erreur de connexion au serveur");
+        this.$toast.error("Erreur de connexion au serveur");
       }
     },
 
@@ -765,11 +765,11 @@ export default {
           console.log(`Corbeille chargée: ${this.corbeilleProjects.length} projet(s)`);
         } else {
           console.error('Erreur lors du chargement de la corbeille:', res.status);
-          alert('Erreur lors du chargement de la corbeille');
+          this.$toast.error('Erreur lors du chargement de la corbeille');
         }
       } catch (error) {
         console.error('Erreur lors du chargement de la corbeille:', error);
-        alert('Erreur de connexion au serveur');
+        this.$toast.error('Erreur de connexion au serveur');
       } finally {
         this.loadingCorbeille = false;
       }
@@ -789,14 +789,14 @@ export default {
           const data = await res.json();
           await this.loadCorbeille(); // Recharger la corbeille
           await this.loadAllProjects(); // Recharger les projets
-          alert(data.message || 'Projet restauré avec succès');
+          this.$toast.success(data.message || 'Projet restauré');
         } else {
           const error = await res.json();
-          alert(error.error || 'Erreur lors de la restauration');
+          this.$toast.error(error.error || 'Erreur lors de la restauration');
         }
       } catch (error) {
         console.error('Erreur lors de la restauration:', error);
-        alert('Erreur de connexion au serveur');
+        this.$toast.error('Erreur de connexion au serveur');
       } finally {
         this.loadingCorbeille = false;
       }
@@ -813,7 +813,7 @@ export default {
 
       const finalConfirmation = prompt('Tapez "SUPPRIMER" en majuscules pour confirmer:');
       if (finalConfirmation !== 'SUPPRIMER') {
-        alert('Suppression annulée');
+        this.$toast.info('Suppression annulée');
         return;
       }
 
@@ -826,14 +826,14 @@ export default {
         if (res.ok) {
           const data = await res.json();
           await this.loadCorbeille(); // Recharger la corbeille
-          alert(data.message || 'Projet supprimé définitivement');
+          this.$toast.success(data.message || 'Projet supprimé définitivement');
         } else {
           const error = await res.json();
-          alert(error.error || 'Erreur lors de la suppression définitive');
+          this.$toast.error(error.error || 'Erreur lors de la suppression définitive');
         }
       } catch (error) {
         console.error('Erreur lors de la suppression définitive:', error);
-        alert('Erreur de connexion au serveur');
+        this.$toast.error('Erreur de connexion au serveur');
       } finally {
         this.loadingCorbeille = false;
       }
@@ -851,7 +851,7 @@ export default {
 
       const finalConfirmation = prompt('Tapez "VIDER" en majuscules pour confirmer:');
       if (finalConfirmation !== 'VIDER') {
-        alert('Opération annulée');
+        this.$toast.info('Opération annulée');
         return;
       }
 
@@ -864,14 +864,14 @@ export default {
         if (res.ok) {
           const data = await res.json();
           await this.loadCorbeille(); // Recharger la corbeille
-          alert(data.message || 'Corbeille vidée avec succès');
+          this.$toast.success(data.message || 'Corbeille vidée');
         } else {
           const error = await res.json();
-          alert(error.error || 'Erreur lors du vidage de la corbeille');
+          this.$toast.error(error.error || 'Erreur lors du vidage de la corbeille');
         }
       } catch (error) {
         console.error('Erreur lors du vidage de la corbeille:', error);
-        alert('Erreur de connexion au serveur');
+        this.$toast.error('Erreur de connexion au serveur');
       } finally {
         this.loadingCorbeille = false;
       }

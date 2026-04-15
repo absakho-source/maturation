@@ -560,3 +560,49 @@ p {
   outline: 3px solid #fca5a5;
   outline-offset: 2px;
 }
+
+/* ==================== STAT CARDS UNIFIÉES ==================== */
+/* Palette sémantique : primary / info / success / warning / danger / neutral
+   Usage : <div class="stat-card stat-card--warning"> ... </div> */
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.stat-card .stat-number,
+.stat-card .stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.1;
+}
+.stat-card .stat-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-card--primary { border-left-color: #2E6B6B; }
+.stat-card--primary .stat-number { color: #2E6B6B; }
+
+.stat-card--info    { border-left-color: #0ea5e9; }
+.stat-card--info    .stat-number { color: #0ea5e9; }
+
+.stat-card--success { border-left-color: #10b981; }
+.stat-card--success .stat-number { color: #10b981; }
+
+.stat-card--warning { border-left-color: #f59e0b; }
+.stat-card--warning .stat-number { color: #f59e0b; }
+
+.stat-card--danger  { border-left-color: #ef4444; }
+.stat-card--danger  .stat-number { color: #ef4444; }
+
+.stat-card--neutral { border-left-color: #94a3b8; }
+.stat-card--neutral .stat-number { color: #475569; }

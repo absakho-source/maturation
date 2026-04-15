@@ -6,6 +6,9 @@ import axios from 'axios'
 // ✅ Import global du thème DGPPE sobre
 import './assets/styles-dgppe-sobre.css'
 
+// Système de toasts global
+import { ToastPlugin } from './toast.js'
+
 // Configuration de l'API - Intercepte les appels fetch pour ajouter l'URL backend en production
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 console.log('[API Config] API_BASE_URL:', API_BASE_URL)
@@ -34,4 +37,5 @@ window.fetch = function(url, options) {
 
 const app = createApp(App)
 app.use(router)
+app.use(ToastPlugin)
 app.mount('#app')

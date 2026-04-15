@@ -80,7 +80,7 @@ export default {
   methods: {
     async soumettre(decision) {
       if ((decision === 'complements_requis' || decision === 'dossier_rejete') && !this.commentairesGlobaux.trim()) {
-        alert('La motivation est obligatoire pour cette décision')
+        this.$toast?.warning('La motivation est obligatoire pour cette décision')
         return
       }
 
@@ -111,11 +111,11 @@ export default {
           throw new Error('Erreur lors de la soumission')
         }
 
-        alert('Évaluation de la recevabilité soumise avec succès')
+        this.$toast?.success('Évaluation de la recevabilité soumise avec succès')
         this.$emit('evaluation-soumise', { decision, matrice })
       } catch (error) {
         console.error('Erreur:', error)
-        alert('Erreur lors de la soumission de l\'évaluation de la recevabilité')
+        this.$toast?.error('Erreur lors de la soumission de l\'évaluation de la recevabilité')
       } finally {
         this.enCours = false
       }

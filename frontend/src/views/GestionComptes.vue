@@ -706,6 +706,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import PageWrapper from '../components/PageWrapper.vue'
 import PhoneInput from '../components/PhoneInput.vue'
+import { toast } from '../toast.js'
 
 const router = useRouter()
 
@@ -917,10 +918,10 @@ async function verifierCompte(compteId) {
 
     // Recharger les comptes
     await chargerComptes()
-    alert('Compte vérifié avec succès')
+    toast.success('Compte vérifié avec succès')
   } catch (err) {
     console.error('Erreur lors de la vérification:', err)
-    alert('Erreur lors de la vérification du compte')
+    toast.error('Erreur lors de la vérification du compte')
   } finally {
     actionEnCours.value = null
   }
@@ -937,12 +938,11 @@ async function suspendreCompte(compteId) {
       username: user?.username
     })
 
-    // Recharger les comptes
     await chargerComptes()
-    alert('Compte suspendu avec succès')
+    toast.success('Compte suspendu')
   } catch (err) {
     console.error('Erreur lors de la suspension:', err)
-    alert('Erreur lors de la suspension du compte')
+    toast.error('Erreur lors de la suspension du compte')
   } finally {
     actionEnCours.value = null
   }
@@ -958,12 +958,11 @@ async function reintegrerCompte(compteId) {
       role: user?.role
     })
 
-    // Recharger les comptes
     await chargerComptes()
-    alert('Compte réintégré avec succès')
+    toast.success('Compte réintégré')
   } catch (err) {
     console.error('Erreur lors de la réintégration:', err)
-    alert('Erreur lors de la réintégration du compte')
+    toast.error('Erreur lors de la réintégration du compte')
   } finally {
     actionEnCours.value = null
   }
@@ -978,12 +977,11 @@ async function supprimerCompte(compte) {
   try {
     await axios.delete(`/api/users/${compte.id}`)
 
-    // Recharger les comptes
     await chargerComptes()
-    alert('Compte supprimé définitivement')
+    toast.success('Compte supprimé définitivement')
   } catch (err) {
     console.error('Erreur lors de la suppression:', err)
-    alert('Erreur lors de la suppression du compte')
+    toast.error('Erreur lors de la suppression du compte')
   } finally {
     actionEnCours.value = null
   }
@@ -1071,7 +1069,7 @@ async function saveNewUser() {
     }
 
     if (response.status === 200 || response.status === 201) {
-      alert(isEditingUser.value ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès')
+      toast.success(isEditingUser.value ? 'Utilisateur modifié' : 'Utilisateur créé')
       closeCreateModal()
       await chargerComptes()
     }
@@ -1348,13 +1346,13 @@ async function sauvegarderModifications() {
     })
 
     if (response.status === 200) {
-      alert('Modifications enregistrées avec succès')
+      toast.success('Modifications enregistrées')
       await chargerComptes()
       fermerDetails()
     }
   } catch (err) {
     console.error('Erreur lors de la sauvegarde:', err)
-    alert('Erreur lors de la sauvegarde des modifications')
+    toast.error('Erreur lors de la sauvegarde des modifications')
   } finally {
     enregistrementEnCours.value = false
   }
