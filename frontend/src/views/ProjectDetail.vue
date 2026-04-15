@@ -292,6 +292,29 @@
             </button>
           </div>
 
+          <!-- Section Évaluation simplifiée (fichier uploadé par l'évaluateur) -->
+          <div class="info-card"
+               v-if="ficheEvaluation && ficheEvaluation.fichier_principal && ((!isSoumissionnaire() && peutVoirEvaluation()) || (isSoumissionnaire() && soumissionnairePeutVoirFiche()))">
+            <h3>📋 Évaluation</h3>
+            <p>
+              <strong>Proposition :</strong> {{ ficheEvaluation.proposition }}
+              — <strong>Score :</strong> {{ ficheEvaluation.score_total }}/100
+            </p>
+            <p v-if="ficheEvaluation.recommandations">
+              <strong>Recommandation :</strong> {{ ficheEvaluation.recommandations }}
+            </p>
+            <a :href="`/api/uploads/${ficheEvaluation.fichier_principal}`" target="_blank"
+               class="btn-primary" download>📥 Télécharger la fiche d'évaluation</a>
+            <div v-if="annexesEvaluation.length" style="margin-top: 0.75rem;">
+              <strong>Annexes :</strong>
+              <ul>
+                <li v-for="(a, i) in annexesEvaluation" :key="i">
+                  <a :href="`/api/uploads/${a.chemin}`" target="_blank" download>{{ a.nom_original }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Section Archives des fiches d'évaluation - Visible pour tous les rôles autorisés (sauf soumissionnaire) s'il y a des archives -->
           <div class="info-card archives-section" v-if="currentUser && ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur'].includes(currentUser.role) && !isSoumissionnaire() && (!loadingArchives && archives.length > 0)">
             <h3>📚 Historique des fiches d'évaluation archivées</h3>
@@ -383,6 +406,12 @@ export default {
     };
   },
   computed: {
+    annexesEvaluation() {
+      const raw = this.ficheEvaluation && this.ficheEvaluation.fichiers_annexes;
+      if (!raw) return [];
+      try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
+      catch { return []; }
+    },
     organismeHierarchie() {
       // Parse les données structurées de l'organisme de tutelle et retourne un tableau de paires label/valeur
       if (!this.project || !this.project.organisme_tutelle_data) {

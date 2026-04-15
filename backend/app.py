@@ -190,6 +190,26 @@ def set_statut_comite(projet, valeur):
     except Exception:
         return False
 
+def _fiche_eval_resume(project_id):
+    """Retourne un petit résumé de la fiche d'évaluation (évaluation simplifiée)
+    exposé dans la liste des projets pour afficher les liens de téléchargement."""
+    try:
+        f = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        if not f:
+            return None
+        return {
+            "fichier_principal": f.fichier_principal,
+            "fichiers_annexes": f.fichiers_annexes,
+            "score_total": f.score_total,
+            "proposition": f.proposition,
+            "recommandations": f.recommandations,
+            "date_evaluation": f.date_evaluation.isoformat() if f.date_evaluation else None,
+            "evaluateur_nom": f.evaluateur_nom,
+        }
+    except Exception:
+        return None
+
+
 def get_fiche_evaluation_valide(project_id):
     """
     Retourne la fiche d'évaluation valide pour un projet.
@@ -615,6 +635,7 @@ def projects():
                             "pieces_jointes": pieces_jointes,
                             "date_soumission": date_soumission,
                             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
+                            "fiche_evaluation": _fiche_eval_resume(p.id),
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
@@ -871,6 +892,7 @@ def get_project(project_id):
             "organisme_tutelle_data": p.organisme_tutelle_data,
             "structure_soumissionnaire": p.structure_soumissionnaire,
             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
+            "fiche_evaluation": _fiche_eval_resume(p.id),
             "nouveaute": p.nouveaute,
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
@@ -1803,38 +1825,229 @@ def set_evaluabilite(project_id):
         auteur = data.get("auteur", "")
         role = data.get("role", "")
 
-        decision = data.get("decision")  # "evaluable"
+        decision = data.get("decision")  # "evaluable", "complements_requis", "dossier_rejete"
         commentaire = data.get("commentaire", "").strip()
 
-        if not decision or decision != "evaluable":
+        if decision not in ["evaluable", "complements_requis", "dossier_rejete"]:
             return jsonify({"error": "Décision invalide"}), 400
 
-        # Validation: commentaires obligatoires pour justifier l'évaluabilité
-        if not commentaire:
-            return jsonify({"error": "Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier"}), 400
+        # Motivation obligatoire pour compléments requis ou rejet
+        if decision in ("complements_requis", "dossier_rejete") and not commentaire:
+            return jsonify({"error": "La motivation est obligatoire pour cette décision"}), 400
+
+        previous_evaluabilite = p.evaluabilite
 
         # Enregistrer l'évaluabilité
         p.evaluabilite = decision
         p.evaluabilite_date = datetime.utcnow()
         p.evaluabilite_commentaire = commentaire
 
-        # C'est maintenant que le statut passe à "en évaluation"
-        p.statut = "en évaluation"
+        action = ""
+        projet_titre = (p.titre[:50] + "...") if p.titre and len(p.titre) > 50 else (p.titre or "")
+        lien_projet = f"/project/{project_id}"
 
-        action = f"Dossier marqué comme évaluable - passage à l'évaluation détaillée - {commentaire}"
+        if decision == "evaluable":
+            p.statut = "en évaluation"
+            action = f"Dossier marqué comme évaluable - passage à l'évaluation détaillée"
+            if commentaire:
+                action += f" - {commentaire}"
+        elif decision == "complements_requis":
+            p.statut = "compléments demandés"
+            p.complements_demande_message = commentaire
+            p.complements_reponse_message = None
+            p.complements_reponse_pieces = None
+            action = f"Évaluabilité: compléments requis - {commentaire}"
+        elif decision == "dossier_rejete":
+            if role == "secretariatsct" and previous_evaluabilite == "dossier_rejete":
+                p.statut = "rejeté"
+                p.avis = "dossier rejeté"
+                p.commentaires = p.evaluabilite_commentaire or commentaire
+                action = "Rejet (évaluabilité) validé par le Secrétariat SCT"
+            else:
+                p.avis = None
+                p.commentaires = commentaire
+                action = f"Évaluabilité: rejet proposé par l'évaluateur - {commentaire}"
 
         db.session.commit()
 
-        # Enregistrer dans l'historique
-        hist = Historique(project_id=project_id, action=action, auteur=auteur, role=role)
-        db.session.add(hist)
-        db.session.commit()
+        # Historique
+        if action:
+            hist = Historique(project_id=project_id, action=action, auteur=auteur, role=role)
+            db.session.add(hist)
+            db.session.commit()
+
+        # Notifications
+        try:
+            if decision == "complements_requis":
+                notify_project_owner(
+                    p, "complement_requis", "Compléments demandés",
+                    f"Des compléments ont été demandés pour votre projet '{projet_titre}' suite à l'évaluation d'évaluabilité.",
+                    lien_projet, priorite_email=True
+                )
+                notify_users_by_role(
+                    "secretariatsct", "statut_change", "Compléments demandés (évaluabilité)",
+                    f"L'évaluateur a demandé des compléments pour le projet '{projet_titre}'.",
+                    project_id, lien_projet
+                )
+            elif decision == "dossier_rejete":
+                if role == "secretariatsct" and previous_evaluabilite == "dossier_rejete":
+                    if p.evaluateur_nom:
+                        notify_user_by_username(
+                            p.evaluateur_nom, "statut_change", "Proposition de rejet validée",
+                            f"Votre proposition de rejet du projet '{projet_titre}' a été validée par le Secrétariat SCT.",
+                            project_id, lien_projet
+                        )
+                    notify_project_owner(
+                        p, "statut_change", "Dossier non évaluable",
+                        f"Votre projet '{projet_titre}' a été déclaré non évaluable.",
+                        lien_projet, priorite_email=True
+                    )
+                else:
+                    notify_users_by_role(
+                        "secretariatsct", "statut_change", "Rejet proposé — validation requise",
+                        f"L'évaluateur a proposé le rejet (évaluabilité) du projet '{projet_titre}'. Votre validation est requise.",
+                        project_id, lien_projet
+                    )
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur evaluabilite: {notif_error}")
 
         return jsonify({"message": "Évaluabilité enregistrée"}), 200
 
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/projects/<int:project_id>/evaluation-simple", methods=["POST"])
+def evaluation_simple(project_id):
+    """
+    Évaluation simplifiée : l'évaluateur uploade son fichier d'évaluation + annexes
+    et renseigne score / proposition / recommandations.
+    Body : multipart/form-data
+      - fichier_principal : fichier (obligatoire)
+      - annexes           : 0..N fichiers (optionnels)
+      - score_total       : nombre (0-100)
+      - proposition       : "Favorable" | "Favorable sous conditions" | "Défavorable"
+      - recommandations   : texte
+      - evaluateur_nom    : username
+      - role              : role de l'utilisateur
+    """
+    try:
+        p = Project.query.get_or_404(project_id)
+
+        # Vérifier que le projet est prêt pour l'évaluation détaillée
+        if p.evaluabilite != "evaluable":
+            return jsonify({"error": "Le dossier doit être déclaré évaluable avant évaluation"}), 403
+
+        score_total_raw = request.form.get("score_total", "").strip()
+        proposition = (request.form.get("proposition") or "").strip()
+        recommandations = (request.form.get("recommandations") or "").strip()
+        evaluateur_nom = (request.form.get("evaluateur_nom") or p.evaluateur_nom or "").strip()
+        role = (request.form.get("role") or "").strip()
+
+        if "fichier_principal" not in request.files:
+            return jsonify({"error": "Le fichier principal d'évaluation est requis"}), 400
+        if not score_total_raw:
+            return jsonify({"error": "Le score total est requis"}), 400
+        try:
+            score_total = float(score_total_raw)
+            if score_total < 0 or score_total > 100:
+                raise ValueError()
+        except ValueError:
+            return jsonify({"error": "Score total invalide (0-100)"}), 400
+
+        if proposition not in ("Favorable", "Favorable sous conditions", "Défavorable"):
+            return jsonify({"error": "Proposition invalide"}), 400
+        if not recommandations:
+            return jsonify({"error": "La recommandation générale est requise"}), 400
+
+        # Dossier de stockage par projet
+        eval_dir = os.path.join(app.config["UPLOAD_FOLDER"], "evaluations", str(project_id))
+        os.makedirs(eval_dir, exist_ok=True)
+
+        # Enregistrer le fichier principal
+        f_principal = request.files["fichier_principal"]
+        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        principal_name = f"{ts}_principal_{secure_filename(f_principal.filename)}"
+        principal_path = os.path.join(eval_dir, principal_name)
+        f_principal.save(principal_path)
+        principal_rel = f"evaluations/{project_id}/{principal_name}"
+
+        # Annexes éventuelles
+        annexes_list = []
+        annexes = request.files.getlist("annexes")
+        for idx, f_annexe in enumerate(annexes):
+            if not f_annexe or not f_annexe.filename:
+                continue
+            an_name = f"{ts}_annexe{idx+1}_{secure_filename(f_annexe.filename)}"
+            an_path = os.path.join(eval_dir, an_name)
+            f_annexe.save(an_path)
+            annexes_list.append({
+                "nom_original": f_annexe.filename,
+                "chemin": f"evaluations/{project_id}/{an_name}"
+            })
+
+        # Créer ou mettre à jour la fiche
+        fiche = FicheEvaluation.query.filter_by(project_id=project_id).first()
+        if not fiche:
+            fiche = FicheEvaluation(project_id=project_id,
+                                    reference_fiche=f"DGPPE-FE-{p.numero_projet or project_id}")
+            db.session.add(fiche)
+
+        fiche.evaluateur_nom = evaluateur_nom
+        fiche.date_evaluation = datetime.utcnow()
+        fiche.score_total = score_total
+        fiche.proposition = proposition
+        fiche.recommandations = recommandations
+        fiche.fichier_principal = principal_rel
+        fiche.fichiers_annexes = json.dumps(annexes_list) if annexes_list else None
+
+        # Mettre à jour le projet (équivalent soumission de fiche)
+        avis_map = {
+            "Favorable": "favorable",
+            "Favorable sous conditions": "favorable sous conditions",
+            "Défavorable": "défavorable",
+        }
+        p.avis = avis_map[proposition]
+        p.commentaires = recommandations
+        p.statut = "évalué"
+        p.fiche_evaluation_visible = True
+
+        db.session.commit()
+
+        # Historique
+        hist = Historique(
+            project_id=project_id,
+            action=f"Évaluation simplifiée soumise : {proposition} ({score_total}/100)",
+            auteur=evaluateur_nom,
+            role=role,
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+        # Notification secrétariat SCT
+        try:
+            projet_titre = (p.titre[:50] + "...") if p.titre and len(p.titre) > 50 else (p.titre or "")
+            notify_users_by_role(
+                "secretariatsct", "statut_change",
+                "Nouvelle évaluation soumise",
+                f"L'évaluateur a soumis son évaluation pour le projet '{projet_titre}' ({proposition}).",
+                project_id, f"/project/{project_id}"
+            )
+        except Exception as notif_error:
+            print(f"[NOTIFICATION] Erreur evaluation_simple: {notif_error}")
+
+        return jsonify({
+            "message": "Évaluation soumise avec succès",
+            "fichier_principal": principal_rel,
+            "fichiers_annexes": annexes_list,
+        }), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 # Routes pour la fiche d'évaluation détaillée
 

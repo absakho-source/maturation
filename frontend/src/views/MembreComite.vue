@@ -97,7 +97,7 @@
         <div v-if="activeTab === 'stats'" class="tab-content">
           <StatsDashboard
             role="membrecomite"
-            username="membrecomite"
+            :username="currentUser.username || 'membrecomite'"
           />
         </div>
 
@@ -121,6 +121,7 @@ export default {
   data() {
     return {
       allProjects: [],
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
       activeTab: 'projets'
     };
   },

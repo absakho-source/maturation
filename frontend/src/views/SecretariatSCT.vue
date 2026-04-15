@@ -514,12 +514,22 @@
                 <p class="eval-date" v-if="projet.evaluabilite_date">{{ new Date(projet.evaluabilite_date).toLocaleString('fr-FR') }}</p>
               </div>
 
-              <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier recevable ET évaluable) -->
-              <div v-if="projet.evaluation_prealable === 'dossier_evaluable' && projet.evaluabilite === 'evaluable'" class="eval-section">
+              <!-- Téléchargement du fichier d'évaluation uploadé par l'évaluateur -->
+              <div v-if="projet.fiche_evaluation && projet.fiche_evaluation.fichier_principal" class="eval-section">
                 <div class="eval-options">
-                  <button @click="$router.push(`/evaluation/${projet.id}`)" class="btn-evaluation-detaillee">
-                    📋 Fiche d'évaluation détaillée
-                  </button>
+                  <a :href="`/api/uploads/${projet.fiche_evaluation.fichier_principal}`" target="_blank"
+                     class="btn-evaluation-detaillee" download>
+                    📥 Télécharger l'évaluation ({{ projet.fiche_evaluation.proposition }}
+                    — {{ projet.fiche_evaluation.score_total }}/100)
+                  </a>
+                  <div v-if="parseAnnexes(projet.fiche_evaluation.fichiers_annexes).length" class="annexes-list">
+                    <strong>Annexes :</strong>
+                    <ul>
+                      <li v-for="(a, i) in parseAnnexes(projet.fiche_evaluation.fichiers_annexes)" :key="i">
+                        <a :href="`/api/uploads/${a.chemin}`" target="_blank" download>{{ a.nom_original }}</a>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -743,7 +753,7 @@ export default {
       allProjects: [],
       evaluateurs: [],
       autresSecretariatSCT: [], // Autres comptes secretariatsct (hors l'utilisateur connecté)
-      currentUser: null, // Utilisateur connecté
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {}, // Utilisateur connecté
       assignation: {},
       motivations: {},
       motivationsResoumission: {},
@@ -965,6 +975,11 @@ export default {
     }
   },
   methods: {
+    parseAnnexes(annexesRaw) {
+      if (!annexesRaw) return [];
+      try { return typeof annexesRaw === 'string' ? JSON.parse(annexesRaw) : annexesRaw; }
+      catch { return []; }
+    },
     estProjetAssignable(projet) {
       // Un projet est assignable uniquement s'il n'a PAS de statut définitif
       // Bloquer dès que le secrétariat a validé (montée hiérarchique)
@@ -1127,7 +1142,7 @@ export default {
         if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
           console.log('[SecretariatSCT] Message ficheUpdated reçu, rechargement des projets...');
           // Recharger les projets pour afficher les modifications
-          this.chargerProjets();
+          this.loadProjects();
           window.removeEventListener('message', messageHandler);
           console.log('[SecretariatSCT] Projets rechargés');
         } else {

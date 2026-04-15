@@ -1,0 +1,19 @@
+[Unit]
+Description=PLASMAP Backend (Flask)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/plasmap/backend
+Environment="PATH=/var/www/plasmap/backend/venv/bin"
+# Port 5001 pour ne pas conflicter avec e-Présence
+Environment="PORT=5001"
+ExecStart=/var/www/plasmap/backend/venv/bin/python app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

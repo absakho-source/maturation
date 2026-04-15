@@ -334,6 +334,23 @@ def migrate_database(db_path=None):
                     conn.commit()
                     print(f"[MIGRATION] ✓ users.'{col_name}' ajoutée")
 
+            # Migration 10 : Évaluation simplifiée (upload fichier)
+            try:
+                fiche_cols = [col['name'] for col in inspector.get_columns('fiche_evaluation')]
+            except Exception:
+                fiche_cols = []
+
+            fiche_nouvelles = [
+                ("fichier_principal", "VARCHAR(500)"),
+                ("fichiers_annexes",  "TEXT"),
+            ]
+            for col_name, col_type in fiche_nouvelles:
+                if col_name not in fiche_cols:
+                    print(f"[MIGRATION] Ajout colonne fiche_evaluation.'{col_name}'...")
+                    conn.execute(text(f"ALTER TABLE fiche_evaluation ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                    print(f"[MIGRATION] ✓ fiche_evaluation.'{col_name}' ajoutée")
+
         print("[MIGRATION] ✓ Toutes les migrations ont été appliquées avec succès!")
         return True
 

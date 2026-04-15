@@ -246,9 +246,9 @@
 
       <!-- Onglet Statistiques -->
       <div v-if="activeTab === 'stats'" class="tab-content">
-        <StatsDashboard 
-          role="presidencecomite" 
-          username="presidencecomite"
+        <StatsDashboard
+          role="presidencecomite"
+          :username="currentUser.username || 'presidencecomite'"
         />
       </div>
 
@@ -350,6 +350,7 @@ export default {
   data() {
     return {
       allProjects: [],
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
       commentaires: {},
       erreursInfirmation: {},
       activeTab: 'all',

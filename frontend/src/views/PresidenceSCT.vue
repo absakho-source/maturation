@@ -234,7 +234,7 @@
       <div v-if="activeTab === 'stats'" class="tab-content">
         <StatsDashboard
           role="presidencesct"
-          username="presidencesct"
+          :username="currentUser.username || 'presidencesct'"
         />
       </div>
 
@@ -336,6 +336,7 @@ export default {
   data() {
     return {
       allProjects: [],
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
       activeTab: 'all',
       commentaires: {},
       erreursRejet: {},
@@ -371,13 +372,7 @@ export default {
     }
   },
   mounted() {
-    const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-    fetch(`/api/projects?role=${user.role}&username=${user.username}`).then(r => r.json()).then(j => {
-      this.allProjects = j;
-      this.calculateFinancingStats();
-    });
-
-    // Charger les métriques de performance
+    this.loadProjects();
     fetch('/api/metrics')
       .then(r => r.json())
       .then(data => {
@@ -390,6 +385,15 @@ export default {
       .catch(err => console.error('Erreur chargement métriques:', err));
   },
   methods: {
+    loadProjects() {
+      const user = this.currentUser;
+      fetch(`/api/projects?role=${user.role}&username=${user.username}`)
+        .then(r => r.json())
+        .then(j => {
+          this.allProjects = j;
+          this.calculateFinancingStats();
+        });
+    },
     filtrerParStatut(statut) {
       this.filtreStatut = statut;
       // Basculer vers l'onglet "Tous" si on filtre
@@ -445,7 +449,6 @@ export default {
         alert('Erreur: ' + error.message);
       });
     },
-    countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
     getEvaluateurLabel(ev){ return ({evaluateur1:"Évaluateur 1", evaluateur2:"Évaluateur 2", secretariatsct:"Secrétariat SCT"}[ev]||ev); },
     getStatusClass(s){
       const m={
@@ -827,6 +830,7 @@ export default {
 .status-favorable { background: #10b981 !important; color: white !important; }
 .status-conditions { background: #f59e0b !important; color: white !important; }
 .status-defavorable { background: #ef4444 !important; color: white !important; }
+.status-comite { background: #f59e0b !important; color: white !important; }
 .status-default { background: #6b7280 !important; color: white !important; }
 .card-body { padding: 1rem; }
 .highlight-assigned { background: #fef3c7; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #f59e0b; font-weight: 600; }

@@ -12,6 +12,32 @@
           </svg>
           Tableau de bord - Évaluateur
         </h2>
+        <div class="stats-grid">
+          <div class="stat-card stat-total">
+            <div class="stat-number">{{ projetsAssignes.length }}</div>
+            <div class="stat-label">Mes projets</div>
+          </div>
+          <div class="stat-card stat-recevabilite">
+            <div class="stat-number">{{ statsEvaluateur.enRecevabilite }}</div>
+            <div class="stat-label">En recevabilité</div>
+          </div>
+          <div class="stat-card stat-evaluabilite">
+            <div class="stat-number">{{ statsEvaluateur.enEvaluabilite }}</div>
+            <div class="stat-label">En évaluabilité</div>
+          </div>
+          <div class="stat-card stat-evaluation">
+            <div class="stat-number">{{ statsEvaluateur.enEvaluation }}</div>
+            <div class="stat-label">En évaluation</div>
+          </div>
+          <div class="stat-card stat-complements">
+            <div class="stat-number">{{ statsEvaluateur.complementsEnAttente }}</div>
+            <div class="stat-label">Compléments attendus</div>
+          </div>
+          <div class="stat-card stat-evalues">
+            <div class="stat-number">{{ statsEvaluateur.evalues }}</div>
+            <div class="stat-label">Avis rendus</div>
+          </div>
+        </div>
       </div>
 
       <h2>Évaluation des projets</h2>
@@ -38,11 +64,11 @@
             <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
             <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir les détails complets</button>
           </div>
-          <!-- Bouton Fiche d'évaluation détaillée (uniquement si dossier évaluable) -->
+          <!-- Bouton Évaluation simplifiée (uniquement si dossier évaluable) -->
           <div class="eval-section" v-if="peutAccederFicheEvaluation(p)">
             <div class="eval-options">
-              <button @click="$router.push(`/evaluation/${p.id}`)" class="btn-evaluation-detaillee">
-                📋 Fiche d'évaluation détaillée
+              <button @click="ouvrirModalEvaluation(p.id)" class="btn-evaluation-detaillee">
+                📋 Soumettre l'évaluation
               </button>
             </div>
           </div>
@@ -50,26 +76,47 @@
           <!-- Interface d'évaluabilité (après recevabilité, avant évaluation détaillée) -->
           <div v-else-if="needsEvaluabilite(p)" class="eval-section eval-evaluabilite">
             <h4>📊 Évaluabilité du Dossier</h4>
-            <p class="eval-info">Le dossier est recevable. Vous devez maintenant confirmer qu'il est évaluable et expliquer pourquoi avant d'accéder à la fiche d'évaluation détaillée.</p>
+            <p class="eval-info">
+              Le dossier est recevable. Décidez de l'évaluabilité.
+              La motivation est obligatoire pour « Compléments requis » ou « Rejeter ».
+            </p>
             <div class="evaluabilite-form">
-              <label for="evaluabilite-commentaire-{{ p.id }}" class="required-label">
-                Commentaires (obligatoire) - Expliquez pourquoi le dossier est évaluable:
+              <label :for="'evaluabilite-commentaire-' + p.id">
+                <strong>💬 Motivation</strong>
+                <span class="label-hint">(Obligatoire pour compléments requis ou rejet)</span>
               </label>
               <textarea
                 :id="'evaluabilite-commentaire-' + p.id"
                 v-model="evaluabiliteCommentaires[p.id]"
                 rows="4"
-                placeholder="Expliquez pourquoi ce dossier est évaluable (clarté des objectifs, faisabilité technique, cohérence du budget, etc.)..."
-                required
+                placeholder="Clarté des objectifs, faisabilité, cohérence du budget, documents manquants, justification du rejet..."
               ></textarea>
-              <button
-                @click="marquerEvaluable(p.id)"
-                class="btn-action btn-success"
-                :disabled="envoiEvaluabilite[p.id] || !evaluabiliteCommentaires[p.id]?.trim()"
-                :title="!evaluabiliteCommentaires[p.id]?.trim() ? 'Les commentaires sont obligatoires' : 'Valider l\'évaluabilité'"
-              >
-                {{ envoiEvaluabilite[p.id] ? '⏳ Enregistrement...' : '✓ Dossier évaluable' }}
-              </button>
+              <div class="eval-actions">
+                <button
+                  @click="decisionEvaluabilite(p.id, 'evaluable')"
+                  class="btn-action btn-success"
+                  :disabled="envoiEvaluabilite[p.id]"
+                  title="Valider l'évaluabilité"
+                >
+                  ✓ Évaluable
+                </button>
+                <button
+                  @click="decisionEvaluabilite(p.id, 'complements_requis')"
+                  class="btn-action btn-warning"
+                  :disabled="envoiEvaluabilite[p.id] || !evaluabiliteCommentaires[p.id]?.trim()"
+                  title="Demander des compléments (motivation requise)"
+                >
+                  📝 Compléments requis
+                </button>
+                <button
+                  @click="decisionEvaluabilite(p.id, 'dossier_rejete')"
+                  class="btn-action btn-danger"
+                  :disabled="envoiEvaluabilite[p.id] || !evaluabiliteCommentaires[p.id]?.trim()"
+                  title="Rejeter le dossier (motivation requise)"
+                >
+                  ✕ Rejeter
+                </button>
+              </div>
             </div>
           </div>
 
@@ -144,6 +191,65 @@
         />
       </div>
     </div>
+
+    <!-- Modal pour l'évaluation simplifiée (upload + score + proposition + recommandations) -->
+    <div v-if="modalEvalSimpleId" class="modal-overlay" @click="fermerModalEvaluation">
+      <div class="modal-content" @click.stop>
+        <button class="modal-close" @click="fermerModalEvaluation">✕</button>
+        <div class="eval-simple-form">
+          <h3>📋 Soumission de l'évaluation</h3>
+          <p class="description">
+            Uploadez votre fiche d'évaluation (PDF/Word) et, si besoin, des annexes.
+            Renseignez ensuite le score, la proposition et la recommandation générale.
+          </p>
+
+          <div class="form-group">
+            <label><strong>📎 Fichier principal d'évaluation</strong> <span class="req">*</span></label>
+            <input type="file" @change="onPrincipalChange" accept=".pdf,.doc,.docx,.odt" />
+            <small v-if="evalSimple.fichierPrincipal">{{ evalSimple.fichierPrincipal.name }}</small>
+          </div>
+
+          <div class="form-group">
+            <label><strong>📎 Annexes</strong> <span class="label-hint">(optionnel, plusieurs fichiers)</span></label>
+            <input type="file" multiple @change="onAnnexesChange" />
+            <ul v-if="evalSimple.annexes.length" class="file-list">
+              <li v-for="(f, i) in evalSimple.annexes" :key="i">{{ f.name }}</li>
+            </ul>
+          </div>
+
+          <div class="form-group">
+            <label><strong>🔢 Score total</strong> <span class="req">*</span> <span class="label-hint">(0 à 100)</span></label>
+            <input type="number" min="0" max="100" step="0.5" v-model.number="evalSimple.scoreTotal" />
+          </div>
+
+          <div class="form-group">
+            <label><strong>📋 Proposition</strong> <span class="req">*</span></label>
+            <select v-model="evalSimple.proposition">
+              <option value="">— Sélectionner —</option>
+              <option value="Favorable">Favorable</option>
+              <option value="Favorable sous conditions">Favorable sous conditions</option>
+              <option value="Défavorable">Défavorable</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><strong>💬 Recommandation générale</strong> <span class="req">*</span></label>
+            <textarea rows="5" v-model="evalSimple.recommandations"
+                      placeholder="Synthèse de la Commission et recommandations principales..."></textarea>
+          </div>
+
+          <div class="actions-section">
+            <button @click="fermerModalEvaluation" class="btn-action btn-secondary" :disabled="evalSimple.enCours">
+              Annuler
+            </button>
+            <button @click="soumettreEvaluationSimple" class="btn-action btn-success"
+                    :disabled="!peutSoumettreEvalSimple || evalSimple.enCours">
+              {{ evalSimple.enCours ? '⏳ Envoi...' : '✓ Soumettre l\'évaluation' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </PageWrapper>
 </template>
 
@@ -162,7 +268,16 @@ export default {
       avis: {},
       commentaires: {},
       evaluabiliteCommentaires: {},
-      envoiEvaluabilite: {}
+      envoiEvaluabilite: {},
+      modalEvalSimpleId: null,
+      evalSimple: {
+        fichierPrincipal: null,
+        annexes: [],
+        scoreTotal: null,
+        proposition: "",
+        recommandations: "",
+        enCours: false
+      }
     };
   },
   computed: {
@@ -171,6 +286,37 @@ export default {
     },
     autresProjets() {
       return this.projects.filter(p => !p.est_assigne_a_moi);
+    },
+    peutSoumettreEvalSimple() {
+      const e = this.evalSimple;
+      return !!e.fichierPrincipal
+          && typeof e.scoreTotal === 'number' && e.scoreTotal >= 0 && e.scoreTotal <= 100
+          && ['Favorable','Favorable sous conditions','Défavorable'].includes(e.proposition)
+          && !!(e.recommandations || '').trim();
+    },
+    statsEvaluateur() {
+      const mes = this.projetsAssignes;
+      return {
+        // En recevabilité : assigné mais pas encore d'évaluation préalable
+        enRecevabilite: mes.filter(p =>
+          !p.evaluation_prealable &&
+          (p.statut === 'assigné' || p.statut === 'en évaluation')
+        ).length,
+        // En évaluabilité : recevable mais évaluabilité pas encore confirmée
+        enEvaluabilite: mes.filter(p =>
+          p.evaluation_prealable === 'dossier_evaluable' && !p.evaluabilite
+        ).length,
+        // En évaluation détaillée : évaluabilité confirmée, avis non encore rendu
+        enEvaluation: mes.filter(p =>
+          p.evaluabilite === 'evaluable' && !p.avis
+        ).length,
+        // Compléments en attente de réception du soumissionnaire
+        complementsEnAttente: mes.filter(p =>
+          p.statut === 'compléments demandés'
+        ).length,
+        // Avis rendus (fiche soumise)
+        evalues: mes.filter(p => p.avis && p.avis !== 'compléments demandés').length
+      };
     }
   },
   mounted() { this.loadProjects(); },
@@ -205,13 +351,60 @@ export default {
              project.evaluabilite === "evaluable" &&
              (project.statut === "en évaluation" || project.statut === "assigné");
     },
-    async marquerEvaluable(projectId) {
+    ouvrirModalEvaluation(projectId) {
+      this.modalEvalSimpleId = projectId;
+      this.evalSimple = {
+        fichierPrincipal: null, annexes: [], scoreTotal: null,
+        proposition: "", recommandations: "", enCours: false
+      };
+    },
+    fermerModalEvaluation() {
+      if (this.evalSimple.enCours) return;
+      this.modalEvalSimpleId = null;
+    },
+    onPrincipalChange(e) {
+      this.evalSimple.fichierPrincipal = e.target.files[0] || null;
+    },
+    onAnnexesChange(e) {
+      this.evalSimple.annexes = Array.from(e.target.files || []);
+    },
+    async soumettreEvaluationSimple() {
+      if (!this.peutSoumettreEvalSimple) return;
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      const pid = this.modalEvalSimpleId;
+      this.evalSimple.enCours = true;
+      try {
+        const fd = new FormData();
+        fd.append("fichier_principal", this.evalSimple.fichierPrincipal);
+        this.evalSimple.annexes.forEach(f => fd.append("annexes", f));
+        fd.append("score_total", String(this.evalSimple.scoreTotal));
+        fd.append("proposition", this.evalSimple.proposition);
+        fd.append("recommandations", this.evalSimple.recommandations);
+        fd.append("evaluateur_nom", user.username || "");
+        fd.append("role", user.role || "");
+
+        const resp = await fetch(`/api/projects/${pid}/evaluation-simple`, {
+          method: "POST", body: fd
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || "Erreur lors de la soumission");
+        }
+        alert("✅ Évaluation soumise avec succès.");
+        this.modalEvalSimpleId = null;
+        await this.loadProjects();
+      } catch (err) {
+        alert("Erreur : " + err.message);
+      } finally {
+        this.evalSimple.enCours = false;
+      }
+    },
+    async decisionEvaluabilite(projectId, decision) {
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       const commentaire = (this.evaluabiliteCommentaires[projectId] || "").trim();
 
-      // Validation: commentaires obligatoires
-      if (!commentaire) {
-        alert("⚠️ Les commentaires sont obligatoires pour justifier l'évaluabilité du dossier.");
+      if ((decision === "complements_requis" || decision === "dossier_rejete") && !commentaire) {
+        alert("⚠️ La motivation est obligatoire pour cette décision.");
         return;
       }
 
@@ -222,8 +415,8 @@ export default {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            decision: "evaluable",
-            commentaire: commentaire,
+            decision,
+            commentaire,
             auteur: user.username,
             role: user.role
           })
@@ -234,7 +427,15 @@ export default {
           throw new Error(errorData.error || "Erreur lors de l'enregistrement");
         }
 
-        alert("✅ Dossier marqué comme évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.");
+        let message;
+        if (decision === "evaluable") {
+          message = "✅ Dossier évaluable. Vous pouvez accéder à la fiche d'évaluation détaillée.";
+        } else if (decision === "complements_requis") {
+          message = "📝 Compléments demandés. Le soumissionnaire a été notifié.";
+        } else {
+          message = "✕ Rejet proposé. En attente de validation par le Secrétariat SCT.";
+        }
+        alert(message);
         this.evaluabiliteCommentaires[projectId] = "";
         await this.loadProjects();
       } catch (error) {
@@ -382,6 +583,51 @@ export default {
   padding-bottom: 12px;
   border-bottom: 2px solid var(--dgppe-accent);
 }
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+  border-left: 4px solid #e2e8f0;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.stat-total    { border-color: #003366; }
+.stat-total    .stat-number { color: #003366; }
+.stat-recevabilite  { border-color: #f59e0b; }
+.stat-recevabilite  .stat-number { color: #f59e0b; }
+.stat-evaluabilite  { border-color: #0ea5e9; }
+.stat-evaluabilite  .stat-number { color: #0ea5e9; }
+.stat-evaluation    { border-color: #8b5cf6; }
+.stat-evaluation    .stat-number { color: #8b5cf6; }
+.stat-complements   { border-color: #f97316; }
+.stat-complements   .stat-number { color: #f97316; }
+.stat-evalues       { border-color: #006633; }
+.stat-evalues       .stat-number { color: #006633; }
 
 h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
 .empty-state { text-align: center; padding: 4rem 2rem; color: #7f8c8d; }
@@ -716,6 +962,25 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   gap: 1rem;
 }
 
+.evaluabilite-form .eval-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.evaluabilite-form .eval-actions .btn-action {
+  flex: 1;
+  min-width: 180px;
+}
+
+.evaluabilite-form .label-hint {
+  display: inline;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-left: 0.5rem;
+}
+
 .evaluabilite-form label {
   font-weight: 600;
   color: #334155;
@@ -764,6 +1029,46 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
 }
 
 /* Modal overlay pour l'évaluation de la recevabilité */
+/* Formulaire d'évaluation simplifiée (modal) */
+.eval-simple-form h3 {
+  color: #0369a1;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+.eval-simple-form .description {
+  color: #64748b;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+}
+.eval-simple-form .form-group { margin-bottom: 1rem; }
+.eval-simple-form label { display: block; margin-bottom: 0.35rem; color: #1e293b; font-size: 0.95rem; }
+.eval-simple-form .req { color: #dc2626; }
+.eval-simple-form input[type="file"],
+.eval-simple-form input[type="number"],
+.eval-simple-form select,
+.eval-simple-form textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.eval-simple-form textarea { resize: vertical; }
+.eval-simple-form input:focus,
+.eval-simple-form select:focus,
+.eval-simple-form textarea:focus { outline: none; border-color: #0ea5e9; }
+.eval-simple-form .file-list { margin: 0.35rem 0 0 1.1rem; color: #334155; font-size: 0.85rem; }
+.eval-simple-form .actions-section {
+  display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;
+}
+.eval-simple-form .btn-secondary {
+  background: #e2e8f0; color: #1e293b; border: none;
+  padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.eval-simple-form .btn-secondary:hover:not(:disabled) { background: #cbd5e1; }
+
 .modal-overlay {
   position: fixed;
   top: 0;

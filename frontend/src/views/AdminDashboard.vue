@@ -286,7 +286,7 @@
       <div v-if="activeTab === 'stats'" class="tab-content">
         <StatsDashboard
           role="admin"
-          username="admin"
+          :username="currentUser.username || 'admin'"
         />
 
         <!-- Métriques de performance -->
@@ -447,6 +447,7 @@ export default {
   },
   data() {
     return {
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
       activeTab: 'projects', // 'projects', 'stats', 'carte' ou 'corbeille'
 
       // Corbeille (soft delete)
@@ -567,7 +568,6 @@ export default {
 
   mounted() {
     this.loadAllProjects();
-    this.loadProjects();
     this.loadMetrics();
     this.loadEmailConfig();
   },
@@ -587,7 +587,7 @@ export default {
     // ============ Gestion des projets (admin) ============
     async loadAllProjects() {
       try {
-        const res = await fetch("/api/projects?role=admin&username=admin");
+        const res = await fetch(`/api/projects?role=admin&username=${this.currentUser.username || 'admin'}`);
         if (res.ok) {
           this.allProjects = await res.json();
           this.filteredProjects = [...this.allProjects];
@@ -735,7 +735,7 @@ export default {
       if (!confirmation) return;
 
       try {
-        const res = await fetch(`/api/projects/${project.id}?role=admin&username=admin`, {
+        const res = await fetch(`/api/projects/${project.id}?role=admin&username=${this.currentUser.username || 'admin'}`, {
           method: 'DELETE'
         });
 
@@ -781,7 +781,7 @@ export default {
 
       this.loadingCorbeille = true;
       try {
-        const res = await fetch(`/api/admin/corbeille/${projectId}/restore?username=admin`, {
+        const res = await fetch(`/api/admin/corbeille/${projectId}/restore?username=${this.currentUser.username || 'admin'}`, {
           method: 'POST'
         });
 
@@ -916,7 +916,7 @@ export default {
     // ============ Gestion des projets/statistiques ============
     async loadProjects() {
       try {
-        const res = await fetch("/api/projects?role=admin&username=admin");
+        const res = await fetch(`/api/projects?role=admin&username=${this.currentUser.username || 'admin'}`);
         if (res.ok) {
           this.projects = await res.json();
           this.filteredProjects = [...this.projects];

@@ -253,6 +253,9 @@ class FicheEvaluation(db.Model):
     
     # Fichier PDF généré
     fichier_pdf = db.Column(db.String(200))  # chemin vers le PDF
+    # Évaluation simplifiée : fichier principal uploadé + annexes (JSON array de chemins)
+    fichier_principal = db.Column(db.String(500))
+    fichiers_annexes = db.Column(db.Text)
     
     # Relations
     project = db.relationship('Project', backref=db.backref('fiche_evaluation', uselist=False))
@@ -425,7 +428,9 @@ class FicheEvaluation(db.Model):
             'appreciation_globale': self.get_appreciation_globale(),
             'proposition': self.proposition,
             'recommandations': self.recommandations,
-            'fichier_pdf': self.fichier_pdf
+            'fichier_pdf': self.fichier_pdf,
+            'fichier_principal': self.fichier_principal,
+            'fichiers_annexes': self.fichiers_annexes,
         }
 
 

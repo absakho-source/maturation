@@ -341,9 +341,6 @@
           <p><strong>Commentaires de l'évaluateur:</strong></p>
           <div class="evaluator-comment">{{ projet.commentaires || "Aucun commentaire spécifique" }}</div>
           
-          <!-- Debug -->
-          <p><strong>Debug:</strong> complementsData[{{ projet.id }}] = {{ complementsData[projet.id] }}</p>
-          
           <!-- Formulaire de soumission des compléments -->
           <form @submit.prevent="soumettreComplements(projet.id)" class="complement-form" v-if="complementsData[projet.id]">
             <div class="form-group">
