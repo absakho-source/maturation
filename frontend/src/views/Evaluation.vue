@@ -1088,32 +1088,66 @@ h2 { margin-bottom: 2rem; color: #1a4d7a; font-size: 1.8rem; font-weight: 600; }
   border-radius: 12px;
   max-width: 1400px;
   width: 100%;
-  max-height: none;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   margin: 20px 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+  box-sizing: border-box;
 }
 
 .modal-close {
-  position: sticky;
-  top: 10px;
-  right: 10px;
-  float: right;
+  position: absolute;
+  top: 12px;
+  right: 12px;
   background: #ef4444;
   color: white;
-  border: none;
+  border: 2px solid white;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
   transition: all 0.2s;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-close:hover {
   background: #dc2626;
-  transform: scale(1.1);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.modal-close:focus-visible {
+  outline: 3px solid #fca5a5;
+  outline-offset: 2px;
+}
+
+/* Responsive tables pour petits écrans */
+@media (max-width: 768px) {
+  .projects-table, table.projects-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+}
+
+/* Tronquer les titres trop longs dans les cartes */
+.project-card h3,
+.card-header h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 </style>
