@@ -12,10 +12,8 @@ import AdminDashboard from '../views/AdminDashboard.vue';
 import ProjectDetail from '../views/ProjectDetail.vue';
 import GestionComptes from '../views/GestionComptes.vue';
 import Invite from '../views/Invite.vue';
-import FormulaireEditor from '../views/FormulaireEditor.vue';
 import MinisteresEditor from '../views/MinisteresEditor.vue';
 import MonProfil from '../views/MonProfil.vue';
-import EditionFichePopup from '../views/EditionFichePopup.vue';
 import LogsConnexion from '../views/LogsConnexion.vue';
 import ConfigEmails from '../views/ConfigEmails.vue';
 import Contact from '../views/Contact.vue';
@@ -42,13 +40,11 @@ const routes = [
   { path: '/membrecomite', name: 'MembreComite', component: MembreComite, meta: { requiresAuth: true } },
   { path: '/admin', name: 'Admin', component: AdminDashboard, meta: { requiresAuth: true } },
   { path: '/gestion-comptes', name: 'GestionComptes', component: GestionComptes, meta: { requiresAuth: true } },
-  { path: '/formulaire-editor', name: 'FormulaireEditor', component: FormulaireEditor, meta: { requiresAuth: true } },
   { path: '/ministeres-editor', name: 'MinisteresEditor', component: MinisteresEditor, meta: { requiresAuth: true } },
   { path: '/logs-connexion', name: 'LogsConnexion', component: LogsConnexion, meta: { requiresAuth: true } },
   { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
-  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } },
-  { path: '/edition-fiche-popup', name: 'EditionFichePopup', component: EditionFichePopup, meta: { requiresAuth: false } }
+  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({
@@ -67,10 +63,10 @@ router.beforeEach((to, from, next) => {
 
   // Définir les routes accessibles par rôle
   const roleAccessMap = {
-    'admin': ['admin', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'logs-connexion', 'config-emails', 'mon-profil', 'project', 'evaluation'],
+    'admin': ['admin', 'gestion-comptes', 'ministeres-editor', 'logs-connexion', 'config-emails', 'mon-profil', 'project', 'evaluation'],
     'soumissionnaire': ['soumissionnaire', 'projets-tutelle', 'mon-profil', 'project'],
     'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
-    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'formulaire-editor', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
+    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'membrecomite': ['membrecomite', 'mon-profil', 'project'], // Membres du comité: lecture seule, pas d'évaluation

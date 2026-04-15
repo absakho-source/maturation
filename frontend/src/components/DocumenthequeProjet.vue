@@ -186,12 +186,12 @@ export default {
 
     async envoyerFichiers() {
       if (this.fichiersSelectionnes.length === 0) {
-        alert('Veuillez sélectionner au moins un fichier');
+        this.$toast?.warning('Veuillez sélectionner au moins un fichier');
         return;
       }
 
       if (!this.currentUser) {
-        alert('Erreur: utilisateur non connecté');
+        this.$toast?.error('Utilisateur non connecté');
         return;
       }
 
@@ -225,11 +225,11 @@ export default {
           await this.chargerDocuments();
         } else {
           const error = await response.json();
-          alert('Erreur: ' + (error.error || 'Problème lors de l\'ajout'));
+          this.$toast?.error(error.error || 'Problème lors de l\'ajout');
         }
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur de connexion');
+        this.$toast?.error('Erreur de connexion');
       } finally {
         this.uploading = false;
       }
@@ -250,11 +250,11 @@ export default {
           await this.chargerDocuments();
         } else {
           const error = await response.json();
-          alert('Erreur: ' + (error.error || 'Problème lors de la suppression'));
+          this.$toast?.error(error.error || 'Problème lors de la suppression');
         }
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur de connexion');
+        this.$toast?.error('Erreur de connexion');
       }
     },
 

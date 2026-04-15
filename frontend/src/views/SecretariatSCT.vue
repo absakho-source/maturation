@@ -358,16 +358,6 @@
 
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
 
-              <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas encore transmis) -->
-              <div style="display: flex; justify-content: center; margin-top: 10px;">
-                <button
-                  v-if="p.evaluation_prealable !== 'dossier_rejete' && p.avis"
-                  @click="ouvrirModalEditionFiche(p)"
-                  class="btn-edit-fiche"
-                >
-                  ✏️ Éditer la fiche
-                </button>
-              </div>
 
               <!-- Actions pour un rejet proposé -->
               <div v-if="p.evaluation_prealable === 'dossier_rejete'" class="validation-actions">
@@ -1019,7 +1009,7 @@ export default {
         const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
         if (!user.role || !user.username) {
-          alert('Erreur: Utilisateur non connecté');
+          this.$toast.error('Utilisateur non connecté');
           return;
         }
 
@@ -1077,7 +1067,7 @@ export default {
 
       } catch (error) {
         console.error('Erreur export CSV:', error);
-        alert('Erreur lors de l\'export CSV');
+        this.$toast.error('Erreur lors de l\'export CSV');
       }
     },
     async loadMetrics() {
@@ -1115,47 +1105,6 @@ export default {
         console.error('Erreur lors du chargement des évaluateurs:', error);
       }
     },
-    async ouvrirModalEditionFiche(projet) {
-      // Ouvrir un popup avec la page d'édition
-      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
-      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
-      // Utiliser un nom unique pour forcer le rechargement complet à chaque ouverture
-      const uniqueWindowName = `EditionFiche_${Date.now()}`;
-      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
-
-      if (!popup) {
-        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
-        return;
-      }
-
-      // Écouter les messages du popup
-      const messageHandler = (event) => {
-        console.log('[SecretariatSCT] Message reçu:', event.data);
-        console.log('[SecretariatSCT] Origin:', event.origin, 'Expected:', window.location.origin);
-
-        // Vérifier l'origine pour la sécurité
-        if (event.origin !== window.location.origin) {
-          console.warn('[SecretariatSCT] Message ignoré: origine différente');
-          return;
-        }
-
-        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
-          console.log('[SecretariatSCT] Message ficheUpdated reçu, rechargement des projets...');
-          // Recharger les projets pour afficher les modifications
-          this.loadProjects();
-          window.removeEventListener('message', messageHandler);
-          console.log('[SecretariatSCT] Projets rechargés');
-        } else {
-          console.log('[SecretariatSCT] Message ignoré:', {
-            type: event.data.type,
-            projetId: event.data.projetId,
-            expectedProjetId: projet.id
-          });
-        }
-      };
-
-      window.addEventListener('message', messageHandler);
-    },
     async loadProjects() {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "null") || {};
@@ -1190,7 +1139,7 @@ export default {
         projet.niveau_priorite = newVal;
       } catch (err) {
         console.error('Erreur toggle priorité:', err);
-        alert('Erreur lors de la modification de la priorité');
+        this.$toast.error('Erreur lors de la modification de la priorité');
       }
     },
     async assigner(id) {
@@ -1613,7 +1562,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport:', error);
-        alert('Erreur lors du téléchargement du rapport PDF');
+        this.$toast.error('Erreur lors du téléchargement du rapport PDF');
       }
     },
 
@@ -1634,7 +1583,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport élaboré:', error);
-        alert('Erreur lors du téléchargement du rapport élaboré');
+        this.$toast.error('Erreur lors du téléchargement du rapport élaboré');
       }
     },
 
@@ -1677,11 +1626,11 @@ export default {
           message = "❌ Rejet validé. Le soumissionnaire a été notifié.";
         }
 
-        alert(message);
+        this.$toast.info(message);
         this.evaluationPrealableCommentaires[projectId] = "";
         this.loadProjects();
       } catch (error) {
-        alert("Erreur: " + error.message);
+        this.$toast.error(error.message);
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
@@ -1727,7 +1676,7 @@ export default {
         this.evaluationPrealableCommentaires[projectId] = "";
         this.loadProjects();
       } catch (error) {
-        alert("Erreur: " + error.message);
+        this.$toast.error(error.message);
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }
@@ -1791,11 +1740,11 @@ export default {
           throw new Error(errorData.error || "Erreur lors de l'enregistrement");
         }
 
-        alert("✅ Dossier marqué comme évaluable. L'évaluateur peut maintenant soumettre son évaluation.");
+        this.$toast.success("Dossier marqué comme évaluable. L'évaluateur peut maintenant soumettre son évaluation.");
         this.evaluabiliteCommentaires[projectId] = "";
         await this.loadProjects();
       } catch (error) {
-        alert("Erreur: " + error.message);
+        this.$toast.error(error.message);
       } finally {
         this.envoiEvaluabilite[projectId] = false;
       }

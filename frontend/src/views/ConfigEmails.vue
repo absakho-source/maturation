@@ -584,13 +584,13 @@ export default {
 
     async envoyerEmailTest() {
       if (!this.testEmailAddress) {
-        alert('Veuillez entrer une adresse email');
+        this.$toast.warning('Veuillez entrer une adresse email');
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.testEmailAddress)) {
-        alert('Veuillez entrer une adresse email valide');
+        this.$toast.warning('Veuillez entrer une adresse email valide');
         return;
       }
 
@@ -797,7 +797,7 @@ export default {
       navigator.clipboard.writeText(text).then(() => {
         // Feedback visuel simple (pourrait être amélioré avec un toast)
         console.log('Variable copiée:', text);
-        alert(`Variable ${text} copiée dans le presse-papier !`);
+        this.$toast.success(`Variable ${text} copiée`);
       }).catch(err => {
         console.error('Erreur copie:', err);
       });

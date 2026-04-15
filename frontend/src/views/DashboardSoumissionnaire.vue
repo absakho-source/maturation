@@ -932,7 +932,7 @@ export default {
     showBlockedMessage() {
       // Seuls les comptes suspendus sont bloqués pour la soumission
       if (this.userAccountStatus === 'suspendu') {
-        alert("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.");
+        this.$toast.error("Votre compte est suspendu. Vous ne pouvez pas soumettre de projet. Veuillez contacter l'administration.", 7000);
       }
     },
 
@@ -1328,7 +1328,7 @@ export default {
         });
         this.complements = newComplements;
       } catch (e) {
-        console.error(e); alert("Erreur chargement projets");
+        console.error(e); this.$toast.error("Erreur lors du chargement des projets");
       } finally { this.loading = false; }
     },
     // Drag and drop

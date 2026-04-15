@@ -228,9 +228,6 @@
                     ✅ Entériner
                   </button>
                   <div class="decision-buttons-row">
-                    <button @click="ouvrirEditionFiche(p)" class="btn-amend">
-                      ✏️ Amender
-                    </button>
                     <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-reject">
                       ❌ Rejeter
                     </button>
@@ -501,11 +498,11 @@ export default {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Erreur lors de la validation');
         }
-        alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé. Le secrétariat SCT sera notifié du motif.');
+        this.$toast.success(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé. Le secrétariat SCT sera notifié du motif.');
         this.loadProjects();
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
-        alert('Erreur: ' + error.message);
+        this.$toast.error(error.message);
       });
     },
     getEvaluateurLabel(ev) {
@@ -586,7 +583,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport:', error);
-        alert('Erreur lors du téléchargement du rapport PDF');
+        this.$toast.error('Erreur lors du téléchargement du rapport PDF');
       }
     },
     async telechargerRapportElabore() {
@@ -606,13 +603,13 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport élaboré:', error);
-        alert('Erreur lors du téléchargement du rapport élaboré');
+        this.$toast.error('Erreur lors du téléchargement du rapport élaboré');
       }
     },
     enregistrerDecisionComite(projectId, decision, commentaires) {
       // Validation : commentaires obligatoires si contesté
       if (decision === 'conteste' && (!commentaires || commentaires.trim() === '')) {
-        alert('❌ Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.');
+        this.$toast.warning('Les commentaires sont obligatoires lorsque le Comité conteste la recommandation.');
         return;
       }
 
@@ -649,42 +646,13 @@ export default {
         const message = decision === 'enterine'
           ? '✅ Décision du Comité enregistrée : Projet ENTÉRINÉ'
           : '✅ Décision du Comité enregistrée : Projet CONTESTÉ (retour au Secrétariat SCT)';
-        alert(message);
+        this.$toast.success(message);
         this.loadProjects();
       })
       .catch(error => {
         console.error('Erreur lors de l\'enregistrement de la décision:', error);
-        alert(`❌ Erreur : ${error.message}`);
+        this.$toast.error(error.message);
       });
-    },
-    ouvrirEditionFiche(projet) {
-      // Ouvrir un popup avec la page d'édition (même interface que l'évaluateur)
-      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
-      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
-      const uniqueWindowName = `EditionFiche_${Date.now()}`;
-      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
-
-      if (!popup) {
-        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
-        return;
-      }
-
-      // Écouter les messages du popup pour recharger après modification
-      const messageHandler = (event) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
-          // Recharger les projets
-          const user = JSON.parse(localStorage.getItem("user") || "null") || {};
-          fetch(`/api/projects?role=${user.role}&username=${user.username}`)
-            .then(r => r.json())
-            .then(j => {
-              this.allProjects = j;
-              this.calculateFinancingStats();
-            });
-          window.removeEventListener('message', messageHandler);
-        }
-      };
-      window.addEventListener('message', messageHandler);
     }
   }
 };

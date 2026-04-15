@@ -271,7 +271,7 @@ export default {
             await this.chargerMessages();
           } else {
             const error = await response.json();
-            alert(error.error || 'Erreur lors de l\'envoi du message');
+            this.$toast?.error(error.error || 'Erreur lors de l\'envoi du message');
           }
         } else {
           // Sinon, utiliser JSON (texte uniquement)
@@ -292,12 +292,12 @@ export default {
             await this.chargerMessages();
           } else {
             const error = await response.json();
-            alert(error.error || 'Erreur lors de l\'envoi du message');
+            this.$toast?.error(error.error || 'Erreur lors de l\'envoi du message');
           }
         }
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur de connexion');
+        this.$toast?.error('Erreur de connexion');
       } finally {
         this.sending = false;
       }
@@ -316,11 +316,11 @@ export default {
           await this.chargerMessages();
         } else {
           const error = await response.json();
-          alert(error.error || 'Erreur lors de la suppression');
+          this.$toast?.error(error.error || 'Erreur lors de la suppression');
         }
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur de connexion');
+        this.$toast?.error('Erreur de connexion');
       }
     },
 

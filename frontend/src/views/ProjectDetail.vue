@@ -843,7 +843,7 @@ export default {
 
     ouvrirFichePDF() {
       if (!this.peutAccederFicheEvaluation()) {
-        alert('L\'évaluation de la recevabilité doit être positive avant d\'accéder à la fiche d\'évaluation détaillée');
+        this.$toast.warning('L\'évaluation de la recevabilité doit être positive avant d\'accéder à la fiche d\'évaluation détaillée');
         return;
       }
       // Utiliser l'URL du backend (configurée via VITE_API_URL en production)
@@ -964,7 +964,7 @@ export default {
         });
 
         if (response.ok) {
-          alert('Archive supprimée avec succès');
+          this.$toast.success('Archive supprimée');
           // Recharger la liste des archives
           const archivesRes = await fetch(`/api/projects/${this.project.id}/fiches-archives`, {
             headers: {
@@ -978,11 +978,11 @@ export default {
           }
         } else {
           const error = await response.json();
-          alert(`Erreur lors de la suppression : ${error.error || 'Erreur inconnue'}`);
+          this.$toast.error(`Erreur lors de la suppression : ${error.error || 'Erreur inconnue'}`);
         }
       } catch (err) {
         console.error('Erreur suppression archive:', err);
-        alert('Erreur lors de la suppression de l\'archive');
+        this.$toast.error('Erreur lors de la suppression de l\'archive');
       }
     }
   }

@@ -125,13 +125,13 @@ export default {
           throw new Error(errorData.error || "Erreur lors de la validation");
         }
 
-        alert("✅ Rejet validé. Le soumissionnaire a été notifié.");
+        this.$toast?.success("Rejet validé. Le soumissionnaire a été notifié.");
         this.evaluationPrealableCommentaires[projectId] = "";
         if (this.loadProjects) {
           await this.loadProjects();
         }
       } catch (error) {
-        alert("Erreur: " + error.message);
+        this.$toast?.error(error.message);
       } finally {
         this.envoiEvaluationPrealable[projectId] = false;
       }

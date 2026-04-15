@@ -986,7 +986,7 @@ export default {
         const user = JSON.parse(localStorage.getItem("user") || "null") || {};
 
         if (!user.role || !user.username) {
-          alert('Erreur: Utilisateur non connecté');
+          this.$toast.error('Utilisateur non connecté');
           return;
         }
 
@@ -1052,10 +1052,10 @@ export default {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        alert('Export CSV téléchargé avec succès !');
+        this.$toast.success('Export CSV téléchargé');
       } catch (error) {
         console.error('Erreur export CSV:', error);
-        alert('Erreur lors de l\'export CSV');
+        this.$toast.error('Erreur lors de l\'export CSV');
       }
     },
 
@@ -1084,7 +1084,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport:', error);
-        alert('Erreur lors du téléchargement du rapport PDF');
+        this.$toast.error('Erreur lors du téléchargement du rapport PDF');
       }
     },
 
@@ -1112,7 +1112,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport élaboré:', error);
-        alert('Erreur lors du téléchargement du rapport élaboré');
+        this.$toast.error('Erreur lors du téléchargement du rapport élaboré');
       }
     },
 
@@ -1153,14 +1153,14 @@ export default {
 
     async envoyerEmailTest() {
       if (!this.testEmailAddress) {
-        alert('Veuillez entrer une adresse email');
+        this.$toast.warning('Veuillez entrer une adresse email');
         return;
       }
 
       // Validation basique de l'email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.testEmailAddress)) {
-        alert('Veuillez entrer une adresse email valide');
+        this.$toast.warning('Veuillez entrer une adresse email valide');
         return;
       }
 

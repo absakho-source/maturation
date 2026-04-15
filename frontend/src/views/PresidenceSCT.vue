@@ -214,9 +214,6 @@
                     ✅ Entériner
                   </button>
                   <div class="decision-buttons-row">
-                    <button @click="ouvrirEditionFiche(p)" class="btn-amend">
-                      ✏️ Amender
-                    </button>
                     <button @click="enregistrerDecisionComite(p.id, 'conteste', p.commentaires_comite_temp)" class="btn-danger">
                       ❌ Rejeter
                     </button>
@@ -439,11 +436,11 @@ export default {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Erreur lors de la validation');
         }
-        alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté. Le secrétariat SCT sera notifié du motif.');
+        this.$toast.success(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté. Le secrétariat SCT sera notifié du motif.');
         this.loadProjects();
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
-        alert('Erreur: ' + error.message);
+        this.$toast.error(error.message);
       });
     },
     getEvaluateurLabel(ev){ return ({evaluateur1:"Évaluateur 1", evaluateur2:"Évaluateur 2", secretariatsct:"Secrétariat SCT"}[ev]||ev); },
@@ -509,7 +506,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport:', error);
-        alert('Erreur lors du téléchargement du rapport PDF');
+        this.$toast.error('Erreur lors du téléchargement du rapport PDF');
       }
     },
     async telechargerRapportElabore() {
@@ -529,13 +526,13 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Erreur téléchargement rapport élaboré:', error);
-        alert('Erreur lors du téléchargement du rapport élaboré');
+        this.$toast.error('Erreur lors du téléchargement du rapport élaboré');
       }
     },
     enregistrerDecisionComite(projectId, decision, commentaires) {
       // Validation: commentaire obligatoire si contesté
       if (decision === 'conteste' && (!commentaires || !commentaires.trim())) {
-        alert('Le commentaire est obligatoire en cas de contestation par le Comité.');
+        this.$toast.warning('Le commentaire est obligatoire en cas de contestation par le Comité.');
         return;
       }
 
@@ -565,35 +562,13 @@ export default {
           throw new Error(errorData.error || 'Erreur lors de l\'enregistrement');
         }
         const resultText = decision === 'enterine' ? 'entérinée' : 'contestée';
-        alert(`Décision du Comité ${resultText} avec succès. Le soumissionnaire a été notifié.`);
+        this.$toast.success(`Décision du Comité ${resultText}. Le soumissionnaire a été notifié.`);
         this.loadProjects();
       })
       .catch(error => {
         console.error('Erreur:', error);
-        alert('Erreur: ' + error.message);
+        this.$toast.error(error.message);
       });
-    },
-    ouvrirEditionFiche(projet) {
-      // Ouvrir un popup avec la page d'édition (même interface que l'évaluateur)
-      const popupUrl = `/edition-fiche-popup?projetId=${projet.id}`;
-      const popupFeatures = 'width=1000,height=800,scrollbars=yes,resizable=yes';
-      const uniqueWindowName = `EditionFiche_${Date.now()}`;
-      const popup = window.open(popupUrl, uniqueWindowName, popupFeatures);
-
-      if (!popup) {
-        alert('Le popup a été bloqué par le navigateur. Veuillez autoriser les popups pour ce site.');
-        return;
-      }
-
-      // Écouter les messages du popup pour recharger après modification
-      const messageHandler = (event) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data.type === 'ficheUpdated' && event.data.projetId === projet.id) {
-          this.loadProjects();
-          window.removeEventListener('message', messageHandler);
-        }
-      };
-      window.addEventListener('message', messageHandler);
     }
   }
 };

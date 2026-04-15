@@ -162,7 +162,7 @@ export default {
   mounted() {
     // Vérifier les permissions
     if (!['admin', 'secretariatsct'].includes(this.role)) {
-      alert('Accès non autorisé')
+      this.$toast.error('Accès non autorisé')
       this.$router.push('/')
       return
     }
@@ -215,7 +215,7 @@ export default {
         console.log('[MINISTERES EDITOR] Ministère sauvegardé:', ministere.nom_complet)
       } catch (err) {
         console.error('[MINISTERES EDITOR] Erreur sauvegarde:', err)
-        alert('Erreur lors de la sauvegarde: ' + err.message)
+        this.$toast.error('Erreur lors de la sauvegarde: ' + err.message)
       }
     },
 
@@ -284,7 +284,7 @@ export default {
 
     async ajouterMinistere() {
       if (!this.nouveauMinistere.nom_complet.trim()) {
-        alert('Le nom complet est requis')
+        this.$toast.warning('Le nom complet est requis')
         return
       }
 
@@ -307,7 +307,7 @@ export default {
         await this.chargerMinisteres()
       } catch (err) {
         console.error('[MINISTERES EDITOR] Erreur ajout:', err)
-        alert('Erreur lors de l\'ajout: ' + err.message)
+        this.$toast.error('Erreur lors de l\'ajout: ' + err.message)
       }
     },
 
@@ -331,7 +331,7 @@ export default {
         await this.chargerMinisteres()
       } catch (err) {
         console.error('[MINISTERES EDITOR] Erreur suppression:', err)
-        alert('Erreur lors de la suppression: ' + err.message)
+        this.$toast.error('Erreur lors de la suppression: ' + err.message)
       }
     },
 
