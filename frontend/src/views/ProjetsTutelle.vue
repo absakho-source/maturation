@@ -18,33 +18,21 @@
 
       <!-- Statistiques -->
       <div class="stats-section">
-        <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.total }}</div>
-            <div class="stat-label">Total projets</div>
-          </div>
+        <div class="stat-card stat-card--primary">
+          <div class="stat-value">{{ stats.total }}</div>
+          <div class="stat-label">Total projets</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">📝</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.soumis }}</div>
-            <div class="stat-label">Soumis</div>
-          </div>
+        <div class="stat-card stat-card--info">
+          <div class="stat-value">{{ stats.soumis }}</div>
+          <div class="stat-label">Soumis</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.en_evaluation }}</div>
-            <div class="stat-label">En évaluation</div>
-          </div>
+        <div class="stat-card stat-card--warning">
+          <div class="stat-value">{{ stats.en_evaluation }}</div>
+          <div class="stat-label">En évaluation</div>
         </div>
-        <div class="stat-card favorable">
-          <div class="stat-icon">✅</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.favorables }}</div>
-            <div class="stat-label">Favorables</div>
-          </div>
+        <div class="stat-card stat-card--success">
+          <div class="stat-value">{{ stats.favorables }}</div>
+          <div class="stat-label">Favorables</div>
         </div>
       </div>
 

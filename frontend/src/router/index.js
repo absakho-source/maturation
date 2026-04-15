@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
+import ForgotPassword from '../views/ForgotPassword.vue';
+import ResetPassword from '../views/ResetPassword.vue';
 import DashboardSoumissionnaire from '../views/DashboardSoumissionnaire.vue';
 import Evaluation from '../views/Evaluation.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
@@ -24,6 +26,8 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
+  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword },
+  { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
   { path: '/contact', name: 'Contact', component: Contact },
 { path: '/mon-profil', name: 'MonProfil', component: MonProfil, meta: { requiresAuth: true } },
   { path: '/soumissionnaire', name: 'Soumissionnaire', component: DashboardSoumissionnaire, meta: { requiresAuth: true } },

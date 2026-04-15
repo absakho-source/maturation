@@ -44,43 +44,17 @@
 
       <!-- Statistiques -->
       <div class="stats-section">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-              <path d="M16 3.13a4 4 0 010 7.75"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label">Total connexions</p>
-            <p class="stat-value">{{ filteredLogs.length }}</p>
-          </div>
+        <div class="stat-card stat-card--primary">
+          <div class="stat-value">{{ filteredLogs.length }}</div>
+          <div class="stat-label">Total connexions</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label">Utilisateurs uniques</p>
-            <p class="stat-value">{{ uniqueUsers }}</p>
-          </div>
+        <div class="stat-card stat-card--info">
+          <div class="stat-value">{{ uniqueUsers }}</div>
+          <div class="stat-label">Utilisateurs uniques</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label">Dernière connexion</p>
-            <p class="stat-value-sm">{{ lastConnectionTime }}</p>
-          </div>
+        <div class="stat-card stat-card--success">
+          <div class="stat-value" style="font-size: 1.1rem;">{{ lastConnectionTime }}</div>
+          <div class="stat-label">Dernière connexion</div>
         </div>
       </div>
 

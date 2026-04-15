@@ -37,6 +37,10 @@ class User(db.Model):
     point_focal_organisme = db.Column(db.String(300), nullable=True)  # Organisme dont il est point focal (ministère, institution)
     point_focal_nomme_par = db.Column(db.String(100), nullable=True)  # Username de celui qui a nommé le point focal
 
+    # Réinitialisation mot de passe (mot de passe oublié)
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
+
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_projet = db.Column(db.String(20), unique=True, nullable=True)  # Format: YYYYMMDD

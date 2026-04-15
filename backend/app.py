@@ -9,13 +9,13 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from db import db
-from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, FormulaireConfig, SectionFormulaire, ChampFormulaire, CritereEvaluation, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion, EmailTemplate
+from models import Project, User, FicheEvaluation, Historique, DocumentProjet, MessageProjet, FichierMessage, ConnexionLog, Log, Notification, ContactMessage, ProjectVersion, EmailTemplate
 from flask_cors import CORS
 from utils.archivage import archiver_fiche
 from workflow_validator import WorkflowValidator
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
-from datetime import datetime
+from datetime import datetime, timedelta
 from pdf_generator_dgppe import generer_fiche_evaluation_dgppe_pdf
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -1915,6 +1915,90 @@ def set_evaluabilite(project_id):
 
     except Exception as e:
         import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/auth/request-password-reset", methods=["POST"])
+def request_password_reset():
+    """Génère un token de réinitialisation et envoie un email à l'utilisateur."""
+    try:
+        import secrets
+        data = request.json or {}
+        email_or_username = (data.get("email") or data.get("username") or "").strip()
+        if not email_or_username:
+            return jsonify({"error": "Email ou nom d'utilisateur requis"}), 400
+
+        user = User.query.filter(
+            (User.email == email_or_username) | (User.username == email_or_username)
+        ).first()
+
+        # Pour ne pas révéler l'existence d'un compte, on renvoie toujours succès
+        if not user or not user.email:
+            return jsonify({"message": "Si un compte existe, un email a été envoyé."}), 200
+
+        token = secrets.token_urlsafe(32)
+        user.reset_token = token
+        user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+        db.session.commit()
+
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://maturation-frontend.onrender.com')
+        reset_link = f"{frontend_url}/reset-password?token={token}"
+
+        try:
+            import email_service
+            html = f"""
+            <p>Bonjour {user.display_name or user.username},</p>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe PLASMAP.</p>
+            <p>Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe :</p>
+            <p><a href="{reset_link}">{reset_link}</a></p>
+            <p>Ce lien est valable pendant 1 heure.</p>
+            <p>Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>
+            <hr>
+            <p><small>DGPPE - Ministère de l'Économie, du Plan et de la Coopération</small></p>
+            """
+            email_service.send_email(
+                to_email=user.email,
+                subject="[PLASMAP] Réinitialisation de votre mot de passe",
+                html_content=html,
+            )
+        except Exception as mail_err:
+            print(f"[RESET] Erreur envoi email: {mail_err}")
+
+        return jsonify({"message": "Si un compte existe, un email a été envoyé."}), 200
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/auth/reset-password", methods=["POST"])
+def reset_password():
+    """Valide le token et enregistre le nouveau mot de passe."""
+    try:
+        data = request.json or {}
+        token = (data.get("token") or "").strip()
+        new_password = (data.get("password") or "")
+
+        if not token or not new_password:
+            return jsonify({"error": "Token et mot de passe requis"}), 400
+        if len(new_password) < 6:
+            return jsonify({"error": "Mot de passe trop court (6 caractères minimum)"}), 400
+
+        user = User.query.filter_by(reset_token=token).first()
+        if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+            return jsonify({"error": "Lien invalide ou expiré"}), 400
+
+        from werkzeug.security import generate_password_hash
+        user.password = generate_password_hash(new_password)
+        user.reset_token = None
+        user.reset_token_expires = None
+        user.must_change_password = False
+        db.session.commit()
+
+        return jsonify({"message": "Mot de passe réinitialisé avec succès."}), 200
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 
@@ -6150,14 +6234,6 @@ try:
     print("Point focal routes registered successfully")
 except ImportError as e:
     print(f"Warning: Could not import point focal routes: {e}")
-
-# Import and register formulaire config routes
-try:
-    from routes.formulaire_config_routes import formulaire_config_bp
-    app.register_blueprint(formulaire_config_bp, url_prefix='')
-    print("Formulaire config routes registered successfully")
-except ImportError as e:
-    print(f"Warning: Could not import formulaire config routes: {e}")
 
 # Import and register ministere routes
 try:

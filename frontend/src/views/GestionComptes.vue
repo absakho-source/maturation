@@ -69,26 +69,17 @@
 
     <!-- Statistiques rapides - Uniquement pour les soumissionnaires -->
     <div class="stats-section" v-if="userSubTab === 'soumissionnaires'">
-      <div class="stat-card non-verifie">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.non_verifie }}</div>
-          <div class="stat-label">Non vérifiés</div>
-        </div>
+      <div class="stat-card stat-card--warning">
+        <div class="stat-value">{{ stats.non_verifie }}</div>
+        <div class="stat-label">Non vérifiés</div>
       </div>
-      <div class="stat-card verifie">
-        <div class="stat-icon">✓</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.verifie }}</div>
-          <div class="stat-label">Vérifiés</div>
-        </div>
+      <div class="stat-card stat-card--success">
+        <div class="stat-value">{{ stats.verifie }}</div>
+        <div class="stat-label">Vérifiés</div>
       </div>
-      <div class="stat-card suspendu">
-        <div class="stat-icon">🔴</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.suspendu }}</div>
-          <div class="stat-label">Suspendus</div>
-        </div>
+      <div class="stat-card stat-card--danger">
+        <div class="stat-value">{{ stats.suspendu }}</div>
+        <div class="stat-label">Suspendus</div>
       </div>
     </div>
 

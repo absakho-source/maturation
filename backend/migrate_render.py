@@ -326,6 +326,8 @@ def migrate_database(db_path=None):
                 ("tutelle_agence",   "VARCHAR(300)"),
                 ("justificatif_path","VARCHAR(500)"),
                 ("statut_compte",    "VARCHAR(50) DEFAULT 'non_verifie'"),
+                ("reset_token",         "VARCHAR(100)"),
+                ("reset_token_expires", "TIMESTAMP"),
             ]
             for col_name, col_type in user_nouvelles:
                 if col_name not in user_cols:

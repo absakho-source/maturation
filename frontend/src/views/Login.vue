@@ -80,6 +80,10 @@
               <span v-if="isLoading">⏳ Connexion en cours...</span>
               <span v-else>Se connecter</span>
             </button>
+
+            <div class="forgot-link">
+              <router-link to="/forgot-password">Mot de passe oublié ?</router-link>
+            </div>
           </form>
         </div>
 
@@ -551,6 +555,19 @@ export default {
   background: linear-gradient(135deg, var(--dgppe-primary-light) 0%, var(--dgppe-primary) 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 51, 102, 0.2);
+}
+
+.forgot-link {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+.forgot-link a {
+  color: var(--dgppe-primary);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.forgot-link a:hover {
+  text-decoration: underline;
 }
 
 .btn-login:disabled {

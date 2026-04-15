@@ -24,7 +24,7 @@
       <div class="stats-section">
         <h3>Statistiques generales</h3>
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card stat-card--primary">
             <div class="stat-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 3v18h18"/>
@@ -39,7 +39,7 @@
             </div>
           </div>
 
-          <div class="stat-card">
+          <div class="stat-card stat-card--info">
             <div class="stat-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -55,7 +55,7 @@
             </div>
           </div>
 
-          <div class="stat-card">
+          <div class="stat-card stat-card--warning">
             <div class="stat-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -72,7 +72,7 @@
             </div>
           </div>
 
-          <div class="stat-card">
+          <div class="stat-card stat-card--success">
             <div class="stat-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
