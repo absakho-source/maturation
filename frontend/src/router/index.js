@@ -4,6 +4,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import ForgotPassword from '../views/ForgotPassword.vue';
 import ResetPassword from '../views/ResetPassword.vue';
+import NotFound from '../views/NotFound.vue';
 import DashboardSoumissionnaire from '../views/DashboardSoumissionnaire.vue';
 import Evaluation from '../views/Evaluation.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
@@ -111,7 +112,7 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-// Redirige toute route inconnue vers /login (évite page blanche)
-router.addRoute({ path: '/:pathMatch(.*)*', redirect: '/login' });
+// Route catch-all pour les pages introuvables
+router.addRoute({ path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound });
 
 export default router;

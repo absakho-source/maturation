@@ -41,6 +41,18 @@
       </div>
 
       <h2>Évaluation des projets</h2>
+
+      <!-- Recherche -->
+      <div class="search-bar" v-if="projects.length > 0">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="🔍 Rechercher par titre, auteur, secteur…"
+          class="search-input"
+          aria-label="Rechercher un projet"
+        />
+      </div>
+
       <div v-if="projects.length === 0" class="empty-state">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -184,7 +196,7 @@
     <!-- Modal pour l'évaluation de la recevabilité - Placé au niveau racine pour affichage correct -->
     <div v-if="modalEvalPrealableId" class="modal-overlay" @click="closeEvalPrealableModal">
       <div class="modal-content" @click.stop>
-        <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
+        <button class="modal-close" @click="closeEvalPrealableModal" aria-label="Fermer">✕</button>
         <MatriceEvaluationPrealable
           :projectId="modalEvalPrealableId"
           @evaluation-soumise="handleEvaluationPrealableSubmitted"
@@ -195,7 +207,7 @@
     <!-- Modal pour l'évaluation simplifiée (upload + score + proposition + recommandations) -->
     <div v-if="modalEvalSimpleId" class="modal-overlay" @click="fermerModalEvaluation">
       <div class="modal-content" @click.stop>
-        <button class="modal-close" @click="fermerModalEvaluation">✕</button>
+        <button class="modal-close" @click="fermerModalEvaluation" aria-label="Fermer">✕</button>
         <div class="eval-simple-form">
           <h3>📋 Soumission de l'évaluation</h3>
           <p class="description">
@@ -265,6 +277,7 @@ export default {
   data() {
     return {
       projects: [],
+      searchQuery: '',
       avis: {},
       commentaires: {},
       evaluabiliteCommentaires: {},
@@ -281,11 +294,21 @@ export default {
     };
   },
   computed: {
+    _projectsFiltered() {
+      const q = (this.searchQuery || '').trim().toLowerCase();
+      if (!q) return this.projects;
+      return this.projects.filter(p =>
+        (p.titre || '').toLowerCase().includes(q) ||
+        (p.auteur_nom || '').toLowerCase().includes(q) ||
+        (p.secteur || '').toLowerCase().includes(q) ||
+        (p.numero_projet || '').toLowerCase().includes(q)
+      );
+    },
     projetsAssignes() {
-      return this.projects.filter(p => p.est_assigne_a_moi);
+      return this._projectsFiltered.filter(p => p.est_assigne_a_moi);
     },
     autresProjets() {
-      return this.projects.filter(p => !p.est_assigne_a_moi);
+      return this._projectsFiltered.filter(p => !p.est_assigne_a_moi);
     },
     peutSoumettreEvalSimple() {
       const e = this.evalSimple;

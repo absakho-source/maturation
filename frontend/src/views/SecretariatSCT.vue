@@ -435,7 +435,7 @@
               <!-- Modal pour l'évaluation de la recevabilité -->
               <div v-if="modalEvalPrealableId === projet.id" class="modal-overlay" @click="closeEvalPrealableModal">
                 <div class="modal-content" @click.stop>
-                  <button class="modal-close" @click="closeEvalPrealableModal">✕</button>
+                  <button class="modal-close" @click="closeEvalPrealableModal" aria-label="Fermer">✕</button>
                   <MatriceEvaluationPrealable
                     :projectId="projet.id"
                     @evaluation-soumise="handleEvaluationPrealableSubmitted"
