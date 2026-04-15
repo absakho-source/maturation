@@ -154,7 +154,7 @@
                 <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
               </div>
               <p><strong>Validation Présidence SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails complets</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
             </div>
             <div class="final-section">
               <h4>Votre recommandation au Comité</h4>
@@ -238,7 +238,7 @@
                 </div>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir détails complets</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
             </div>
           </div>
         </div>
@@ -440,6 +440,14 @@ export default {
         this.activeTab = 'all';
       }
     },
+    async loadProjects() {
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      try {
+        const r = await fetch(`/api/projects?role=${user.role}&username=${user.username}`);
+        this.allProjects = await r.json();
+        this.calculateFinancingStats();
+      } catch (e) { console.error(e); }
+    },
     countByStatus(status) {
       return this.allProjects.filter(p => p.statut === status).length;
     },
@@ -494,10 +502,7 @@ export default {
           throw new Error(errorData.error || 'Erreur lors de la validation');
         }
         alert(decision === 'confirme' ? 'Avis confirmé' : 'Avis infirmé. Le secrétariat SCT sera notifié du motif.');
-        // Rediriger vers la même route pour forcer le rechargement
-        this.$router.push('/presidencecomite').then(() => {
-          window.location.reload();
-        });
+        this.loadProjects();
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
         alert('Erreur: ' + error.message);
@@ -645,11 +650,7 @@ export default {
           ? '✅ Décision du Comité enregistrée : Projet ENTÉRINÉ'
           : '✅ Décision du Comité enregistrée : Projet CONTESTÉ (retour au Secrétariat SCT)';
         alert(message);
-
-        // Recharger la page pour afficher les changements
-        this.$router.push('/presidencecomite').then(() => {
-          window.location.reload();
-        });
+        this.loadProjects();
       })
       .catch(error => {
         console.error('Erreur lors de l\'enregistrement de la décision:', error);

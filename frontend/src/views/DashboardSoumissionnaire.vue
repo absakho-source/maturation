@@ -700,7 +700,7 @@
                 <div v-if="complements[p.id].ok" class="success-message">{{ complements[p.id].ok }}</div>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}?from=soumissionnaire`)" class="btn-view">📋 Voir détails</button>
+              <button @click="$router.push(`/project/${p.id}?from=soumissionnaire`)" class="btn-view">👁️ Détails</button>
             </div>
           </div>
         </div>

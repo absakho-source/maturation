@@ -356,7 +356,7 @@
                 <p v-if="p.commentaires"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
 
               <!-- Bouton éditer la fiche (seulement si évaluation complète existe et pas encore transmis) -->
               <div style="display: flex; justify-content: center; margin-top: 10px;">
@@ -430,7 +430,7 @@
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
 
-              <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
+              <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">👁️ Détails</button>
 
               <!-- Matrice d'évaluation de la recevabilité (en modal pour avoir toute la largeur) -->
               <div v-if="needsEvaluationPrealable(projet)" class="eval-prealable-container">
@@ -1791,7 +1791,7 @@ export default {
           throw new Error(errorData.error || "Erreur lors de l'enregistrement");
         }
 
-        alert("✅ Dossier marqué comme évaluable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.");
+        alert("✅ Dossier marqué comme évaluable. L'évaluateur peut maintenant soumettre son évaluation.");
         this.evaluabiliteCommentaires[projectId] = "";
         await this.loadProjects();
       } catch (error) {
@@ -1828,9 +1828,8 @@ export default {
 
     // Méthode appelée après soumission de la matrice d'évaluation de la recevabilité
     async handleEvaluationPrealableSubmitted() {
-      // Fermer le modal et recharger la page
       this.modalEvalPrealableId = null;
-      window.location.reload();
+      await this.loadProjects();
     },
 
     commencerEvaluation(projetId) {

@@ -62,7 +62,7 @@
             <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
             <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
             <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-            <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Voir les détails complets</button>
+            <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
           </div>
           <!-- Bouton Évaluation simplifiée (uniquement si dossier évaluable) -->
           <div class="eval-section" v-if="peutAccederFicheEvaluation(p)">
@@ -170,7 +170,7 @@
                 <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
                 <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
                 <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-                <button @click="$router.push(`/project/${p.id}`)" class="btn-view btn-view-readonly">👁️ Voir les détails (lecture seule)</button>
+                <button @click="$router.push(`/project/${p.id}`)" class="btn-view btn-view-readonly">👁️ Détails (lecture seule)</button>
               </div>
               <div class="readonly-badge">
                 🔒 Lecture seule
@@ -429,7 +429,7 @@ export default {
 
         let message;
         if (decision === "evaluable") {
-          message = "✅ Dossier évaluable. Vous pouvez accéder à la fiche d'évaluation détaillée.";
+          message = "✅ Dossier évaluable. Vous pouvez soumettre votre évaluation.";
         } else if (decision === "complements_requis") {
           message = "📝 Compléments demandés. Le soumissionnaire a été notifié.";
         } else {
@@ -475,16 +475,14 @@ export default {
 
         let message;
         if (decision === "dossier_evaluable") {
-          message = "Dossier déclaré recevable. Vous pouvez maintenant accéder à la fiche d'évaluation détaillée.";
+          message = "Dossier déclaré recevable. Étape suivante : évaluabilité.";
         } else if (decision === "complements_requis") {
           message = "Compléments demandés. Le soumissionnaire a été notifié.";
         } else if (decision === "dossier_rejete") {
           message = "Rejet proposé. En attente de validation par le Secrétariat SCT.";
         }
         alert(message);
-
-        // Recharger la page complètement pour forcer l'actualisation
-        window.location.reload();
+        await this.loadProjects();
       } catch (error) {
         console.error("Erreur:", error);
         alert("Erreur lors de l'envoi de l'évaluation de la recevabilité: " + error.message);

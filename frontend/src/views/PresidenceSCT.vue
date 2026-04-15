@@ -137,7 +137,7 @@
               <div v-if="p.validation_secretariat !== 'valide'" class="validation-pending">
                 <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
               </div>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
               <div v-if="p.validation_secretariat === 'valide'" class="decision-section">
                 <div class="motif-rejet-section">
                   <label for="commentaire" class="motif-label">
@@ -224,7 +224,7 @@
                 </div>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view" style="margin-top: 1rem;">Voir détails complets</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view" style="margin-top: 1rem;">👁️ Détails</button>
             </div>
           </div>
         </div>
@@ -440,10 +440,7 @@ export default {
           throw new Error(errorData.error || 'Erreur lors de la validation');
         }
         alert(decision === 'valide' ? 'Avis validé ➜ Présidence Comité' : 'Avis rejeté. Le secrétariat SCT sera notifié du motif.');
-        // Rediriger vers la même route pour forcer le rechargement
-        this.$router.push('/presidencesct').then(() => {
-          window.location.reload();
-        });
+        this.loadProjects();
       }).catch(error => {
         console.error('Erreur lors de la validation:', error);
         alert('Erreur: ' + error.message);
@@ -569,7 +566,7 @@ export default {
         }
         const resultText = decision === 'enterine' ? 'entérinée' : 'contestée';
         alert(`Décision du Comité ${resultText} avec succès. Le soumissionnaire a été notifié.`);
-        window.location.reload();
+        this.loadProjects();
       })
       .catch(error => {
         console.error('Erreur:', error);
