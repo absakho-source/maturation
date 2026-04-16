@@ -6931,12 +6931,36 @@ def seed_demo_endpoint():
                 ("tutelle_agence",    "VARCHAR(300)"),
                 ("justificatif_path", "VARCHAR(500)"),
                 ("statut_compte",     "VARCHAR(50) DEFAULT 'non_verifie'"),
+                ("date_verification", "TIMESTAMP"),
+                ("verifie_par",       "VARCHAR(100)"),
+                ("date_creation",     "TIMESTAMP"),
+                ("must_change_password", "BOOLEAN DEFAULT FALSE"),
+                ("is_point_focal",    "BOOLEAN DEFAULT FALSE"),
+                ("point_focal_organisme", "VARCHAR(300)"),
+                ("point_focal_nomme_par", "VARCHAR(100)"),
+                ("reset_token",         "VARCHAR(100)"),
+                ("reset_token_expires", "TIMESTAMP"),
             ]
             for col_name, col_type in user_nouvelles:
                 if col_name not in user_cols:
                     conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
                     conn.commit()
                     migration_log.append(f"+ users.{col_name}")
+
+            # Colonnes manquantes sur fiche_evaluation (évaluation simplifiée)
+            try:
+                fe_cols = {c['name'] for c in inspector.get_columns('fiche_evaluation')}
+                fe_nouvelles = [
+                    ("fichier_principal", "VARCHAR(500)"),
+                    ("fichiers_annexes",  "TEXT"),
+                ]
+                for col_name, col_type in fe_nouvelles:
+                    if col_name not in fe_cols:
+                        conn.execute(text(f"ALTER TABLE fiche_evaluation ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                        migration_log.append(f"+ fiche_evaluation.{col_name}")
+            except Exception as fe_err:
+                migration_log.append(f"! fiche_evaluation: {fe_err}")
 
         # 2. Seed
         import seed_demo
