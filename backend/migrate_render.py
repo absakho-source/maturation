@@ -297,6 +297,7 @@ def migrate_database(db_path=None):
                 ("validation_secretariat", "VARCHAR(100)"),
                 ("avis_presidencesct",     "VARCHAR(100)"),
                 ("decision_finale",        "VARCHAR(100)"),
+                ("import_historique",      "BOOLEAN DEFAULT FALSE"),
             ]
 
             for col_name, col_type in nouvelles_colonnes:

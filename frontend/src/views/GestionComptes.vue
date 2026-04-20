@@ -175,6 +175,7 @@
                   👁️ Détails
                 </button>
                 <button
+                  v-if="peutSupprimer(compte)"
                   @click="supprimerCompte(compte)"
                   class="btn-action btn-delete"
                   :disabled="actionEnCours === compte.id"
@@ -237,7 +238,7 @@
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                   </button>
-                  <button @click="supprimerCompte(compte)" class="btn-action btn-action-delete" title="Supprimer">
+                  <button v-if="peutSupprimer(compte)" @click="supprimerCompte(compte)" class="btn-action btn-action-delete" title="Supprimer">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3,6 5,6 21,6"/>
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -959,20 +960,31 @@ async function reintegrerCompte(compteId) {
   }
 }
 
+function peutSupprimer(compte) {
+  // Admin ne peut pas être supprimé
+  if (compte.role === 'admin') return false
+  // On ne peut pas se supprimer soi-même
+  if (compte.username === user?.username) return false
+  // secretariatsct ne peut supprimer que des soumissionnaires
+  if (user?.role === 'secretariatsct' && compte.role !== 'soumissionnaire') return false
+  return true
+}
+
 async function supprimerCompte(compte) {
   const username = compte.display_name || compte.username
-  if (!confirm(`Voulez-vous SUPPRIMER DÉFINITIVEMENT le compte "${username}" ?\n\n⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nTous les projets associés à ce compte seront également supprimés.`)) return
+  if (!confirm(`Voulez-vous SUPPRIMER DÉFINITIVEMENT le compte "${username}" ?\n\n⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nLes projets soumis par ce compte seront conservés mais dissociés du compte.`)) return
 
   actionEnCours.value = compte.id
 
   try {
-    await axios.delete(`/api/users/${compte.id}`)
+    await axios.delete(`/api/users/${compte.id}?role=${user?.role}&username=${user?.username}`)
 
     await chargerComptes()
     toast.success('Compte supprimé définitivement')
   } catch (err) {
     console.error('Erreur lors de la suppression:', err)
-    toast.error('Erreur lors de la suppression du compte')
+    const errMsg = err.response?.data?.error || 'Erreur lors de la suppression du compte'
+    toast.error(errMsg)
   } finally {
     actionEnCours.value = null
   }

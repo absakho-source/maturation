@@ -119,6 +119,7 @@ class Project(db.Model):
 
     # Soft delete (suppression douce)
     deleted_at = db.Column(db.DateTime, nullable=True)  # NULL = actif, non-NULL = supprimé
+    import_historique = db.Column(db.Boolean, default=False)  # Projet importé (antérieur à la plateforme)
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)

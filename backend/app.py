@@ -636,6 +636,7 @@ def projects():
                             "date_soumission": date_soumission,
                             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
                             "fiche_evaluation": _fiche_eval_resume(p.id),
+                            "import_historique": getattr(p, 'import_historique', False) or False,
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
@@ -893,6 +894,7 @@ def get_project(project_id):
             "structure_soumissionnaire": p.structure_soumissionnaire,
             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
             "fiche_evaluation": _fiche_eval_resume(p.id),
+            "import_historique": getattr(p, 'import_historique', False) or False,
             "nouveaute": p.nouveaute,
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
@@ -4282,10 +4284,31 @@ def update_user(user_id):
 
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 def delete_user(user_id):
-    """Supprimer un utilisateur et ses données liées"""
+    """Supprimer un utilisateur et ses données liées (contrôle de rôle strict)"""
     try:
+        # Vérifier les droits de l'appelant
+        caller_role = request.args.get('role') or (request.get_json(silent=True) or {}).get('role', '')
+        caller_username = request.args.get('username') or (request.get_json(silent=True) or {}).get('username', '')
+
         user = User.query.get_or_404(user_id)
         username = user.username
+
+        # Règles de suppression :
+        # - Seuls admin et secretariatsct peuvent supprimer des comptes
+        # - secretariatsct ne peut supprimer que des soumissionnaires
+        # - On ne peut pas supprimer un compte admin
+        # - On ne peut pas se supprimer soi-même
+        if caller_role not in ('admin', 'secretariatsct'):
+            return jsonify({"error": "Seuls les administrateurs peuvent supprimer des comptes"}), 403
+
+        if user.role == 'admin':
+            return jsonify({"error": "Impossible de supprimer un compte administrateur"}), 403
+
+        if caller_role == 'secretariatsct' and user.role != 'soumissionnaire':
+            return jsonify({"error": "Le secrétariat SCT ne peut supprimer que des comptes soumissionnaires"}), 403
+
+        if username == caller_username:
+            return jsonify({"error": "Vous ne pouvez pas supprimer votre propre compte"}), 403
 
         # Supprimer les notifications liées
         Notification.query.filter_by(user_id=user_id).delete()
@@ -4293,7 +4316,7 @@ def delete_user(user_id):
         # Dissocier les messages de contact (ne pas supprimer, garder la trace)
         ContactMessage.query.filter_by(user_id=user_id).update({"user_id": None})
 
-        # Dissocier les projets soumis (ne pas supprimer les projets)
+        # Dissocier les projets soumis (les projets restent, seul le lien est retiré)
         Project.query.filter_by(soumissionnaire_id=user_id).update({"soumissionnaire_id": None})
 
         db.session.delete(user)
@@ -6845,6 +6868,159 @@ def cleanup_demo_endpoint():
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
+@app.route('/api/admin/import-projet-historique', methods=['POST'])
+def import_projet_historique():
+    """
+    Import d'un projet antérieur à la plateforme, directement au stade voulu.
+    Réservé aux rôles admin et secretariatsct.
+    Body : multipart/form-data (pour le fichier d'évaluation)
+    """
+    try:
+        role = request.form.get('role', '')
+        auteur_import = request.form.get('auteur_import', '')
+        if role not in ('admin', 'secretariatsct'):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        # Champs obligatoires du projet
+        titre = (request.form.get('titre') or '').strip()
+        if not titre:
+            return jsonify({"error": "Le titre du projet est requis"}), 400
+
+        stade = request.form.get('stade', 'evalue')
+        if stade not in ('evalue', 'valide_sct', 'valide_psct', 'decision_comite'):
+            return jsonify({"error": "Stade invalide"}), 400
+
+        # Créer le projet
+        from datetime import datetime
+        now = datetime.utcnow()
+
+        # Générer numéro de projet
+        date_prefix = now.strftime("%Y%m%d")
+        existing = Project.query.filter(
+            Project.numero_projet.like(f"{date_prefix}%")
+        ).count()
+        numero = f"{date_prefix}{existing + 1:02d}"
+
+        p = Project(
+            numero_projet=numero,
+            titre=titre,
+            description=request.form.get('description', ''),
+            secteur=request.form.get('secteur', ''),
+            poles=request.form.get('poles', ''),
+            cout_estimatif=float(request.form.get('cout_estimatif') or 0),
+            structure_soumissionnaire=request.form.get('structure_soumissionnaire', ''),
+            organisme_tutelle=request.form.get('organisme_tutelle', ''),
+            nouveaute=request.form.get('nouveaute', 'projet_initial'),
+            niveau_priorite=request.form.get('niveau_priorite', 'standard'),
+            type_financement=request.form.get('type_financement', ''),
+            duree_annees=int(request.form.get('duree_annees') or 0) or None,
+            point_focal_nom=request.form.get('point_focal_nom', ''),
+            point_focal_fonction=request.form.get('point_focal_fonction', ''),
+            point_focal_telephone=request.form.get('point_focal_telephone', ''),
+            point_focal_email=request.form.get('point_focal_email', ''),
+            auteur_nom=request.form.get('auteur_original', auteur_import),
+            date_soumission=now,
+            import_historique=True,
+            # Evaluation (toujours renseignée)
+            evaluation_prealable='dossier_evaluable',
+            evaluation_prealable_date=now,
+            evaluabilite='evaluable',
+            evaluabilite_date=now,
+            evaluateur_nom=request.form.get('evaluateur_nom', auteur_import),
+            fiche_evaluation_visible=True,
+        )
+
+        # Score et proposition
+        score = float(request.form.get('score_total') or 0)
+        proposition = request.form.get('proposition', '')
+        recommandation = request.form.get('recommandations', '')
+        avis_map = {
+            "Favorable": "favorable",
+            "Favorable sous conditions": "favorable sous conditions",
+            "Défavorable": "défavorable",
+        }
+        p.avis = avis_map.get(proposition, proposition.lower() if proposition else '')
+        p.commentaires = recommandation
+
+        # Statut selon le stade
+        if stade == 'evalue':
+            p.statut = 'évalué'
+        elif stade == 'valide_sct':
+            p.statut = 'évalué'
+            p.validation_secretariat = request.form.get('validation_sct', 'valide')
+        elif stade == 'valide_psct':
+            p.statut = 'évalué'
+            p.validation_secretariat = request.form.get('validation_sct', 'valide')
+            p.avis_presidencesct = request.form.get('avis_psct', 'valide')
+        elif stade == 'decision_comite':
+            p.statut = 'évalué'
+            p.validation_secretariat = request.form.get('validation_sct', 'valide')
+            p.avis_presidencesct = request.form.get('avis_psct', 'valide')
+            p.decision_finale = request.form.get('decision_comite', 'confirme')
+            p.statut_comite = request.form.get('decision_comite', 'confirme')
+
+        db.session.add(p)
+        db.session.flush()  # Pour avoir p.id
+
+        # Créer la fiche d'évaluation
+        fiche = FicheEvaluation(
+            project_id=p.id,
+            evaluateur_nom=request.form.get('evaluateur_nom', auteur_import),
+            date_evaluation=now,
+            score_total=score,
+            proposition=proposition,
+            recommandations=recommandation,
+            reference_fiche=f"DGPPE-FE-{numero}",
+        )
+
+        # Upload fichier d'évaluation si fourni
+        if 'fichier_evaluation' in request.files:
+            f = request.files['fichier_evaluation']
+            if f and f.filename:
+                eval_dir = os.path.join(app.config["UPLOAD_FOLDER"], "evaluations", str(p.id))
+                os.makedirs(eval_dir, exist_ok=True)
+                ts = now.strftime("%Y%m%d_%H%M%S")
+                fname = f"{ts}_import_{secure_filename(f.filename)}"
+                f.save(os.path.join(eval_dir, fname))
+                fiche.fichier_principal = f"evaluations/{p.id}/{fname}"
+
+        # Annexes
+        annexes_list = []
+        for idx, fa in enumerate(request.files.getlist('annexes')):
+            if fa and fa.filename:
+                eval_dir = os.path.join(app.config["UPLOAD_FOLDER"], "evaluations", str(p.id))
+                os.makedirs(eval_dir, exist_ok=True)
+                ts = now.strftime("%Y%m%d_%H%M%S")
+                aname = f"{ts}_annexe{idx+1}_{secure_filename(fa.filename)}"
+                fa.save(os.path.join(eval_dir, aname))
+                annexes_list.append({"nom_original": fa.filename, "chemin": f"evaluations/{p.id}/{aname}"})
+        if annexes_list:
+            fiche.fichiers_annexes = json.dumps(annexes_list)
+
+        db.session.add(fiche)
+
+        # Historique
+        hist = Historique(
+            project_id=p.id,
+            action=f"Import historique au stade '{stade}' par {auteur_import}",
+            auteur=auteur_import,
+            role=role,
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Projet historique importé avec succès (n° {numero})",
+            "project_id": p.id,
+            "numero_projet": numero,
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/seed-demo', methods=['POST'])
 def seed_demo_endpoint():
     """Endpoint temporaire pour initialiser les données de démo (protégé par clé secrète)"""
@@ -6897,6 +7073,7 @@ def seed_demo_endpoint():
                 ("validation_secretariat",        "VARCHAR(100)"),
                 ("avis_presidencesct",            "VARCHAR(100)"),
                 ("decision_finale",               "VARCHAR(100)"),
+                ("import_historique",             "BOOLEAN DEFAULT FALSE"),
                 ("nouveaute",                     "VARCHAR(50)"),
                 ("projet_initial_ref",            "VARCHAR(50)"),
                 ("niveau_priorite",               "VARCHAR(50)"),

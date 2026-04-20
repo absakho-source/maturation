@@ -5,6 +5,7 @@ import Register from '../views/Register.vue';
 import ForgotPassword from '../views/ForgotPassword.vue';
 import ResetPassword from '../views/ResetPassword.vue';
 import NotFound from '../views/NotFound.vue';
+import ImportProjetHistorique from '../views/ImportProjetHistorique.vue';
 import DashboardSoumissionnaire from '../views/DashboardSoumissionnaire.vue';
 import Evaluation from '../views/Evaluation.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
@@ -46,6 +47,7 @@ const routes = [
   { path: '/admin', name: 'Admin', component: AdminDashboard, meta: { requiresAuth: true } },
   { path: '/gestion-comptes', name: 'GestionComptes', component: GestionComptes, meta: { requiresAuth: true } },
   { path: '/ministeres-editor', name: 'MinisteresEditor', component: MinisteresEditor, meta: { requiresAuth: true } },
+  { path: '/import-projet', name: 'ImportProjetHistorique', component: ImportProjetHistorique, meta: { requiresAuth: true } },
   { path: '/logs-connexion', name: 'LogsConnexion', component: LogsConnexion, meta: { requiresAuth: true } },
   { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
@@ -68,10 +70,10 @@ router.beforeEach((to, from, next) => {
 
   // Définir les routes accessibles par rôle
   const roleAccessMap = {
-    'admin': ['admin', 'gestion-comptes', 'ministeres-editor', 'logs-connexion', 'config-emails', 'mon-profil', 'project', 'evaluation'],
+    'admin': ['admin', 'gestion-comptes', 'ministeres-editor', 'logs-connexion', 'config-emails', 'import-projet', 'mon-profil', 'project', 'evaluation'],
     'soumissionnaire': ['soumissionnaire', 'projets-tutelle', 'mon-profil', 'project'],
     'evaluateur': ['evaluateur', 'evaluateur1', 'evaluateur2', 'mon-profil', 'project', 'evaluation'],
-    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'ministeres-editor', 'mon-profil', 'project', 'evaluation'],
+    'secretariatsct': ['secretariatsct', 'gestion-comptes', 'ministeres-editor', 'import-projet', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'membrecomite': ['membrecomite', 'mon-profil', 'project'], // Membres du comité: lecture seule, pas d'évaluation
