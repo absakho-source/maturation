@@ -793,6 +793,39 @@ def seed():
             "Ministère de l'Économie, du Plan et de la Coopération"
         )
 
+        # Membres du Comité (compte partagé)
+        get_or_create_user(
+            "membrecomite", "comite123", "membrecomite",
+            "Membre du Comité",
+            "comite@dgppe.gouv.sn",
+            "Comité de Maturation des Projets"
+        )
+
+        # Ministre de l'Économie
+        get_or_create_user(
+            "ministre_economie", "ministre123", "ministre_economie",
+            "Cabinet du Ministre",
+            "cabinet@economie.gouv.sn",
+            "Ministère de l'Économie, du Plan et de la Coopération"
+        )
+
+        # Point Focal (exemple : Ministère de l'Agriculture)
+        pf = get_or_create_user(
+            "point_focal", "pf123", "point_focal",
+            "Point Focal Agriculture",
+            "pointfocal@agriculture.gouv.sn",
+            "Ministère de l'Agriculture"
+        )
+        pf.point_focal_organisme = "Ministère de l'Agriculture"
+
+        # Invité (grand public)
+        get_or_create_user(
+            "invite", "invite123", "invite",
+            "Visiteur",
+            None,
+            "Grand public"
+        )
+
         # Administrateur
         get_or_create_user(
             "admin", "admin123", "admin",
