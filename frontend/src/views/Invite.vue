@@ -260,11 +260,17 @@ export default {
       const map = {
         'soumis': 'Soumis',
         'assigné': 'En cours d\'instruction',
+        'en instruction': 'En cours d\'instruction',
         'en évaluation': 'En cours d\'instruction',
         'compléments demandés': 'En cours d\'instruction',
         'compléments fournis': 'En cours d\'instruction',
+        'en attente validation presidencesct': 'En cours d\'instruction',
+        'validé par presidencesct': 'En cours d\'instruction',
+        'validé par presidencecomite': 'En cours d\'instruction',
+        'en réexamen par le Secrétariat SCT': 'En cours d\'instruction',
         'évalué': 'Évalué',
         'rejeté': 'Non retenu',
+        'avis défavorable confirmé': 'Non retenu',
       };
       return map[statut] || statut || '—';
     },
