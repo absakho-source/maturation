@@ -269,8 +269,8 @@ export default {
         'validé par presidencecomite': 'En instruction',
         'en réexamen par le Secrétariat SCT': 'En instruction',
         'évalué': 'Évalué',
-        'rejeté': 'Rejeté',
-        'avis défavorable confirmé': 'Rejeté',
+        'rejeté': 'Dossier non recevable',
+        'avis défavorable confirmé': 'Défavorable',
       };
       return map[statut] || statut || '—';
     },

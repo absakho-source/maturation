@@ -1651,8 +1651,11 @@ export default {
       // Soumis
       if (s === 'soumis') return 'Soumis';
 
-      // Rejeté
-      if (s === 'rejeté' || s === 'avis défavorable confirmé') return 'Rejeté';
+      // Rejeté (avant évaluation = dossier non recevable)
+      if (s === 'rejeté') return 'Dossier non recevable';
+
+      // Avis défavorable confirmé (après évaluation)
+      if (s === 'avis défavorable confirmé') return 'Défavorable';
 
       // Compléments demandés (le soumissionnaire doit agir)
       if (s === 'compléments demandés') return 'Compléments demandés';
