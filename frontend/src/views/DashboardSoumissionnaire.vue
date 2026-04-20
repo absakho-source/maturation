@@ -1645,35 +1645,37 @@ export default {
       return m[a]||"";
     },
     getProjectStatusBadgeText(project) {
-      // Masquer les statuts pour les projets en attente de décision du Comité
-      if (project.statut_comite === 'recommande_comite') {
-        return "En attente Comité";
+      // Simplifier les statuts pour le soumissionnaire
+      const s = project.statut;
+
+      // Soumis
+      if (s === 'soumis') return 'Soumis';
+
+      // Rejeté
+      if (s === 'rejeté' || s === 'avis défavorable confirmé') return 'Rejeté';
+
+      // Compléments demandés (le soumissionnaire doit agir)
+      if (s === 'compléments demandés') return 'Compléments demandés';
+      if (s === 'compléments fournis') return 'Compléments fournis';
+
+      // En attente du Comité
+      if (project.statut_comite === 'recommande_comite') return 'En attente Comité';
+
+      // Avis final visible
+      if (project.fiche_evaluation_visible && project.avis) {
+        const avisLabels = {
+          'favorable': 'Favorable',
+          'favorable sous conditions': 'Favorable sous conditions',
+          'défavorable': 'Défavorable',
+        };
+        return avisLabels[project.avis] || project.avis;
       }
 
-      // Masquer certains statuts intermédiaires
-      const statutsMasques = [
-        'validé par presidencecomite',
-        'en attente validation presidencesct',
-        'validé par presidencesct'
-      ];
+      // Évalué mais pas encore visible pour le soumissionnaire
+      if (s === 'évalué') return 'En instruction';
 
-      // Pour les avis finaux (favorable, défavorable), afficher seulement si la fiche est visible
-      const avisFinals = ['favorable', 'favorable sous conditions', 'défavorable'];
-      if (avisFinals.includes(project.statut)) {
-        // Si la fiche d'évaluation est visible, afficher l'avis final
-        if (project.fiche_evaluation_visible) {
-          return project.statut;
-        }
-        // Sinon masquer avec "En cours de traitement"
-        return "En cours de traitement";
-      }
-
-      if (statutsMasques.includes(project.statut)) {
-        return "En cours de traitement";
-      }
-
-      // Afficher le statut normal pour les autres cas
-      return project.statut;
+      // Tout le reste = en instruction
+      return 'En instruction';
     },
     getProjectStatusBadgeClass(project) {
       // Classe spéciale pour "En attente Comité"
