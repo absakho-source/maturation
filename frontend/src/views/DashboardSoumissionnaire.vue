@@ -1659,7 +1659,7 @@ export default {
 
       // Compléments demandés (le soumissionnaire doit agir)
       if (s === 'compléments demandés') return 'Compléments demandés';
-      if (s === 'compléments fournis') return 'Compléments fournis';
+      if (s === 'compléments fournis') return 'Compléments soumis';
 
       // En attente du Comité
       if (project.statut_comite === 'recommande_comite') return 'En attente Comité';
