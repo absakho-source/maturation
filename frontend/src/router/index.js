@@ -13,6 +13,8 @@ import PresidenceSCT from '../views/PresidenceSCT.vue';
 import PresidenceComite from '../views/PresidenceComite.vue';
 import MembreComite from '../views/MembreComite.vue';
 import AdminDashboard from '../views/AdminDashboard.vue';
+import MinistereEconomie from '../views/MinistereEconomie.vue';
+import PointFocalDashboard from '../views/PointFocalDashboard.vue';
 import ProjectDetail from '../views/ProjectDetail.vue';
 import GestionComptes from '../views/GestionComptes.vue';
 import Invite from '../views/Invite.vue';
@@ -51,6 +53,8 @@ const routes = [
   { path: '/logs-connexion', name: 'LogsConnexion', component: LogsConnexion, meta: { requiresAuth: true } },
   { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
+  { path: '/ministre_economie', name: 'MinistereEconomie', component: MinistereEconomie, meta: { requiresAuth: true } },
+  { path: '/point_focal', name: 'PointFocal', component: PointFocalDashboard, meta: { requiresAuth: true } },
   { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } }
 ];
 
@@ -76,8 +80,10 @@ router.beforeEach((to, from, next) => {
     'secretariatsct': ['secretariatsct', 'gestion-comptes', 'ministeres-editor', 'import-projet', 'mon-profil', 'project', 'evaluation'],
     'presidencesct': ['presidencesct', 'mon-profil', 'project', 'evaluation'],
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
-    'membrecomite': ['membrecomite', 'mon-profil', 'project'], // Membres du comité: lecture seule, pas d'évaluation
-    'invite': ['invite', 'mon-profil'] // Les invités n'ont accès qu'à leur dashboard et profil
+    'membrecomite': ['membrecomite', 'mon-profil', 'project'],
+    'ministre_economie': ['ministre_economie', 'mon-profil', 'project'],
+    'point_focal': ['point_focal', 'mon-profil', 'project'],
+    'invite': ['invite', 'mon-profil']
   };
 
   // Vérifier si l'utilisateur peut accéder à la route

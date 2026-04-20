@@ -357,8 +357,8 @@
         <!-- Documenthèque du projet - Accessible à tous les membres -->
         <DocumenthequeProjet v-if="project" :projectId="project.id" />
 
-        <!-- Section Historique - masquée pour les soumissionnaires -->
-        <div class="info-card" v-if="!isSoumissionnaire()">
+        <!-- Section Historique - masquée pour soumissionnaires et invités -->
+        <div class="info-card" v-if="!isSoumissionnaire() && currentUser?.role !== 'invite'">
           <h3>📋 Historique complet du projet</h3>
           <div v-if="loadingHistorique" class="loading-state">
             <p>Chargement de l'historique...</p>
@@ -695,8 +695,13 @@ export default {
       }
 
       // Pour présidence SCT et comité, vérifier la validation du secrétariat
-      if (role === 'presidencesct' || role === 'presidencecomite') {
+      if (role === 'presidencesct' || role === 'presidencecomite' || role === 'membrecomite') {
         return this.project.validation_secretariat === 'valide';
+      }
+
+      // Ministre de l'Économie et Point focal voient l'évaluation
+      if (role === 'ministre_economie' || role === 'point_focal') {
+        return true;
       }
 
       return false;

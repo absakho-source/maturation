@@ -491,6 +491,21 @@ def projects():
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
             elif role in ["secretariatsct", "presidencesct", "admin"]:
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
+            elif role == "ministre_economie":
+                # Ministre de l'Économie : voit tous les projets (lecture seule)
+                items = Project.query.filter(Project.deleted_at.is_(None)).all()
+            elif role == "point_focal":
+                # Point focal : voit uniquement les projets de son organisme de tutelle
+                user_obj = User.query.filter_by(username=username).first()
+                organisme = (user_obj.point_focal_organisme or user_obj.nom_structure or "") if user_obj else ""
+                if organisme:
+                    items = Project.query.filter(
+                        Project.deleted_at.is_(None),
+                        (Project.organisme_tutelle.ilike(f"%{organisme}%")) |
+                        (Project.structure_soumissionnaire.ilike(f"%{organisme}%"))
+                    ).all()
+                else:
+                    items = []
             elif role == "invite":
                 # Rôle invité: voir tous les projets mais avec données limitées
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
@@ -499,7 +514,7 @@ def projects():
 
             # Filter out projects from suspended accounts
             # Note: Projects from non-verified accounts ARE visible but will be marked with soumissionnaire_statut_compte
-            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'evaluateur', 'admin']:
+            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'evaluateur', 'admin', 'ministre_economie', 'point_focal']:
                 # These roles should not see projects from suspended accounts in their workflow
                 # Get list of suspended user IDs
                 suspended_users = User.query.filter_by(statut_compte='suspendu').all()
@@ -637,6 +652,9 @@ def projects():
                             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
                             "fiche_evaluation": _fiche_eval_resume(p.id),
                             "import_historique": getattr(p, 'import_historique', False) or False,
+                            "ordre_du_jour": getattr(p, 'ordre_du_jour', False) or False,
+                            "ordre_du_jour_rejete": getattr(p, 'ordre_du_jour_rejete', False) or False,
+                            "ordre_du_jour_rejet_motif": getattr(p, 'ordre_du_jour_rejet_motif', None) or "",
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "projet_initial_ref": str(p.projet_initial_ref) if p.projet_initial_ref else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",
@@ -895,6 +913,9 @@ def get_project(project_id):
             "fiche_evaluation_visible": p.fiche_evaluation_visible if hasattr(p, 'fiche_evaluation_visible') else False,
             "fiche_evaluation": _fiche_eval_resume(p.id),
             "import_historique": getattr(p, 'import_historique', False) or False,
+            "ordre_du_jour": getattr(p, 'ordre_du_jour', False) or False,
+            "ordre_du_jour_rejete": getattr(p, 'ordre_du_jour_rejete', False) or False,
+            "ordre_du_jour_rejet_motif": getattr(p, 'ordre_du_jour_rejet_motif', None) or "",
             "nouveaute": p.nouveaute,
             "projet_initial_ref": p.projet_initial_ref,
             "niveau_priorite": p.niveau_priorite,
@@ -6868,6 +6889,75 @@ def cleanup_demo_endpoint():
         return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
+@app.route('/api/projects/<int:project_id>/ordre-du-jour', methods=['POST'])
+def toggle_ordre_du_jour(project_id):
+    """Inscrire/retirer un projet de l'ordre du jour du Comité."""
+    try:
+        data = request.json or {}
+        role = data.get('role', '')
+        auteur = data.get('auteur', '')
+        action = data.get('action', '')  # "inscrire" ou "rejeter"
+        motif = (data.get('motif') or '').strip()
+
+        p = Project.query.get_or_404(project_id)
+
+        if action == 'inscrire':
+            if role != 'secretariatsct':
+                return jsonify({"error": "Seul le secrétariat SCT peut inscrire à l'ordre du jour"}), 403
+            p.ordre_du_jour = True
+            p.ordre_du_jour_date = datetime.utcnow()
+            p.ordre_du_jour_rejete = False
+            p.ordre_du_jour_rejet_motif = None
+            p.ordre_du_jour_rejete_par = None
+            db.session.commit()
+
+            hist = Historique(project_id=project_id,
+                              action="Inscrit à l'ordre du jour du Comité",
+                              auteur=auteur, role=role)
+            db.session.add(hist)
+            db.session.commit()
+            return jsonify({"message": "Projet inscrit à l'ordre du jour"}), 200
+
+        elif action == 'rejeter':
+            if role not in ('presidencesct', 'presidencecomite'):
+                return jsonify({"error": "Seule la Présidence SCT ou du Comité peut rejeter"}), 403
+            if not motif:
+                return jsonify({"error": "Le motif de rejet est obligatoire"}), 400
+            p.ordre_du_jour = False
+            p.ordre_du_jour_rejete = True
+            p.ordre_du_jour_rejet_motif = motif
+            p.ordre_du_jour_rejete_par = auteur
+            db.session.commit()
+
+            hist = Historique(project_id=project_id,
+                              action=f"Retiré de l'ordre du jour — {motif}",
+                              auteur=auteur, role=role)
+            db.session.add(hist)
+            db.session.commit()
+
+            # Notifier le SCT
+            try:
+                projet_titre = (p.titre[:50] + "...") if p.titre and len(p.titre) > 50 else (p.titre or "")
+                notify_users_by_role(
+                    "secretariatsct", "statut_change",
+                    "Projet retiré de l'ordre du jour",
+                    f"Le projet '{projet_titre}' a été retiré de l'ordre du jour par la Présidence. Motif : {motif}",
+                    project_id, f"/project/{project_id}"
+                )
+            except Exception:
+                pass
+
+            return jsonify({"message": "Projet retiré de l'ordre du jour"}), 200
+
+        else:
+            return jsonify({"error": "Action invalide (inscrire ou rejeter)"}), 400
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/admin/import-projet-historique', methods=['POST'])
 def import_projet_historique():
     """
@@ -7074,6 +7164,11 @@ def seed_demo_endpoint():
                 ("avis_presidencesct",            "VARCHAR(100)"),
                 ("decision_finale",               "VARCHAR(100)"),
                 ("import_historique",             "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour",                "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour_date",           "TIMESTAMP"),
+                ("ordre_du_jour_rejete",         "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour_rejet_motif",    "TEXT"),
+                ("ordre_du_jour_rejete_par",     "VARCHAR(100)"),
                 ("nouveaute",                     "VARCHAR(50)"),
                 ("projet_initial_ref",            "VARCHAR(50)"),
                 ("niveau_priorite",               "VARCHAR(50)"),

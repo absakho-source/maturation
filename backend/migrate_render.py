@@ -298,6 +298,11 @@ def migrate_database(db_path=None):
                 ("avis_presidencesct",     "VARCHAR(100)"),
                 ("decision_finale",        "VARCHAR(100)"),
                 ("import_historique",      "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour",         "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour_date",    "TIMESTAMP"),
+                ("ordre_du_jour_rejete",  "BOOLEAN DEFAULT FALSE"),
+                ("ordre_du_jour_rejet_motif", "TEXT"),
+                ("ordre_du_jour_rejete_par",  "VARCHAR(100)"),
             ]
 
             for col_name, col_type in nouvelles_colonnes:

@@ -99,7 +99,7 @@
             <path d="M12 16v-4"/>
             <path d="M12 8h.01"/>
           </svg>
-          En tant qu'invite, vous pouvez consulter uniquement la liste des projets sans acces aux details.
+          Consultation publique — liste des projets soumis à la maturation. Les détails des évaluations ne sont pas accessibles.
         </div>
 
         <!-- Filtres -->
@@ -174,7 +174,7 @@
                 <td class="td-pole">{{ project.poles || '-' }}</td>
                 <td class="td-statut">
                   <span class="badge-statut" :class="'statut-' + getStatutClass(project.statut)">
-                    {{ project.statut || '-' }}
+                    {{ statutPublic(project.statut) }}
                   </span>
                 </td>
                 <td class="td-date">{{ formatDate(project.date_soumission) }}</td>
@@ -255,6 +255,19 @@ export default {
     this.loadData();
   },
   methods: {
+    statutPublic(statut) {
+      // Simplifier les statuts internes pour le grand public
+      const map = {
+        'soumis': 'Soumis',
+        'assigné': 'En cours d\'instruction',
+        'en évaluation': 'En cours d\'instruction',
+        'compléments demandés': 'En cours d\'instruction',
+        'compléments fournis': 'En cours d\'instruction',
+        'évalué': 'Évalué',
+        'rejeté': 'Non retenu',
+      };
+      return map[statut] || statut || '—';
+    },
     async loadData() {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const role = user.role || 'invite';

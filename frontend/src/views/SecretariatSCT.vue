@@ -371,7 +371,7 @@
 
               <!-- Actions pour un avis normal -->
               <div v-else class="validation-actions">
-                <button class="btn-primary" @click="validerAvis(p.id)">Valider l'avis ➜ Présidence SCT</button>
+                <button class="btn-primary" @click="validerEtInscrireODJ(p.id)">✅ Valider et inscrire à l'ordre du jour</button>
                 <div v-if="estProjetAssignable(p)" class="reassign">
                   <label>Réassigner à
                     <select v-model="assignation[p.id]">
@@ -1263,17 +1263,36 @@ export default {
       this.$toast.success("Projet réassigné"); this.loadProjects();
     },
     async validerAvis(id) {
-      // Confirmation avant validation pour éviter clics accidentels
-      if (!confirm("Êtes-vous sûr de vouloir valider cet avis et le transmettre à la Présidence SCT ?")) {
-        return;
-      }
-
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       await fetch(`/api/projects/${id}/traiter`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ validation_secretariat: "valide", auteur: user.username, role: user.role })
       });
-      this.$toast.success("Avis validé ➜ Présidence SCT"); this.loadProjects();
+      this.$toast.success("Avis validé"); this.loadProjects();
+    },
+    async validerEtInscrireODJ(id) {
+      if (!confirm("Valider l'avis et inscrire le projet à l'ordre du jour du Comité ?")) return;
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      // 1. Valider l'avis
+      await fetch(`/api/projects/${id}/traiter`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ validation_secretariat: "valide", auteur: user.username, role: user.role })
+      });
+      // 2. Inscrire à l'ordre du jour
+      try {
+        const resp = await fetch(`/api/projects/${id}/ordre-du-jour`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "inscrire", auteur: user.username, role: user.role })
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || "Erreur");
+        }
+        this.$toast.success("Avis validé et projet inscrit à l'ordre du jour");
+      } catch (e) {
+        this.$toast.error(e.message);
+      }
+      this.loadProjects();
     },
 
     async soumettreVoieHierarchique(id) {

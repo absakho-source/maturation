@@ -61,7 +61,7 @@
 
       <div class="tabs">
         <button @click="activeTab = 'all'" :class="{ active: activeTab === 'all' }" class="tab-btn">📋 Tous les projets</button>
-        <button @click="activeTab = 'decision'" :class="{ active: activeTab === 'decision' }" class="tab-btn">⚖️ Recommandation au Comité</button>
+        <button @click="activeTab = 'odj'" :class="{ active: activeTab === 'odj' }" class="tab-btn">📋 Ordre du jour ({{ projetsOrdreDuJour.length }})</button>
         <button @click="activeTab = 'decisions-comite'" :class="{ active: activeTab === 'decisions-comite' }" class="tab-btn">🏛️ Décisions du Comité</button>
         <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">📊 Statistiques</button>
         <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">🗺️ Carte pôles</button>
@@ -127,8 +127,52 @@
         </div>
       </div>
 
-      <!-- Recommandation au Comité -->
-      <div v-if="activeTab === 'decision'" class="tab-content">
+      <!-- Ordre du jour du Comité -->
+      <div v-if="activeTab === 'odj'" class="tab-content">
+        <h2>📋 Ordre du jour du prochain Comité</h2>
+        <p class="info-text">Projets inscrits par le Secrétariat SCT. Vous pouvez rejeter un projet (retour au SCT avec motif) ou rendre la décision du Comité.</p>
+
+        <div v-if="projetsOrdreDuJour.length === 0" class="empty-state"><p>Aucun projet à l'ordre du jour</p></div>
+        <div v-else class="projects-grid">
+          <div v-for="p in projetsOrdreDuJour" :key="'odj-'+p.id" class="project-card">
+            <div class="card-header">
+              <div class="card-title-section">
+                <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
+                <h3>{{ p.titre }}</h3>
+              </div>
+              <span class="badge" style="background:#fef3c7;color:#92400e;">📋 Ordre du jour</span>
+            </div>
+            <div class="card-body">
+              <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</p>
+              <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+              <p v-if="p.commentaires"><strong>Recommandation:</strong> {{ p.commentaires }}</p>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+
+              <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <textarea v-model="commentairesODJ[p.id]" rows="2"
+                          placeholder="Commentaires / motif de rejet…"
+                          style="width:100%;padding:0.5rem;border:1px solid #ddd;border-radius:6px;"></textarea>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button @click="decisionComiteDepuisODJ(p.id, 'enterine')" class="btn-success">
+                    ✅ Entériner
+                  </button>
+                  <button @click="decisionComiteDepuisODJ(p.id, 'conteste')" class="btn-warning"
+                          :disabled="!commentairesODJ[p.id]?.trim()">
+                    ❌ Contester
+                  </button>
+                  <button @click="rejeterOrdreDuJour(p.id)" class="btn-danger"
+                          :disabled="!commentairesODJ[p.id]?.trim()">
+                    ✗ Retirer de l'ODJ
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ancienne recommandation au Comité (compat) -->
+      <div v-if="activeTab === 'decision'" class="tab-content" style="display:none;">
         <h2>Projets à statuer (recommandation au Comité : confirmer ou infirmer l'avis)</h2>
         <div v-if="projectsToDecide.length === 0" class="empty-state">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -349,6 +393,7 @@ export default {
       allProjects: [],
       currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
       commentaires: {},
+      commentairesODJ: {},
       erreursInfirmation: {},
       activeTab: 'all',
       filtreStatut: null,
@@ -407,6 +452,9 @@ export default {
         p.statut_comite === 'recommande_comite' ||
         (p.statut === 'validé par presidencecomite' && !p.decision_finale)
       );
+    },
+    projetsOrdreDuJour() {
+      return this.allProjects.filter(p => p.ordre_du_jour && !p.ordre_du_jour_rejete);
     }
   },
   mounted() {
@@ -444,6 +492,44 @@ export default {
         this.allProjects = await r.json();
         this.calculateFinancingStats();
       } catch (e) { console.error(e); }
+    },
+    async rejeterOrdreDuJour(id) {
+      const motif = (this.commentairesODJ[id] || '').trim();
+      if (!motif) { this.$toast.warning('Le motif est obligatoire'); return; }
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      try {
+        const resp = await fetch(`/api/projects/${id}/ordre-du-jour`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "rejeter", motif, auteur: user.username, role: user.role })
+        });
+        if (!resp.ok) { const err = await resp.json().catch(() => ({})); throw new Error(err.error || "Erreur"); }
+        this.$toast.success("Projet retiré de l'ordre du jour");
+        this.commentairesODJ[id] = '';
+        this.loadProjects();
+      } catch (e) { this.$toast.error(e.message); }
+    },
+    async decisionComiteDepuisODJ(id, decision) {
+      const commentaires = (this.commentairesODJ[id] || '').trim();
+      if (decision === 'conteste' && !commentaires) {
+        this.$toast.warning('Les commentaires sont obligatoires pour contester');
+        return;
+      }
+      const confirmMsg = decision === 'enterine'
+        ? "Entériner ce projet ? Le soumissionnaire sera notifié."
+        : "Contester ce projet ? Il retournera au Secrétariat SCT.";
+      if (!confirm(confirmMsg)) return;
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      try {
+        const resp = await fetch(`/api/projects/${id}/decision-comite`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ decision, commentaires, auteur: user.username, role: user.role })
+        });
+        if (!resp.ok) { const err = await resp.json().catch(() => ({})); throw new Error(err.error || "Erreur"); }
+        const label = decision === 'enterine' ? 'Entériné' : 'Contesté';
+        this.$toast.success(`Décision : ${label}`);
+        this.commentairesODJ[id] = '';
+        this.loadProjects();
+      } catch (e) { this.$toast.error(e.message); }
     },
     countByStatus(status) {
       return this.allProjects.filter(p => p.statut === status).length;

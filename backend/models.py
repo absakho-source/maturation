@@ -121,6 +121,13 @@ class Project(db.Model):
     deleted_at = db.Column(db.DateTime, nullable=True)  # NULL = actif, non-NULL = supprimé
     import_historique = db.Column(db.Boolean, default=False)  # Projet importé (antérieur à la plateforme)
 
+    # Ordre du jour du Comité
+    ordre_du_jour = db.Column(db.Boolean, default=False)  # Inscrit à l'ordre du jour par le SCT
+    ordre_du_jour_date = db.Column(db.DateTime, nullable=True)
+    ordre_du_jour_rejete = db.Column(db.Boolean, default=False)  # Rejeté par présidence SCT/Comité
+    ordre_du_jour_rejet_motif = db.Column(db.Text, nullable=True)
+    ordre_du_jour_rejete_par = db.Column(db.String(100), nullable=True)
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     auteur = db.Column(db.String(100))

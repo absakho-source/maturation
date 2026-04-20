@@ -42,8 +42,11 @@
         </div>
 
         <div class="tabs">
+          <button @click="activeTab = 'odj'" :class="{ active: activeTab === 'odj' }" class="tab-btn">
+            📋 Ordre du jour ({{ projetsOrdreDuJour.length }})
+          </button>
           <button @click="activeTab = 'projets'" :class="{ active: activeTab === 'projets' }" class="tab-btn">
-            🏛️ Projets au Comité
+            📁 Tous les projets au Comité
           </button>
           <button @click="activeTab = 'stats'" :class="{ active: activeTab === 'stats' }" class="tab-btn">
             📊 Statistiques
@@ -53,9 +56,32 @@
           </button>
         </div>
 
-        <!-- Onglet Projets au Comité -->
+        <!-- Onglet Ordre du jour -->
+        <div v-if="activeTab === 'odj'" class="tab-content">
+          <h2>📋 Ordre du jour de la prochaine session</h2>
+          <div v-if="projetsOrdreDuJour.length === 0" class="empty-state"><p>Aucun projet à l'ordre du jour</p></div>
+          <div v-else class="projects-grid">
+            <div v-for="p in projetsOrdreDuJour" :key="'odj-'+p.id" class="project-card">
+              <div class="card-header">
+                <div class="card-title-section">
+                  <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
+                  <h3>{{ p.titre }}</h3>
+                </div>
+                <span class="badge" style="background:#fef3c7;color:#92400e;">📋 Ordre du jour</span>
+              </div>
+              <div class="card-body">
+                <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || 'N/A' }}</p>
+                <p><strong>Secteur:</strong> {{ p.secteur || 'N/A' }}</p>
+                <p v-if="p.avis"><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+                <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet Tous les projets au Comité -->
         <div v-if="activeTab === 'projets'" class="tab-content">
-          <h2>🏛️ Projets soumis au Comité de Maturation</h2>
+          <h2>📁 Tous les projets passés par le Comité</h2>
 
           <div v-if="projectsComite.length === 0" class="empty-state">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -122,10 +148,13 @@ export default {
     return {
       allProjects: [],
       currentUser: JSON.parse(localStorage.getItem("user") || "{}") || {},
-      activeTab: 'projets'
+      activeTab: 'odj'
     };
   },
   computed: {
+    projetsOrdreDuJour() {
+      return this.allProjects.filter(p => p.ordre_du_jour && !p.ordre_du_jour_rejete);
+    },
     projectsComite() {
       // Projets recommandés au Comité (statut_comite = 'recommande_comite')
       // ou anciens projets "validé par presidencecomite" sans decision_finale (compatibilité)

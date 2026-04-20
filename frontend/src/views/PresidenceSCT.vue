@@ -118,45 +118,37 @@
       </div>
 
       <div v-if="activeTab === 'validation'" class="tab-content">
-        <h2>Projets à valider</h2>
-        <div v-if="projectsToValidate.length === 0" class="empty-state"><p>Aucun projet en attente</p></div>
+        <h2>📋 Ordre du jour du Comité</h2>
+        <p class="info-text">Projets inscrits par le Secrétariat SCT. Vous pouvez rejeter un projet de l'ordre du jour (avec motif).</p>
+        <div v-if="projetsOrdreDuJour.length === 0" class="empty-state"><p>Aucun projet à l'ordre du jour</p></div>
         <div v-else class="projects-grid">
-          <div v-for="p in projectsToValidate" :key="p.id" class="project-card">
+          <div v-for="p in projetsOrdreDuJour" :key="p.id" class="project-card">
             <div class="card-header">
               <div class="card-title-section">
                 <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
                 <h3>{{ p.titre }}</h3>
               </div>
-              <span class="badge status-pending">{{ p.statut }}</span>
+              <span class="badge status-odj">📋 Ordre du jour</span>
             </div>
             <div class="card-body">
-              <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
-              <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
-              <p v-if="p.validation_secretariat === 'valide'"><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-              <p v-if="p.commentaires && p.validation_secretariat === 'valide'"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
-              <div v-if="p.validation_secretariat !== 'valide'" class="validation-pending">
-                <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
-              </div>
+              <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</p>
+              <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
+              <p v-if="p.commentaires"><strong>Recommandation:</strong> {{ p.commentaires }}</p>
               <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
-              <div v-if="p.validation_secretariat === 'valide'" class="decision-section">
-                <div class="motif-rejet-section">
-                  <label for="commentaire" class="motif-label">
-                    Justification de votre décision
-                    <span class="motif-hint">(obligatoire en cas de rejet)</span>
-                  </label>
-                  <textarea
-                    v-model="commentaires[p.id]"
-                    rows="3"
-                    placeholder="Saisissez le motif de votre décision..."
-                    :class="{ 'error-border': erreursRejet[p.id] }"
-                    style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"
-                  ></textarea>
-                  <p v-if="erreursRejet[p.id]" class="error-message">{{ erreursRejet[p.id] }}</p>
-                </div>
-                <div class="decision-buttons">
-                  <button @click="valider(p.id, 'valide')" class="btn-success">✓ Valider</button>
-                  <button @click="valider(p.id, 'rejete')" class="btn-danger">✗ Rejeter</button>
-                </div>
+              <div class="decision-section" style="margin-top: 0.75rem;">
+                <textarea
+                  v-model="commentaires[p.id]"
+                  rows="2"
+                  placeholder="Motif du rejet (obligatoire pour rejeter)…"
+                  style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"
+                ></textarea>
+                <button
+                  @click="rejeterOrdreDuJour(p.id)"
+                  class="btn-danger"
+                  :disabled="!commentaires[p.id]?.trim()"
+                >
+                  ✗ Retirer de l'ordre du jour
+                </button>
               </div>
             </div>
           </div>
@@ -359,6 +351,7 @@ export default {
       return this.allProjects.filter(p => p.statut === this.filtreStatut);
     },
     projectsToValidate() { return this.allProjects.filter(p => p.statut === 'en attente validation presidencesct'); },
+    projetsOrdreDuJour() { return this.allProjects.filter(p => p.ordre_du_jour && !p.ordre_du_jour_rejete); },
     projectsEnAttenteComite() {
       // Projets validés par la présidence du comité, en attente de décision du Comité
       return this.allProjects.filter(p =>
@@ -527,6 +520,26 @@ export default {
       } catch (error) {
         console.error('Erreur téléchargement rapport élaboré:', error);
         this.$toast.error('Erreur lors du téléchargement du rapport élaboré');
+      }
+    },
+    async rejeterOrdreDuJour(id) {
+      const motif = (this.commentaires[id] || '').trim();
+      if (!motif) { this.$toast.warning('Le motif est obligatoire'); return; }
+      const user = JSON.parse(localStorage.getItem("user") || "null") || {};
+      try {
+        const resp = await fetch(`/api/projects/${id}/ordre-du-jour`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "rejeter", motif, auteur: user.username, role: user.role })
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || "Erreur");
+        }
+        this.$toast.success("Projet retiré de l'ordre du jour");
+        this.commentaires[id] = '';
+        this.loadProjects();
+      } catch (e) {
+        this.$toast.error(e.message);
       }
     },
     enregistrerDecisionComite(projectId, decision, commentaires) {
