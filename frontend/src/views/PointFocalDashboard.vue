@@ -2,7 +2,7 @@
   <PageWrapper>
     <div class="pf-container">
       <div class="dashboard-section">
-        <h2 class="dashboard-title">📌 Point Focal — {{ currentUser.point_focal_organisme || currentUser.nom_structure || 'Mon organisme' }}</h2>
+        <h2 class="dashboard-title">📌 {{ currentUser.nom_structure || currentUser.point_focal_organisme || 'Point Focal' }}</h2>
         <div class="info-box">
           Projets soumis par ou pour votre organisme de tutelle. Lecture seule.
         </div>
