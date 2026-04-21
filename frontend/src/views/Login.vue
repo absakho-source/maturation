@@ -166,6 +166,8 @@ export default {
           roleLabel: this.getRoleLabelByRole(u.role),
           email: u.email || null,
           telephone: u.telephone || null,
+          nom_structure: u.nom_structure || null,
+          point_focal_organisme: u.point_focal_organisme || null,
           id: u.id,
           role: u.role
         })).sort((a, b) => {
@@ -273,7 +275,9 @@ export default {
           role,
           display_name: displayName,
           email: account ? account.email : null,
-          telephone: account ? account.telephone : null
+          telephone: account ? account.telephone : null,
+          nom_structure: account ? account.nom_structure : null,
+          point_focal_organisme: account ? account.point_focal_organisme : null
         };
         localStorage.setItem("user", JSON.stringify(user));
 
