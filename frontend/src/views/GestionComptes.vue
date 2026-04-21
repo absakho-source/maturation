@@ -961,12 +961,9 @@ async function reintegrerCompte(compteId) {
 }
 
 function peutSupprimer(compte) {
-  // Admin ne peut pas être supprimé
   if (compte.role === 'admin') return false
-  // On ne peut pas se supprimer soi-même
   if (compte.username === user?.username) return false
-  // secretariatsct ne peut supprimer que des soumissionnaires
-  if (user?.role === 'secretariatsct' && compte.role !== 'soumissionnaire') return false
+  if (user?.role === 'secretariatsct' && !['soumissionnaire', 'evaluateur'].includes(compte.role)) return false
   return true
 }
 

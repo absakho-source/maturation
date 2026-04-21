@@ -4325,8 +4325,8 @@ def delete_user(user_id):
         if user.role == 'admin':
             return jsonify({"error": "Impossible de supprimer un compte administrateur"}), 403
 
-        if caller_role == 'secretariatsct' and user.role != 'soumissionnaire':
-            return jsonify({"error": "Le secrétariat SCT ne peut supprimer que des comptes soumissionnaires"}), 403
+        if caller_role == 'secretariatsct' and user.role not in ('soumissionnaire', 'evaluateur'):
+            return jsonify({"error": "Le secrétariat SCT ne peut supprimer que des comptes soumissionnaires et évaluateurs"}), 403
 
         if username == caller_username:
             return jsonify({"error": "Vous ne pouvez pas supprimer votre propre compte"}), 403
