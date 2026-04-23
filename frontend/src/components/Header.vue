@@ -184,7 +184,6 @@ export default {
         presidencecomite: "Présidence Comité",
         membrecomite: "Membre du Comité",
         ministre_economie: "Ministre de l'Économie",
-        point_focal: "Point Focal",
         invite: "Invité",
         admin: "Administrateur"
       };

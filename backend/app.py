@@ -494,18 +494,6 @@ def projects():
             elif role == "ministre_economie":
                 # Ministre de l'Économie : voit tous les projets (lecture seule)
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
-            elif role == "point_focal":
-                # Point focal : voit uniquement les projets de son organisme de tutelle
-                user_obj = User.query.filter_by(username=username).first()
-                organisme = (user_obj.point_focal_organisme or user_obj.nom_structure or "") if user_obj else ""
-                if organisme:
-                    items = Project.query.filter(
-                        Project.deleted_at.is_(None),
-                        (Project.organisme_tutelle.ilike(f"%{organisme}%")) |
-                        (Project.structure_soumissionnaire.ilike(f"%{organisme}%"))
-                    ).all()
-                else:
-                    items = []
             elif role == "invite":
                 # Rôle invité: voir tous les projets mais avec données limitées
                 items = Project.query.filter(Project.deleted_at.is_(None)).all()
@@ -514,7 +502,7 @@ def projects():
 
             # Filter out projects from suspended accounts
             # Note: Projects from non-verified accounts ARE visible but will be marked with soumissionnaire_statut_compte
-            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'evaluateur', 'admin', 'ministre_economie', 'point_focal']:
+            if role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'evaluateur', 'admin', 'ministre_economie']:
                 # These roles should not see projects from suspended accounts in their workflow
                 # Get list of suspended user IDs
                 suspended_users = User.query.filter_by(statut_compte='suspendu').all()
@@ -1537,44 +1525,6 @@ def traiter_project(project_id):
                     lien_projet
                 )
 
-            # Notification pour validation présidence SCT
-            if p.statut == "en attente validation presidencesct":
-                notify_users_by_role(
-                    "presidencesct",
-                    "statut_change",
-                    "Projet à valider",
-                    f"Le projet '{projet_titre}' attend votre validation.",
-                    project_id,
-                    lien_projet
-                )
-                # Notification au soumissionnaire de l'avancement
-                notify_project_owner(
-                    p,
-                    "statut_change",
-                    "Avis en cours de validation",
-                    f"L'avis sur votre projet '{projet_titre}' a été validé par le Secrétariat SCT et transmis pour validation finale.",
-                    lien_projet
-                )
-
-            # Notification pour validation par présidence SCT (vers comité)
-            if p.statut == "validé par presidencesct":
-                notify_users_by_role(
-                    "presidencecomite",
-                    "statut_change",
-                    "Projet à examiner",
-                    f"Le projet '{projet_titre}' a été validé par la Présidence SCT et attend votre décision.",
-                    project_id,
-                    lien_projet
-                )
-                # Notification au soumissionnaire que son projet a été validé
-                notify_project_owner(
-                    p,
-                    "statut_change",
-                    "Projet validé",
-                    f"Votre projet '{projet_titre}' a été validé par la Présidence SCT. L'avis est : {p.avis or 'en cours'}.",
-                    lien_projet
-                )
-
             # Notification pour décision finale au soumissionnaire
             if p.statut == "décision finale confirmée":
                 decision_text = "approuvé" if p.decision_finale == "confirme" else "non retenu"
@@ -1614,17 +1564,6 @@ def traiter_project(project_id):
                     "statut_change",
                     "Décision finale : avis défavorable",
                     f"La Présidence du Comité a confirmé l'avis défavorable sur votre projet '{projet_titre}'. Le dossier est clôturé.",
-                    lien_projet,
-                    priorite_email=True
-                )
-
-            # Notification pour rejet définitif
-            if p.statut == "rejeté" and "avis_presidencesct" in data:
-                notify_project_owner(
-                    p,
-                    "statut_change",
-                    "Projet non retenu",
-                    f"Votre projet '{projet_titre}' n'a pas été retenu par la Présidence SCT.",
                     lien_projet,
                     priorite_email=True
                 )

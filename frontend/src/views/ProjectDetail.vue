@@ -699,8 +699,8 @@ export default {
         return this.project.validation_secretariat === 'valide';
       }
 
-      // Ministre de l'Économie et Point focal voient l'évaluation
-      if (role === 'ministre_economie' || role === 'point_focal') {
+      // Ministre de l'Économie voit l'évaluation
+      if (role === 'ministre_economie') {
         return true;
       }
 

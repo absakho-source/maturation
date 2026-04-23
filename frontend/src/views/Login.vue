@@ -157,7 +157,7 @@ export default {
         this.rolesByUsername = map;
 
         // Ordre souhaité des rôles dans la liste déroulante
-        const roleOrder = ['soumissionnaire', 'evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'ministre_economie', 'point_focal', 'admin', 'invite'];
+        const roleOrder = ['soumissionnaire', 'evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'ministre_economie', 'admin', 'invite'];
 
         // Construire la liste d'accounts pour l'affichage
         this.accounts = users.map(u => ({
@@ -210,7 +210,6 @@ export default {
           { username: 'presidencecomite', role: 'presidencecomite', display_name: 'DG DGPPE' },
           { username: 'membrecomite', role: 'membrecomite', display_name: 'Membre Comité' },
           { username: 'ministre_economie', role: 'ministre_economie', display_name: 'Cabinet du Ministre' },
-          { username: 'point_focal', role: 'point_focal', display_name: 'Point Focal Agriculture' },
           { username: 'admin', role: 'admin', display_name: 'CT DGPPE' },
           { username: 'invite', role: 'invite', display_name: 'Visiteur' }
         ];
@@ -233,7 +232,6 @@ export default {
         presidencecomite: "Présidence Comité",
         membrecomite: "Membre Comité",
         ministre_economie: "Ministre de l'Économie",
-        point_focal: "Point Focal",
         admin: "Administrateur",
         invite: "Invité"
       };
