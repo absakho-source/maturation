@@ -707,27 +707,26 @@ export default {
       return false;
     },
     soumissionnairePeutVoirFiche() {
-      // Le soumissionnaire peut voir la fiche d'évaluation dans deux cas:
-      // 1. Avis favorable confirmé par PresidenceComite (decision_finale = 'confirme' + avis favorable)
-      //    MAIS PAS si le projet est en attente de décision du Comité (statut_comite = 'recommande_comite')
-      // 2. Projet entériné par le Comité (statut_comite = 'approuve_definitif')
+      // Le soumissionnaire voit la fiche dès qu'une décision finale est rendue
+      // (favorable ou défavorable) — pour comprendre ce qui sous-tend la décision.
+      // Pas de visibilité tant que le processus est en cours.
       if (!this.project) return false;
 
-      // Si le projet est recommandé au Comité mais pas encore décidé, NE PAS afficher la fiche
-      if (this.project.statut_comite === 'recommande_comite') {
+      // En attente de décision du Comité → pas encore de décision finale
+      if (this.project.ordre_du_jour && !this.project.ordre_du_jour_rejete && !this.project.decision_finale) {
         return false;
       }
 
-      // Cas 1: Avis favorable confirmé par PresidenceComite
-      const avisFavorableConfirme =
-        this.project.decision_finale === 'confirme' &&
-        (this.project.avis === 'favorable' || this.project.avis === 'favorable sous conditions');
+      // Décision finale rendue par le Comité (entériné ou contesté)
+      if (this.project.decision_finale) return true;
 
-      // Cas 2: Projet entériné par le Comité
-      const enterineParComite =
-        this.project.statut_comite === 'approuve_definitif';
+      // Avis défavorable confirmé (clôturé sans passer par le Comité)
+      if (this.project.statut === 'avis défavorable confirmé') return true;
 
-      return avisFavorableConfirme || enterineParComite;
+      // Dossier rejeté (non recevable — pas de fiche, mais au cas où)
+      if (this.project.statut === 'rejeté') return true;
+
+      return false;
     },
     formatCurrency(amount) {
       return new Intl.NumberFormat('fr-FR').format(amount);
