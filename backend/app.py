@@ -4279,10 +4279,32 @@ def delete_user(user_id):
         # Dissocier les projets soumis (les projets restent, seul le lien est retiré)
         Project.query.filter_by(soumissionnaire_id=user_id).update({"soumissionnaire_id": None})
 
+        # Si c'est un évaluateur, désassigner ses projets (retour à "soumis")
+        if user.role == 'evaluateur':
+            projets_assignes = Project.query.filter_by(evaluateur_nom=username).filter(
+                Project.statut.in_(['assigné', 'en évaluation', 'en instruction'])
+            ).all()
+            for p in projets_assignes:
+                p.evaluateur_nom = None
+                p.statut = 'soumis'
+                # Historique
+                hist = Historique(
+                    project_id=p.id,
+                    action=f"Évaluateur '{username}' supprimé — projet remis en attente d'assignation",
+                    auteur=caller_username,
+                    role=caller_role,
+                )
+                db.session.add(hist)
+
         db.session.delete(user)
         db.session.commit()
 
-        return jsonify({"message": f"Utilisateur '{username}' supprimé avec succès"}), 200
+        nb_reassignes = len(projets_assignes) if user.role == 'evaluateur' else 0
+        msg = f"Utilisateur '{username}' supprimé avec succès"
+        if nb_reassignes:
+            msg += f" — {nb_reassignes} projet(s) remis en attente d'assignation"
+
+        return jsonify({"message": msg}), 200
     except Exception as e:
         db.session.rollback()
         import traceback; traceback.print_exc()

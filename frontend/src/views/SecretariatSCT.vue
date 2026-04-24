@@ -1093,8 +1093,8 @@ export default {
         const res = await fetch('/api/users');
         if (res.ok) {
           const users = await res.json();
-          // Filtrer uniquement les évaluateurs
-          this.evaluateurs = users.filter(u => u.role === 'evaluateur');
+          // Filtrer uniquement les évaluateurs actifs (non suspendus)
+          this.evaluateurs = users.filter(u => u.role === 'evaluateur' && u.statut_compte !== 'suspendu');
 
           // Filtrer les autres comptes secretariatsct (hors l'utilisateur connecté)
           this.autresSecretariatSCT = users.filter(u =>
