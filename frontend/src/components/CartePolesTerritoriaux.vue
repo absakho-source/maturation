@@ -8,24 +8,44 @@
         <h4>Investissement Total</h4>
         <div class="legende-items">
           <div class="legende-item">
+            <div class="couleur-box" style="background: #0a3a0a"></div>
+            <span>>{{ formatAmount(intensityThresholds.q90) }}</span>
+          </div>
+          <div class="legende-item">
             <div class="couleur-box" style="background: #1a4d1a"></div>
-            <span>Très élevé (>{{ formatAmount(intensityThresholds.q80) }})</span>
+            <span>{{ formatAmount(intensityThresholds.q80) }}-{{ formatAmount(intensityThresholds.q90) }}</span>
+          </div>
+          <div class="legende-item">
+            <div class="couleur-box" style="background: #2a5e2a"></div>
+            <span>{{ formatAmount(intensityThresholds.q70) }}-{{ formatAmount(intensityThresholds.q80) }}</span>
           </div>
           <div class="legende-item">
             <div class="couleur-box" style="background: #2d6b2d"></div>
-            <span>Élevé ({{ formatAmount(intensityThresholds.q60) }}-{{ formatAmount(intensityThresholds.q80) }})</span>
+            <span>{{ formatAmount(intensityThresholds.q60) }}-{{ formatAmount(intensityThresholds.q70) }}</span>
+          </div>
+          <div class="legende-item">
+            <div class="couleur-box" style="background: #3d7d3d"></div>
+            <span>{{ formatAmount(intensityThresholds.q50) }}-{{ formatAmount(intensityThresholds.q60) }}</span>
           </div>
           <div class="legende-item">
             <div class="couleur-box" style="background: #4a8a4a"></div>
-            <span>Moyen ({{ formatAmount(intensityThresholds.q40) }}-{{ formatAmount(intensityThresholds.q60) }})</span>
+            <span>{{ formatAmount(intensityThresholds.q40) }}-{{ formatAmount(intensityThresholds.q50) }}</span>
+          </div>
+          <div class="legende-item">
+            <div class="couleur-box" style="background: #5a9a5a"></div>
+            <span>{{ formatAmount(intensityThresholds.q30) }}-{{ formatAmount(intensityThresholds.q40) }}</span>
           </div>
           <div class="legende-item">
             <div class="couleur-box" style="background: #66aa66"></div>
-            <span>Bas ({{ formatAmount(intensityThresholds.q20) }}-{{ formatAmount(intensityThresholds.q40) }})</span>
+            <span>{{ formatAmount(intensityThresholds.q20) }}-{{ formatAmount(intensityThresholds.q30) }}</span>
+          </div>
+          <div class="legende-item">
+            <div class="couleur-box" style="background: #80bf80"></div>
+            <span>{{ formatAmount(intensityThresholds.q10) }}-{{ formatAmount(intensityThresholds.q20) }}</span>
           </div>
           <div class="legende-item">
             <div class="couleur-box" style="background: #99cc99"></div>
-            <span>Très bas (<{{ formatAmount(intensityThresholds.q20) }})</span>
+            <span><{{ formatAmount(intensityThresholds.q10) }}</span>
           </div>
           <div class="legende-item">
             <div class="couleur-box" style="background: #f0f0f0"></div>
@@ -291,10 +311,8 @@ export default {
         pole: null
       },
       intensityThresholds: {
-        q20: 0,
-        q40: 0,
-        q60: 0,
-        q80: 0
+        q10: 0, q20: 0, q30: 0, q40: 0, q50: 0,
+        q60: 0, q70: 0, q80: 0, q90: 0
       },
       // Routes chargées depuis senegal_roads_full.json (OSM data)
       roadSegments: []
@@ -499,10 +517,15 @@ export default {
       if (amounts.length > 0) {
         const n = amounts.length
         this.intensityThresholds = {
+          q10: amounts[Math.floor(n * 0.1)],
           q20: amounts[Math.floor(n * 0.2)],
+          q30: amounts[Math.floor(n * 0.3)],
           q40: amounts[Math.floor(n * 0.4)],
+          q50: amounts[Math.floor(n * 0.5)],
           q60: amounts[Math.floor(n * 0.6)],
-          q80: amounts[Math.floor(n * 0.8)]
+          q70: amounts[Math.floor(n * 0.7)],
+          q80: amounts[Math.floor(n * 0.8)],
+          q90: amounts[Math.floor(n * 0.9)]
         }
       }
     },
@@ -572,28 +595,37 @@ export default {
       if (!stats || stats.cout_total === 0) return '#f0f0f0'
       
       const amount = stats.cout_total
-      const { q20, q40, q60, q80 } = this.intensityThresholds
-      
-      if (amount >= q80) return '#1a4d1a'      // Très élevé
-      if (amount >= q60) return '#2d6b2d'      // Élevé
-      if (amount >= q40) return '#4a8a4a'      // Moyen
-      if (amount >= q20) return '#66aa66'      // Bas
-      return '#99cc99'                         // Très bas
+      const t = this.intensityThresholds
+
+      if (amount >= t.q90) return '#0a3a0a'
+      if (amount >= t.q80) return '#1a4d1a'
+      if (amount >= t.q70) return '#2a5e2a'
+      if (amount >= t.q60) return '#2d6b2d'
+      if (amount >= t.q50) return '#3d7d3d'
+      if (amount >= t.q40) return '#4a8a4a'
+      if (amount >= t.q30) return '#5a9a5a'
+      if (amount >= t.q20) return '#66aa66'
+      if (amount >= t.q10) return '#80bf80'
+      return '#99cc99'
     },
 
     getRegionColor(poleName) {
-      // Les régions utilisent la même couleur que leur pôle mais plus claire
       const stats = this.getPoleStats(poleName)
       if (!stats || stats.cout_total === 0) return '#f8f8f8'
-      
+
       const amount = stats.cout_total
-      const { q20, q40, q60, q80 } = this.intensityThresholds
-      
-      if (amount >= q80) return '#4d804d'      // Très élevé (plus clair)
-      if (amount >= q60) return '#5a8a5a'      // Élevé (plus clair)
-      if (amount >= q40) return '#739973'      // Moyen (plus clair)
-      if (amount >= q20) return '#8cb38c'      // Bas (plus clair)
-      return '#b3d9b3'                         // Très bas (plus clair)
+      const t = this.intensityThresholds
+
+      if (amount >= t.q90) return '#3d6b3d'
+      if (amount >= t.q80) return '#4d804d'
+      if (amount >= t.q70) return '#558855'
+      if (amount >= t.q60) return '#5a8a5a'
+      if (amount >= t.q50) return '#669966'
+      if (amount >= t.q40) return '#739973'
+      if (amount >= t.q30) return '#80a680'
+      if (amount >= t.q20) return '#8cb38c'
+      if (amount >= t.q10) return '#a3c9a3'
+      return '#b3d9b3'
     },
 
     findPoleForRegion(regionName) {
