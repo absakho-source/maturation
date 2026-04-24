@@ -438,32 +438,32 @@ export default {
 
     getRoadColor(type) {
       const colors = {
-        'autoroute': '#2d3748',      // Gris très foncé - plus visible
-        'nationale': '#2d3748',       // Gris très foncé - plus visible
-        'departementale': '#4a5568',  // Gris foncé
-        'locale': '#718096'           // Gris moyen
+        'autoroute': '#ffffff',       // Blanc — contraste fort sur fond vert
+        'nationale': '#fff3cd',       // Jaune pâle
+        'departementale': '#fde8c8',  // Orange très pâle
+        'locale': '#e2e8f0'           // Gris très clair
       }
-      return colors[type] || '#718096'
+      return colors[type] || '#e2e8f0'
     },
 
     getRoadWidth(type) {
       const widths = {
-        'autoroute': 2.5,
-        'nationale': 2,
+        'autoroute': 3,
+        'nationale': 2.2,
         'departementale': 1.5,
-        'locale': 1
+        'locale': 0.8
       }
-      return widths[type] || 1
+      return widths[type] || 0.8
     },
 
     getRoadOpacity(type) {
       const opacities = {
         'autoroute': 1,
-        'nationale': 0.9,
+        'nationale': 0.95,
         'departementale': 0.8,
-        'locale': 0.6
+        'locale': 0.5
       }
-      return opacities[type] || 0.6
+      return opacities[type] || 0.5
     },
 
     async loadStats() {
