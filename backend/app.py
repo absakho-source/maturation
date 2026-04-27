@@ -6816,6 +6816,16 @@ def cleanup_demo_endpoint():
             "Modernisation du Port de Ziguinchor et développement de la filière pêche",
             "Hub numérique et centre d'innovation de Dakar",
             "Programme de construction de 500 salles de classe au primaire",
+            "Autoroute Dakar-Saint-Louis (tronçon Thiès-Louga)",
+            "Plateforme logistique et marché de gros de Diourbel",
+            "Extension du réseau d'assainissement de Dakar-Pikine",
+            "Barrage anti-sel et aménagement rizicole de la vallée du Soungrougrou",
+            "Centre hospitalier régional de Matam (niveau 2)",
+            "Cité universitaire et campus numérique de Thiès",
+            "Centrale solaire photovoltaïque de Louga (50 MW)",
+            "Aménagement hydro-agricole de la vallée du fleuve (Podor-Matam)",
+            "Zone économique spéciale de Kaolack (phase 1)",
+            "Programme de résilience climatique du bassin arachidier",
         ]
         # Récupérer les IDs à supprimer
         all_projects = Project.query.filter(Project.deleted_at.is_(None)).all()
