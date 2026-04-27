@@ -6847,12 +6847,17 @@ def cleanup_demo_endpoint():
                     nested.rollback()
 
             # Supprimer les projets eux-mêmes
-            db.session.execute(text(f"DELETE FROM project WHERE id IN ({ids_sql})"))
-            db.session.commit()
-            deleted = len(ids_to_delete)
+            errors = []
+            try:
+                db.session.execute(text(f"DELETE FROM project WHERE id IN ({ids_sql})"))
+                db.session.commit()
+                deleted = len(ids_to_delete)
+            except Exception as del_err:
+                db.session.rollback()
+                errors.append(str(del_err)[:500])
 
         db.session.commit()
-        return jsonify({"message": f"{deleted} projet(s) supprimé(s)", "ids": ids_to_delete}), 200
+        return jsonify({"message": f"{deleted} projet(s) supprimé(s)", "ids": ids_to_delete, "errors": errors if ids_to_delete else []}), 200
     except Exception as e:
         db.session.rollback()
         import traceback
