@@ -6834,7 +6834,7 @@ def cleanup_demo_endpoint():
                 f"DELETE FROM historique                 WHERE project_id IN ({ids_sql})",
                 f"DELETE FROM log                        WHERE projet_id  IN ({ids_sql})",
                 f"DELETE FROM documents_projet           WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM notifications              WHERE projet_id  IN ({ids_sql})",
+                f"DELETE FROM notifications              WHERE project_id IN ({ids_sql})",
                 f"DELETE FROM project_version            WHERE project_id IN ({ids_sql})",
             ]
             # Chaque suppression dans un savepoint pour que les tables absentes ne cassent pas le reste
