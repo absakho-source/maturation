@@ -6822,39 +6822,43 @@ def cleanup_demo_endpoint():
         ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
 
         deleted = 0
+        errors = []
         if ids_to_delete:
             ids_sql = ",".join(str(i) for i in ids_to_delete)
-            # Tables dépendantes (toutes les FK vers project.id)
-            dep_stmts = [
-                f"DELETE FROM fiches_evaluation_archive WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM fiche_evaluation          WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM historique_messages        WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM fichiers_message           WHERE message_id IN (SELECT id FROM messages_projet WHERE project_id IN ({ids_sql}))",
-                f"DELETE FROM messages_projet            WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM historique                 WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM log                        WHERE projet_id  IN ({ids_sql})",
-                f"DELETE FROM documents_projet           WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM notifications              WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM project_version            WHERE project_id IN ({ids_sql})",
-            ]
-            # Chaque suppression dans un savepoint pour que les tables absentes ne cassent pas le reste
-            for stmt in dep_stmts:
-                try:
-                    nested = db.session.begin_nested()
-                    db.session.execute(text(stmt))
-                    nested.commit()
-                except Exception:
-                    nested.rollback()
+            # Utiliser une connexion brute pour chaque DELETE (hors session ORM)
+            with db.engine.connect() as conn:
+                dep_tables = [
+                    ("fiches_evaluation_archive", "project_id"),
+                    ("fiche_evaluation",          "project_id"),
+                    ("historique_messages",        "project_id"),
+                    ("fichiers_message",          "message_id IN (SELECT id FROM messages_projet WHERE project_id"),
+                    ("messages_projet",           "project_id"),
+                    ("historique",                "project_id"),
+                    ("log",                       "projet_id"),
+                    ("documents_projet",          "project_id"),
+                    ("notifications",             "project_id"),
+                    ("project_version",           "project_id"),
+                ]
+                for table, col in dep_tables:
+                    try:
+                        if "IN (SELECT" in col:
+                            # Cas spécial fichiers_message
+                            conn.execute(text(f"DELETE FROM {table} WHERE {col} IN ({ids_sql}))"))
+                        else:
+                            conn.execute(text(f"DELETE FROM {table} WHERE {col} IN ({ids_sql})"))
+                        conn.commit()
+                    except Exception as e:
+                        conn.rollback()
+                        # Table absente → ignorer
 
-            # Supprimer les projets eux-mêmes
-            errors = []
-            try:
-                db.session.execute(text(f"DELETE FROM project WHERE id IN ({ids_sql})"))
-                db.session.commit()
-                deleted = len(ids_to_delete)
-            except Exception as del_err:
-                db.session.rollback()
-                errors.append(str(del_err)[:500])
+                # Supprimer les projets
+                try:
+                    conn.execute(text(f"DELETE FROM project WHERE id IN ({ids_sql})"))
+                    conn.commit()
+                    deleted = len(ids_to_delete)
+                except Exception as del_err:
+                    conn.rollback()
+                    errors.append(str(del_err)[:500])
 
         db.session.commit()
         return jsonify({"message": f"{deleted} projet(s) supprimé(s)", "ids": ids_to_delete, "errors": errors if ids_to_delete else []}), 200
