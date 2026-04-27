@@ -6824,21 +6824,30 @@ def cleanup_demo_endpoint():
         deleted = 0
         if ids_to_delete:
             ids_sql = ",".join(str(i) for i in ids_to_delete)
-            # Supprimer les dépendances en cascade (ordre FK)
-            for stmt in [
-                f"DELETE FROM fiche_evaluation_archive WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM fiche_evaluation         WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM historique                WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM log                       WHERE projet_id  IN ({ids_sql})",
-                f"DELETE FROM documents_projet          WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM messages_projet           WHERE project_id IN ({ids_sql})",
-                f"DELETE FROM notifications             WHERE projet_id  IN ({ids_sql})",
-                f"DELETE FROM project                   WHERE id         IN ({ids_sql})",
-            ]:
+            # Tables dépendantes (toutes les FK vers project.id)
+            dep_stmts = [
+                f"DELETE FROM fiches_evaluation_archive WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM fiche_evaluation          WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM historique_messages        WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM fichiers_message           WHERE message_id IN (SELECT id FROM messages_projet WHERE project_id IN ({ids_sql}))",
+                f"DELETE FROM messages_projet            WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM historique                 WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM log                        WHERE projet_id  IN ({ids_sql})",
+                f"DELETE FROM documents_projet           WHERE project_id IN ({ids_sql})",
+                f"DELETE FROM notifications              WHERE projet_id  IN ({ids_sql})",
+                f"DELETE FROM project_version            WHERE project_id IN ({ids_sql})",
+            ]
+            # Chaque suppression dans un savepoint pour que les tables absentes ne cassent pas le reste
+            for stmt in dep_stmts:
                 try:
+                    nested = db.session.begin_nested()
                     db.session.execute(text(stmt))
+                    nested.commit()
                 except Exception:
-                    pass  # table absente → ignorer
+                    nested.rollback()
+
+            # Supprimer les projets eux-mêmes
+            db.session.execute(text(f"DELETE FROM project WHERE id IN ({ids_sql})"))
             db.session.commit()
             deleted = len(ids_to_delete)
 
