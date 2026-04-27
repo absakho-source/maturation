@@ -206,64 +206,43 @@
             </div>
           </div>
 
-          <!-- Section Validation Présidence SCT - masquée pour les soumissionnaires -->
-          <div class="info-card" v-if="project.avis_presidencesct && !isSoumissionnaire()">
-            <h3>Validation Présidence SCT</h3>
-            <div class="info-row">
-              <span class="label">Décision:</span>
-              <span class="value validated">{{ project.avis_presidencesct }}</span>
-            </div>
-          </div>
-
-          <!-- Section Motivation de resoumission - masquée pour les soumissionnaires -->
-          <div class="info-card" v-if="project.motivation_resoumission && !isSoumissionnaire()">
-            <h3>💬 Motivation de la resoumission</h3>
-            <div class="resubmission-motivation-detail">
-              <p>{{ project.motivation_resoumission }}</p>
-            </div>
-          </div>
-
-          <!-- Section Décision finale - masquée pour les soumissionnaires -->
+          <!-- Section Décision du Comité -->
           <div class="info-card" v-if="project.decision_finale && !isSoumissionnaire()">
-            <h3>Décision finale (Présidence Comité)</h3>
+            <h3>🏛️ Décision du Comité</h3>
             <div class="info-row">
-              <span class="label">Décision:</span>
-              <span class="value validated">{{ project.decision_finale }}</span>
+              <span class="label">Décision :</span>
+              <span class="value validated">{{ project.decision_finale === 'confirme' ? 'Entériné' : project.decision_finale === 'conteste' ? 'Contesté' : project.decision_finale }}</span>
             </div>
           </div>
 
-          <!-- Section Évaluation Préalable (lecture seule) -->
+          <!-- Section Recevabilité (simplifiée) -->
           <div class="info-card" v-if="project.evaluation_prealable && !isSoumissionnaire()">
-            <h3>🔍 Évaluation de la Recevabilité</h3>
-            <div class="evaluation-prealable-resultat">
-              <div :class="['decision-badge',
-                project.evaluation_prealable === 'dossier_evaluable' ? 'success' :
-                project.evaluation_prealable === 'dossier_rejete' ? 'danger' : 'warning']">
-                {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Dossier recevable' :
-                   project.evaluation_prealable === 'dossier_rejete' ? '❌ Dossier rejeté' :
-                   '📝 Compléments requis' }}
-              </div>
-
-              <!-- Afficher la matrice d'évaluation si elle existe -->
-              <MatriceEvaluationPrealableReadOnly v-if="evaluationPrealableMatrice" :matrice="evaluationPrealableMatrice" />
-
-              <!-- Sinon, afficher le commentaire simple (ancien format) -->
-              <template v-else>
-                <p v-if="project.evaluation_prealable_commentaire" class="commentaire">
-                  <strong>Commentaire:</strong> {{ project.evaluation_prealable_commentaire }}
-                </p>
-                <p class="date-evaluation" v-if="project.evaluation_prealable_date">
-                  Évaluation effectuée le {{ formatDateTime(project.evaluation_prealable_date) }}
-                </p>
-              </template>
-
-              <!-- Bouton pour télécharger le PDF de la matrice -->
-              <div v-if="project.evaluation_prealable_matrice" class="pdf-action" style="margin-top: 1rem;">
-                <button @click="ouvrirRecevabilitePDF" class="btn-primary">
-                  📄 Télécharger la matrice (PDF)
-                </button>
-              </div>
+            <h3>🔍 Recevabilité</h3>
+            <div :class="['decision-badge',
+              project.evaluation_prealable === 'dossier_evaluable' ? 'success' :
+              project.evaluation_prealable === 'dossier_rejete' ? 'danger' : 'warning']">
+              {{ project.evaluation_prealable === 'dossier_evaluable' ? '✅ Recevable' :
+                 project.evaluation_prealable === 'dossier_rejete' ? '❌ Rejeté' :
+                 '📝 Compléments requis' }}
             </div>
+            <p v-if="project.evaluation_prealable_commentaire" style="margin-top: 0.5rem;">
+              {{ project.evaluation_prealable_commentaire }}
+            </p>
+          </div>
+
+          <!-- Section Évaluabilité -->
+          <div class="info-card" v-if="project.evaluabilite && !isSoumissionnaire()">
+            <h3>📊 Évaluabilité</h3>
+            <div :class="['decision-badge',
+              project.evaluabilite === 'evaluable' ? 'success' :
+              project.evaluabilite === 'dossier_rejete' ? 'danger' : 'warning']">
+              {{ project.evaluabilite === 'evaluable' ? '✅ Évaluable' :
+                 project.evaluabilite === 'dossier_rejete' ? '❌ Rejeté' :
+                 '📝 Compléments requis' }}
+            </div>
+            <p v-if="project.evaluabilite_commentaire" style="margin-top: 0.5rem;">
+              {{ project.evaluabilite_commentaire }}
+            </p>
           </div>
 
           <!-- Section Statut pour soumissionnaire: En attente décision Comité -->
@@ -279,20 +258,7 @@
             </div>
           </div>
 
-          <!-- Section Fiche d'évaluation PDF -->
-          <!-- Visible pour: rôles internes (avec peutVoirEvaluation) OU soumissionnaire (avec soumissionnairePeutVoirFiche) -->
-          <div class="info-card" v-if="ficheEvaluation && ficheEvaluation.fichier_pdf && ((!isSoumissionnaire() && peutVoirEvaluation()) || (isSoumissionnaire() && soumissionnairePeutVoirFiche()))">
-            <h3>📄 Fiche d'évaluation</h3>
-            <p v-if="isSoumissionnaire()" class="info-message">
-              ✅ Votre projet a été validé. Vous pouvez consulter la fiche d'évaluation détaillée ci-dessous.
-            </p>
-            <p v-else>La fiche d'évaluation a été générée.</p>
-            <button @click="ouvrirFichePDF" class="btn-primary">
-              📄 Voir la fiche d'évaluation (PDF)
-            </button>
-          </div>
-
-          <!-- Section Évaluation simplifiée (fichier uploadé par l'évaluateur) -->
+          <!-- Section Évaluation (fichier uploadé par l'évaluateur) -->
           <div class="info-card"
                v-if="ficheEvaluation && ficheEvaluation.fichier_principal && ((!isSoumissionnaire() && peutVoirEvaluation()) || (isSoumissionnaire() && soumissionnairePeutVoirFiche()))">
             <h3>📋 Évaluation</h3>
@@ -315,42 +281,6 @@
             </div>
           </div>
 
-          <!-- Section Archives des fiches d'évaluation - Visible pour tous les rôles autorisés (sauf soumissionnaire) s'il y a des archives -->
-          <div class="info-card archives-section" v-if="currentUser && ['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur'].includes(currentUser.role) && !isSoumissionnaire() && (!loadingArchives && archives.length > 0)">
-            <h3>📚 Historique des fiches d'évaluation archivées</h3>
-            <div class="archives-list">
-              <div v-for="archive in archives" :key="archive.filename" class="archive-item">
-                <div class="archive-info">
-                  <div class="archive-header">
-                    <span class="archive-version">Version {{ archive.version }}</span>
-                    <span class="archive-date">{{ formatDateTime(archive.date_archivage) }}</span>
-                  </div>
-                  <div class="archive-details">
-                    <div class="archive-detail-row">
-                      <span class="label">Raison :</span>
-                      <span class="value">{{ formatRaisonArchivage(archive.raison_archivage) }}</span>
-                    </div>
-                    <div class="archive-detail-row">
-                      <span class="label">Archivé par :</span>
-                      <span class="value">{{ archive.archive_par }}</span>
-                    </div>
-                    <div class="archive-detail-row">
-                      <span class="label">Taille :</span>
-                      <span class="value">{{ formatFileSize(archive.taille) }}</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="archive-actions">
-                  <button @click="ouvrirArchive(archive.filename)" class="btn-view" title="Voir">
-                    👁️ Voir
-                  </button>
-                  <button v-if="currentUser.role === 'admin'" @click="supprimerArchive(archive.filename)" class="btn-delete" title="Supprimer">
-                    🗑️ Supprimer
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
         </div>
 
@@ -389,11 +319,10 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import DocumenthequeProjet from '../components/DocumenthequeProjet.vue';
 import DiscussionProjet from '../components/DiscussionProjet.vue';
-import MatriceEvaluationPrealableReadOnly from '../components/MatriceEvaluationPrealableReadOnly.vue';
 
 export default {
   name: "ProjectDetail",
-  components: { PageWrapper, DocumenthequeProjet, DiscussionProjet, MatriceEvaluationPrealableReadOnly },
+  components: { PageWrapper, DocumenthequeProjet, DiscussionProjet },
   data() {
     return {
       project: null,
@@ -401,8 +330,7 @@ export default {
       ficheEvaluation: null,
       loadingHistorique: true,
       currentUser: null,
-      archives: [],
-      loadingArchives: true
+      archives: []
     };
   },
   computed: {

@@ -55,37 +55,6 @@ def add_historique(project_id, action, auteur, role, date=None):
     )
     db.session.add(h)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MATRICES DE RECEVABILITÉ
-# ─────────────────────────────────────────────────────────────────────────────
-
-MATRICE_COMPLETE = {
-    "documents": [
-        {"nom": "Note de présentation du projet", "requis": True, "transmis": True},
-        {"nom": "Étude de faisabilité technique", "requis": True, "transmis": True},
-        {"nom": "Étude socio-économique", "requis": True, "transmis": True},
-        {"nom": "Plan de financement détaillé", "requis": True, "transmis": True},
-        {"nom": "Analyse environnementale préliminaire", "requis": True, "transmis": True},
-        {"nom": "Calendrier prévisionnel de réalisation", "requis": True, "transmis": True},
-        {"nom": "Cadre logique du projet", "requis": True, "transmis": True},
-        {"nom": "Acte de propriété / sécurisation foncière", "requis": False, "transmis": True},
-    ],
-    "commentaires_globaux": "Dossier complet. Toutes les pièces obligatoires ont été transmises. Le projet est évaluable."
-}
-
-MATRICE_INCOMPLETE = {
-    "documents": [
-        {"nom": "Note de présentation du projet", "requis": True, "transmis": True},
-        {"nom": "Étude de faisabilité technique", "requis": True, "transmis": True},
-        {"nom": "Étude socio-économique", "requis": True, "transmis": False},
-        {"nom": "Plan de financement détaillé", "requis": True, "transmis": False},
-        {"nom": "Analyse environnementale préliminaire", "requis": True, "transmis": True},
-        {"nom": "Calendrier prévisionnel de réalisation", "requis": True, "transmis": True},
-        {"nom": "Cadre logique du projet", "requis": True, "transmis": False},
-        {"nom": "Acte de propriété / sécurisation foncière", "requis": False, "transmis": False},
-    ],
-    "commentaires_globaux": "Dossier incomplet. Trois documents obligatoires manquants : étude socio-économique, plan de financement et cadre logique. Le soumissionnaire est invité à compléter son dossier dans un délai de 15 jours."
-}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DONNÉES DES PROJETS
@@ -198,7 +167,7 @@ PROJETS = [
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(18),
             "evaluation_prealable_commentaire": "Dossier complet. Toutes les pièces obligatoires ont été transmises. Projet déclaré évaluable.",
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(16),
             "evaluabilite_commentaire": "Projet confirmé évaluable. Évaluation détaillée en cours.",
@@ -236,7 +205,7 @@ PROJETS = [
             "date_soumission": date_ago(30),
             "evaluation_prealable": "complements_requis",
             "evaluation_prealable_date": date_ago(22),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_INCOMPLETE),
+            "evaluation_prealable_commentaire": "Dossier incomplet. Documents manquants à fournir sous 15 jours.",
             "complements_demande_message": (
                 "Le dossier transmis est incomplet. Merci de fournir dans un délai de 15 jours :\n"
                 "1. L'étude socio-économique actualisée avec données 2024\n"
@@ -278,7 +247,7 @@ PROJETS = [
             "date_soumission": date_ago(45),
             "evaluation_prealable": "complements_requis",
             "evaluation_prealable_date": date_ago(38),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_INCOMPLETE),
+            "evaluation_prealable_commentaire": "Dossier incomplet. Documents manquants à fournir sous 15 jours.",
             "complements_demande_message": (
                 "Documents manquants : plan de financement et étude pastorale actualisée."
             ),
@@ -332,92 +301,16 @@ PROJETS = [
             "date_soumission": date_ago(60),
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(52),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(50),
         },
         "fiche": {
             "evaluateur_nom": "evaluateur1",
             "date_evaluation": date_ago(5),
-            "intitule_projet": "Programme d'électrification rurale solaire – Zones enclavées du Sud-Est",
-            "cout_projet": "18 600 000 000 FCFA",
-            "origine_projet": "Initiative gouvernementale inscrite au PIP 2025-2029 dans le cadre de l'agenda d'accélération de l'accès universel à l'électricité",
-            "cc_adaptation": True, "cc_attenuation": True, "genre": True,
-            "articulation": "Plan Sénégal Émergent (PSE) - Axe 1 : Transformation structurelle de l'économie et croissance",
-            "axes": "Axe 2 : Capital humain, protection sociale et développement durable",
-            "objectifs_strategiques": "OS3 - Accélération de l'accès aux services énergétiques de base pour les populations rurales",
-            "odd": "ODD 7 (Énergie propre), ODD 13 (Action climatique), ODD 1 (Pas de pauvreté)",
-            "duree_analyse": "30 mois",
-            "realisation": "36 mois",
-            "exploitation": "25 ans",
-            "localisation": "Régions de Tambacounda et Kédougou – 68 villages",
-            "parties_prenantes": "ASER, Ministère de l'Énergie, collectivités locales, opérateurs privés délégués, BAD, BID",
-            "objectif_projet": "Électrifier 68 villages enclavés par mini-réseaux solaires hybrides pour améliorer les conditions de vie, réduire la pauvreté énergétique et soutenir le développement des activités économiques locales.",
-            "activites_principales": (
-                "1. Études techniques détaillées et géotechniques des 68 sites\n"
-                "2. Appel d'offres international pour la fourniture et installation\n"
-                "3. Construction des centrales solaires et réseaux de distribution\n"
-                "4. Formation des techniciens locaux\n"
-                "5. Mise en service et transfert de gestion aux opérateurs"
-            ),
-            "resultats_attendus": (
-                "- 22 000 ménages électrifiés\n"
-                "- 135 écoles et 42 postes de santé alimentés\n"
-                "- 280 points d'eau fonctionnels\n"
-                "- 120 emplois locaux créés et maintenus\n"
-                "- Réduction de 45 000 tonnes de CO₂/an"
-            ),
-            "organisme_tutelle": "Ministère de l'Énergie, du Pétrole et des Mines",
-            "snd_2025_2029": "Axe stratégique 2 – Développement du capital humain et réduction des inégalités spatiales",
-            # Scores (/100) — total ~82 → Favorable
-            "pertinence_score": 4.5,
-            "pertinence_description": "Le projet répond à un besoin avéré et prioritaire : le taux d'électrification des zones ciblées est inférieur à 8%. La cohérence avec les objectifs nationaux d'accès universel à l'énergie est totale.",
-            "pertinence_recommandations": "Veiller à l'implication des communautés dès la phase de conception pour assurer l'appropriation.",
-            "alignement_score": 8.5,
-            "alignement_description": "Projet parfaitement aligné sur le PSE et l'agenda Vision 2050. L'approche par délégation de service public s'inscrit dans la doctrine de transformation systémique prônée par le gouvernement.",
-            "alignement_recommandations": "Renforcer les synergies avec le programme PUMA et les projets d'eau potable en cours.",
-            "activites_couts_score": 12.0,
-            "activites_couts_description": "Le coût unitaire par village (274 M FCFA) est conforme aux références sectorielles. Les activités sont bien définies et le calendrier réaliste.",
-            "activites_couts_recommandations": "Prévoir une provision de 10% pour imprévus liés aux contraintes logistiques en zones enclavées.",
-            "equite_score": 13.0,
-            "equite_description": "Le projet cible les zones les plus défavorisées du pays. La dimension genre est intégrée avec des tarifs sociaux pour les ménages vulnérables. Impact territorial fort.",
-            "equite_recommandations": "Inclure un volet sensibilisation spécifique pour les femmes chefs de ménage.",
-            "viabilite_score": 4.0,
-            "viabilite_description": "Le modèle de délégation de service public avec recouvrement de charges est financièrement viable. Les subventions d'exploitation sont clairement budgétées.",
-            "viabilite_recommandations": "Sécuriser les financements de la BAD et de la BID avant le démarrage.",
-            "rentabilite_score": 4.0,
-            "rentabilite_description": "Le TRI socio-économique estimé à 18% est satisfaisant. Les bénéfices indirects (santé, éducation, productivité) sont significatifs.",
-            "rentabilite_recommandations": "Intégrer une étude d'impact ex-post pour mesurer les effets réels sur les revenus.",
-            "benefices_strategiques_score": 12.5,
-            "benefices_strategiques_description": "Fort impact sur la résilience climatique et la sécurité énergétique. Réduction de la dépendance aux combustibles fossiles. Contenu local estimé à 35%.",
-            "benefices_strategiques_recommandations": "Maximiser le contenu local en privilégiant les entreprises sénégalaises pour l'installation.",
-            "perennite_score": 4.0,
-            "perennite_description": "Durée de vie des équipements de 25 ans. Mécanisme de maintenance assuré par les opérateurs délégués. Fonds de renouvellement intégré.",
-            "perennite_recommandations": "Mettre en place un système de monitoring à distance pour détecter les pannes rapidement.",
-            "avantages_intangibles_score": 8.0,
-            "avantages_intangibles_description": "Amélioration significative de la qualité de vie, extension des heures de travail et d'étude, réduction des risques sécuritaires. Image internationale positive pour le Sénégal.",
-            "avantages_intangibles_recommandations": "Documenter et communiquer les impacts pour valoriser le modèle auprès des partenaires.",
-            "faisabilite_score": 4.0,
-            "faisabilite_description": "Maîtrise d'ouvrage expérimentée (ASER). Technologies éprouvées. Risques logistiques identifiés et atténués.",
-            "faisabilite_recommandations": "Établir un plan de gestion des risques avec des solutions de contournement pour chaque risque majeur.",
-            "ppp_score": 4.0,
-            "ppp_description": "Le modèle PPP est au cœur du projet. Le régime de concession est bien structuré.",
-            "ppp_recommandations": "Standardiser les contrats de concession pour faciliter la réplication.",
-            "impact_environnemental_score": 4.0,
-            "impact_environnemental_description": "Impact environnemental très positif. Réduction de 45 000 t CO₂/an. Pas de déforestation ni d'impact sur les zones humides.",
-            "impact_environnemental_recommandations": "Prévoir un plan de gestion des batteries en fin de vie.",
-            "impact_emploi_score": 4.5,
-            "impact_emploi_description": "Création de 120 emplois permanents locaux et 350 emplois temporaires en phase travaux. Forte valeur ajoutée pour les techniciens formés.",
-            "impact_emploi_recommandations": "Contractualiser les engagements d'emploi local avec les entreprises adjudicataires.",
-            "score_total": 82.5,  # /100 — sum des 12 critères hors impact_emploi
+            "score_total": 82.5,
             "proposition": "Favorable",
-            "recommandations": (
-                "La Commission recommande l'inscription de ce projet au programme d'investissement prioritaire. "
-                "Le projet présente un excellent rapport coût-bénéfice socio-économique et s'inscrit parfaitement "
-                "dans les objectifs de transformation du territoire. Points de vigilance : (1) sécurisation "
-                "des financements extérieurs avant lancement, (2) renforcement du volet gestion des risques "
-                "logistiques, (3) intégration d'un système de monitoring centralisé dès la conception."
-            ),
+            "recommandations": "La Commission recommande l'inscription au programme d'investissement prioritaire. Excellent rapport coût-bénéfice. Points de vigilance : sécurisation des financements extérieurs, gestion des risques logistiques, monitoring centralisé.",
         },
     },
 
@@ -454,80 +347,16 @@ PROJETS = [
             "date_soumission": date_ago(55),
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(48),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(46),
         },
         "fiche": {
             "evaluateur_nom": "evaluateur2",
             "date_evaluation": date_ago(8),
-            "intitule_projet": "Aménagement touristique de l'île de Carabane",
-            "cout_projet": "35 000 000 000 FCFA",
-            "origine_projet": "Initiative privée présentée par un consortium d'investisseurs, reprise par l'ASPT",
-            "cc_adaptation": False, "cc_attenuation": False, "genre": False,
-            "articulation": "PSE Axe 3 – Gouvernance, institutions, paix et sécurité",
-            "axes": "Développement du tourisme durable",
-            "objectifs_strategiques": "Diversification de l'offre touristique et augmentation des recettes en devises",
-            "odd": "ODD 8 (Travail décent), ODD 14 (Vie aquatique)",
-            "duree_analyse": "48 mois",
-            "realisation": "48 mois",
-            "exploitation": "20 ans",
-            "localisation": "Île de Carabane, région de Ziguinchor",
-            "parties_prenantes": "ASPT, Ministère du Tourisme, investisseur privé étranger, collectivité de Carabane",
-            "objectif_projet": "Créer une destination touristique haut de gamme en Casamance pour attirer la clientèle internationale.",
-            "activites_principales": "Construction hôtel, marina, golf, centre de conférences. Aménagement des accès.",
-            "resultats_attendus": "80 chambres, 500 employés, 5 000 touristes/an, 2 Md FCFA de recettes annuelles",
-            "organisme_tutelle": "Ministère du Tourisme et de l'Artisanat",
-            # Scores (/100) — total 48 → Défavorable
-            "pertinence_score": 2.5,
-            "pertinence_description": "La pertinence du projet pour les populations locales est limitée. Un hôtel de luxe sur une île accessible bénéficiera peu aux communautés rurales de Casamance.",
-            "pertinence_recommandations": "Revoir la stratégie pour intégrer davantage les communautés locales.",
-            "alignement_score": 5.0,
-            "alignement_description": "Alignement partiel avec le PSE. Le projet n'intègre pas suffisamment les priorités de transformation systémique ni le contenu local.",
-            "alignement_recommandations": "Retravailler le cadre logique pour mieux articuler avec les ODD et la SND.",
-            "activites_couts_score": 8.0,
-            "activites_couts_description": "Le coût estimé est plausible pour ce type d'infrastructure. Cependant, la part du budget d'État (30%) dans un projet à dominante privée soulève des questions.",
-            "activites_couts_recommandations": "Clarifier la justification de la participation publique et le retour attendu pour l'État.",
-            "equite_score": 4.0,
-            "equite_description": "Faible intégration de la dimension équité. Le projet ne cible pas les populations les plus vulnérables. Risque de gentrification de l'île.",
-            "equite_recommandations": "Inclure un volet d'emploi prioritaire pour les habitants de l'île.",
-            "viabilite_score": 3.0,
-            "viabilite_description": "La viabilité financière dépend fortement de l'investisseur privé étranger, dont l'engagement ferme n'est pas établi. Risque de désengagement élevé.",
-            "viabilite_recommandations": "Exiger des garanties financières solides de l'investisseur avant tout engagement public.",
-            "rentabilite_score": 2.5,
-            "rentabilite_description": "Le TRI socio-économique n'a pas été calculé. Le rapport coût-bénéfice pour l'État n'est pas démontré.",
-            "rentabilite_recommandations": "Fournir une analyse coût-bénéfice complète incluant les externalités.",
-            "benefices_strategiques_score": 6.0,
-            "benefices_strategiques_description": "Impact limité en termes de résilience et de sécurité. Faible contenu local estimé (15%).",
-            "benefices_strategiques_recommandations": "Porter le contenu local à au moins 40%.",
-            "perennite_score": 3.0,
-            "perennite_description": "La durabilité du projet est incertaine en l'absence d'un opérateur national identifié pour la reprise à terme.",
-            "perennite_recommandations": "Prévoir un mécanisme de reprise par des opérateurs locaux.",
-            "avantages_intangibles_score": 5.0,
-            "avantages_intangibles_description": "Valeur symbolique pour l'image touristique du Sénégal, mais retombées concrètes pour les populations locales insuffisantes.",
-            "avantages_intangibles_recommandations": None,
-            "faisabilite_score": 3.0,
-            "faisabilite_description": "La faisabilité est compromise par l'accessibilité de l'île (transport maritime) et les risques liés à l'instabilité régionale en Casamance.",
-            "faisabilite_recommandations": "Réaliser une étude de risques sécuritaires actualisée.",
-            "ppp_score": 3.0,
-            "ppp_description": "Le montage PPP est peu documenté. Les modalités de partage des risques entre l'État et l'investisseur ne sont pas clairement définies.",
-            "ppp_recommandations": "Structurer formellement le PPP avec l'appui de l'APIX.",
-            "impact_environnemental_score": 3.0,
-            "impact_environnemental_description": "Risques environnementaux importants : perturbation de l'écosystème marin, risques sur la mangrove. L'étude d'impact environnemental fournie est insuffisante.",
-            "impact_environnemental_recommandations": "Réaliser une ÉIES complète conforme aux normes CICES.",
-            "impact_emploi_score": 3.0,
-            "impact_emploi_description": "500 emplois annoncés mais la part locale n'est pas garantie. Risque d'importation de main-d'œuvre.",
-            "impact_emploi_recommandations": "Contractualiser un minimum de 60% d'emplois locaux.",
-            "score_total": 48.0,  # /100
+            "score_total": 48.0,
             "proposition": "Défavorable",
-            "recommandations": (
-                "La Commission émet un avis défavorable sur ce projet en l'état. Les principales insuffisances "
-                "constatées sont : (1) absence d'engagement ferme de l'investisseur privé ; (2) étude d'impact "
-                "environnemental incomplète avec risques avérés sur la mangrove ; (3) faible intégration des "
-                "populations locales et contenu local insuffisant ; (4) montage PPP non formalisé. "
-                "Le projet pourrait être reconsidéré si le porteur soumet un dossier révisé intégrant "
-                "ces recommandations, accompagné d'une ÉIES complète et de garanties financières solides."
-            ),
+            "recommandations": "Avis défavorable. Insuffisances : absence d'engagement ferme de l'investisseur privé, ÉIES incomplète, faible intégration des populations locales, montage PPP non formalisé.",
         },
     },
 
@@ -565,7 +394,7 @@ PROJETS = [
             "date_soumission": date_ago(80),
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(72),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(70),
             "commentaires": "Projet recommandé par l'évaluateur. En attente de validation de la Présidence du SCT.",
@@ -573,36 +402,9 @@ PROJETS = [
         "fiche": {
             "evaluateur_nom": "evaluateur1",
             "date_evaluation": date_ago(15),
-            "intitule_projet": "Modernisation du Port de Ziguinchor et développement de la filière pêche",
-            "cout_projet": "32 000 000 000 FCFA",
-            "origine_projet": "Initiative sectorielle inscrite au PDIDAS et au programme de développement des pêches de la FAO",
-            "cc_adaptation": True, "cc_attenuation": False, "genre": True,
-            "localisation": "Port de Ziguinchor – Région de Ziguinchor",
-            "objectif_projet": "Moderniser les infrastructures portuaires de Ziguinchor pour améliorer la compétitivité de la filière pêche casamançaise et réduire les pertes post-capture.",
-            "activites_principales": "Dragage, construction quai, halle à marée, chambre froide, chantier naval, formation.",
-            "resultats_attendus": "8 000 pêcheurs bénéficiaires, réduction des pertes post-capture de 40%, augmentation des revenus de 25%.",
-            "pertinence_score": 4.5, "pertinence_description": "Besoin critique identifié. Les infrastructures actuelles sont vétustes et inadaptées.", "pertinence_recommandations": None,
-            "alignement_score": 8.0, "alignement_description": "Cohérent avec le PSE et les orientations de la vision 2050.", "alignement_recommandations": None,
-            "activites_couts_score": 11.0, "activites_couts_description": "Coûts conformes aux références. Quelques postes à préciser.", "activites_couts_recommandations": "Affiner l'estimation pour le dragage.",
-            "equite_score": 12.0, "equite_description": "Bénéfice direct pour les femmes transformatrices de poisson (60% des bénéficiaires).", "equite_recommandations": None,
-            "viabilite_score": 3.5, "viabilite_description": "Viable avec subventions d'exploitation initiales.", "viabilite_recommandations": "Planifier la transition vers l'autofinancement sur 5 ans.",
-            "rentabilite_score": 3.5, "rentabilite_description": "TRI de 14%, acceptable pour le secteur.", "rentabilite_recommandations": None,
-            "benefices_strategiques_score": 12.0, "benefices_strategiques_description": "Fort impact sur la souveraineté alimentaire et la sécurité alimentaire régionale.", "benefices_strategiques_recommandations": None,
-            "perennite_score": 4.0, "perennite_description": "Bonne durabilité avec plan de maintenance inclus.", "perennite_recommandations": None,
-            "avantages_intangibles_score": 7.5, "avantages_intangibles_description": "Réduction des migrations des jeunes pêcheurs vers l'Europe.", "avantages_intangibles_recommandations": None,
-            "faisabilite_score": 3.5, "faisabilite_description": "Faisabilité bonne avec quelques risques logistiques.", "faisabilite_recommandations": "Prévoir un plan de continuité des activités pendant les travaux.",
-            "ppp_score": 3.0, "ppp_description": "Opportunités PPP pour la gestion de la chambre froide.", "ppp_recommandations": None,
-            "impact_environnemental_score": 3.5, "impact_environnemental_description": "Impact limité. ÉIES réalisée et plan de gestion environnementale satisfaisant.", "impact_environnemental_recommandations": None,
-            "impact_emploi_score": 4.0, "impact_emploi_description": "850 emplois permanents créés (pêche, transformation, logistique).", "impact_emploi_recommandations": None,
-            "score_total": 76.0,  # /100 — 4.5+8+11+12+3.5+3.5+12+4+7.5+3.5+3+3.5
-            "proposition": "Favorable sous condition",
-            "recommandations": (
-                "La Commission recommande le projet sous deux conditions : (1) finalisation du plan de dragage "
-                "avec estimation actualisée du volume de sédiments et de la méthode d'élimination conforme "
-                "aux normes environnementales ; (2) signature d'un accord de co-financement avec la BAD "
-                "avant le démarrage des travaux. Sous réserve de la levée de ces conditions, le projet "
-                "mérite d'être inscrit en priorité au PIP 2025-2029."
-            ),
+            "score_total": 76.0,
+            "proposition": "Favorable sous conditions",
+            "recommandations": "Projet recommandé sous conditions : (1) finaliser le plan de dragage conforme aux normes environnementales ; (2) signer l'accord de co-financement BAD avant démarrage.",
         },
     },
 
@@ -641,7 +443,7 @@ PROJETS = [
             "date_soumission": date_ago(100),
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(90),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(88),
             "commentaires_finaux": "Projet validé par la Présidence du SCT. Transmis pour présentation au Comité de Maturation.",
@@ -649,36 +451,9 @@ PROJETS = [
         "fiche": {
             "evaluateur_nom": "evaluateur2",
             "date_evaluation": date_ago(30),
-            "intitule_projet": "Hub numérique et centre d'innovation de Dakar",
-            "cout_projet": "21 500 000 000 FCFA",
-            "origine_projet": "Initiative gouvernementale dans le cadre de la Stratégie Sénégal Numérique 2025",
-            "cc_adaptation": False, "cc_attenuation": True, "genre": True,
-            "localisation": "Dakar Plateau",
-            "objectif_projet": "Positionner Dakar comme hub numérique régional de référence en Afrique de l'Ouest.",
-            "activites_principales": "Construction, équipement, recrutement formateurs, partenariats tech.",
-            "resultats_attendus": "1 200 jeunes formés/an, 100 startups incubées, 2 500 emplois créés sur 5 ans.",
-            "pertinence_score": 5.0, "pertinence_description": "Pertinence maximale dans le contexte de la révolution numérique africaine.", "pertinence_recommandations": None,
-            "alignement_score": 9.5, "alignement_description": "Alignement parfait avec la SND et la Vision 2050.", "alignement_recommandations": None,
-            "activites_couts_score": 13.0, "activites_couts_description": "Coûts bien documentés et comparables aux références internationales.", "activites_couts_recommandations": None,
-            "equite_score": 11.0, "equite_description": "Programme de bourses pour jeunes défavorisés et parité genre dans les admissions.", "equite_recommandations": None,
-            "viabilite_score": 4.5, "viabilite_description": "Modèle économique hybride (formation payante, location espaces, revenus datacenter) solide.", "viabilite_recommandations": None,
-            "rentabilite_score": 4.0, "rentabilite_description": "TRI de 22% sur 10 ans. Impact indirect sur l'économie numérique estimé à 50 Md FCFA.", "rentabilite_recommandations": None,
-            "benefices_strategiques_score": 14.0, "benefices_strategiques_description": "Positionnement stratégique du Sénégal comme leader du numérique en Afrique de l'Ouest.", "benefices_strategiques_recommandations": None,
-            "perennite_score": 4.5, "perennite_description": "Structure de gouvernance robuste avec conseil d'administration mixte public-privé.", "perennite_recommandations": None,
-            "avantages_intangibles_score": 9.0, "avantages_intangibles_description": "Attractivité internationale, rétention des talents, rayonnement diplomatique.", "avantages_intangibles_recommandations": None,
-            "faisabilite_score": 4.5, "faisabilite_description": "Équipe projet compétente, site identifié, partenariats confirmés.", "faisabilite_recommandations": None,
-            "ppp_score": 4.5, "ppp_description": "Modèle PPP exemplaire avec Microsoft et Orange. Réplicable.", "ppp_recommandations": None,
-            "impact_environnemental_score": 4.0, "impact_environnemental_description": "Bâtiment à haute performance énergétique, certification EDGE visée.", "impact_environnemental_recommandations": None,
-            "impact_emploi_score": 4.5, "impact_emploi_description": "2 500 emplois en 5 ans. 70% de jeunes de moins de 35 ans.", "impact_emploi_recommandations": None,
-            "score_total": 87.5,  # /100 — 5+9.5+13+11+4.5+4+14+4.5+9+4.5+4.5+4
+            "score_total": 87.5,
             "proposition": "Favorable",
-            "recommandations": (
-                "La Commission recommande très favorablement ce projet. Il représente un investissement "
-                "stratégique majeur pour le positionnement du Sénégal dans l'économie numérique africaine. "
-                "Le montage financier est solide, les partenaires de renom engagés. "
-                "Recommandation : inscrire en priorité 1 au PIP 2025-2029 et désigner un coordinateur "
-                "interministériel pour accélérer la phase de démarrage."
-            ),
+            "recommandations": "Recommandation très favorable. Investissement stratégique majeur pour l'économie numérique. Inscrire en priorité 1 au PIP 2025-2029.",
         },
     },
 
@@ -719,7 +494,7 @@ PROJETS = [
             "date_soumission": date_ago(130),
             "evaluation_prealable": "dossier_evaluable",
             "evaluation_prealable_date": date_ago(120),
-            "evaluation_prealable_matrice": json.dumps(MATRICE_COMPLETE),
+            "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(118),
             "commentaires_finaux": "Approuvé définitivement par le Comité de Maturation. Transmission au Ministère des Finances pour inscription au PIP.",
