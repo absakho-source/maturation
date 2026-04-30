@@ -397,7 +397,7 @@ PROJETS = [
             "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(70),
-            "commentaires": "Projet recommandé par l'évaluateur. En attente de validation de la Présidence du SCT.",
+            "commentaires": "Projet recommandé sous conditions par l'évaluateur. En attente d'inscription à l'ordre du jour.",
         },
         "fiche": {
             "evaluateur_nom": "evaluateur1",
@@ -446,7 +446,7 @@ PROJETS = [
             "evaluation_prealable_commentaire": "Dossier complet. Le projet est recevable.",
             "evaluabilite": "evaluable",
             "evaluabilite_date": date_ago(88),
-            "commentaires_finaux": "Projet validé par la Présidence du SCT. Transmis pour présentation au Comité de Maturation.",
+            "commentaires_finaux": "Avis validé par le Secrétariat SCT. Inscrit à l'ordre du jour du Comité de Maturation.",
         },
         "fiche": {
             "evaluateur_nom": "evaluateur2",
