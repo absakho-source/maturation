@@ -6828,8 +6828,12 @@ def cleanup_demo_endpoint():
             "Programme de résilience climatique du bassin arachidier",
         ]
         # Récupérer les IDs à supprimer
+        force = request.args.get('force') == 'true' or (request.get_json(silent=True) or {}).get('force') == True
         all_projects = Project.query.filter(Project.deleted_at.is_(None)).all()
-        ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
+        if force:
+            ids_to_delete = [p.id for p in all_projects]
+        else:
+            ids_to_delete = [p.id for p in all_projects if p.titre not in titres_demo]
 
         deleted = 0
         errors = []
