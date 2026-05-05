@@ -1481,20 +1481,30 @@ export default {
       this.enregistrerDecisionComite(projet.id, 'conteste');
     },
     getStatutBadge(projet) {
-      // Fonction helper pour obtenir le badge de statut approprié en tenant compte du statut_comite
-      if (projet.statut_comite === 'recommande_comite') {
-        return { text: '🟡 En attente décision Comité', class: 'status-comite' };
-      } else if (projet.statut_comite === 'approuve_definitif') {
-        // Afficher l'avis réel au lieu de "Approuvé définitivement"
-        const avisFinal = projet.statut || projet.avis || 'Entériné par le Comité';
-        const avisClass = avisFinal === 'favorable' ? 'status-favorable' :
-                         avisFinal === 'favorable sous conditions' ? 'status-conditions' :
-                         'status-approved-final';
-        return { text: avisFinal, class: avisClass };
-      } else if (projet.statut_comite === 'en_reevaluation') {
+      // Statut workflow distinct de l'avis (évite la redondance)
+      // Décision Comité rendue
+      if (projet.decision_finale === 'confirme') {
+        return { text: '✅ Entériné par le Comité', class: 'status-validated' };
+      }
+      if (projet.decision_finale === 'conteste') {
+        return { text: '❌ Contesté par le Comité', class: 'status-defavorable' };
+      }
+      // Ordre du jour
+      if (projet.statut_comite === 'recommande_comite' || (projet.ordre_du_jour && !projet.ordre_du_jour_rejete)) {
+        return { text: '📋 Ordre du jour', class: 'status-pending' };
+      }
+      if (projet.statut_comite === 'approuve_definitif') {
+        return { text: '✅ Entériné par le Comité', class: 'status-validated' };
+      }
+      if (projet.statut_comite === 'en_reevaluation') {
         return { text: '🔄 En réévaluation', class: 'status-reevaluation' };
       }
-      // Statut par défaut basé sur le champ statut
+      // Si statut == avis (cas redondant), afficher "Évalué"
+      const avisVals = ['favorable', 'favorable sous conditions', 'défavorable'];
+      if (avisVals.includes(projet.statut)) {
+        return { text: 'Évalué', class: 'status-evaluated' };
+      }
+      // Statut par défaut
       return { text: projet.statut, class: 'status-' + (projet.statut || '').replace(/ /g, '-') };
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },
