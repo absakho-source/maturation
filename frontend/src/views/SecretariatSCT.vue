@@ -1481,27 +1481,19 @@ export default {
       this.enregistrerDecisionComite(projet.id, 'conteste');
     },
     getStatutBadge(projet) {
-      // Statut workflow distinct de l'avis (évite la redondance)
-      // Décision Comité rendue
-      if (projet.decision_finale === 'confirme') {
-        return { text: '✅ Entériné par le Comité', class: 'status-validated' };
+      // Décision finale rendue par le Comité
+      if (projet.decision_finale === 'confirme' || projet.statut_comite === 'approuve_definitif') {
+        return { text: '✅ Entériné', class: 'status-validated' };
       }
-      // Ordre du jour
-      if (projet.statut_comite === 'recommande_comite' || (projet.ordre_du_jour && !projet.ordre_du_jour_rejete)) {
-        return { text: '📋 Ordre du jour', class: 'status-pending' };
-      }
-      if (projet.statut_comite === 'approuve_definitif') {
-        return { text: '✅ Entériné par le Comité', class: 'status-validated' };
-      }
-      if (projet.statut_comite === 'en_reevaluation') {
-        return { text: '🔄 En réévaluation', class: 'status-reevaluation' };
+      // Comité a rejeté l'avis → le projet doit être réétudié
+      if (projet.decision_finale === 'conteste' || projet.statut_comite === 'en_reevaluation') {
+        return { text: '🔄 À réétudier', class: 'status-pending' };
       }
       // Si statut == avis (cas redondant), afficher "Évalué"
       const avisVals = ['favorable', 'favorable sous conditions', 'défavorable'];
       if (avisVals.includes(projet.statut)) {
         return { text: 'Évalué', class: 'status-evaluated' };
       }
-      // Statut par défaut
       return { text: projet.statut, class: 'status-' + (projet.statut || '').replace(/ /g, '-') };
     },
     countByStatus(s){ return this.allProjects.filter(p=>p.statut===s).length; },

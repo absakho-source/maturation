@@ -145,21 +145,20 @@ export default {
       return '';
     },
     displayStatut(p) {
-      // Affiche un statut workflow distinct de l'avis (évite la redondance avec la colonne Avis)
+      // Décision finale rendue par le Comité
       if (p.decision_finale === 'confirme') return 'Entériné';
-      if (p.statut_comite === 'recommande_comite') return 'En attente Comité';
-      if (p.ordre_du_jour && !p.ordre_du_jour_rejete) return 'Ordre du jour';
+      // Si le Comité a rejeté l'avis, le projet revient au stade Soumis pour réétude
+      if (p.decision_finale === 'conteste') return 'À réétudier';
       // Si statut == avis (cas redondant), afficher "Évalué" à la place
-      const avis = ['favorable', 'favorable sous conditions', 'défavorable'];
-      if (avis.includes(p.statut)) return 'Évalué';
+      const avisVals = ['favorable', 'favorable sous conditions', 'défavorable'];
+      if (avisVals.includes(p.statut)) return 'Évalué';
       return p.statut || '—';
     },
     getStatusClass(s) {
       // Mapping étendu pour les nouveaux libellés
       const extra = {
         'Entériné': 'status-validated',
-        'En attente Comité': 'status-pending',
-        'Ordre du jour': 'status-pending',
+        'À réétudier': 'status-pending',
         'Évalué': 'status-evaluated',
       };
       if (extra[s]) return extra[s];
