@@ -60,31 +60,46 @@
             </select>
           </div>
 
-          <div v-if="filteredProjects.length === 0" class="empty-state">
+          <div v-if="sortedProjects.length === 0" class="empty-state">
             <p>Aucun projet trouvé</p>
           </div>
 
-          <div v-else class="projects-grid">
-            <div v-for="p in filteredProjects" :key="p.id" class="project-card">
-              <div class="card-header">
-                <div>
-                  <span class="project-number">{{ p.numero_projet || '—' }}</span>
-                  <h3>{{ p.titre }}</h3>
-                </div>
-                <div class="badges">
-                  <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
-                  <span v-if="p.import_historique" class="badge badge-import">Import</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <p><strong>Structure :</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</p>
-                <p><strong>Secteur :</strong> {{ p.secteur || '—' }}</p>
-                <p v-if="p.cout_estimatif"><strong>Coût :</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-                <p v-if="p.avis"><strong>Avis :</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-                <p v-if="p.decision_finale"><strong>Comité :</strong> {{ p.decision_finale === 'confirme' ? 'Entériné' : 'Contesté' }}</p>
-                <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
-              </div>
-            </div>
+          <div v-else class="table-wrap">
+            <table class="projects-table">
+              <thead>
+                <tr>
+                  <th @click="sortBy('numero_projet')" :class="{active: sortKey==='numero_projet'}">N° {{ sortIcon('numero_projet') }}</th>
+                  <th @click="sortBy('titre')" :class="{active: sortKey==='titre'}">Projet {{ sortIcon('titre') }}</th>
+                  <th @click="sortBy('secteur')" :class="{active: sortKey==='secteur'}">Secteur {{ sortIcon('secteur') }}</th>
+                  <th @click="sortBy('cout_estimatif')" :class="{active: sortKey==='cout_estimatif'}" class="th-num">Coût {{ sortIcon('cout_estimatif') }}</th>
+                  <th @click="sortBy('avis')" :class="{active: sortKey==='avis'}">Avis</th>
+                  <th @click="sortBy('statut')" :class="{active: sortKey==='statut'}">Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in paginatedProjects" :key="p.id" @click="$router.push(`/project/${p.id}`)" class="row-click">
+                  <td class="td-num">{{ p.numero_projet || '—' }}</td>
+                  <td class="td-titre">
+                    <div class="titre-cell">
+                      <span>{{ p.titre }}</span>
+                      <small>{{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</small>
+                    </div>
+                  </td>
+                  <td>{{ secteurLabel(p.secteur) }}</td>
+                  <td class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
+                  <td><span v-if="p.avis" :class="['avis-pill', getAvisClass(p.avis)]">{{ avisShort(p.avis) }}</span><span v-else>—</span></td>
+                  <td><span class="statut-pill" :class="getStatusClass(p.statut)">{{ p.statut }}</span></td>
+                  <td><button @click.stop="$router.push(`/project/${p.id}`)" class="btn-view-sm">👁️</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="totalPages > 1" class="pagination">
+            <button @click="page = Math.max(1, page-1)" :disabled="page === 1">‹</button>
+            <span>Page {{ page }} / {{ totalPages }} ({{ sortedProjects.length }} projets)</span>
+            <button @click="page = Math.min(totalPages, page+1)" :disabled="page === totalPages">›</button>
           </div>
         </div>
 
@@ -117,6 +132,10 @@ export default {
       activeTab: 'projets',
       searchQuery: '',
       filterStatut: '',
+      sortKey: 'numero_projet',
+      sortDir: 'desc',
+      page: 1,
+      perPage: 20,
     };
   },
   computed: {
@@ -144,7 +163,30 @@ export default {
     },
     countDecisionComite() {
       return this.allProjects.filter(p => p.decision_finale).length;
+    },
+    sortedProjects() {
+      const list = [...this.filteredProjects];
+      const k = this.sortKey;
+      const dir = this.sortDir === 'asc' ? 1 : -1;
+      list.sort((a, b) => {
+        const va = a[k] ?? '';
+        const vb = b[k] ?? '';
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+        return String(va).localeCompare(String(vb), 'fr', { sensitivity: 'base' }) * dir;
+      });
+      return list;
+    },
+    totalPages() {
+      return Math.max(1, Math.ceil(this.sortedProjects.length / this.perPage));
+    },
+    paginatedProjects() {
+      const start = (this.page - 1) * this.perPage;
+      return this.sortedProjects.slice(start, start + this.perPage);
     }
+  },
+  watch: {
+    searchQuery() { this.page = 1; },
+    filterStatut() { this.page = 1; },
   },
   mounted() {
     this.loadProjects();
@@ -175,7 +217,36 @@ export default {
     },
     formatCurrency(v) {
       if (!v) return '—';
-      return new Intl.NumberFormat('fr-FR').format(v) + ' F CFA';
+      // Format compact en milliards si > 1 Md
+      if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(2).replace(/\.?0+$/, '') + ' Md';
+      if (v >= 1_000_000) return (v / 1_000_000).toFixed(0) + ' M';
+      return new Intl.NumberFormat('fr-FR').format(v);
+    },
+    sortBy(key) {
+      if (this.sortKey === key) {
+        this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortKey = key;
+        this.sortDir = 'asc';
+      }
+    },
+    sortIcon(key) {
+      if (this.sortKey !== key) return '';
+      return this.sortDir === 'asc' ? '▲' : '▼';
+    },
+    secteurLabel(s) {
+      if (!s) return '—';
+      // Raccourcir les longs noms de secteurs
+      return s.length > 28 ? s.substring(0, 26) + '…' : s;
+    },
+    avisShort(a) {
+      if (!a) return '—';
+      const map = {
+        'favorable': 'Favorable',
+        'favorable sous conditions': 'Sous cond.',
+        'défavorable': 'Défavorable',
+      };
+      return map[a] || a;
     }
   }
 }
@@ -198,6 +269,36 @@ export default {
 
 .empty-state { text-align: center; padding: 3rem; color: #94a3b8; }
 
+/* Tableau optimisé */
+.table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; }
+.projects-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.projects-table th, .projects-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.projects-table th { background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; user-select: none; white-space: nowrap; }
+.projects-table th:hover { background: #f1f5f9; }
+.projects-table th.active { color: #2E6B6B; }
+.projects-table .th-num { text-align: right; }
+.projects-table tr.row-click { cursor: pointer; transition: background 0.15s; }
+.projects-table tr.row-click:hover { background: #f0fdfa; }
+.projects-table .td-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.projects-table .td-titre { max-width: 320px; }
+.titre-cell { display: flex; flex-direction: column; line-height: 1.25; }
+.titre-cell span { font-weight: 500; color: #1e293b; }
+.titre-cell small { color: #64748b; font-size: 0.78rem; margin-top: 0.15rem; }
+
+.statut-pill, .avis-pill { padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; display: inline-block; }
+.avis-pill.avis-favorable { background: #d1fae5; color: #065f46; }
+.avis-pill.avis-conditions { background: #fef3c7; color: #92400e; }
+.avis-pill.avis-defavorable { background: #fee2e2; color: #991b1b; }
+
+.btn-view-sm { padding: 0.25rem 0.5rem; background: transparent; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.95rem; }
+.btn-view-sm:hover { background: #f1f5f9; }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-top: 1rem; color: #64748b; font-size: 0.9rem; }
+.pagination button { padding: 0.4rem 0.7rem; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination button:hover:not(:disabled) { background: #f1f5f9; }
+
+/* Anciens styles cards conservés (utilisés ailleurs) */
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
 .project-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
 .card-header { padding: 1rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
