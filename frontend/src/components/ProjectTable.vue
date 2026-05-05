@@ -54,7 +54,7 @@ export default {
   props: {
     projects: { type: Array, default: () => [] },
     columns: { type: Object, default: () => ({}) },
-    perPage: { type: Number, default: 20 },
+    perPage: { type: Number, default: 1000 },
     defaultSort: { type: String, default: 'numero_projet' },
     defaultDir: { type: String, default: 'desc' },
     emptyMessage: { type: String, default: '' },
