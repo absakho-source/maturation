@@ -1486,9 +1486,6 @@ export default {
       if (projet.decision_finale === 'confirme') {
         return { text: '✅ Entériné par le Comité', class: 'status-validated' };
       }
-      if (projet.decision_finale === 'conteste') {
-        return { text: '❌ Contesté par le Comité', class: 'status-defavorable' };
-      }
       // Ordre du jour
       if (projet.statut_comite === 'recommande_comite' || (projet.ordre_du_jour && !projet.ordre_du_jour_rejete)) {
         return { text: '📋 Ordre du jour', class: 'status-pending' };

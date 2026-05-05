@@ -147,7 +147,6 @@ export default {
     displayStatut(p) {
       // Affiche un statut workflow distinct de l'avis (évite la redondance avec la colonne Avis)
       if (p.decision_finale === 'confirme') return 'Entériné';
-      if (p.decision_finale === 'conteste') return 'Contesté';
       if (p.statut_comite === 'recommande_comite') return 'En attente Comité';
       if (p.ordre_du_jour && !p.ordre_du_jour_rejete) return 'Ordre du jour';
       // Si statut == avis (cas redondant), afficher "Évalué" à la place
@@ -159,7 +158,6 @@ export default {
       // Mapping étendu pour les nouveaux libellés
       const extra = {
         'Entériné': 'status-validated',
-        'Contesté': 'status-defavorable',
         'En attente Comité': 'status-pending',
         'Ordre du jour': 'status-pending',
         'Évalué': 'status-evaluated',
