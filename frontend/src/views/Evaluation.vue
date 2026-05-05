@@ -170,7 +170,7 @@
         <div v-if="autresProjets.length > 0" class="autres-projets-section">
           <h3 class="section-title">👥 Autres projets de l'équipe ({{ autresProjets.length }})</h3>
           <p class="section-description">Projets assignés à d'autres évaluateurs — lecture seule.</p>
-          <ProjectTable :projects="autresProjets" :columns="{ evaluateur: true }" empty-message="Aucun projet d'équipe" />
+          <ProjectTable :projects="autresProjets" empty-message="Aucun projet d'équipe" />
         </div>
       </div>
     </div>

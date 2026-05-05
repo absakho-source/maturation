@@ -60,7 +60,7 @@
             </select>
           </div>
 
-          <ProjectTable :projects="filteredProjects" empty-message="Aucun projet trouvé" :columns="{ evaluateur: true }" />
+          <ProjectTable :projects="filteredProjects" empty-message="Aucun projet trouvé" />
         </div>
 
         <!-- Statistiques -->

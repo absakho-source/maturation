@@ -59,13 +59,13 @@
         <!-- Onglet Ordre du jour -->
         <div v-if="activeTab === 'odj'" class="tab-content">
           <h2>📋 Ordre du jour de la prochaine session</h2>
-          <ProjectTable :projects="projetsOrdreDuJour" empty-message="Aucun projet à l'ordre du jour" :columns="{ evaluateur: true }" />
+          <ProjectTable :projects="projetsOrdreDuJour" empty-message="Aucun projet à l'ordre du jour" />
         </div>
 
         <!-- Onglet Tous les projets au Comité -->
         <div v-if="activeTab === 'projets'" class="tab-content">
           <h2>📁 Tous les projets passés par le Comité</h2>
-          <ProjectTable :projects="projectsComite" empty-message="Aucun projet soumis au Comité" :columns="{ evaluateur: true }" />
+          <ProjectTable :projects="projectsComite" empty-message="Aucun projet soumis au Comité" />
         </div>
 
         <!-- Onglet Statistiques -->

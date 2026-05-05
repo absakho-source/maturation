@@ -74,7 +74,7 @@
           <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
         </div>
 
-        <ProjectTable :projects="projetsFiltres" :columns="{ evaluateur: true }"
+        <ProjectTable :projects="projetsFiltres"
                       :empty-message="filtreStatut ? 'Aucun projet pour ce filtre' : 'Aucun projet'" />
       </div>
 
