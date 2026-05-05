@@ -154,14 +154,12 @@
           </div>
 
           <!-- Informations sur les compléments -->
-          <div class="info-card" v-if="project.complements_reponse_message || project.commentaires">
+          <div class="info-card" v-if="project.complements_demande_message || project.complements_reponse_message">
             <h3>💬 Échanges et compléments</h3>
 
-            <div v-if="project.commentaires" class="complement-section">
-              <!-- Afficher le titre approprié selon le statut du projet -->
-              <h4 v-if="project.statut === 'rejeté' || project.avis === 'dossier rejeté'">Motif de rejet :</h4>
-              <h4 v-else>Demande de compléments :</h4>
-              <div class="complement-message demande">{{ project.commentaires }}</div>
+            <div v-if="project.complements_demande_message" class="complement-section">
+              <h4>Demande de compléments :</h4>
+              <div class="complement-message demande">{{ project.complements_demande_message }}</div>
             </div>
             
             <div v-if="project.complements_reponse_message" class="complement-section">
