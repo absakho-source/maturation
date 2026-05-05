@@ -1481,13 +1481,22 @@ export default {
       this.enregistrerDecisionComite(projet.id, 'conteste');
     },
     getStatutBadge(projet) {
-      // Décision finale rendue par le Comité
+      // Décision finale rendue → afficher l'avis lui-même
       if (projet.decision_finale === 'confirme' || projet.statut_comite === 'approuve_definitif') {
-        return { text: '✅ Entériné', class: 'status-validated' };
+        const map = { 'favorable': 'Favorable', 'favorable sous conditions': 'Sous conditions', 'défavorable': 'Défavorable' };
+        const text = map[projet.avis] || 'Décision rendue';
+        const cls = projet.avis === 'favorable' ? 'status-favorable' :
+                    projet.avis === 'favorable sous conditions' ? 'status-conditions' :
+                    projet.avis === 'défavorable' ? 'status-defavorable' : 'status-validated';
+        return { text, class: cls };
       }
-      // Comité a rejeté l'avis → le projet doit être réétudié
+      // Comité a rejeté l'avis → réétudier
       if (projet.decision_finale === 'conteste' || projet.statut_comite === 'en_reevaluation') {
         return { text: '🔄 À réétudier', class: 'status-pending' };
+      }
+      // Ordre du jour
+      if (projet.statut_comite === 'recommande_comite' || (projet.ordre_du_jour && !projet.ordre_du_jour_rejete)) {
+        return { text: '📋 Ordre du jour', class: 'status-pending' };
       }
       // Si statut == avis (cas redondant), afficher "Évalué"
       const avisVals = ['favorable', 'favorable sous conditions', 'défavorable'];

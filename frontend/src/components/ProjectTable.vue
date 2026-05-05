@@ -145,11 +145,16 @@ export default {
       return '';
     },
     displayStatut(p) {
-      // Décision finale rendue par le Comité
-      if (p.decision_finale === 'confirme') return 'Entériné';
-      // Si le Comité a rejeté l'avis, le projet revient au stade Soumis pour réétude
+      // Décision finale du Comité rendue → afficher l'avis lui-même
+      if (p.decision_finale === 'confirme') {
+        const map = { 'favorable': 'Favorable', 'favorable sous conditions': 'Sous conditions', 'défavorable': 'Défavorable' };
+        return map[p.avis] || 'Décision rendue';
+      }
+      // Comité a rejeté l'avis → projet à réétudier
       if (p.decision_finale === 'conteste') return 'À réétudier';
-      // Si statut == avis (cas redondant), afficher "Évalué" à la place
+      // À l'ordre du jour
+      if (p.ordre_du_jour && !p.ordre_du_jour_rejete) return 'Ordre du jour';
+      // Si statut == avis (cas redondant), afficher "Évalué"
       const avisVals = ['favorable', 'favorable sous conditions', 'défavorable'];
       if (avisVals.includes(p.statut)) return 'Évalué';
       return p.statut || '—';
@@ -157,9 +162,13 @@ export default {
     getStatusClass(s) {
       // Mapping étendu pour les nouveaux libellés
       const extra = {
-        'Entériné': 'status-validated',
+        'Favorable': 'avis-favorable',
+        'Sous conditions': 'avis-conditions',
+        'Défavorable': 'avis-defavorable',
         'À réétudier': 'status-pending',
+        'Ordre du jour': 'status-pending',
         'Évalué': 'status-evaluated',
+        'Décision rendue': 'status-validated',
       };
       if (extra[s]) return extra[s];
       return this.getStatusClassRaw(s);
