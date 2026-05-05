@@ -216,57 +216,9 @@ try:
             else:
                 print("[PRE-MIGRATION] ✓ Compte membrecomite existe déjà")
 
-        # Migration 11: Créer les comptes évaluateurs DPSE
-        if 'users' in table_names:
-            evaluateurs = [
-                ("ousseynou.badiane", "Ousseynou BADIANE", "ousseynou.badiane@economie.gouv.sn"),
-                ("oumar.diedhou", "Oumar DIEDHOU", "oumar.diedhou@economie.gouv.sn"),
-                ("serignedjibril.diene", "Serigne Djibril DIENE", "serignedjibril.diene@economie.gouv.sn"),
-                ("papedethie.diouf", "Pape Déthié DIOUF", "papedethie.diouf@economie.gouv.sn"),
-                ("papeoumar.diouf", "Pape Oumar DIOUF", "papeoumar.diouf@economie.gouv.sn"),
-                ("fatoufaboure.djiba", "Fatou Fabouré DJIBA", "fatoufaboure.djiba@economie.gouv.sn"),
-                ("suleymane.haidara", "Suleymane HAIDARA", "suleymane.haidara@economie.gouv.sn"),
-                ("amy.ka", "Amy KA", "amy.ka@economie.gouv.sn"),
-                ("richard.tendeng", "Richard TENDENG", "richard.tendeng@economie.gouv.sn"),
-                ("fatou.willane", "Fatou WILLANE", "fatou.willane@economie.gouv.sn"),
-                ("aminata.faye", "Aminata FAYE", "aminata.faye@economie.gouv.sn"),
-                ("mamesane.toure", "Mame Sané TOURE", "mamesane.toure@economie.gouv.sn"),
-                ("babacar.sall", "Babacar SALL", "babacar.sall@economie.gouv.sn"),
-                ("mamadouibrahima.marone", "Mamadou Ibrahima MARONE", "mamadouibrahima.marone@economie.gouv.sn"),
-                ("sokhnamar.syll", "Sokhna Mar SYLL", "sokhnamar.syll@economie.gouv.sn"),
-                ("fatoubambabachir.mbow", "Fatou Bamba Bachir MBOW", "fatoubambabachir.mbow@economie.gouv.sn"),
-                ("deguene.mbodj", "Déguène MBODJ", "deguene.mbodj@economie.gouv.sn"),
-                ("moustaphadjamil.sy", "Moustapha Diamil SY", "moustaphadjamil.sy@economie.gouv.sn"),
-                ("abdou.sene", "Abdou SENE", "abdou.sene@economie.gouv.sn"),
-                ("papasamba.lo", "Papa Samba LO", "papasamba.lo@economie.gouv.sn"),
-                ("thiernoibrahima.gaye", "Thierno Ibrahima GAYE", "thiernoibrahima.gaye@economie.gouv.sn"),
-                ("agnes.thiaw", "Agnès THIAW", "agnes.thiaw@economie.gouv.sn"),
-                ("syleymane.niang", "Syleymane NIANG", "syleymane.niang@economie.gouv.sn"),
-                ("mamoudououmar.kane", "Mamoudou Oumar KANE", "mamoudououmar.kane@economie.gouv.sn"),
-                ("salif.signate", "Salif SIGNATÉ", "salif.signate@economie.gouv.sn"),
-            ]
-
-            from werkzeug.security import generate_password_hash
-            created_count = 0
-            for username, display_name, email in evaluateurs:
-                existing = conn.execute(text("SELECT id FROM users WHERE username = :u"), {"u": username}).fetchone()
-                if not existing:
-                    hashed_pwd = generate_password_hash('eval2026')
-                    conn.execute(text("""
-                        INSERT INTO users (username, password, role, must_change_password, display_name, email, nom_complet,
-                                           type_structure, type_institution, nom_structure, direction_service)
-                        VALUES (:username, :password, 'evaluateur', TRUE, :display_name, :email, :nom_complet,
-                                'institution', 'ministere', 'Ministère de l''Économie, du Plan et de la Coopération', 'DGPPE / DPSE')
-                    """), {
-                        "username": username,
-                        "password": hashed_pwd,
-                        "display_name": display_name,
-                        "email": email,
-                        "nom_complet": display_name
-                    })
-                    created_count += 1
-            conn.commit()
-            print(f"[PRE-MIGRATION] ✓ {created_count} comptes évaluateurs créés ({len(evaluateurs) - created_count} existaient déjà)")
+        # Migration 11 : (désactivée) — les comptes nominatifs des évaluateurs DPSE
+        # ne sont plus créés automatiquement au démarrage. Ils doivent être créés
+        # manuellement via la page Gestion des comptes du SCT/Admin.
 
     print("[PRE-MIGRATION] ✓ Migrations terminées avec succès!")
     sys.exit(0)
