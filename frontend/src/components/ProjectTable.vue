@@ -31,7 +31,7 @@
             <td v-if="cols.cout" class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
             <td v-if="cols.evaluateur">{{ p.evaluateur_nom || '—' }}</td>
             <td v-if="cols.avis"><span v-if="p.avis" :class="['avis-pill', getAvisClass(p.avis)]">{{ avisShort(p.avis) }}</span><span v-else>—</span></td>
-            <td><span class="statut-pill" :class="getStatusClass(p.statut)">{{ p.statut }}</span></td>
+            <td><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
             <td class="td-actions" @click.stop>
               <slot name="actions" :project="p">
                 <button @click="onRowClick(p)" class="btn-view-sm" title="Détails">👁️</button>
@@ -144,7 +144,30 @@ export default {
       if (a === 'défavorable') return 'avis-defavorable';
       return '';
     },
+    displayStatut(p) {
+      // Affiche un statut workflow distinct de l'avis (évite la redondance avec la colonne Avis)
+      if (p.decision_finale === 'confirme') return 'Entériné';
+      if (p.decision_finale === 'conteste') return 'Contesté';
+      if (p.statut_comite === 'recommande_comite') return 'En attente Comité';
+      if (p.ordre_du_jour && !p.ordre_du_jour_rejete) return 'Ordre du jour';
+      // Si statut == avis (cas redondant), afficher "Évalué" à la place
+      const avis = ['favorable', 'favorable sous conditions', 'défavorable'];
+      if (avis.includes(p.statut)) return 'Évalué';
+      return p.statut || '—';
+    },
     getStatusClass(s) {
+      // Mapping étendu pour les nouveaux libellés
+      const extra = {
+        'Entériné': 'status-validated',
+        'Contesté': 'status-defavorable',
+        'En attente Comité': 'status-pending',
+        'Ordre du jour': 'status-pending',
+        'Évalué': 'status-evaluated',
+      };
+      if (extra[s]) return extra[s];
+      return this.getStatusClassRaw(s);
+    },
+    getStatusClassRaw(s) {
       const m = {
         'soumis': 'status-new',
         'assigné': 'status-assigned',
