@@ -60,47 +60,7 @@
             </select>
           </div>
 
-          <div v-if="sortedProjects.length === 0" class="empty-state">
-            <p>Aucun projet trouvé</p>
-          </div>
-
-          <div v-else class="table-wrap">
-            <table class="projects-table">
-              <thead>
-                <tr>
-                  <th @click="sortBy('numero_projet')" :class="{active: sortKey==='numero_projet'}">N° {{ sortIcon('numero_projet') }}</th>
-                  <th @click="sortBy('titre')" :class="{active: sortKey==='titre'}">Projet {{ sortIcon('titre') }}</th>
-                  <th @click="sortBy('secteur')" :class="{active: sortKey==='secteur'}">Secteur {{ sortIcon('secteur') }}</th>
-                  <th @click="sortBy('cout_estimatif')" :class="{active: sortKey==='cout_estimatif'}" class="th-num">Coût {{ sortIcon('cout_estimatif') }}</th>
-                  <th @click="sortBy('avis')" :class="{active: sortKey==='avis'}">Avis</th>
-                  <th @click="sortBy('statut')" :class="{active: sortKey==='statut'}">Statut</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in paginatedProjects" :key="p.id" @click="$router.push(`/project/${p.id}`)" class="row-click">
-                  <td class="td-num">{{ p.numero_projet || '—' }}</td>
-                  <td class="td-titre">
-                    <div class="titre-cell">
-                      <span>{{ p.titre }}</span>
-                      <small>{{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</small>
-                    </div>
-                  </td>
-                  <td>{{ secteurLabel(p.secteur) }}</td>
-                  <td class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
-                  <td><span v-if="p.avis" :class="['avis-pill', getAvisClass(p.avis)]">{{ avisShort(p.avis) }}</span><span v-else>—</span></td>
-                  <td><span class="statut-pill" :class="getStatusClass(p.statut)">{{ p.statut }}</span></td>
-                  <td><button @click.stop="$router.push(`/project/${p.id}`)" class="btn-view-sm">👁️</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div v-if="totalPages > 1" class="pagination">
-            <button @click="page = Math.max(1, page-1)" :disabled="page === 1">‹</button>
-            <span>Page {{ page }} / {{ totalPages }} ({{ sortedProjects.length }} projets)</span>
-            <button @click="page = Math.min(totalPages, page+1)" :disabled="page === totalPages">›</button>
-          </div>
+          <ProjectTable :projects="filteredProjects" empty-message="Aucun projet trouvé" :columns="{ evaluateur: true }" />
         </div>
 
         <!-- Statistiques -->
@@ -121,10 +81,11 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
+import ProjectTable from '../components/ProjectTable.vue';
 
 export default {
   name: 'MinistereEconomie',
-  components: { PageWrapper, StatsDashboard, CartesPolesComparaison },
+  components: { PageWrapper, StatsDashboard, CartesPolesComparaison, ProjectTable },
   data() {
     return {
       allProjects: [],

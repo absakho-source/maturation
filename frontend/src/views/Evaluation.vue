@@ -169,26 +169,8 @@
         <!-- Autres projets de l'équipe -->
         <div v-if="autresProjets.length > 0" class="autres-projets-section">
           <h3 class="section-title">👥 Autres projets de l'équipe ({{ autresProjets.length }})</h3>
-          <p class="section-description">Ces projets sont assignés à d'autres évaluateurs. Vous pouvez les consulter mais ne pouvez pas intervenir.</p>
-          <div class="projects-grid">
-            <div v-for="p in autresProjets" :key="p.id" class="project-card project-card-other">
-              <div class="card-header">
-                <h3>{{ p.titre }}</h3>
-                <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
-              </div>
-              <div class="card-body">
-                <p><strong>Auteur:</strong> {{ p.auteur_nom }}</p>
-                <p><strong>Évaluateur assigné:</strong> {{ getEvaluateurDisplay(p) }}</p>
-                <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
-                <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
-                <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-                <button @click="$router.push(`/project/${p.id}`)" class="btn-view btn-view-readonly">👁️ Détails (lecture seule)</button>
-              </div>
-              <div class="readonly-badge">
-                🔒 Lecture seule
-              </div>
-            </div>
-          </div>
+          <p class="section-description">Projets assignés à d'autres évaluateurs — lecture seule.</p>
+          <ProjectTable :projects="autresProjets" :columns="{ evaluateur: true }" empty-message="Aucun projet d'équipe" />
         </div>
       </div>
     </div>
@@ -267,12 +249,13 @@
 
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
+import ProjectTable from '../components/ProjectTable.vue';
 import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
 import evaluationPrealableMixin from '../mixins/evaluationPrealableMixin.js';
 
 export default {
   name: "Evaluation",
-  components: { PageWrapper, MatriceEvaluationPrealable },
+  components: { PageWrapper, MatriceEvaluationPrealable, ProjectTable },
   mixins: [evaluationPrealableMixin],
   data() {
     return {

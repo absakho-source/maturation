@@ -59,64 +59,13 @@
         <!-- Onglet Ordre du jour -->
         <div v-if="activeTab === 'odj'" class="tab-content">
           <h2>📋 Ordre du jour de la prochaine session</h2>
-          <div v-if="projetsOrdreDuJour.length === 0" class="empty-state"><p>Aucun projet à l'ordre du jour</p></div>
-          <div v-else class="projects-grid">
-            <div v-for="p in projetsOrdreDuJour" :key="'odj-'+p.id" class="project-card">
-              <div class="card-header">
-                <div class="card-title-section">
-                  <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
-                  <h3>{{ p.titre }}</h3>
-                </div>
-                <span class="badge" style="background:#fef3c7;color:#92400e;">📋 Ordre du jour</span>
-              </div>
-              <div class="card-body">
-                <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || 'N/A' }}</p>
-                <p><strong>Secteur:</strong> {{ p.secteur || 'N/A' }}</p>
-                <p v-if="p.avis"><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-                <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
-              </div>
-            </div>
-          </div>
+          <ProjectTable :projects="projetsOrdreDuJour" empty-message="Aucun projet à l'ordre du jour" :columns="{ evaluateur: true }" />
         </div>
 
         <!-- Onglet Tous les projets au Comité -->
         <div v-if="activeTab === 'projets'" class="tab-content">
           <h2>📁 Tous les projets passés par le Comité</h2>
-
-          <div v-if="projectsComite.length === 0" class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p>Aucun projet soumis au Comité pour le moment</p>
-          </div>
-
-          <div v-else class="projects-grid">
-            <div v-for="p in projectsComite" :key="p.id" class="project-card">
-              <div class="card-header">
-                <div class="card-title-section">
-                  <div class="project-number">{{ p.numero_projet || 'N/A' }}</div>
-                  <h3>{{ p.titre }}</h3>
-                </div>
-                <span class="badge status-comite">🟡 En attente décision</span>
-              </div>
-              <div class="card-body">
-                <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || 'N/A' }}</p>
-                <p><strong>Secteur:</strong> {{ p.secteur || 'N/A' }}</p>
-                <p><strong>Évaluateur:</strong> {{ getEvaluateurLabel(p.evaluateur_nom) }}</p>
-                <p v-if="p.avis"><strong>Avis évaluateur:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
-                <p v-if="p.avis_presidencesct"><strong>Validation SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
-                <p v-if="p.montant_global"><strong>Montant:</strong> {{ formatMontant(p.montant_global) }}</p>
-
-                <button @click="$router.push(`/project/${p.id}`)" class="btn-view">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  👁️ Détails
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProjectTable :projects="projectsComite" empty-message="Aucun projet soumis au Comité" :columns="{ evaluateur: true }" />
         </div>
 
         <!-- Onglet Statistiques -->
@@ -140,10 +89,11 @@
 import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
+import ProjectTable from '../components/ProjectTable.vue';
 
 export default {
   name: "MembreComite",
-  components: { PageWrapper, StatsDashboard, CartesPolesComparaison },
+  components: { PageWrapper, StatsDashboard, CartesPolesComparaison, ProjectTable },
   data() {
     return {
       allProjects: [],

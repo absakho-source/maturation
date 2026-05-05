@@ -74,47 +74,8 @@
           <button @click="filtrerParStatut(null)" class="btn-clear-filter">✕ Tout afficher</button>
         </div>
 
-        <div class="projects-table-container">
-          <table class="projects-table">
-            <thead>
-              <tr>
-                <th>N° Projet</th>
-                <th>Titre</th>
-                <th>Structure soumissionnaire</th>
-                <th>Secteur</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="projetsFiltres.length === 0">
-                <td colspan="6" class="empty-state">Aucun projet{{ filtreStatut ? ' pour ce filtre' : '' }}</td>
-              </tr>
-              <tr v-for="p in projetsFiltres" :key="p.id">
-                <td><strong class="project-number-table">{{ p.numero_projet || 'N/A' }}</strong></td>
-                <td class="project-title">{{ p.titre }}</td>
-                <td>{{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || 'N/A' }}</td>
-                <td>{{ p.secteur || 'N/A' }}</td>
-                <td>
-                  <span class="badge" :class="getStatusClass(p.statut)">{{ p.statut }}</span>
-                </td>
-                <td>
-                  <div class="action-buttons-table">
-                    <button @click="$router.push(`/project/${p.id}`)" class="btn-sm btn-view">📋 Détails</button>
-                    <button
-                      v-if="p.statut === 'évalué' && p.validation_secretariat === 'valide'"
-                      @click="activeTab = 'validation'"
-                      class="btn-sm btn-success"
-                      title="Valider l'avis"
-                    >
-                      ✅ Valider
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ProjectTable :projects="projetsFiltres" :columns="{ evaluateur: true }"
+                      :empty-message="filtreStatut ? 'Aucun projet pour ce filtre' : 'Aucun projet'" />
       </div>
 
       <div v-if="activeTab === 'validation'" class="tab-content">
@@ -311,6 +272,7 @@ import PageWrapper from '../components/PageWrapper.vue';
 import StatsDashboard from '../components/StatsDashboard.vue';
 import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
 import MatriceEvaluationPrealable from '../components/MatriceEvaluationPrealable.vue';
+import ProjectTable from '../components/ProjectTable.vue';
 import evaluationPrealableMixin from '../mixins/evaluationPrealableMixin.js';
 
 export default {
@@ -319,7 +281,8 @@ export default {
     PageWrapper,
     StatsDashboard,
     CartesPolesComparaison,
-    MatriceEvaluationPrealable
+    MatriceEvaluationPrealable,
+    ProjectTable
   },
   mixins: [evaluationPrealableMixin],
   data() {
