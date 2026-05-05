@@ -93,10 +93,6 @@ export default {
       activeTab: 'projets',
       searchQuery: '',
       filterStatut: '',
-      sortKey: 'numero_projet',
-      sortDir: 'desc',
-      page: 1,
-      perPage: 20,
     };
   },
   computed: {
@@ -125,29 +121,6 @@ export default {
     countDecisionComite() {
       return this.allProjects.filter(p => p.decision_finale).length;
     },
-    sortedProjects() {
-      const list = [...this.filteredProjects];
-      const k = this.sortKey;
-      const dir = this.sortDir === 'asc' ? 1 : -1;
-      list.sort((a, b) => {
-        const va = a[k] ?? '';
-        const vb = b[k] ?? '';
-        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
-        return String(va).localeCompare(String(vb), 'fr', { sensitivity: 'base' }) * dir;
-      });
-      return list;
-    },
-    totalPages() {
-      return Math.max(1, Math.ceil(this.sortedProjects.length / this.perPage));
-    },
-    paginatedProjects() {
-      const start = (this.page - 1) * this.perPage;
-      return this.sortedProjects.slice(start, start + this.perPage);
-    }
-  },
-  watch: {
-    searchQuery() { this.page = 1; },
-    filterStatut() { this.page = 1; },
   },
   mounted() {
     this.loadProjects();
@@ -176,39 +149,6 @@ export default {
       if (a === 'défavorable') return 'avis-defavorable';
       return '';
     },
-    formatCurrency(v) {
-      if (!v) return '—';
-      // Format compact en milliards si > 1 Md
-      if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(2).replace(/\.?0+$/, '') + ' Md';
-      if (v >= 1_000_000) return (v / 1_000_000).toFixed(0) + ' M';
-      return new Intl.NumberFormat('fr-FR').format(v);
-    },
-    sortBy(key) {
-      if (this.sortKey === key) {
-        this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        this.sortKey = key;
-        this.sortDir = 'asc';
-      }
-    },
-    sortIcon(key) {
-      if (this.sortKey !== key) return '';
-      return this.sortDir === 'asc' ? '▲' : '▼';
-    },
-    secteurLabel(s) {
-      if (!s) return '—';
-      // Raccourcir les longs noms de secteurs
-      return s.length > 28 ? s.substring(0, 26) + '…' : s;
-    },
-    avisShort(a) {
-      if (!a) return '—';
-      const map = {
-        'favorable': 'Favorable',
-        'favorable sous conditions': 'Sous cond.',
-        'défavorable': 'Défavorable',
-      };
-      return map[a] || a;
-    }
   }
 }
 </script>
