@@ -226,6 +226,11 @@ export default {
 .statut-pill.status-validated { background: #bbf7d0; color: #14532d; }
 .statut-pill.status-default { background: #e2e8f0; color: #475569; }
 
+/* Statut affichant l'avis lui-même (décision finale rendue) — couleurs dédiées */
+.statut-pill.avis-favorable { background: #d1fae5; color: #065f46; }
+.statut-pill.avis-conditions { background: #fef3c7; color: #92400e; }
+.statut-pill.avis-defavorable { background: #fee2e2; color: #991b1b; }
+
 .btn-view-sm { padding: 0.25rem 0.5rem; background: transparent; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.95rem; }
 .btn-view-sm:hover { background: #f1f5f9; }
 
