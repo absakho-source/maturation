@@ -269,13 +269,13 @@
             <p v-if="ficheEvaluation.recommandations">
               <strong>Recommandation :</strong> {{ ficheEvaluation.recommandations }}
             </p>
-            <a :href="`/api/uploads/${ficheEvaluation.fichier_principal}`" target="_blank"
-               class="btn-primary" download>📥 Télécharger la fiche d'évaluation</a>
+            <a :href="uploadUrl(ficheEvaluation.fichier_principal)" target="_blank" rel="noopener"
+               class="btn-primary">📄 Voir la fiche d'évaluation</a>
             <div v-if="annexesEvaluation.length" style="margin-top: 0.75rem;">
               <strong>Annexes :</strong>
               <ul>
                 <li v-for="(a, i) in annexesEvaluation" :key="i">
-                  <a :href="`/api/uploads/${a.chemin}`" target="_blank" download>{{ a.nom_original }}</a>
+                  <a :href="uploadUrl(a.chemin)" target="_blank" rel="noopener">{{ a.nom_original }}</a>
                 </li>
               </ul>
             </div>
@@ -486,6 +486,14 @@ export default {
     window.removeEventListener('message', this.handleFicheUpdate);
   },
   methods: {
+    uploadUrl(path) {
+      // Construit une URL absolue vers le backend (pour ouvrir dans un nouvel onglet)
+      if (!path) return '#';
+      const apiBase = import.meta.env.VITE_API_URL || (window.location.hostname.includes('render.com')
+        ? 'https://maturation-backend.onrender.com'
+        : '');
+      return `${apiBase}/api/uploads/${path}`;
+    },
     handleFicheUpdate(event) {
       console.log('[ProjectDetail] Message reçu:', event.data);
       console.log('[ProjectDetail] Origin:', event.origin, 'Expected:', window.location.origin);

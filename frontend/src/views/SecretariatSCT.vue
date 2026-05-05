@@ -504,19 +504,19 @@
                 <p class="eval-date" v-if="projet.evaluabilite_date">{{ new Date(projet.evaluabilite_date).toLocaleString('fr-FR') }}</p>
               </div>
 
-              <!-- Téléchargement du fichier d'évaluation uploadé par l'évaluateur -->
+              <!-- Fichier d'évaluation uploadé par l'évaluateur -->
               <div v-if="projet.fiche_evaluation && projet.fiche_evaluation.fichier_principal" class="eval-section">
                 <div class="eval-options">
-                  <a :href="`/api/uploads/${projet.fiche_evaluation.fichier_principal}`" target="_blank"
-                     class="btn-evaluation-detaillee" download>
-                    📥 Télécharger l'évaluation ({{ projet.fiche_evaluation.proposition }}
+                  <a :href="uploadUrl(projet.fiche_evaluation.fichier_principal)" target="_blank" rel="noopener"
+                     class="btn-evaluation-detaillee">
+                    📄 Voir l'évaluation ({{ projet.fiche_evaluation.proposition }}
                     — {{ projet.fiche_evaluation.score_total }}/100)
                   </a>
                   <div v-if="parseAnnexes(projet.fiche_evaluation.fichiers_annexes).length" class="annexes-list">
                     <strong>Annexes :</strong>
                     <ul>
                       <li v-for="(a, i) in parseAnnexes(projet.fiche_evaluation.fichiers_annexes)" :key="i">
-                        <a :href="`/api/uploads/${a.chemin}`" target="_blank" download>{{ a.nom_original }}</a>
+                        <a :href="uploadUrl(a.chemin)" target="_blank" rel="noopener">{{ a.nom_original }}</a>
                       </li>
                     </ul>
                   </div>
@@ -969,6 +969,13 @@ export default {
       if (!annexesRaw) return [];
       try { return typeof annexesRaw === 'string' ? JSON.parse(annexesRaw) : annexesRaw; }
       catch { return []; }
+    },
+    uploadUrl(path) {
+      if (!path) return '#';
+      const apiBase = import.meta.env.VITE_API_URL || (window.location.hostname.includes('render.com')
+        ? 'https://maturation-backend.onrender.com'
+        : '');
+      return `${apiBase}/api/uploads/${path}`;
     },
     estProjetAssignable(projet) {
       // Un projet est assignable uniquement s'il n'a PAS de statut définitif
