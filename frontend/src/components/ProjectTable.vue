@@ -13,7 +13,6 @@
             <th v-if="cols.secteur" @click="sortBy('secteur')" :class="{active: sortKey==='secteur'}">Secteur {{ sortIcon('secteur') }}</th>
             <th v-if="cols.cout" @click="sortBy('cout_estimatif')" :class="{active: sortKey==='cout_estimatif'}" class="th-num">Coût {{ sortIcon('cout_estimatif') }}</th>
             <th v-if="cols.evaluateur" @click="sortBy('evaluateur_nom')" :class="{active: sortKey==='evaluateur_nom'}">Évaluateur {{ sortIcon('evaluateur_nom') }}</th>
-            <th v-if="cols.avis" @click="sortBy('avis')" :class="{active: sortKey==='avis'}">Avis</th>
             <th @click="sortBy('statut')" :class="{active: sortKey==='statut'}">Statut</th>
             <th></th>
           </tr>
@@ -30,7 +29,6 @@
             <td v-if="cols.secteur">{{ secteurLabel(p.secteur) }}</td>
             <td v-if="cols.cout" class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
             <td v-if="cols.evaluateur">{{ p.evaluateur_nom || '—' }}</td>
-            <td v-if="cols.avis"><span v-if="p.avis" :class="['avis-pill', getAvisClass(p.avis)]">{{ avisShort(p.avis) }}</span><span v-else>—</span></td>
             <td><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
             <td class="td-actions" @click.stop>
               <slot name="actions" :project="p">
@@ -125,9 +123,7 @@ export default {
     },
     formatCurrency(v) {
       if (!v) return '—';
-      if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(2).replace(/\.?0+$/, '') + ' Md';
-      if (v >= 1_000_000) return (v / 1_000_000).toFixed(0) + ' M';
-      return new Intl.NumberFormat('fr-FR').format(v);
+      return new Intl.NumberFormat('fr-FR').format(v) + ' F CFA';
     },
     avisShort(a) {
       if (!a) return '—';
