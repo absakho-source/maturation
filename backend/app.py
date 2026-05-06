@@ -7106,7 +7106,7 @@ def import_projet_historique():
             point_focal_fonction=request.form.get('point_focal_fonction', ''),
             point_focal_telephone=request.form.get('point_focal_telephone', ''),
             point_focal_email=request.form.get('point_focal_email', ''),
-            auteur_nom=request.form.get('auteur_original', auteur_import),
+            auteur_nom=(request.form.get('auteur_original') or request.form.get('structure_soumissionnaire') or auteur_import),
             date_soumission=date_eval,
             import_historique=True,
             # Evaluation (toujours renseignée)

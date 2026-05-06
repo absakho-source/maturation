@@ -48,14 +48,6 @@
               </div>
             </div>
 
-            <!-- Auteur original -->
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label>Auteur / soumissionnaire original</label>
-                <input v-model="form.auteur_original" type="text" placeholder="Ex: Direction de l'Agriculture" />
-              </div>
-            </div>
-
             <!-- Pôles + Secteur -->
             <div class="form-row">
               <div class="form-group">
@@ -143,7 +135,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Évaluateur</label>
-                <input v-model="form.evaluateur_nom" type="text" placeholder="Nom de l'évaluateur" />
+                <select v-model="form.evaluateur_nom">
+                  <option value="">— Sélectionner un évaluateur —</option>
+                  <option v-for="u in evaluateurs" :key="u.id" :value="u.display_name">{{ u.display_name }}</option>
+                </select>
+                <small v-if="!evaluateurs.length" class="hint">Aucun évaluateur trouvé dans la plateforme</small>
               </div>
               <div class="form-group">
                 <label>Score total (/100) <span class="req">*</span></label>
@@ -294,6 +290,7 @@ export default {
       dragFiche: false,
       dragAnnexes: false,
       ministeres: [],
+      evaluateurs: [],
       form: {
         titre: '',
         description: '',
@@ -303,7 +300,6 @@ export default {
         duree_annees: null,
         structure_soumissionnaire: '',
         organisme_tutelle: '',
-        auteur_original: '',
         date_evaluation: '',
         stade: 'evalue',
         evaluateur_nom: '',
@@ -363,6 +359,7 @@ export default {
   },
   mounted() {
     this.loadMinisteres();
+    this.loadEvaluateurs();
   },
   methods: {
     async loadMinisteres() {
@@ -370,6 +367,17 @@ export default {
         const r = await fetch('/api/ministeres');
         if (r.ok) this.ministeres = await r.json();
       } catch (e) { /* fallback : champ vide, pas critique */ }
+    },
+    async loadEvaluateurs() {
+      try {
+        const r = await fetch('/api/users');
+        if (!r.ok) return;
+        const all = await r.json();
+        const isEval = u => (u.role || '').startsWith('evaluateur');
+        this.evaluateurs = all.filter(isEval).sort((a, b) =>
+          (a.display_name || '').localeCompare(b.display_name || '', 'fr', { sensitivity: 'base' })
+        );
+      } catch (e) { /* idem */ }
     },
     toggleAllPoles() {
       if (this.form.poles.length === this.polesOptions.length) {
@@ -415,7 +423,7 @@ export default {
         for (const key of [
           'titre','description','secteur','cout_estimatif',
           'duree_annees','structure_soumissionnaire','organisme_tutelle',
-          'auteur_original','date_evaluation','stade','evaluateur_nom',
+          'date_evaluation','stade','evaluateur_nom',
           'score_total','proposition','recommandations',
           'validation_sct','avis_psct','decision_comite'
         ]) {
