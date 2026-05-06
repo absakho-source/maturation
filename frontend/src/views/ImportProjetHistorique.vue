@@ -126,11 +126,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Évaluateur</label>
-                <input v-model="form.evaluateur_nom" type="text" :list="evaluateurs.length ? 'evaluateurs-list' : null" placeholder="Nom de l'évaluateur d'origine" />
-                <datalist v-if="evaluateurs.length" id="evaluateurs-list">
-                  <option v-for="u in evaluateurs" :key="u.id" :value="u.display_name" />
-                </datalist>
-                <small class="hint">Saisie libre — l'évaluateur peut ne pas être dans la plateforme</small>
+                <input v-model="form.evaluateur_nom" type="text" placeholder="Nom de l'évaluateur d'origine" />
               </div>
               <div class="form-group">
                 <label>Date d'évaluation</label>
@@ -286,7 +282,6 @@ export default {
       dragFiche: false,
       dragAnnexes: false,
       ministeres: [],
-      evaluateurs: [],
       form: {
         titre: '',
         description: '',
@@ -355,7 +350,6 @@ export default {
   },
   mounted() {
     this.loadMinisteres();
-    this.loadEvaluateurs();
   },
   methods: {
     async loadMinisteres() {
@@ -363,17 +357,6 @@ export default {
         const r = await fetch('/api/ministeres');
         if (r.ok) this.ministeres = await r.json();
       } catch (e) { /* fallback : champ vide, pas critique */ }
-    },
-    async loadEvaluateurs() {
-      try {
-        const r = await fetch('/api/users');
-        if (!r.ok) return;
-        const all = await r.json();
-        const isEval = u => (u.role || '').startsWith('evaluateur');
-        this.evaluateurs = all.filter(isEval).sort((a, b) =>
-          (a.display_name || '').localeCompare(b.display_name || '', 'fr', { sensitivity: 'base' })
-        );
-      } catch (e) { /* idem */ }
     },
     toggleAllPoles() {
       if (this.form.poles.length === this.polesOptions.length) {
