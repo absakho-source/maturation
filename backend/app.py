@@ -7050,6 +7050,66 @@ def migrer_numeros_historiques():
     return jsonify({"migrated": len(updated), "details": updated})
 
 
+@app.route('/api/admin/aligner-tutelles-officielles', methods=['POST'])
+def aligner_tutelles_officielles():
+    """Aligne organisme_tutelle des projets historiques sur les nom_complet de la table Ministere."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+
+    # Mapping ancien (TUTELLES_ACTUELLES) → officiel (table Ministere)
+    MAPPING = {
+        "Ministère de l’Agriculture, de la Souveraineté alimentaire et de l’Élevage":
+            "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage",
+        "Ministère de l'Agriculture, de la Souveraineté alimentaire et de l'Élevage":
+            "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage",
+        "Ministère de l’Éducation nationale":
+            "Ministère de l'Éducation Nationale",
+        "Ministère de l'Éducation nationale":
+            "Ministère de l'Éducation Nationale",
+        "Ministère de la Formation professionnelle, de l’Apprentissage et de l’Insertion":
+            "Ministère de l'Emploi et de la Formation Professionnelle et Technique",
+        "Ministère de la Formation professionnelle, de l'Apprentissage et de l'Insertion":
+            "Ministère de l'Emploi et de la Formation Professionnelle et Technique",
+        "Ministère de la Santé et de l’Action sociale":
+            "Ministère de la Santé et de l'Hygiène Publique",
+        "Ministère de la Santé et de l'Action sociale":
+            "Ministère de la Santé et de l'Hygiène Publique",
+        "Ministère des Microfinances, de l’Économie sociale et solidaire":
+            "Ministère de la Microfinance et de l'Économie Sociale et Solidaire",
+        "Ministère des Microfinances, de l'Économie sociale et solidaire":
+            "Ministère de la Microfinance et de l'Économie Sociale et Solidaire",
+        "Ministère des Pêches et de l’Économie maritime":
+            "Ministère des Pêches et de l'Économie Maritime",
+        "Ministère des Pêches et de l'Économie maritime":
+            "Ministère des Pêches et de l'Économie Maritime",
+        # Déjà OK (juste pour le journal):
+        "Ministère de l'Hydraulique et de l'Assainissement":
+            "Ministère de l'Hydraulique et de l'Assainissement",
+        "Ministère de l’Hydraulique et de l’Assainissement":
+            "Ministère de l'Hydraulique et de l'Assainissement",
+        "Ministère de l'Industrie et du Commerce":
+            "Ministère de l'Industrie et du Commerce",
+        "Ministère de l’Industrie et du Commerce":
+            "Ministère de l'Industrie et du Commerce",
+    }
+
+    updated = []
+    skipped = []
+    for p in Project.query.filter(Project.import_historique == True).all():
+        old = p.organisme_tutelle or ''
+        new = MAPPING.get(old)
+        if not new:
+            skipped.append({"numero": p.numero_projet, "tutelle_actuelle": old})
+            continue
+        if old != new:
+            p.organisme_tutelle = new
+            updated.append({"numero": p.numero_projet, "old": old, "new": new})
+    db.session.commit()
+    return jsonify({"updated": len(updated), "skipped": len(skipped),
+                    "details": updated, "skipped_details": skipped})
+
+
 @app.route('/api/admin/corriger-structures-historiques', methods=['POST'])
 def corriger_structures_historiques():
     """Aligne structure_soumissionnaire et auteur_nom sur le ministère de tutelle propre."""
