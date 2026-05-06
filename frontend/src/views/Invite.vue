@@ -100,10 +100,11 @@ export default {
   },
   computed: {
     coutTotal() {
-      return this.projects.reduce((s, p) => s + (p.cout_estimatif || 0), 0);
+      return this.statsOverview.cout_total || 0;
     },
     favorablesCount() {
-      return this.projects.filter(p => p.avis === 'favorable' || p.avis === 'favorable sous conditions').length;
+      const s = this.statsOverview.statuts || {};
+      return (s['favorable'] || 0) + (s['favorable sous conditions'] || 0);
     }
   },
   mounted() {
