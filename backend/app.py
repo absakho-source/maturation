@@ -6975,6 +6975,25 @@ def toggle_ordre_du_jour(project_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/admin/migrer-numeros-historiques', methods=['POST'])
+def migrer_numeros_historiques():
+    """Migration ponctuelle : numéros historiques YYYYMMDDNN → YYYYMMNN (8 chars)."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+    import re
+    updated = []
+    for p in Project.query.filter(Project.import_historique == True).all():
+        n = p.numero_projet or ''
+        if re.fullmatch(r'\d{10}', n):
+            new_n = n[:6] + n[8:10]
+            if not Project.query.filter(Project.numero_projet == new_n, Project.id != p.id).first():
+                p.numero_projet = new_n
+                updated.append({"old": n, "new": new_n})
+    db.session.commit()
+    return jsonify({"migrated": len(updated), "details": updated})
+
+
 @app.route('/api/admin/import-projet-historique', methods=['POST'])
 def import_projet_historique():
     """
@@ -7010,8 +7029,8 @@ def import_projet_historique():
             except ValueError:
                 pass
 
-        # Générer numéro de projet (basé sur date d'évaluation pour les imports historiques)
-        date_prefix = date_eval.strftime("%Y%m%d")
+        # Générer numéro de projet (basé sur année/mois d'évaluation pour les imports historiques)
+        date_prefix = date_eval.strftime("%Y%m")
         existing = Project.query.filter(
             Project.numero_projet.like(f"{date_prefix}%")
         ).count()
