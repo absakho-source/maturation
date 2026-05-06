@@ -5596,13 +5596,13 @@ def get_performance_metrics():
         avg_processing_time = round(total_processing_days / processing_count) if processing_count > 0 else 0
 
         # 2. TAUX DE VALIDATION
-        # Projets avec évaluation finale
+        # Pourcentage de projets ayant reçu un avis favorable parmi ceux évalués
         projects_evaluated = Project.query.filter(
-            Project.decision_finale.in_(['confirme', 'infirme'])
+            Project.avis.in_(['favorable', 'favorable sous conditions', 'défavorable'])
         ).all()
 
         favorable_count = sum(1 for p in projects_evaluated
-                             if p.decision_finale == 'confirme')
+                             if p.avis in ('favorable', 'favorable sous conditions'))
         total_evaluated = len(projects_evaluated)
 
         validation_rate = round((favorable_count / total_evaluated) * 100) if total_evaluated > 0 else 0
