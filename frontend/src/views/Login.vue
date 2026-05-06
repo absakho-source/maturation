@@ -87,20 +87,21 @@
           </form>
         </div>
 
-        <!-- Lien d'inscription -->
-        <div class="inscription-section">
-          <p>Vous n'avez pas encore de compte ?</p>
-          <router-link to="/register" class="btn-inscription">
-            Créer un compte soumissionnaire
-          </router-link>
-        </div>
-
-        <!-- Accès visiteur (lecture publique) -->
-        <div class="visiteur-section">
-          <p>Vous êtes un visiteur ?</p>
-          <button @click="loginAsVisiteur" class="btn-visiteur">
-            👁️ Accéder en mode consultation
-          </button>
+        <!-- Bloc d'accès secondaires (inscription + visiteur) -->
+        <div class="acces-secondaires">
+          <div class="acces-option">
+            <p>Vous n'avez pas encore de compte ?</p>
+            <router-link to="/register" class="btn-inscription">
+              Créer un compte soumissionnaire
+            </router-link>
+          </div>
+          <div class="acces-separator"></div>
+          <div class="acces-option">
+            <p>Vous êtes un visiteur ?</p>
+            <button @click="loginAsVisiteur" class="btn-visiteur">
+              👁️ Accéder en mode consultation
+            </button>
+          </div>
         </div>
 
         <!-- Lien de contact -->
@@ -685,19 +686,34 @@ export default {
 }
 
 /* ==================== SECTION INSCRIPTION ==================== */
-.inscription-section, .visiteur-section {
-  text-align: center;
-  margin-top: 1rem;
-  padding: 1.25rem;
+.acces-secondaires {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
   background: white;
   border-radius: 10px;
   border: 2px solid #e2e8f0;
 }
-
-.visiteur-section p {
+.acces-option {
+  text-align: center;
+}
+.acces-option p {
   margin: 0 0 0.75rem 0;
   color: #4a5568;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+}
+.acces-separator {
+  width: 1px;
+  height: 60px;
+  background: #e2e8f0;
+}
+
+@media (max-width: 600px) {
+  .acces-secondaires { grid-template-columns: 1fr; }
+  .acces-separator { width: 100%; height: 1px; }
 }
 
 .btn-visiteur {
