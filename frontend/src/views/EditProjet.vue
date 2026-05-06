@@ -37,6 +37,10 @@
                 <label>Ministère de tutelle</label>
                 <select v-model="form.organisme_tutelle">
                   <option value="">— Sélectionner un ministère —</option>
+                  <option v-if="form.organisme_tutelle && !ministeres.some(m => m.nom_complet === form.organisme_tutelle)"
+                          :value="form.organisme_tutelle">
+                    {{ form.organisme_tutelle }} (valeur actuelle, hors liste officielle)
+                  </option>
                   <option v-for="m in ministeres" :key="m.id" :value="m.nom_complet">{{ m.nom_complet }}</option>
                 </select>
               </div>
