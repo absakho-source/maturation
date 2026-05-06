@@ -6994,6 +6994,59 @@ def migrer_numeros_historiques():
     return jsonify({"migrated": len(updated), "details": updated})
 
 
+@app.route('/api/admin/corriger-structures-historiques', methods=['POST'])
+def corriger_structures_historiques():
+    """Corrige les structures tronquées des 25 projets historiques (extraites du PDF d'origine)."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+
+    # Structures complètes extraites du PDF de compilation 2024 (ordre = pages 4..53)
+    STRUCTURES = [
+        "Ministère de la santé et de l’action social/ Direction générale de la Santé",
+        "Ministère de la Santé et de l’Action sociale (MSAS) / Direction générale des Etablissements de Santé (DGES)",
+        "Ministère de la Santé et de l’Action sociale (MSAS)/DPPPH",
+        "MSAS/Direction générale de l’Action sociale (DGAS)",
+        "Ministère de la Santé et de l’Action sociale (MSAS)/Direction des laboratoires (DL)",
+        "Ministère des Pêches, des Infrastructures maritimes et portuaires (MPIMP)/Direction de la Gestion et de l’Exploitation des Fonds marins (DGEFM)",
+        "MSAS/Direction de la Santé de la Mère et de l’Enfant (DSME)",
+        "Ministère de la Microfinance et de l'Économie sociale et solidaire/Fonds d’Impulsion de la Microfinance (FIMF)",
+        "Ministère de la Santé et de l’Action Sociale (MSAS)",
+        "Ministère de l’Industrie et du Commerce/Organe de Régulation du Système de Récépissé d’Entrepôt",
+        "MSAS/Direction de la santé de la mère et de l’enfant (DSME)",
+        "MSAS/Direction de la santé de la mère et de l’enfant (DSME)",
+        "MSAS/SEN-PNA",
+        "Ministère de la Santé et de l’Action sociale/Agence sénégalaise de Règlementation pharmaceutique (ARP)",
+        "MESRI/Institut Supérieur de Formation agricole et rural (ISFAR)",
+        "Ministère des Pêches, des Infrastructures maritimes et portuaires (MPIMP)/Direction de la Gestion et de l’Exploitation des Fonds marins (DGEFM)",
+        "Office des Lacs et cours d’Eau (OLAC)",
+        "Ministère de la Santé et de l’Action sociale (MSAS)/Cellule informatique (CI)",
+        "Ministère de la Santé et l’Action sociale (MSAS)/Direction de la Santé de la mère et de l’enfant (DSME)",
+        "Le Ministère la Santé et de l’Action sociale/SNEISS",
+        "Ministère de l’éducation nationale/Direction des Daara",
+        "Ministère de la Formation professionnelle (MFP)/Direction de l’Apprentissage",
+        "Ministère de la Sante et de l’Action social/DGSP/COUS",
+        "Ministère de la Santé et de l’Action sociale (MSAS)/Direction de Lutte contre la Maladie (DLM)",
+        "Ministère de la Santé et de l’Action sociale/Direction de la santé de la Mère et de l’Enfant (DSME)",
+    ]
+
+    projets = Project.query.filter(Project.import_historique == True).order_by(Project.numero_projet.asc()).all()
+    if len(projets) != len(STRUCTURES):
+        return jsonify({
+            "error": f"Nombre de projets historiques ({len(projets)}) ≠ nombre de structures ({len(STRUCTURES)})"
+        }), 400
+
+    updated = []
+    for p, structure in zip(projets, STRUCTURES):
+        old = p.structure_soumissionnaire or ''
+        if old != structure:
+            p.structure_soumissionnaire = structure
+            p.auteur_nom = structure
+            updated.append({"numero": p.numero_projet, "old": old, "new": structure})
+    db.session.commit()
+    return jsonify({"updated": len(updated), "details": updated})
+
+
 @app.route('/api/admin/import-projet-historique', methods=['POST'])
 def import_projet_historique():
     """
