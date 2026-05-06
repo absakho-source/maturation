@@ -6,6 +6,7 @@ import ForgotPassword from '../views/ForgotPassword.vue';
 import ResetPassword from '../views/ResetPassword.vue';
 import NotFound from '../views/NotFound.vue';
 import ImportProjetHistorique from '../views/ImportProjetHistorique.vue';
+import EditProjet from '../views/EditProjet.vue';
 import DashboardSoumissionnaire from '../views/DashboardSoumissionnaire.vue';
 import Evaluation from '../views/Evaluation.vue';
 import SecretariatSCT from '../views/SecretariatSCT.vue';
@@ -54,7 +55,8 @@ const routes = [
   { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
   { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
   { path: '/ministre_economie', name: 'MinistereEconomie', component: MinistereEconomie, meta: { requiresAuth: true } },
-  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } }
+  { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } },
+  { path: '/project/:id/edit', name: 'EditProjet', component: EditProjet, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({

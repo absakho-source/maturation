@@ -11,6 +11,11 @@
         </button>
         <span class="badge" :class="getStatusBadgeClass()">{{ getStatusBadgeText() }}</span>
         <span v-if="project.niveau_priorite === 'prioritaire_ant'" class="badge badge-prioritaire">PRIORITAIRE</span>
+        <button v-if="canEditProject"
+                @click="$router.push(`/project/${project.id}/edit`)"
+                class="btn-edit-project" title="Modifier les informations du projet">
+          ✏️ Modifier
+        </button>
       </div>
 
       <div class="detail-content">
@@ -332,6 +337,10 @@ export default {
     };
   },
   computed: {
+    canEditProject() {
+      const r = this.currentUser?.role;
+      return r === 'admin' || r === 'secretariatsct';
+    },
     annexesEvaluation() {
       const raw = this.ficheEvaluation && this.ficheEvaluation.fichiers_annexes;
       if (!raw) return [];
@@ -954,6 +963,20 @@ export default {
 }
 .btn-back:hover {
   background: #4b5563;
+}
+
+.btn-edit-project {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 1.1rem; margin-left: auto;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white; border: none; border-radius: 8px;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+.btn-edit-project:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
 }
 
 .btn-primary {

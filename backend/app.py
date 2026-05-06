@@ -931,6 +931,53 @@ def get_project(project_id):
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/projects/<int:project_id>", methods=["PUT"])
+def update_project(project_id):
+    """Édition de projet par admin ou secrétariat SCT (tous champs descriptifs)."""
+    role = (request.args.get('role') or '').lower()
+    if role not in ('admin', 'secretariatsct'):
+        return jsonify({"error": "Réservé à admin / secretariatsct"}), 403
+
+    project = Project.query.get_or_404(project_id)
+    data = request.get_json(silent=True) or {}
+
+    # Champs descriptifs autorisés à l'édition
+    EDITABLE = [
+        'titre', 'description', 'secteur', 'poles',
+        'structure_soumissionnaire', 'organisme_tutelle', 'auteur_nom',
+        'cout_estimatif', 'duree_annees',
+        'point_focal_nom', 'point_focal_fonction', 'point_focal_telephone', 'point_focal_email',
+        'evaluateur_nom', 'commentaires',
+    ]
+    changed = []
+    for k in EDITABLE:
+        if k not in data:
+            continue
+        v = data[k]
+        if k in ('cout_estimatif',) and v not in (None, ''):
+            try: v = float(v)
+            except (TypeError, ValueError): continue
+        if k in ('duree_annees',) and v not in (None, ''):
+            try: v = int(v)
+            except (TypeError, ValueError): continue
+        if getattr(project, k, None) != v:
+            setattr(project, k, v)
+            changed.append(k)
+
+    if changed:
+        hist = Historique(
+            project_id=project_id,
+            action=f"Projet modifié ({', '.join(changed)})",
+            auteur=request.args.get('username', role),
+            role=role,
+            date_action=datetime.utcnow(),
+        )
+        db.session.add(hist)
+        db.session.commit()
+
+    return jsonify({"updated": changed, "id": project_id})
+
+
 @app.route("/api/projects/<int:project_id>", methods=["DELETE", "OPTIONS"])
 def delete_project(project_id):
     """
@@ -6996,53 +7043,21 @@ def migrer_numeros_historiques():
 
 @app.route('/api/admin/corriger-structures-historiques', methods=['POST'])
 def corriger_structures_historiques():
-    """Corrige les structures tronquées des 25 projets historiques (extraites du PDF d'origine)."""
+    """Aligne structure_soumissionnaire et auteur_nom sur le ministère de tutelle propre."""
     role = request.headers.get('X-User-Role') or request.args.get('role')
     if role != 'admin':
         return jsonify({"error": "admin uniquement"}), 403
 
-    # Structures complètes extraites du PDF de compilation 2024 (ordre = pages 4..53)
-    STRUCTURES = [
-        "Ministère de la santé et de l’action social/ Direction générale de la Santé",
-        "Ministère de la Santé et de l’Action sociale (MSAS) / Direction générale des Etablissements de Santé (DGES)",
-        "Ministère de la Santé et de l’Action sociale (MSAS)/DPPPH",
-        "MSAS/Direction générale de l’Action sociale (DGAS)",
-        "Ministère de la Santé et de l’Action sociale (MSAS)/Direction des laboratoires (DL)",
-        "Ministère des Pêches, des Infrastructures maritimes et portuaires (MPIMP)/Direction de la Gestion et de l’Exploitation des Fonds marins (DGEFM)",
-        "MSAS/Direction de la Santé de la Mère et de l’Enfant (DSME)",
-        "Ministère de la Microfinance et de l'Économie sociale et solidaire/Fonds d’Impulsion de la Microfinance (FIMF)",
-        "Ministère de la Santé et de l’Action Sociale (MSAS)",
-        "Ministère de l’Industrie et du Commerce/Organe de Régulation du Système de Récépissé d’Entrepôt",
-        "MSAS/Direction de la santé de la mère et de l’enfant (DSME)",
-        "MSAS/Direction de la santé de la mère et de l’enfant (DSME)",
-        "MSAS/SEN-PNA",
-        "Ministère de la Santé et de l’Action sociale/Agence sénégalaise de Règlementation pharmaceutique (ARP)",
-        "MESRI/Institut Supérieur de Formation agricole et rural (ISFAR)",
-        "Ministère des Pêches, des Infrastructures maritimes et portuaires (MPIMP)/Direction de la Gestion et de l’Exploitation des Fonds marins (DGEFM)",
-        "Office des Lacs et cours d’Eau (OLAC)",
-        "Ministère de la Santé et de l’Action sociale (MSAS)/Cellule informatique (CI)",
-        "Ministère de la Santé et l’Action sociale (MSAS)/Direction de la Santé de la mère et de l’enfant (DSME)",
-        "Le Ministère la Santé et de l’Action sociale/SNEISS",
-        "Ministère de l’éducation nationale/Direction des Daara",
-        "Ministère de la Formation professionnelle (MFP)/Direction de l’Apprentissage",
-        "Ministère de la Sante et de l’Action social/DGSP/COUS",
-        "Ministère de la Santé et de l’Action sociale (MSAS)/Direction de Lutte contre la Maladie (DLM)",
-        "Ministère de la Santé et de l’Action sociale/Direction de la santé de la Mère et de l’Enfant (DSME)",
-    ]
-
-    projets = Project.query.filter(Project.import_historique == True).order_by(Project.numero_projet.asc()).all()
-    if len(projets) != len(STRUCTURES):
-        return jsonify({
-            "error": f"Nombre de projets historiques ({len(projets)}) ≠ nombre de structures ({len(STRUCTURES)})"
-        }), 400
-
     updated = []
-    for p, structure in zip(projets, STRUCTURES):
+    for p in Project.query.filter(Project.import_historique == True).all():
+        ministere = (p.organisme_tutelle or '').strip()
+        if not ministere:
+            continue
         old = p.structure_soumissionnaire or ''
-        if old != structure:
-            p.structure_soumissionnaire = structure
-            p.auteur_nom = structure
-            updated.append({"numero": p.numero_projet, "old": old, "new": structure})
+        if old != ministere:
+            p.structure_soumissionnaire = ministere
+            p.auteur_nom = ministere
+            updated.append({"numero": p.numero_projet, "old": old, "new": ministere})
     db.session.commit()
     return jsonify({"updated": len(updated), "details": updated})
 
