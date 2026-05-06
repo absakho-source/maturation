@@ -126,11 +126,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Évaluateur</label>
-                <select v-model="form.evaluateur_nom">
-                  <option value="">— Sélectionner un évaluateur —</option>
-                  <option v-for="u in evaluateurs" :key="u.id" :value="u.display_name">{{ u.display_name }}</option>
-                </select>
-                <small v-if="!evaluateurs.length" class="hint">Aucun évaluateur trouvé dans la plateforme</small>
+                <input v-model="form.evaluateur_nom" type="text" :list="evaluateurs.length ? 'evaluateurs-list' : null" placeholder="Nom de l'évaluateur d'origine" />
+                <datalist v-if="evaluateurs.length" id="evaluateurs-list">
+                  <option v-for="u in evaluateurs" :key="u.id" :value="u.display_name" />
+                </datalist>
+                <small class="hint">Saisie libre — l'évaluateur peut ne pas être dans la plateforme</small>
               </div>
               <div class="form-group">
                 <label>Date d'évaluation</label>
