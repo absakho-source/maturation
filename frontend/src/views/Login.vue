@@ -95,6 +95,14 @@
           </router-link>
         </div>
 
+        <!-- Accès visiteur (lecture publique) -->
+        <div class="visiteur-section">
+          <p>Vous êtes un visiteur ?</p>
+          <button @click="loginAsVisiteur" class="btn-visiteur">
+            👁️ Accéder en mode consultation
+          </button>
+        </div>
+
         <!-- Lien de contact -->
         <div class="contact-section">
           <router-link to="/contact" class="contact-link">
@@ -159,8 +167,11 @@ export default {
         // Ordre souhaité des rôles dans la liste déroulante
         const roleOrder = ['soumissionnaire', 'evaluateur', 'secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite', 'ministre_economie', 'admin', 'invite'];
 
+        // Exclure le rôle "invite" du dropdown (accessible via bouton "Mode consultation" séparé)
+        const filteredUsers = users.filter(u => u.role !== 'invite');
+
         // Construire la liste d'accounts pour l'affichage
-        this.accounts = users.map(u => ({
+        this.accounts = filteredUsers.map(u => ({
           value: u.username,
           displayName: u.display_name || u.username,
           roleLabel: this.getRoleLabelByRole(u.role),
@@ -236,6 +247,20 @@ export default {
         invite: "Invité"
       };
       return labels[role] || role;
+    },
+    loginAsVisiteur() {
+      // Connexion automatique en tant que visiteur (rôle invite)
+      const user = {
+        id: null,
+        username: 'invite',
+        nom: 'Visiteur',
+        role: 'invite',
+        display_name: 'Visiteur',
+        email: null,
+        telephone: null,
+      };
+      localStorage.setItem('user', JSON.stringify(user));
+      this.$router.push('/invite');
     },
     async handleLoginSubmit() {
       this.errorMessage = '';
@@ -660,7 +685,41 @@ export default {
 }
 
 /* ==================== SECTION INSCRIPTION ==================== */
-.inscription-section {
+.inscription-section, .visiteur-section {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+}
+
+.visiteur-section p {
+  margin: 0 0 0.75rem 0;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.btn-visiteur {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.5rem;
+  background: #fff;
+  color: var(--dgppe-primary);
+  border: 2px solid var(--dgppe-primary);
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+.btn-visiteur:hover {
+  background: var(--dgppe-primary);
+  color: white;
+}
+
+.inscription-section.legacy {
   text-align: center;
   margin-top: 2rem;
   padding: 1.75rem;

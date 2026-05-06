@@ -3,21 +3,8 @@
     <div class="invite-container">
       <!-- Header -->
       <div class="header-row">
-        <h2 class="page-title">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          Tableau de bord - Invite
-        </h2>
-        <div class="badge-readonly">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Lecture seule
-        </div>
+        <h2 class="page-title">👁️ Tableau de bord — Visiteur</h2>
+        <div class="badge-readonly">🔒 Lecture seule</div>
       </div>
 
       <!-- Statistiques générales -->
@@ -90,98 +77,31 @@
         </div>
       </div>
 
-      <!-- Liste des projets -->
-      <div class="projects-section">
-        <h3>Liste des projets soumis</h3>
+      <!-- Onglets -->
+      <div class="tabs">
+        <button @click="activeTab = 'projets'" :class="{ active: activeTab === 'projets' }" class="tab-btn">
+          📋 Liste des projets
+        </button>
+        <button @click="activeTab = 'carte'" :class="{ active: activeTab === 'carte' }" class="tab-btn">
+          🗺️ Carte des pôles
+        </button>
+      </div>
+
+      <!-- Onglet Liste -->
+      <div v-if="activeTab === 'projets'" class="tab-content">
         <div class="info-message">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          Consultation publique — liste des projets soumis à la maturation. Les détails des évaluations ne sont pas accessibles.
+          ℹ️ Consultation publique — liste des projets soumis à la maturation.
+          Les détails des évaluations ne sont pas accessibles.
         </div>
+        <ProjectTable :projects="projects"
+                      :columns="{ avis: false, evaluateur: false }"
+                      :row-clickable="false"
+                      empty-message="Aucun projet disponible" />
+      </div>
 
-        <!-- Filtres -->
-        <div class="filters-section">
-          <div class="filters-row">
-            <div class="filter-group">
-              <label class="filter-label">Statut</label>
-              <select v-model="filters.statut" @change="applyFilters" class="filter-select">
-                <option value="">Tous les statuts</option>
-                <option v-for="statut in availableStatuts" :key="statut" :value="statut">{{ statut }}</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label">Secteur</label>
-              <select v-model="filters.secteur" @change="applyFilters" class="filter-select">
-                <option value="">Tous les secteurs</option>
-                <option v-for="secteur in availableSecteurs" :key="secteur" :value="secteur">{{ secteur }}</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label">Pole territorial</label>
-              <select v-model="filters.pole" @change="applyFilters" class="filter-select">
-                <option value="">Tous les poles</option>
-                <option v-for="pole in availablePoles" :key="pole" :value="pole">{{ pole }}</option>
-              </select>
-            </div>
-
-            <button @click="resetFilters" class="btn-reset-filters">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18M3 12h18M3 18h18"/>
-              </svg>
-              Réinitialiser
-            </button>
-          </div>
-
-          <div class="filter-summary">
-            <span class="filter-count">{{ filteredProjects.length }} projet(s) affiché(s)</span>
-            <span v-if="hasActiveFilters" class="filter-active-badge">Filtres actifs</span>
-          </div>
-        </div>
-
-        <div v-if="filteredProjects.length === 0" class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M9 11l3 3L22 4"/>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-          </svg>
-          <p v-if="hasActiveFilters">Aucun projet ne correspond aux filtres sélectionnés</p>
-          <p v-else>Aucun projet disponible pour le moment</p>
-        </div>
-
-        <div v-else class="table-container">
-          <table class="projects-table">
-            <thead>
-              <tr>
-                <th>Numero</th>
-                <th>Titre</th>
-                <th>Secteur</th>
-                <th>Pole territorial</th>
-                <th>Statut</th>
-                <th>Date de soumission</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="project in filteredProjects" :key="project.id">
-                <td class="td-numero">{{ project.numero_projet }}</td>
-                <td class="td-titre">{{ project.titre }}</td>
-                <td class="td-secteur">
-                  <span class="badge-secteur">{{ project.secteur || '-' }}</span>
-                </td>
-                <td class="td-pole">{{ project.poles || '-' }}</td>
-                <td class="td-statut">
-                  <span class="badge-statut" :class="'statut-' + getStatutClass(project.statut)">
-                    {{ statutPublic(project.statut) }}
-                  </span>
-                </td>
-                <td class="td-date">{{ formatDate(project.date_soumission) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <!-- Onglet Carte interactive -->
+      <div v-if="activeTab === 'carte'" class="tab-content">
+        <CartesPolesComparaison />
       </div>
     </div>
   </PageWrapper>
@@ -189,27 +109,24 @@
 
 <script>
 import PageWrapper from '../components/PageWrapper.vue';
-import { POLES_TERRITORIAUX, normalizePole } from '../config/polesConfig.js';
+import ProjectTable from '../components/ProjectTable.vue';
+import CartesPolesComparaison from '../components/CartesPolesComparaison.vue';
 
 export default {
   name: 'Invite',
   components: {
-    PageWrapper
+    PageWrapper, ProjectTable, CartesPolesComparaison
   },
   data() {
     return {
       projects: [],
+      activeTab: 'projets',
       statsOverview: {
         total_projets: 0,
         statuts: {},
         secteurs: {},
         poles: {}
       },
-      filters: {
-        statut: '',
-        secteur: '',
-        pole: ''
-      }
     };
   },
   computed: {
