@@ -7052,62 +7052,68 @@ def migrer_numeros_historiques():
 
 @app.route('/api/admin/aligner-tutelles-officielles', methods=['POST'])
 def aligner_tutelles_officielles():
-    """Aligne organisme_tutelle des projets historiques sur les nom_complet de la table Ministere."""
+    """Aligne organisme_tutelle des 25 projets historiques sur les nom_complet
+    de la table Ministere, avec un mapping par intitulé de projet (pas par
+    ancienne tutelle), pour différencier Santé vs Action sociale, etc."""
     role = request.headers.get('X-User-Role') or request.args.get('role')
     if role != 'admin':
         return jsonify({"error": "admin uniquement"}), 403
 
-    # Mapping ancien (TUTELLES_ACTUELLES) → officiel (table Ministere)
-    MAPPING = {
-        "Ministère de l’Agriculture, de la Souveraineté alimentaire et de l’Élevage":
-            "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage",
-        "Ministère de l'Agriculture, de la Souveraineté alimentaire et de l'Élevage":
-            "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage",
-        "Ministère de l’Éducation nationale":
-            "Ministère de l'Éducation Nationale",
-        "Ministère de l'Éducation nationale":
-            "Ministère de l'Éducation Nationale",
-        "Ministère de la Formation professionnelle, de l’Apprentissage et de l’Insertion":
-            "Ministère de l'Emploi et de la Formation Professionnelle et Technique",
-        "Ministère de la Formation professionnelle, de l'Apprentissage et de l'Insertion":
-            "Ministère de l'Emploi et de la Formation Professionnelle et Technique",
-        "Ministère de la Santé et de l’Action sociale":
-            "Ministère de la Santé et de l'Hygiène Publique",
-        "Ministère de la Santé et de l'Action sociale":
-            "Ministère de la Santé et de l'Hygiène Publique",
-        "Ministère des Microfinances, de l’Économie sociale et solidaire":
-            "Ministère de la Microfinance et de l'Économie Sociale et Solidaire",
-        "Ministère des Microfinances, de l'Économie sociale et solidaire":
-            "Ministère de la Microfinance et de l'Économie Sociale et Solidaire",
-        "Ministère des Pêches et de l’Économie maritime":
-            "Ministère des Pêches et de l'Économie Maritime",
-        "Ministère des Pêches et de l'Économie maritime":
-            "Ministère des Pêches et de l'Économie Maritime",
-        # Déjà OK (juste pour le journal):
-        "Ministère de l'Hydraulique et de l'Assainissement":
-            "Ministère de l'Hydraulique et de l'Assainissement",
-        "Ministère de l’Hydraulique et de l’Assainissement":
-            "Ministère de l'Hydraulique et de l'Assainissement",
-        "Ministère de l'Industrie et du Commerce":
-            "Ministère de l'Industrie et du Commerce",
-        "Ministère de l’Industrie et du Commerce":
-            "Ministère de l'Industrie et du Commerce",
+    SANTE   = "Ministère de la Santé et de l'Hygiène Publique"
+    FAMILLE = "Ministère de la Famille, de l'Action sociale et des Solidarités"
+    PECHES  = "Ministère des Pêches et de l'Économie Maritime"
+    AGRI    = "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage"
+    INDUS   = "Ministère de l'Industrie et du Commerce"
+    HYDRO   = "Ministère de l'Hydraulique et de l'Assainissement"
+    EDUC    = "Ministère de l'Éducation Nationale"
+    EMPLOI  = "Ministère de l'Emploi et de la Formation Professionnelle et Technique"
+    MICRO   = "Ministère de la Microfinance et de l'Économie Sociale et Solidaire"
+
+    # Mapping par ordre des projets dans le PDF (= ordre des numéros historiques)
+    # Index 1..25 → tutelle officielle
+    MAPPING_PAR_ORDRE = {
+        1:  SANTE,    # Construction de 9 centres de santé
+        2:  SANTE,    # Institut National de Rhumatologie
+        3:  FAMILLE,  # Réadaptation à base communautaire des handicapés (DGAS)
+        4:  FAMILLE,  # Résilience communautés affectées par la lèpre et famille (DGAS)
+        5:  SANTE,    # Programme spécial laboratoires
+        6:  PECHES,   # Centre d'expérimentation/valorisation des algues
+        7:  SANTE,    # Élimination décès évitables enfants 1-59 mois (DSME)
+        8:  MICRO,    # Programme accompagnement SFD
+        9:  SANTE,    # Centre Simulation Santé Mère/Nouveau-né
+        10: INDUS,    # Infrastructures de stockage et conservation
+        11: SANTE,    # Malnutrition enfants 0-59 mois
+        12: SANTE,    # Amélioration santé néonatale
+        13: SANTE,    # Délocalisation siège SEN-PNA
+        14: SANTE,    # Construction siège ARP
+        15: AGRI,     # P2MP de l'ISFAR
+        16: PECHES,   # Restauration habitats fonds marins
+        17: HYDRO,    # PROSEG (qualité eaux Lac de Guiers - OLAC)
+        18: SANTE,    # Plan Directeur Informatique (Cellule info MSAS)
+        19: SANTE,    # Élimination décès maternels évitables
+        20: SANTE,    # Programme pilote promotion de la santé (SNEISS)
+        21: EDUC,     # Renforcement résilience Daara zones frontalières
+        22: EMPLOI,   # Daara-Atelier (Formation Professionnelle)
+        23: SANTE,    # SURGE (DGSP/COUS - urgences sanitaires)
+        24: SANTE,    # Plan accélération MNT
+        25: SANTE,    # Élimination fistules obstétricales
     }
 
+    projets = Project.query.filter(Project.import_historique == True).order_by(Project.numero_projet.asc()).all()
+    if len(projets) != 25:
+        return jsonify({"error": f"Attendu 25 projets historiques, trouvé {len(projets)}"}), 400
+
     updated = []
-    skipped = []
-    for p in Project.query.filter(Project.import_historique == True).all():
-        old = p.organisme_tutelle or ''
-        new = MAPPING.get(old)
+    for idx, p in enumerate(projets, start=1):
+        new = MAPPING_PAR_ORDRE.get(idx)
         if not new:
-            skipped.append({"numero": p.numero_projet, "tutelle_actuelle": old})
             continue
+        old = p.organisme_tutelle or ''
         if old != new:
             p.organisme_tutelle = new
-            updated.append({"numero": p.numero_projet, "old": old, "new": new})
+            updated.append({"numero": p.numero_projet, "titre": p.titre[:60], "old": old, "new": new})
     db.session.commit()
-    return jsonify({"updated": len(updated), "skipped": len(skipped),
-                    "details": updated, "skipped_details": skipped})
+    return jsonify({"updated": len(updated), "details": updated})
 
 
 @app.route('/api/admin/corriger-structures-historiques', methods=['POST'])
