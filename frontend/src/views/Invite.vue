@@ -1,32 +1,23 @@
 <template>
   <PageWrapper>
     <div class="visiteur-container">
-      <!-- Hero -->
+      <!-- Indicateurs clés -->
       <div class="hero">
-        <div class="hero-content">
-          <h1>Plateforme de Maturation des Projets d'Investissement Public</h1>
-          <p class="hero-subtitle">
-            Suivez la qualité et la viabilité des projets soumis à l'État du Sénégal,
-            évalués par la Direction Générale de la Planification des Politiques Économiques.
-          </p>
+        <div class="hero-stat">
+          <div class="hero-stat-value">{{ statsOverview.total_projets || 0 }}</div>
+          <div class="hero-stat-label">Projets soumis</div>
         </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="hero-stat-value">{{ statsOverview.total_projets || 0 }}</div>
-            <div class="hero-stat-label">Projets soumis</div>
-          </div>
-          <div class="hero-stat">
-            <div class="hero-stat-value">{{ formatBig(coutTotal) }}</div>
-            <div class="hero-stat-label">Investissement total</div>
-          </div>
-          <div class="hero-stat">
-            <div class="hero-stat-value">{{ favorablesCount }}</div>
-            <div class="hero-stat-label">Avis favorables</div>
-          </div>
-          <div class="hero-stat">
-            <div class="hero-stat-value">{{ Object.keys(statsOverview.poles || {}).length }}</div>
-            <div class="hero-stat-label">Pôles concernés</div>
-          </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">{{ formatBig(coutTotal) }}</div>
+          <div class="hero-stat-label">Investissement total</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">{{ favorablesCount }}</div>
+          <div class="hero-stat-label">Avis favorables</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">{{ Object.keys(statsOverview.poles || {}).length }}</div>
+          <div class="hero-stat-label">Pôles concernés</div>
         </div>
       </div>
 
@@ -71,10 +62,6 @@
 
       <!-- Onglet Liste -->
       <div v-if="activeTab === 'projets'" class="tab-content">
-        <div class="info-message">
-          ℹ️ Consultation publique — liste des projets soumis à la maturation.
-          Les détails des évaluations ne sont pas accessibles.
-        </div>
         <ProjectTable :projects="projects"
                       :columns="{ avis: false, evaluateur: false }"
                       :row-clickable="false"
@@ -244,51 +231,35 @@ export default {
   padding: 1.5rem;
 }
 
-/* ==================== HERO ==================== */
+/* ==================== HERO (indicateurs clés) ==================== */
 .hero {
   background: linear-gradient(135deg, #2E6B6B 0%, #1e4b4b 100%);
   color: #fff;
   border-radius: 16px;
-  padding: 2.5rem 2rem;
+  padding: 1.75rem 1.5rem;
   margin-bottom: 1.5rem;
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
   box-shadow: 0 8px 24px rgba(46, 107, 107, 0.2);
-}
-.hero-content h1 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-.hero-subtitle {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  line-height: 1.55;
-  margin: 0;
-}
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
 }
 .hero-stat {
   background: rgba(255,255,255,0.12);
   backdrop-filter: blur(10px);
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.18);
+  text-align: center;
 }
 .hero-stat-value {
-  font-size: 1.6rem;
+  font-size: 1.85rem;
   font-weight: 800;
   line-height: 1.1;
 }
 .hero-stat-label {
   font-size: 0.78rem;
-  opacity: 0.85;
-  margin-top: 0.2rem;
+  opacity: 0.9;
+  margin-top: 0.4rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -390,8 +361,8 @@ export default {
 
 /* ==================== HEADER (legacy) ==================== */
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; padding: 1.5rem; }
-  .hero-content h1 { font-size: 1.35rem; }
+  .hero { grid-template-columns: repeat(2, 1fr); padding: 1.25rem; gap: 0.75rem; }
+  .hero-stat-value { font-size: 1.5rem; }
   .charts-row { grid-template-columns: 1fr; }
   .bar-item { grid-template-columns: 130px 1fr 30px; }
 }
