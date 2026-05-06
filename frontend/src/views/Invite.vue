@@ -1,77 +1,59 @@
 <template>
   <PageWrapper>
-    <div class="invite-container">
-      <!-- Header -->
-      <div class="header-row">
-        <h2 class="page-title">👁️ Tableau de bord — Visiteur</h2>
-        <div class="badge-readonly">🔒 Lecture seule</div>
+    <div class="visiteur-container">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-content">
+          <h1>Plateforme de Maturation des Projets d'Investissement Public</h1>
+          <p class="hero-subtitle">
+            Suivez la qualité et la viabilité des projets soumis à l'État du Sénégal,
+            évalués par la Direction Générale de la Planification des Politiques Économiques.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ statsOverview.total_projets || 0 }}</div>
+            <div class="hero-stat-label">Projets soumis</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ formatBig(coutTotal) }}</div>
+            <div class="hero-stat-label">Investissement total</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ favorablesCount }}</div>
+            <div class="hero-stat-label">Avis favorables</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ Object.keys(statsOverview.poles || {}).length }}</div>
+            <div class="hero-stat-label">Pôles concernés</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Statistiques générales -->
-      <div class="stats-section">
-        <h3>Statistiques generales</h3>
-        <div class="stats-grid">
-          <div class="stat-card stat-card--primary">
-            <div class="stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 3v18h18"/>
-                <path d="M18 17V9"/>
-                <path d="M13 17V5"/>
-                <path d="M8 17v-3"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Total projets</div>
-              <div class="stat-value">{{ statsOverview.total_projets || 0 }}</div>
+      <!-- Répartitions visuelles -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>📊 Par secteur d'activité</h3>
+          <div class="bars-list">
+            <div v-for="(count, secteur) in statsOverview.secteurs" :key="secteur" class="bar-item">
+              <div class="bar-label">{{ secteurShort(secteur) }}</div>
+              <div class="bar-track">
+                <div class="bar-fill bar-fill--primary" :style="{ width: barWidth(count, statsOverview.secteurs) + '%' }"></div>
+              </div>
+              <div class="bar-count">{{ count }}</div>
             </div>
           </div>
+        </div>
 
-          <div class="stat-card stat-card--info">
-            <div class="stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Par statut</div>
-              <div class="stat-mini-list">
-                <div v-for="(count, statut) in statsOverview.statuts" :key="statut" class="stat-mini-item">
-                  <span class="mini-badge">{{ statut }}</span>: {{ count }}
-                </div>
+        <div class="chart-card">
+          <h3>🗺️ Par pôle territorial</h3>
+          <div class="bars-list">
+            <div v-for="(count, pole) in statsOverview.poles" :key="pole" class="bar-item">
+              <div class="bar-label">{{ poleShort(pole) }}</div>
+              <div class="bar-track">
+                <div class="bar-fill bar-fill--info" :style="{ width: barWidth(count, statsOverview.poles) + '%' }"></div>
               </div>
-            </div>
-          </div>
-
-          <div class="stat-card stat-card--warning">
-            <div class="stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Par secteur</div>
-              <div class="stat-mini-list">
-                <div v-for="(count, secteur) in statsOverview.secteurs" :key="secteur" class="stat-mini-item">
-                  <span class="mini-badge">{{ secteur }}</span>: {{ count }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card stat-card--success">
-            <div class="stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Par pole territorial</div>
-              <div class="stat-mini-list">
-                <div v-for="(count, pole) in statsOverview.poles" :key="pole" class="stat-mini-item">
-                  <span class="mini-badge">{{ pole }}</span>: {{ count }}
-                </div>
-              </div>
+              <div class="bar-count">{{ count }}</div>
             </div>
           </div>
         </div>
@@ -130,48 +112,35 @@ export default {
     };
   },
   computed: {
-    availableStatuts() {
-      return [...new Set(this.projects.map(p => p.statut).filter(Boolean))].sort();
+    coutTotal() {
+      return this.projects.reduce((s, p) => s + (p.cout_estimatif || 0), 0);
     },
-    availableSecteurs() {
-      return [...new Set(this.projects.map(p => p.secteur).filter(Boolean))].sort();
-    },
-    availablePoles() {
-      // Utiliser la fonction centralisée pour normaliser les pôles
-      const poles = new Set();
-      this.projects.forEach(p => {
-        if (p.poles) {
-          const normalized = normalizePole(p.poles);
-          if (normalized) {
-            poles.add(normalized);
-          }
-        }
-      });
-
-      return [...poles].sort();
-    },
-    filteredProjects() {
-      return this.projects.filter(project => {
-        if (this.filters.statut && project.statut !== this.filters.statut) return false;
-        if (this.filters.secteur && project.secteur !== this.filters.secteur) return false;
-
-        if (this.filters.pole && project.poles) {
-          // Normaliser le pôle du projet et le comparer au filtre
-          const normalizedProjectPole = normalizePole(project.poles);
-          if (normalizedProjectPole !== this.filters.pole) return false;
-        }
-
-        return true;
-      });
-    },
-    hasActiveFilters() {
-      return this.filters.statut || this.filters.secteur || this.filters.pole;
+    favorablesCount() {
+      return this.projects.filter(p => p.avis === 'favorable' || p.avis === 'favorable sous conditions').length;
     }
   },
   mounted() {
     this.loadData();
   },
   methods: {
+    formatBig(v) {
+      if (!v) return '0';
+      if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + ' Md F CFA';
+      if (v >= 1_000_000) return (v / 1_000_000).toFixed(0) + ' M F CFA';
+      return new Intl.NumberFormat('fr-FR').format(v) + ' F CFA';
+    },
+    barWidth(count, dict) {
+      const max = Math.max(...Object.values(dict || {}), 1);
+      return Math.round((count / max) * 100);
+    },
+    secteurShort(s) {
+      if (!s) return '—';
+      return s.length > 30 ? s.substring(0, 28) + '…' : s;
+    },
+    poleShort(p) {
+      if (!p) return '—';
+      return p.length > 35 ? p.substring(0, 33) + '…' : p;
+    },
     statutPublic(statut) {
       // Simplifier les statuts internes pour le grand public
       const map = {
@@ -269,6 +238,163 @@ export default {
 </script>
 
 <style scoped>
+.visiteur-container, .invite-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ==================== HERO ==================== */
+.hero {
+  background: linear-gradient(135deg, #2E6B6B 0%, #1e4b4b 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 2rem;
+  box-shadow: 0 8px 24px rgba(46, 107, 107, 0.2);
+}
+.hero-content h1 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.hero-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  line-height: 1.55;
+  margin: 0;
+}
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.hero-stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.hero-stat-label {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==================== CHARTS ==================== */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
+}
+.chart-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #1e293b;
+}
+.bars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.bar-item {
+  display: grid;
+  grid-template-columns: 180px 1fr 35px;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+.bar-label {
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+  height: 18px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+.bar-fill--primary { background: linear-gradient(90deg, #2E6B6B, #4d8d8d); }
+.bar-fill--info    { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+.bar-count {
+  font-weight: 700;
+  color: #1e293b;
+  text-align: right;
+}
+
+/* ==================== TABS ==================== */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.tab-btn {
+  padding: 0.7rem 1.2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #64748b;
+  transition: all 0.2s;
+}
+.tab-btn:hover { color: #2E6B6B; }
+.tab-btn.active {
+  color: #2E6B6B;
+  border-bottom-color: #2E6B6B;
+}
+.tab-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.info-message {
+  background: #f0f9ff;
+  border-left: 4px solid #0ea5e9;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ==================== HEADER (legacy) ==================== */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding: 1.5rem; }
+  .hero-content h1 { font-size: 1.35rem; }
+  .charts-row { grid-template-columns: 1fr; }
+  .bar-item { grid-template-columns: 130px 1fr 30px; }
+}
 .invite-container {
   max-width: 1400px;
   margin: 0 auto;

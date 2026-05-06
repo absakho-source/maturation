@@ -6995,8 +6995,17 @@ def import_projet_historique():
         from datetime import datetime
         now = datetime.utcnow()
 
-        # Générer numéro de projet
-        date_prefix = now.strftime("%Y%m%d")
+        # Date d'évaluation/soumission historique (paramètre optionnel, format YYYY-MM-DD)
+        date_eval_str = (request.form.get('date_evaluation') or '').strip()
+        date_eval = now
+        if date_eval_str:
+            try:
+                date_eval = datetime.strptime(date_eval_str, '%Y-%m-%d')
+            except ValueError:
+                pass
+
+        # Générer numéro de projet (basé sur date d'évaluation pour les imports historiques)
+        date_prefix = date_eval.strftime("%Y%m%d")
         existing = Project.query.filter(
             Project.numero_projet.like(f"{date_prefix}%")
         ).count()
@@ -7020,13 +7029,13 @@ def import_projet_historique():
             point_focal_telephone=request.form.get('point_focal_telephone', ''),
             point_focal_email=request.form.get('point_focal_email', ''),
             auteur_nom=request.form.get('auteur_original', auteur_import),
-            date_soumission=now,
+            date_soumission=date_eval,
             import_historique=True,
             # Evaluation (toujours renseignée)
             evaluation_prealable='dossier_evaluable',
-            evaluation_prealable_date=now,
+            evaluation_prealable_date=date_eval,
             evaluabilite='evaluable',
-            evaluabilite_date=now,
+            evaluabilite_date=date_eval,
             evaluateur_nom=request.form.get('evaluateur_nom', auteur_import),
             fiche_evaluation_visible=True,
         )
@@ -7067,7 +7076,7 @@ def import_projet_historique():
         fiche = FicheEvaluation(
             project_id=p.id,
             evaluateur_nom=request.form.get('evaluateur_nom', auteur_import),
-            date_evaluation=now,
+            date_evaluation=date_eval,
             score_total=score,
             proposition=proposition,
             recommandations=recommandation,
