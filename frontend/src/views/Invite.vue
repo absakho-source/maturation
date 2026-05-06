@@ -63,7 +63,7 @@
       <!-- Onglet Liste -->
       <div v-if="activeTab === 'projets'" class="tab-content">
         <ProjectTable :projects="projects"
-                      :columns="{ avis: false, evaluateur: false }"
+                      :columns="{ evaluateur: false, actions: false }"
                       :row-clickable="false"
                       empty-message="Aucun projet disponible" />
       </div>

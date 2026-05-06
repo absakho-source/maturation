@@ -584,7 +584,7 @@ def projects():
                         else:
                             est_assigne_a_moi = (p.evaluateur_nom == username)
 
-                    # Rôle invité: retourner SEULEMENT les champs de base (pas de données sensibles)
+                    # Rôle invité (visiteur public) : retourner les infos publiques (avec coût, avis, structure)
                     if role == "invite":
                         result.append({
                             "id": int(p.id) if p.id is not None else None,
@@ -592,7 +592,13 @@ def projects():
                             "titre": str(p.titre) if p.titre else "",
                             "secteur": str(p.secteur) if p.secteur else "",
                             "poles": str(p.poles) if p.poles else "",
+                            "cout_estimatif": float(p.cout_estimatif) if p.cout_estimatif else 0,
+                            "structure_soumissionnaire": str(p.structure_soumissionnaire) if p.structure_soumissionnaire else "",
+                            "organisme_tutelle": str(p.organisme_tutelle) if p.organisme_tutelle else "",
+                            "auteur_nom": str(p.auteur_nom) if p.auteur_nom else "",
                             "statut": str(statut_affiche) if statut_affiche else "",
+                            "avis": str(p.avis) if p.avis else "",
+                            "decision_finale": str(p.decision_finale) if p.decision_finale else "",
                             "date_soumission": date_soumission,
                             "nouveaute": str(p.nouveaute) if p.nouveaute else "",
                             "niveau_priorite": str(p.niveau_priorite) if p.niveau_priorite else "",

@@ -14,7 +14,7 @@
             <th v-if="cols.cout" @click="sortBy('cout_estimatif')" :class="{active: sortKey==='cout_estimatif'}" class="th-num">Coût {{ sortIcon('cout_estimatif') }}</th>
             <th v-if="cols.evaluateur" @click="sortBy('evaluateur_nom')" :class="{active: sortKey==='evaluateur_nom'}">Évaluateur {{ sortIcon('evaluateur_nom') }}</th>
             <th @click="sortBy('statut')" :class="{active: sortKey==='statut'}">Statut</th>
-            <th></th>
+            <th v-if="cols.actions"></th>
           </tr>
         </thead>
         <tbody>
@@ -30,7 +30,7 @@
             <td v-if="cols.cout" class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
             <td v-if="cols.evaluateur">{{ p.evaluateur_nom || '—' }}</td>
             <td><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
-            <td class="td-actions" @click.stop>
+            <td v-if="cols.actions" class="td-actions" @click.stop>
               <slot name="actions" :project="p">
                 <button @click="onRowClick(p)" class="btn-view-sm" title="Détails">👁️</button>
               </slot>
@@ -74,6 +74,7 @@ export default {
         cout: true,
         evaluateur: false,
         avis: true,
+        actions: true,
         ...this.columns,
       };
     },
