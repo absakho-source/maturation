@@ -137,9 +137,9 @@
         <NotificationBell v-if="user.role !== 'invite'" />
         <div class="user-info">
           <div class="user-details">
-            <span class="user-display-name">{{ user.display_name || user.username }}</span>
-            <span class="user-username">@{{ user.username }}</span>
-            <span class="user-role">{{ roleLabel }}</span>
+            <span class="user-display-name">{{ user.role === 'invite' ? 'Visiteur' : (user.display_name || user.username) }}</span>
+            <span v-if="user.role !== 'invite'" class="user-username">@{{ user.username }}</span>
+            <span v-if="user.role !== 'invite'" class="user-role">{{ roleLabel }}</span>
           </div>
           <button @click="logout" class="btn btn-secondary btn-sm logout-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
