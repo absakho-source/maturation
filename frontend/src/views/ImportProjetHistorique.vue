@@ -88,11 +88,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Coût estimatif (FCFA)</label>
-                <input v-model="form.cout_estimatif" type="number" min="0" placeholder="Ex: 5 000 000 000" />
+                <input v-model="coutFormatted" type="text" inputmode="numeric" placeholder="Ex: 5 000 000 000" />
               </div>
               <div class="form-group">
-                <label>Durée (années)</label>
-                <input v-model="form.duree_annees" type="number" min="0" placeholder="Ex: 3" />
+                <label>Durée d'analyse (années)</label>
+                <input v-model.number="form.duree_annees" type="number" min="0" placeholder="Ex: 3" />
               </div>
             </div>
           </div>
@@ -346,6 +346,17 @@ export default {
           && typeof this.form.score_total === 'number'
           && this.form.score_total >= 0
           && this.form.score_total <= 100;
+    },
+    coutFormatted: {
+      get() {
+        const v = this.form.cout_estimatif;
+        if (v === null || v === '' || v === undefined) return '';
+        return new Intl.NumberFormat('fr-FR').format(v);
+      },
+      set(val) {
+        const cleaned = String(val).replace(/[^\d]/g, '');
+        this.form.cout_estimatif = cleaned ? parseInt(cleaned, 10) : null;
+      }
     }
   },
   mounted() {

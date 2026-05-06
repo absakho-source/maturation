@@ -14,7 +14,12 @@
 
           <div class="submit-form">
             <div class="form-row">
-              <div class="form-group full-width">
+              <div class="form-group">
+                <label>Numéro du projet</label>
+                <input v-model="form.numero_projet" type="text" placeholder="Ex: 20241201" />
+                <small class="hint">Format AAAAMM + ordre, ou DGPPE-AA-NNN</small>
+              </div>
+              <div class="form-group">
                 <label>Intitulé du projet <span class="req">*</span></label>
                 <input v-model="form.titre" type="text" required />
               </div>
@@ -66,11 +71,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Coût estimatif (FCFA)</label>
-                <input v-model="form.cout_estimatif" type="number" min="0" />
+                <input v-model="coutFormatted" type="text" inputmode="numeric" placeholder="Ex: 5 000 000 000" />
               </div>
               <div class="form-group">
-                <label>Durée (années)</label>
-                <input v-model="form.duree_annees" type="number" min="0" />
+                <label>Durée d'analyse (années)</label>
+                <input v-model.number="form.duree_annees" type="number" min="0" />
               </div>
             </div>
 
@@ -114,6 +119,7 @@ export default {
       saving: false,
       ministeres: [],
       form: {
+        numero_projet: '',
         titre: '', description: '',
         secteur: '', poles: [],
         cout_estimatif: null, duree_annees: null,
@@ -149,6 +155,19 @@ export default {
       ],
     };
   },
+  computed: {
+    coutFormatted: {
+      get() {
+        const v = this.form.cout_estimatif;
+        if (v === null || v === '' || v === undefined) return '';
+        return new Intl.NumberFormat('fr-FR').format(v);
+      },
+      set(val) {
+        const cleaned = String(val).replace(/[^\d]/g, '');
+        this.form.cout_estimatif = cleaned ? parseInt(cleaned, 10) : null;
+      }
+    }
+  },
   mounted() {
     this.loadProject();
     this.loadMinisteres();
@@ -165,6 +184,7 @@ export default {
       this.project = await r.json();
       const polesArr = (this.project.poles || '').split(',').map(s => s.trim()).filter(Boolean);
       this.form = {
+        numero_projet: this.project.numero_projet || '',
         titre: this.project.titre || '',
         description: this.project.description || '',
         secteur: this.project.secteur || '',

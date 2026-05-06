@@ -943,6 +943,7 @@ def update_project(project_id):
 
     # Champs descriptifs autorisés à l'édition
     EDITABLE = [
+        'numero_projet',
         'titre', 'description', 'secteur', 'poles',
         'structure_soumissionnaire', 'organisme_tutelle', 'auteur_nom',
         'cout_estimatif', 'duree_annees',
@@ -954,10 +955,18 @@ def update_project(project_id):
         if k not in data:
             continue
         v = data[k]
-        if k in ('cout_estimatif',) and v not in (None, ''):
+        if k == 'numero_projet':
+            v = (v or '').strip()
+            if not v:
+                continue
+            if v != project.numero_projet:
+                exists = Project.query.filter(Project.numero_projet == v, Project.id != project.id).first()
+                if exists:
+                    return jsonify({"error": f"Le numéro {v} est déjà utilisé par un autre projet."}), 409
+        if k == 'cout_estimatif' and v not in (None, ''):
             try: v = float(v)
             except (TypeError, ValueError): continue
-        if k in ('duree_annees',) and v not in (None, ''):
+        if k == 'duree_annees' and v not in (None, ''):
             try: v = int(v)
             except (TypeError, ValueError): continue
         if getattr(project, k, None) != v:

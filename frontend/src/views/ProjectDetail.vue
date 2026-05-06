@@ -87,6 +87,10 @@
               <span class="label">Coût estimatif:</span>
               <span class="value">{{ formatCurrency(project.cout_estimatif) }} FCFA</span>
             </div>
+            <div class="info-row" v-if="project.duree_annees">
+              <span class="label">Durée d'analyse:</span>
+              <span class="value">{{ project.duree_annees }} {{ project.duree_annees > 1 ? 'ans' : 'an' }}</span>
+            </div>
             <div class="info-row" v-if="project.type_financement">
               <span class="label">Type de financement envisagé:</span>
               <span class="value">{{ formatTypeFinancement(project.type_financement) }}</span>
