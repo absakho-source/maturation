@@ -95,15 +95,6 @@
                 <input v-model="form.duree_annees" type="number" min="0" placeholder="Ex: 3" />
               </div>
             </div>
-
-            <!-- Date d'évaluation -->
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label>Date d'évaluation</label>
-                <input v-model="form.date_evaluation" type="date" />
-                <small class="hint">Détermine le préfixe du numéro de projet (AAAAMM)</small>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -142,13 +133,18 @@
                 <small v-if="!evaluateurs.length" class="hint">Aucun évaluateur trouvé dans la plateforme</small>
               </div>
               <div class="form-group">
-                <label>Score total (/100) <span class="req">*</span></label>
-                <input v-model.number="form.score_total" type="number" min="0" max="100" step="0.5" required />
+                <label>Date d'évaluation</label>
+                <input v-model="form.date_evaluation" type="date" />
+                <small class="hint">Détermine le préfixe AAAAMM du numéro</small>
               </div>
             </div>
 
             <div class="form-row">
-              <div class="form-group full-width">
+              <div class="form-group">
+                <label>Score total (/100) <span class="req">*</span></label>
+                <input v-model.number="form.score_total" type="number" min="0" max="100" step="0.5" required />
+              </div>
+              <div class="form-group">
                 <label>Proposition <span class="req">*</span></label>
                 <select v-model="form.proposition" required>
                   <option value="">— Sélectionner —</option>
