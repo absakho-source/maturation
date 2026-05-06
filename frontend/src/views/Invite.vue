@@ -16,7 +16,7 @@
           <div class="hero-stat-label">Avis favorables</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-value">{{ Object.keys(statsOverview.poles || {}).length }}</div>
+          <div class="hero-stat-value">{{ Object.keys(polesStatsSorted).length }}</div>
           <div class="hero-stat-label">Pôles concernés</div>
         </div>
       </div>
@@ -39,10 +39,10 @@
         <div class="chart-card">
           <h3>🗺️ Par pôle territorial</h3>
           <div class="bars-list">
-            <div v-for="(count, pole) in statsOverview.poles" :key="pole" class="bar-item">
+            <div v-for="(count, pole) in polesStatsSorted" :key="pole" class="bar-item">
               <div class="bar-label">{{ poleShort(pole) }}</div>
               <div class="bar-track">
-                <div class="bar-fill bar-fill--info" :style="{ width: barWidth(count, statsOverview.poles) + '%' }"></div>
+                <div class="bar-fill bar-fill--info" :style="{ width: barWidth(count, polesStatsSorted) + '%' }"></div>
               </div>
               <div class="bar-count">{{ count }}</div>
             </div>
@@ -148,14 +148,20 @@ export default {
     polesList() {
       const set = new Set();
       this.projects.forEach(p => {
-        if (p.poles) {
-          p.poles.split(',').forEach(po => {
-            const t = po.trim();
-            if (t) set.add(t);
-          });
-        }
+        this.splitPoles(p.poles).forEach(po => set.add(po));
       });
-      return [...set].sort();
+      return this.sortPoles([...set]);
+    },
+    polesStatsSorted() {
+      const counts = {};
+      this.projects.forEach(p => {
+        this.splitPoles(p.poles).forEach(po => {
+          counts[po] = (counts[po] || 0) + 1;
+        });
+      });
+      const result = {};
+      this.sortPoles(Object.keys(counts)).forEach(k => { result[k] = counts[k]; });
+      return result;
     },
     hasActiveFilters() {
       return !!(this.filters.annee || this.filters.secteur || this.filters.pole || this.filters.avis);
@@ -168,7 +174,8 @@ export default {
         }
         if (this.filters.secteur && p.secteur !== this.filters.secteur) return false;
         if (this.filters.pole) {
-          if (!p.poles || !p.poles.includes(this.filters.pole)) return false;
+          const projectPoles = this.splitPoles(p.poles);
+          if (!projectPoles.includes(this.filters.pole)) return false;
         }
         if (this.filters.avis && p.avis !== this.filters.avis) return false;
         return true;
@@ -196,6 +203,33 @@ export default {
     poleShort(p) {
       if (!p) return '—';
       return p.length > 35 ? p.substring(0, 33) + '…' : p;
+    },
+    splitPoles(s) {
+      if (!s) return [];
+      const out = [];
+      let depth = 0;
+      let cur = '';
+      for (const c of s) {
+        if (c === '(') depth++;
+        else if (c === ')') depth--;
+        if (c === ',' && depth === 0) {
+          if (cur.trim()) out.push(cur.trim());
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      if (cur.trim()) out.push(cur.trim());
+      return out;
+    },
+    sortPoles(arr) {
+      const priority = { 'Dakar': 0, 'Thiès': 1, 'Thies': 1 };
+      return [...arr].sort((a, b) => {
+        const pa = priority[a] ?? 99;
+        const pb = priority[b] ?? 99;
+        if (pa !== pb) return pa - pb;
+        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+      });
     },
     statutPublic(statut) {
       // Simplifier les statuts internes pour le grand public

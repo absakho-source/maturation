@@ -154,6 +154,14 @@ def get_pole_territorial(pole_db):
     
     return pole_mapping.get(pole_db, pole_db)
 
+
+def _sort_poles_canonical(d):
+    """Trie un dict {pole: ...} : Dakar, Thiès, puis le reste alphabétique."""
+    priority = {'Dakar': 0, 'Thiès': 1, 'Thies': 1}
+    keys = sorted(d.keys(), key=lambda k: (priority.get(k, 99), k.lower()))
+    return {k: d[k] for k in keys}
+
+
 @stats_bp.route('/api/stats/poles', methods=['GET'])
 def get_stats_poles():
     """Statistiques détaillées par pôle territorial (regroupées selon la carte)"""
@@ -222,7 +230,7 @@ def get_stats_poles():
             statut = project.statut or 'non défini'
             poles_stats[pole_territorial]['statuts'][statut] = poles_stats[pole_territorial]['statuts'].get(statut, 0) + 1 / nb_poles
 
-    return jsonify(poles_stats)
+    return jsonify(_sort_poles_canonical(poles_stats))
 
 @stats_bp.route('/api/stats/workflow', methods=['GET'])
 def get_stats_workflow():
