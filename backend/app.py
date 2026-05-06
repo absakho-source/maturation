@@ -4495,13 +4495,31 @@ def get_stats_overview():
         secteurs[secteur] = secteurs.get(secteur, 0) + 1
         cout_par_secteur[secteur] = cout_par_secteur.get(secteur, 0) + (project.cout_estimatif or 0)
     
-    # Répartition par pôle territorial
+    # Répartition par pôle territorial — un projet multi-pôles compte +1 dans CHAQUE pôle
+    POLES_OFFICIELS = [
+        'Dakar', 'Thiès',
+        'Centre (Kaolack, Fatick, Kaffrine)',
+        'Diourbel-Louga',
+        'Sud (Ziguinchor, Sédhiou, Kolda)',
+        'Sud-Est (Tambacounda, Kédougou)',
+        'Nord (Saint-Louis)',
+        'Nord-Est (Matam)',
+    ]
     poles = {}
     cout_par_pole = {}
     for project in projects:
-        pole = project.poles or 'non défini'
-        poles[pole] = poles.get(pole, 0) + 1
-        cout_par_pole[pole] = cout_par_pole.get(pole, 0) + (project.cout_estimatif or 0)
+        raw = (project.poles or '').strip()
+        if not raw:
+            poles['non défini'] = poles.get('non défini', 0) + 1
+            cout_par_pole['non défini'] = cout_par_pole.get('non défini', 0) + (project.cout_estimatif or 0)
+            continue
+        # Identifier chaque pôle officiel présent dans la chaîne
+        liste_poles = [p for p in POLES_OFFICIELS if p in raw]
+        if not liste_poles:
+            liste_poles = [raw]  # fallback : utiliser la chaîne brute
+        for pole in set(liste_poles):
+            poles[pole] = poles.get(pole, 0) + 1
+            cout_par_pole[pole] = cout_par_pole.get(pole, 0) + (project.cout_estimatif or 0)
     
     return jsonify({
         'total_projets': total_projets,
