@@ -118,23 +118,23 @@
             </router-link>
           </div>
         </div>
-        <router-link v-if="user.role !== 'admin' && user.role !== 'secretariatsct'" to="/mon-profil" class="nav-link">
+        <router-link v-if="user.role !== 'admin' && user.role !== 'secretariatsct' && user.role !== 'invite'" to="/mon-profil" class="nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
           Mon Profil
         </router-link>
-        <!-- Contact Button (only for external users: soumissionnaire, invite) -->
-        <router-link v-if="!['admin', 'secretariatsct', 'presidencesct', 'presidencecomite', 'evaluateur', 'evaluateur1', 'evaluateur2'].includes(user.role)" to="/contact" class="nav-link contact-btn" title="Nous contacter">
+        <!-- Contact Button (only for soumissionnaire) -->
+        <router-link v-if="user.role === 'soumissionnaire'" to="/contact" class="nav-link contact-btn" title="Nous contacter">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
             <path d="M12 17h.01"/>
           </svg>
         </router-link>
-        <!-- Notification Bell -->
-        <NotificationBell />
+        <!-- Notification Bell (pas pour visiteur) -->
+        <NotificationBell v-if="user.role !== 'invite'" />
         <div class="user-info">
           <div class="user-details">
             <span class="user-display-name">{{ user.display_name || user.username }}</span>
