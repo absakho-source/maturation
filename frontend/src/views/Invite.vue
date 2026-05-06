@@ -62,10 +62,32 @@
 
       <!-- Onglet Liste -->
       <div v-if="activeTab === 'projets'" class="tab-content">
-        <ProjectTable :projects="projects"
+        <div class="filters-bar">
+          <select v-model="filters.annee" class="filter-select">
+            <option value="">Toutes années</option>
+            <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+          </select>
+          <select v-model="filters.secteur" class="filter-select">
+            <option value="">Tous secteurs</option>
+            <option v-for="s in secteursList" :key="s" :value="s">{{ s }}</option>
+          </select>
+          <select v-model="filters.pole" class="filter-select">
+            <option value="">Tous pôles</option>
+            <option v-for="p in polesList" :key="p" :value="p">{{ p }}</option>
+          </select>
+          <select v-model="filters.avis" class="filter-select">
+            <option value="">Tous avis</option>
+            <option value="favorable">Favorable</option>
+            <option value="favorable sous conditions">Favorable sous conditions</option>
+            <option value="défavorable">Défavorable</option>
+          </select>
+          <button v-if="hasActiveFilters" @click="resetFilters" class="btn-reset">↺ Réinitialiser</button>
+          <span class="filter-count">{{ filteredProjects.length }} / {{ projects.length }}</span>
+        </div>
+        <ProjectTable :projects="filteredProjects"
                       :columns="{ evaluateur: false, actions: false }"
                       :row-clickable="false"
-                      empty-message="Aucun projet disponible" />
+                      empty-message="Aucun projet ne correspond aux filtres" />
       </div>
 
       <!-- Onglet Carte interactive -->
@@ -96,6 +118,12 @@ export default {
         secteurs: {},
         poles: {}
       },
+      filters: {
+        annee: '',
+        secteur: '',
+        pole: '',
+        avis: ''
+      },
     };
   },
   computed: {
@@ -105,6 +133,46 @@ export default {
     favorablesCount() {
       const s = this.statsOverview.statuts || {};
       return (s['favorable'] || 0) + (s['favorable sous conditions'] || 0);
+    },
+    years() {
+      const set = new Set();
+      this.projects.forEach(p => {
+        const yr = (p.numero_projet || '').toString().substring(0, 4);
+        if (/^\d{4}$/.test(yr)) set.add(yr);
+      });
+      return [...set].sort().reverse();
+    },
+    secteursList() {
+      return [...new Set(this.projects.map(p => p.secteur).filter(Boolean))].sort();
+    },
+    polesList() {
+      const set = new Set();
+      this.projects.forEach(p => {
+        if (p.poles) {
+          p.poles.split(',').forEach(po => {
+            const t = po.trim();
+            if (t) set.add(t);
+          });
+        }
+      });
+      return [...set].sort();
+    },
+    hasActiveFilters() {
+      return !!(this.filters.annee || this.filters.secteur || this.filters.pole || this.filters.avis);
+    },
+    filteredProjects() {
+      return this.projects.filter(p => {
+        if (this.filters.annee) {
+          const yr = (p.numero_projet || '').toString().substring(0, 4);
+          if (yr !== this.filters.annee) return false;
+        }
+        if (this.filters.secteur && p.secteur !== this.filters.secteur) return false;
+        if (this.filters.pole) {
+          if (!p.poles || !p.poles.includes(this.filters.pole)) return false;
+        }
+        if (this.filters.avis && p.avis !== this.filters.avis) return false;
+        return true;
+      });
     }
   },
   mounted() {
@@ -213,13 +281,11 @@ export default {
 
       return 'default';
     },
-    applyFilters() {
-      // Les filtres sont appliqués automatiquement via computed property
-    },
     resetFilters() {
-      this.filters.statut = '';
+      this.filters.annee = '';
       this.filters.secteur = '';
       this.filters.pole = '';
+      this.filters.avis = '';
     }
   }
 };
@@ -349,6 +415,48 @@ export default {
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ==================== FILTERS BAR ==================== */
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.filters-bar .filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-width: 160px;
+}
+.filters-bar .filter-select:focus {
+  outline: none;
+  border-color: #2E6B6B;
+  box-shadow: 0 0 0 3px rgba(46, 107, 107, 0.12);
+}
+.filters-bar .btn-reset {
+  padding: 0.5rem 0.85rem;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.filters-bar .btn-reset:hover { background: #f1f5f9; color: #2E6B6B; border-color: #2E6B6B; }
+.filters-bar .filter-count {
+  margin-left: auto;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 .info-message {
   background: #f0f9ff;
