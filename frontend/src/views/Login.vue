@@ -104,7 +104,10 @@
         <div class="acces-secondaires">
           <div class="acces-option">
             <p>Vous n'avez pas encore de compte ?</p>
-            <button @click="showInscriptionMessage" class="btn-inscription">
+            <router-link v-if="!isVitrineMode" to="/register" class="btn-inscription">
+              Créer un compte soumissionnaire
+            </router-link>
+            <button v-else @click="showInscriptionMessage" class="btn-inscription">
               Créer un compte soumissionnaire
             </button>
           </div>
