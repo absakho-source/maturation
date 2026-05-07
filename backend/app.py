@@ -7049,6 +7049,37 @@ def migrer_numeros_historiques():
     return jsonify({"migrated": len(updated), "details": updated})
 
 
+@app.route('/api/admin/harmoniser-dates-historiques', methods=['POST'])
+def harmoniser_dates_historiques():
+    """Aligne les 25 projets historiques sur décembre 2024 partout
+    (date_soumission, date_evaluation, evaluation_prealable_date,
+    evaluabilite_date + fiches d'évaluation associées)."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+
+    cible = datetime(2024, 12, 1)
+    updated = []
+    for p in Project.query.filter(Project.import_historique == True).all():
+        before = {
+            'date_soumission': p.date_soumission.isoformat() if p.date_soumission else None,
+            'date_evaluation': p.date_evaluation.isoformat() if hasattr(p, 'date_evaluation') and p.date_evaluation else None,
+        }
+        p.date_soumission = cible
+        if hasattr(p, 'date_evaluation'):
+            p.date_evaluation = cible
+        if hasattr(p, 'evaluation_prealable_date'):
+            p.evaluation_prealable_date = cible
+        if hasattr(p, 'evaluabilite_date'):
+            p.evaluabilite_date = cible
+        # Aligner aussi les fiches d'évaluation
+        for fiche in FicheEvaluation.query.filter_by(project_id=p.id).all():
+            fiche.date_evaluation = cible
+        updated.append({"numero": p.numero_projet, "before": before})
+    db.session.commit()
+    return jsonify({"updated": len(updated), "details": updated})
+
+
 @app.route('/api/admin/vider-descriptions-historiques', methods=['POST'])
 def vider_descriptions_historiques():
     """Les 25 projets historiques avaient été importés avec la recommandation
