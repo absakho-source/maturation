@@ -66,21 +66,27 @@ const router = createRouter({
   routes
 });
 
-// Mode vitrine : sur le serveur ANSD, seule la page visiteur est exposée.
-// Toute autre route est redirigée vers /visiteur.
+// Mode vitrine : pages publiques accessibles (Home, Login, Visiteur, Contact,
+// Forgot password). Toute autre route (admin, secrétariat, évaluateur…) → Home.
 const VITRINE_MODE = import.meta.env.VITE_VITRINE_MODE === 'true';
+const VITRINE_ALLOWED = ['/', '/login', '/visiteur', '/contact', '/forgot-password', '/reset-password'];
 
 router.beforeEach((to, from, next) => {
   if (VITRINE_MODE) {
-    if (to.path === '/visiteur') return next();
-    // Auto-login en visiteur si pas de user, puis redirection
-    if (!localStorage.getItem('user')) {
-      localStorage.setItem('user', JSON.stringify({
-        id: null, username: 'invite', nom: 'Visiteur',
-        role: 'invite', display_name: 'Visiteur', email: null, telephone: null,
-      }));
+    // /invite (legacy) → /visiteur
+    if (to.path === '/invite') return next('/visiteur');
+    if (VITRINE_ALLOWED.includes(to.path)) {
+      // Pour /visiteur, auto-login en invité si pas encore de user
+      if (to.path === '/visiteur' && !localStorage.getItem('user')) {
+        localStorage.setItem('user', JSON.stringify({
+          id: null, username: 'invite', nom: 'Visiteur',
+          role: 'invite', display_name: 'Visiteur', email: null, telephone: null,
+        }));
+      }
+      return next();
     }
-    return next('/visiteur');
+    // Toute autre route (interne) → Home
+    return next('/');
   }
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const normalizeRole = (r) => {
