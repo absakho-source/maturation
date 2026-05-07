@@ -7030,6 +7030,22 @@ def toggle_ordre_du_jour(project_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/admin/agrandir-colonne-numero', methods=['POST'])
+def agrandir_colonne_numero():
+    """Augmente VARCHAR(20) → VARCHAR(60) pour numero_projet (CDMT)."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+    try:
+        from sqlalchemy import text as sa_text
+        db.session.execute(sa_text("ALTER TABLE project ALTER COLUMN numero_projet TYPE VARCHAR(60)"))
+        db.session.commit()
+        return jsonify({"ok": True, "msg": "Colonne numero_projet → VARCHAR(60)"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/admin/migrer-numeros-historiques', methods=['POST'])
 def migrer_numeros_historiques():
     """Migration ponctuelle : numéros historiques YYYYMMDDNN → YYYYMMNN (8 chars)."""
