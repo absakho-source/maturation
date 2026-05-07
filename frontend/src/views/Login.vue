@@ -36,9 +36,11 @@
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                Identifiant
+                {{ isVitrineMode ? 'Identifiant' : 'Compte utilisateur' }}
               </label>
+              <!-- Mode vitrine : input libre (ANSD) -->
               <input
+                v-if="isVitrineMode"
                 type="text"
                 id="username"
                 v-model="username"
@@ -46,6 +48,23 @@
                 placeholder=""
                 autocomplete="username"
               />
+              <!-- Mode dev : dropdown des comptes test (Render) -->
+              <select
+                v-else
+                id="username"
+                v-model="username"
+                class="form-select"
+                required
+              >
+                <option value="">-- Sélectionnez un compte --</option>
+                <option
+                  v-for="account in accounts"
+                  :key="account.value"
+                  :value="account.value"
+                >
+                  {{ account.displayName }} (@{{ account.value }}) - {{ account.roleLabel }}
+                </option>
+              </select>
             </div>
 
             <div class="form-group">
@@ -70,7 +89,7 @@
               {{ errorMessage }}
             </div>
 
-            <button type="submit" class="btn-login" :disabled="isLoading">
+            <button type="submit" class="btn-login" :disabled="isLoading || (!isVitrineMode && !username)">
               <span v-if="isLoading">⏳ Connexion en cours...</span>
               <span v-else>Se connecter</span>
             </button>
@@ -151,7 +170,8 @@ export default {
     };
   },
   computed: {
-    currentYear() { return new Date().getFullYear(); }
+    currentYear() { return new Date().getFullYear(); },
+    isVitrineMode() { return import.meta.env.VITE_VITRINE_MODE === 'true'; }
   },
   mounted() {
     this.loadAccounts();
@@ -286,12 +306,12 @@ export default {
       try {
         const uname = (this.username || '').trim();
         if (!uname) {
-          this.errorMessage = 'Veuillez saisir vos identifiants';
+          this.errorMessage = 'Veuillez sélectionner un compte';
           return;
         }
-        // Si le compte n'est pas connu, on échoue avec un message générique
-        if (!this.rolesByUsername[uname]) {
-          this.errorMessage = 'Identifiant ou mot de passe incorrect';
+        // Mode dev (Render) : compat avec les comptes test (admin/admin, autres = pwd libre)
+        if (uname === 'admin' && this.password !== 'admin') {
+          this.errorMessage = 'Mot de passe incorrect pour le compte admin';
           return;
         }
 
