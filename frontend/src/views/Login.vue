@@ -24,7 +24,7 @@
         <!-- Titre connexion -->
         <div class="login-header">
           <h1 class="login-title">Connexion</h1>
-          <p class="login-subtitle">Sélectionnez votre compte et entrez votre mot de passe</p>
+          <p class="login-subtitle">Saisissez vos identifiants</p>
         </div>
 
         <!-- Formulaire de connexion -->
@@ -36,23 +36,16 @@
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                Compte utilisateur
+                Identifiant
               </label>
-              <select
+              <input
+                type="text"
                 id="username"
-                v-model="selectedUsername"
-                class="form-select"
-                required
-              >
-                <option value="">-- Sélectionnez un compte --</option>
-                <option
-                  v-for="account in accounts"
-                  :key="account.value"
-                  :value="account.value"
-                >
-                  {{ account.displayName }} (@{{ account.value }}) - {{ account.roleLabel }}
-                </option>
-              </select>
+                v-model="username"
+                class="form-input"
+                placeholder=""
+                autocomplete="username"
+              />
             </div>
 
             <div class="form-group">
@@ -68,7 +61,8 @@
                 id="password"
                 v-model="password"
                 class="form-input"
-                placeholder="Entrez votre mot de passe"
+                placeholder=""
+                autocomplete="current-password"
               />
             </div>
 
@@ -76,7 +70,7 @@
               {{ errorMessage }}
             </div>
 
-            <button type="submit" class="btn-login" :disabled="!selectedUsername || isLoading">
+            <button type="submit" class="btn-login" :disabled="isLoading">
               <span v-if="isLoading">⏳ Connexion en cours...</span>
               <span v-else>Se connecter</span>
             </button>
@@ -91,9 +85,10 @@
         <div class="acces-secondaires">
           <div class="acces-option">
             <p>Vous n'avez pas encore de compte ?</p>
-            <router-link to="/register" class="btn-inscription">
+            <button class="btn-inscription btn-disabled" disabled
+                    title="L'inscription en ligne sera bientôt disponible">
               Créer un compte soumissionnaire
-            </router-link>
+            </button>
           </div>
           <div class="acces-separator"></div>
           <div class="acces-option">
@@ -139,7 +134,7 @@ export default {
       logoUrl,
       accounts: [],
       rolesByUsername: {},
-      selectedUsername: '',
+      username: '',
       password: '',
       errorMessage: '',
       isLoading: false
@@ -261,7 +256,7 @@ export default {
         telephone: null,
       };
       localStorage.setItem('user', JSON.stringify(user));
-      this.$router.push('/invite');
+      this.$router.push('/visiteur');
     },
     async handleLoginSubmit() {
       this.errorMessage = '';
@@ -275,9 +270,14 @@ export default {
       }
 
       try {
-        const uname = this.selectedUsername;
+        const uname = (this.username || '').trim();
         if (!uname) {
-          this.errorMessage = 'Veuillez sélectionner un compte';
+          this.errorMessage = 'Veuillez saisir vos identifiants';
+          return;
+        }
+        // Si le compte n'est pas connu, on échoue avec un message générique
+        if (!this.rolesByUsername[uname]) {
+          this.errorMessage = 'Identifiant ou mot de passe incorrect';
           return;
         }
 
@@ -770,10 +770,18 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 51, 102, 0.15);
 }
 
-.btn-inscription:hover {
+.btn-inscription:hover:not(.btn-disabled) {
   background: linear-gradient(135deg, var(--dgppe-primary-light) 0%, var(--dgppe-primary) 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 51, 102, 0.2);
+}
+
+.btn-inscription.btn-disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+  border: none;
 }
 
 /* ==================== SECTION CONTACT ==================== */

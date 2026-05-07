@@ -53,26 +53,34 @@ const routes = [
   { path: '/import-projet', name: 'ImportProjetHistorique', component: ImportProjetHistorique, meta: { requiresAuth: true } },
   { path: '/logs-connexion', name: 'LogsConnexion', component: LogsConnexion, meta: { requiresAuth: true } },
   { path: '/config-emails', name: 'ConfigEmails', component: ConfigEmails, meta: { requiresAuth: true } },
-  { path: '/invite', name: 'Invite', component: Invite, meta: { requiresAuth: true } },
+  { path: '/visiteur', name: 'Visiteur', component: Invite, meta: { requiresAuth: true } },
+  // Compat: ancienne route /invite → /visiteur
+  { path: '/invite', redirect: '/visiteur' },
   { path: '/ministre_economie', name: 'MinistereEconomie', component: MinistereEconomie, meta: { requiresAuth: true } },
   { path: '/project/:id', name: 'ProjectDetail', component: ProjectDetail, meta: { requiresAuth: true } },
   { path: '/project/:id/edit', name: 'EditProjet', component: EditProjet, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
 
-// Mode vitrine : seules les pages publiques sont autorisées (Home, Login, Visiteur).
+// Mode vitrine : sur le serveur ANSD, seule la page visiteur est exposée.
+// Toute autre route est redirigée vers /visiteur.
 const VITRINE_MODE = import.meta.env.VITE_VITRINE_MODE === 'true';
-const VITRINE_ALLOWED = ['/', '/login', '/invite', '/register', '/forgot-password', '/reset-password'];
 
 router.beforeEach((to, from, next) => {
   if (VITRINE_MODE) {
-    const ok = VITRINE_ALLOWED.includes(to.path) || to.path.startsWith('/invite');
-    if (!ok) return next('/');
-    return next();
+    if (to.path === '/visiteur') return next();
+    // Auto-login en visiteur si pas de user, puis redirection
+    if (!localStorage.getItem('user')) {
+      localStorage.setItem('user', JSON.stringify({
+        id: null, username: 'invite', nom: 'Visiteur',
+        role: 'invite', display_name: 'Visiteur', email: null, telephone: null,
+      }));
+    }
+    return next('/visiteur');
   }
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const normalizeRole = (r) => {
@@ -92,8 +100,11 @@ router.beforeEach((to, from, next) => {
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'membrecomite': ['membrecomite', 'mon-profil', 'project'],
     'ministre_economie': ['ministre_economie', 'mon-profil', 'project'],
-    'invite': ['invite', 'mon-profil']
+    'invite': ['visiteur', 'mon-profil']
   };
+
+  // Mapping rôle → home path (pour redirection après login)
+  const roleHomePath = (r) => r === 'invite' ? '/visiteur' : `/${r}`;
 
   // Vérifier si l'utilisateur peut accéder à la route
   const canAccessRoute = (userRole, path) => {
@@ -112,15 +123,14 @@ router.beforeEach((to, from, next) => {
     next('/login');
   } else if (to.path === '/login' && user) {
     const role = normalizeRole(user.role);
-    next(`/${role}`);
+    next(roleHomePath(role));
   } else if (user && to.meta.requiresAuth && to.path !== '/mon-profil') {
     // Vérifier l'accès basé sur le rôle pour toutes les routes protégées (sauf mon-profil accessible à tous)
     const userRole = normalizeRole(user.role);
 
     if (!canAccessRoute(userRole, to.path)) {
       console.warn(`[Router] Accès refusé: L'utilisateur avec le rôle "${userRole}" ne peut pas accéder à "${to.path}"`);
-      // Rediriger vers la page d'accueil du rôle
-      next(`/${userRole}`);
+      next(roleHomePath(userRole));
       return;
     }
     next();
