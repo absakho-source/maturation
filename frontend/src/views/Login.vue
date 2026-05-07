@@ -275,10 +275,11 @@ export default {
       this.errorMessage = '';
       this.isLoading = true;
 
-      // Mode vitrine : pas de vraie authentification, juste un message
+      // Mode vitrine : pas de vraie authentification, on affiche la même
+      // modale que le bouton « Créer un compte » pour cohérence.
       if (import.meta.env.VITE_VITRINE_MODE === 'true') {
-        this.errorMessage = "Plateforme en cours de stabilisation. L'accès complet sera disponible prochainement.";
         this.isLoading = false;
+        this.showInfoModal = true;
         return;
       }
 
