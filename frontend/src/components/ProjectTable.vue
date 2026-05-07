@@ -148,7 +148,7 @@ export default {
     displayStatut(p) {
       // Décision finale du Comité rendue → afficher l'avis lui-même
       if (p.decision_finale === 'confirme') {
-        const map = { 'favorable': 'Favorable', 'favorable sous conditions': 'Sous conditions', 'défavorable': 'Défavorable' };
+        const map = { 'favorable': 'Favorable', 'favorable sous conditions': 'Favorable sous conditions', 'défavorable': 'Défavorable' };
         return map[p.avis] || 'Décision rendue';
       }
       // Comité a rejeté l'avis → projet à réétudier
@@ -164,6 +164,7 @@ export default {
       // Mapping étendu pour les nouveaux libellés
       const extra = {
         'Favorable': 'avis-favorable',
+        'Favorable sous conditions': 'avis-conditions',
         'Sous conditions': 'avis-conditions',
         'Défavorable': 'avis-defavorable',
         'À réétudier': 'status-pending',

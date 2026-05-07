@@ -54,10 +54,28 @@
               class="search-input"
               aria-label="Rechercher un projet"
             />
-            <select v-model="filterStatut" class="filter-select">
-              <option value="">Tous les statuts</option>
-              <option v-for="s in statutsDisponibles" :key="s" :value="s">{{ s }}</option>
+          </div>
+          <div class="filters-bar">
+            <select v-model="filterAnnee" class="filter-select">
+              <option value="">Toutes années</option>
+              <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
             </select>
+            <select v-model="filterSecteur" class="filter-select">
+              <option value="">Tous secteurs de planification</option>
+              <option v-for="s in secteursList" :key="s" :value="s">{{ s }}</option>
+            </select>
+            <select v-model="filterPole" class="filter-select">
+              <option value="">Tous pôles territoriaux</option>
+              <option v-for="p in polesList" :key="p" :value="p">{{ p }}</option>
+            </select>
+            <select v-model="filterAvis" class="filter-select">
+              <option value="">Tous avis</option>
+              <option value="favorable">Favorable</option>
+              <option value="favorable sous conditions">Favorable sous conditions</option>
+              <option value="défavorable">Défavorable</option>
+            </select>
+            <button v-if="hasActiveFilters" @click="resetFilters" class="btn-reset">↺ Réinitialiser</button>
+            <span class="filter-count">{{ filteredProjects.length }} / {{ allProjects.length }}</span>
           </div>
 
           <ProjectTable :projects="filteredProjects" empty-message="Aucun projet trouvé" />
@@ -92,19 +110,62 @@ export default {
       currentUser: JSON.parse(localStorage.getItem('user') || '{}') || {},
       activeTab: 'projets',
       searchQuery: '',
-      filterStatut: '',
+      filterAnnee: '',
+      filterSecteur: '',
+      filterPole: '',
+      filterAvis: '',
     };
   },
   computed: {
-    statutsDisponibles() {
-      const set = new Set(this.allProjects.map(p => p.statut).filter(Boolean));
-      return [...set].sort();
+    years() {
+      const set = new Set();
+      this.allProjects.forEach(p => {
+        const yr = (p.numero_projet || '').toString().substring(0, 4);
+        if (/^\d{4}$/.test(yr)) set.add(yr);
+        else if ((p.numero_projet || '').startsWith('25-')) set.add('2025');
+      });
+      return [...set].sort().reverse();
+    },
+    secteursList() {
+      return [...new Set(this.allProjects.map(p => p.secteur).filter(Boolean))].sort();
+    },
+    polesList() {
+      const set = new Set();
+      this.allProjects.forEach(p => {
+        if (!p.poles) return;
+        // split parens-aware
+        const out = []; let depth = 0; let cur = '';
+        for (const c of p.poles) {
+          if (c === '(') depth++; else if (c === ')') depth--;
+          if (c === ',' && depth === 0) { if (cur.trim()) out.push(cur.trim()); cur = ''; }
+          else cur += c;
+        }
+        if (cur.trim()) out.push(cur.trim());
+        out.forEach(po => set.add(po));
+      });
+      const priority = { 'Dakar': 0, 'Thiès': 1, 'Thies': 1 };
+      return [...set].sort((a, b) => {
+        const pa = priority[a] ?? 99, pb = priority[b] ?? 99;
+        if (pa !== pb) return pa - pb;
+        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+      });
+    },
+    hasActiveFilters() {
+      return !!(this.filterAnnee || this.filterSecteur || this.filterPole || this.filterAvis);
     },
     filteredProjects() {
       let list = this.allProjects;
-      if (this.filterStatut) {
-        list = list.filter(p => p.statut === this.filterStatut);
+      if (this.filterAnnee) {
+        list = list.filter(p => {
+          const num = (p.numero_projet || '').toString();
+          return num.startsWith(this.filterAnnee) || (this.filterAnnee === '2025' && num.startsWith('25-'));
+        });
       }
+      if (this.filterSecteur) list = list.filter(p => p.secteur === this.filterSecteur);
+      if (this.filterPole) {
+        list = list.filter(p => (p.poles || '').includes(this.filterPole));
+      }
+      if (this.filterAvis) list = list.filter(p => (p.avis || '').toLowerCase() === this.filterAvis);
       const q = (this.searchQuery || '').trim().toLowerCase();
       if (q) {
         list = list.filter(p =>
@@ -126,6 +187,10 @@ export default {
     this.loadProjects();
   },
   methods: {
+    resetFilters() {
+      this.filterAnnee = ''; this.filterSecteur = '';
+      this.filterPole = ''; this.filterAvis = '';
+    },
     async loadProjects() {
       try {
         const u = this.currentUser;
@@ -163,10 +228,25 @@ export default {
 .tab-btn { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; background: #fff; cursor: pointer; font-weight: 500; font-size: 0.9rem; }
 .tab-btn.active { border-color: #2E6B6B; background: #f0fdfa; color: #2E6B6B; }
 
-.search-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-bar { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
 .search-input { flex: 1; min-width: 200px; padding: 0.6rem; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; }
 .search-input:focus { outline: none; border-color: #0ea5e9; }
-.filter-select { padding: 0.6rem; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; min-width: 180px; }
+
+.filters-bar {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;
+}
+.filters-bar .filter-select {
+  padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px;
+  background: #fff; color: #1e293b; font-size: 0.875rem; cursor: pointer; min-width: 160px;
+}
+.filters-bar .filter-select:focus { outline: none; border-color: #2E6B6B; box-shadow: 0 0 0 3px rgba(46, 107, 107, 0.12); }
+.filters-bar .btn-reset {
+  padding: 0.5rem 0.85rem; background: #fff; border: 1px solid #cbd5e1;
+  border-radius: 8px; color: #64748b; font-size: 0.85rem; cursor: pointer;
+}
+.filters-bar .btn-reset:hover { background: #f1f5f9; color: #2E6B6B; border-color: #2E6B6B; }
+.filters-bar .filter-count { margin-left: auto; color: #64748b; font-size: 0.85rem; font-weight: 500; }
 
 .empty-state { text-align: center; padding: 3rem; color: #94a3b8; }
 
