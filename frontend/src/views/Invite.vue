@@ -68,11 +68,11 @@
             <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
           </select>
           <select v-model="filters.secteur" class="filter-select">
-            <option value="">Tous secteurs</option>
+            <option value="">Tous secteurs de planification</option>
             <option v-for="s in secteursList" :key="s" :value="s">{{ s }}</option>
           </select>
           <select v-model="filters.pole" class="filter-select">
-            <option value="">Tous pôles</option>
+            <option value="">Tous pôles territoriaux</option>
             <option v-for="p in polesList" :key="p" :value="p">{{ p }}</option>
           </select>
           <select v-model="filters.avis" class="filter-select">
