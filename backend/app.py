@@ -948,6 +948,7 @@ def update_project(project_id):
         'cout_estimatif', 'duree_annees',
         'point_focal_nom', 'point_focal_fonction', 'point_focal_telephone', 'point_focal_email',
         'evaluateur_nom', 'commentaires',
+        'avis', 'statut', 'decision_finale', 'statut_comite',
     ]
     changed = []
     for k in EDITABLE:
