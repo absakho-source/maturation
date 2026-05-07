@@ -19,17 +19,17 @@
         </thead>
         <tbody>
           <tr v-for="p in paginatedProjects" :key="p.id" @click="onRowClick(p)" class="row-click">
-            <td class="td-num">{{ p.numero_projet || '—' }}</td>
-            <td class="td-titre">
+            <td class="td-num" data-label="N°">{{ p.numero_projet || '—' }}</td>
+            <td class="td-titre" data-label="Projet">
               <div class="titre-cell">
                 <span>{{ p.titre }}</span>
                 <small>{{ p.structure_soumissionnaire || p.organisme_tutelle || p.auteur_nom || '—' }}</small>
               </div>
             </td>
-            <td v-if="cols.secteur">{{ secteurLabel(p.secteur) }}</td>
-            <td v-if="cols.cout" class="td-num">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
-            <td v-if="cols.evaluateur">{{ p.evaluateur_nom || '—' }}</td>
-            <td><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
+            <td v-if="cols.secteur" data-label="Secteur">{{ secteurLabel(p.secteur) }}</td>
+            <td v-if="cols.cout" class="td-num" data-label="Coût">{{ p.cout_estimatif ? formatCurrency(p.cout_estimatif) : '—' }}</td>
+            <td v-if="cols.evaluateur" data-label="Évaluateur">{{ p.evaluateur_nom || '—' }}</td>
+            <td data-label="Statut"><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
             <td v-if="cols.actions" class="td-actions" @click.stop>
               <slot name="actions" :project="p">
                 <button @click="onRowClick(p)" class="btn-view-sm" title="Détails">👁️</button>
@@ -239,4 +239,49 @@ export default {
 .pagination button { padding: 0.4rem 0.7rem; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; }
 .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .pagination button:hover:not(:disabled) { background: #f1f5f9; }
+
+/* ==================== RESPONSIVE — table → cartes ==================== */
+@media (max-width: 700px) {
+  .table-wrap { border: none; background: transparent; overflow-x: visible; }
+  .projects-table { display: block; }
+  .projects-table thead { display: none; }
+  .projects-table tbody { display: flex; flex-direction: column; gap: 0.65rem; }
+  .projects-table tr {
+    display: block;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .projects-table tr.row-click { cursor: pointer; }
+  .projects-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed #f1f5f9;
+    text-align: right;
+    font-size: 0.88rem;
+  }
+  .projects-table td:last-child { border-bottom: none; }
+  .projects-table td::before {
+    content: attr(data-label);
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .projects-table .td-titre { max-width: none; }
+  .projects-table .td-titre .titre-cell {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .projects-table .td-titre .titre-cell span { font-weight: 600; }
+  .projects-table .td-num { text-align: right; }
+}
 </style>

@@ -502,12 +502,38 @@ export default {
   font-size: 0.9rem;
 }
 
-/* ==================== HEADER (legacy) ==================== */
+/* ==================== RESPONSIVE ==================== */
 @media (max-width: 900px) {
+  .visiteur-container, .invite-container { padding: 1rem; }
   .hero { grid-template-columns: repeat(2, 1fr); padding: 1.25rem; gap: 0.75rem; }
   .hero-stat-value { font-size: 1.5rem; }
+  .hero-stat { padding: 0.85rem 0.75rem; }
   .charts-row { grid-template-columns: 1fr; }
-  .bar-item { grid-template-columns: 130px 1fr 30px; }
+  .bar-item { grid-template-columns: 130px 1fr 30px; font-size: 0.8rem; }
+  .filters-bar .filter-select { min-width: 0; flex: 1 1 calc(50% - 0.25rem); font-size: 0.82rem; padding: 0.45rem 0.6rem; }
+  .filters-bar .filter-count { width: 100%; text-align: right; margin-left: 0; }
+}
+
+@media (max-width: 600px) {
+  .visiteur-container, .invite-container { padding: 0.75rem; }
+  .hero { grid-template-columns: 1fr 1fr; padding: 1rem; gap: 0.5rem; border-radius: 12px; }
+  .hero-stat-value { font-size: 1.25rem; }
+  .hero-stat-label { font-size: 0.7rem; letter-spacing: 0.3px; }
+  .chart-card { padding: 1rem; }
+  .chart-card h3 { font-size: 0.92rem; }
+  .bar-item { grid-template-columns: 90px 1fr 28px; gap: 0.5rem; font-size: 0.75rem; }
+  .bar-track { height: 14px; }
+  .tabs { gap: 0.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .tab-btn { padding: 0.55rem 0.85rem; font-size: 0.85rem; white-space: nowrap; }
+  .tab-content { padding: 0.85rem; }
+  .filters-bar { gap: 0.4rem; padding-bottom: 0.75rem; }
+  .filters-bar .filter-select { flex: 1 1 100%; }
+  .filters-bar .btn-reset { flex: 1 1 100%; }
+}
+
+@media (max-width: 380px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-stat { padding: 0.75rem; }
 }
 .invite-container {
   max-width: 1400px;
