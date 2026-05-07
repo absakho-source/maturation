@@ -249,4 +249,28 @@ export default {
   .titre-cell small { font-size: 0.7rem; }
   .statut-pill { font-size: 0.66rem; padding: 0.1rem 0.4rem; }
 }
+
+/* En portrait étroit, garder le tableau lisible : autoriser le wrap +
+   rétablir le scroll horizontal via .table-wrap si vraiment besoin. */
+@media (max-width: 540px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .projects-table { min-width: 540px; font-size: 0.74rem; }
+  .projects-table th { white-space: normal; line-height: 1.15; }
+  .projects-table th, .projects-table td { padding: 0.35rem 0.4rem; vertical-align: top; }
+  .projects-table .td-titre { max-width: 180px; white-space: normal; }
+  .projects-table .td-titre .titre-cell span {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.2;
+  }
+  .titre-cell small {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .statut-pill { white-space: nowrap; font-size: 0.62rem; padding: 0.08rem 0.35rem; }
+}
 </style>
