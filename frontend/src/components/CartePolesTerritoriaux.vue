@@ -127,7 +127,7 @@
             @mouseenter="showTooltip($event, pole)"
             @mousemove="updateTooltip($event)"
             @mouseleave="clearTooltip"
-            @click="selectPole(pole)"
+            @click.stop="selectPole(pole)"
           >
             <!-- Remplissage du pôle -->
             <path
@@ -164,7 +164,7 @@
             @mouseenter="showTooltip($event, pole)"
             @mousemove="updateTooltip($event)"
             @mouseleave="clearTooltip"
-            @click="selectPole(pole)"
+            @click.stop="selectPole(pole)"
           >
             <!-- Contour normal du pôle (toujours affiché, même si sélectionné) -->
             <path
