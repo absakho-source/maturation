@@ -172,7 +172,7 @@
                   @click="voirDetails(compte)"
                   class="btn-action btn-details"
                 >
-                  👁️ Détails
+                  Détails
                 </button>
                 <button
                   v-if="peutSupprimer(compte)"

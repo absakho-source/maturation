@@ -98,7 +98,7 @@
             </div>
             <div class="projet-actions">
               <button @click="voirProjet(projet.id)" class="btn-voir">
-                👁️ Détails
+                Détails
               </button>
             </div>
           </div>

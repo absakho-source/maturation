@@ -74,7 +74,7 @@
             <p><strong>Secteur de planification:</strong> {{ p.secteur }}</p>
             <p v-if="p.poles"><strong>Pôle(s) territorial(aux):</strong> {{ p.poles }}</p>
             <p v-if="p.cout_estimatif"><strong>Coût:</strong> {{ formatCurrency(p.cout_estimatif) }}</p>
-            <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+            <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
           </div>
           <!-- Bouton Évaluation simplifiée (uniquement si dossier évaluable) -->
           <div class="eval-section" v-if="peutAccederFicheEvaluation(p)">

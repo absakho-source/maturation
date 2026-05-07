@@ -356,7 +356,7 @@
                 <p v-if="p.commentaires"><strong>Commentaires:</strong> {{ p.commentaires }}</p>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
 
 
               <!-- Actions pour un rejet proposé -->
@@ -420,7 +420,7 @@
             <div class="card-body">
               <p><strong>Auteur:</strong> {{ projet.auteur_nom }}</p>
 
-              <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${projet.id}`)" class="btn-view">Détails</button>
 
               <!-- Matrice d'évaluation de la recevabilité (en modal pour avoir toute la largeur) -->
               <div v-if="needsEvaluationPrealable(projet)" class="eval-prealable-container">

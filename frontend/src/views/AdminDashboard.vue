@@ -200,7 +200,7 @@
                   </div>
                 </div>
                 <div class="card-actions">
-                  <button @click="viewProject(project.id)" class="btn-view">👁️ Voir</button>
+                  <button @click="viewProject(project.id)" class="btn-view">Voir</button>
                   <button @click="deleteProject(project)" class="btn-delete">🗑️ Supprimer</button>
                 </div>
               </div>
@@ -237,7 +237,7 @@
                     <td>{{ project.evaluateur_nom || '-' }}</td>
                     <td>{{ formatDate(project.date_soumission) }}</td>
                     <td>
-                      <button @click="viewProject(project.id)" class="btn-view-small">👁️</button>
+                      <button @click="viewProject(project.id)" class="btn-view-small">→</button>
                       <button @click="deleteProject(project)" class="btn-delete-small">🗑️</button>
                     </td>
                   </tr>

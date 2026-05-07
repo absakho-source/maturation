@@ -115,7 +115,7 @@
           <div class="acces-option">
             <p>Vous êtes un visiteur ?</p>
             <button @click="loginAsVisiteur" class="btn-visiteur">
-              👁️ Accéder en mode consultation
+              Accéder en mode consultation
             </button>
           </div>
         </div>

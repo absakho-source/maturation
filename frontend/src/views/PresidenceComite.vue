@@ -99,7 +99,7 @@
               <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</p>
               <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
               <p v-if="p.commentaires"><strong>Recommandation:</strong> {{ p.commentaires }}</p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
 
               <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
                 <textarea v-model="commentairesODJ[p.id]" rows="2"
@@ -151,7 +151,7 @@
                 <p style="color: #f59e0b; font-style: italic;">⏳ Avis en attente de validation par le secrétariat SCT</p>
               </div>
               <p><strong>Validation Présidence SCT:</strong> <span class="validated">{{ p.avis_presidencesct }}</span></p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
             </div>
             <div class="final-section">
               <h4>Votre recommandation au Comité</h4>
@@ -232,7 +232,7 @@
                 </div>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
             </div>
           </div>
         </div>

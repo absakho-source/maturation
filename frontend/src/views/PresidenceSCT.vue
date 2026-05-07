@@ -95,7 +95,7 @@
               <p><strong>Structure:</strong> {{ p.structure_soumissionnaire || p.organisme_tutelle || '—' }}</p>
               <p><strong>Avis:</strong> <span :class="getAvisClass(p.avis)">{{ p.avis }}</span></p>
               <p v-if="p.commentaires"><strong>Recommandation:</strong> {{ p.commentaires }}</p>
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view">Détails</button>
               <div class="decision-section" style="margin-top: 0.75rem;">
                 <textarea
                   v-model="commentaires[p.id]"
@@ -174,7 +174,7 @@
                 </div>
               </div>
 
-              <button @click="$router.push(`/project/${p.id}`)" class="btn-view" style="margin-top: 1rem;">👁️ Détails</button>
+              <button @click="$router.push(`/project/${p.id}`)" class="btn-view" style="margin-top: 1rem;">Détails</button>
             </div>
           </div>
         </div>

@@ -308,7 +308,7 @@
                     class="btn-preview"
                     :disabled="templateSaving[template.id]"
                   >
-                    👁️ Prévisualiser
+                    Prévisualiser
                   </button>
                   <button
                     type="button"

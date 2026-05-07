@@ -32,7 +32,11 @@
             <td data-label="Statut"><span class="statut-pill" :class="getStatusClass(displayStatut(p))">{{ displayStatut(p) }}</span></td>
             <td v-if="cols.actions" class="td-actions" @click.stop>
               <slot name="actions" :project="p">
-                <button @click="onRowClick(p)" class="btn-view-sm" title="Détails">👁️</button>
+                <button @click="onRowClick(p)" class="btn-view-sm" title="Voir le projet" aria-label="Voir le projet">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
               </slot>
             </td>
           </tr>
@@ -232,8 +236,16 @@ export default {
 .statut-pill.avis-conditions { background: #fef3c7; color: #92400e; }
 .statut-pill.avis-defavorable { background: #fee2e2; color: #991b1b; }
 
-.btn-view-sm { padding: 0.25rem 0.5rem; background: transparent; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.95rem; }
-.btn-view-sm:hover { background: #f1f5f9; }
+.btn-view-sm {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  padding: 0; background: transparent;
+  border: 1px solid #cbd5e1; border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-view-sm:hover { background: #2E6B6B; border-color: #2E6B6B; color: #fff; }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-top: 1rem; color: #64748b; font-size: 0.9rem; }
 .pagination button { padding: 0.4rem 0.7rem; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; }
