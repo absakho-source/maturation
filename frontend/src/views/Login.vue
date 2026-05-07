@@ -23,8 +23,9 @@
       <div class="login-container">
         <!-- Titre connexion -->
         <div class="login-header">
-          <h1 class="login-title">Connexion</h1>
-          <p class="login-subtitle">Saisissez vos identifiants</p>
+          <div class="welcome-icon">👋</div>
+          <h1 class="login-title">Bienvenue sur PLASMAP</h1>
+          <p class="login-subtitle">Connectez-vous pour suivre la maturation des projets publics</p>
         </div>
 
         <!-- Formulaire de connexion -->
@@ -85,8 +86,7 @@
         <div class="acces-secondaires">
           <div class="acces-option">
             <p>Vous n'avez pas encore de compte ?</p>
-            <button class="btn-inscription btn-disabled" disabled
-                    title="L'inscription en ligne sera bientôt disponible">
+            <button @click="showInscriptionMessage" class="btn-inscription">
               Créer un compte soumissionnaire
             </button>
           </div>
@@ -96,6 +96,16 @@
             <button @click="loginAsVisiteur" class="btn-visiteur">
               👁️ Accéder en mode consultation
             </button>
+          </div>
+        </div>
+
+        <!-- Modale d'information (stabilisation) -->
+        <div v-if="showInfoModal" class="info-modal-overlay" @click.self="showInfoModal = false">
+          <div class="info-modal">
+            <div class="info-modal-icon">🚧</div>
+            <h3>Plateforme en cours de stabilisation</h3>
+            <p>L'accès complet sera disponible prochainement.</p>
+            <button @click="showInfoModal = false" class="btn-info-close">D'accord</button>
           </div>
         </div>
 
@@ -137,7 +147,8 @@ export default {
       username: '',
       password: '',
       errorMessage: '',
-      isLoading: false
+      isLoading: false,
+      showInfoModal: false
     };
   },
   computed: {
@@ -243,6 +254,9 @@ export default {
         invite: "Invité"
       };
       return labels[role] || role;
+    },
+    showInscriptionMessage() {
+      this.showInfoModal = true;
     },
     loginAsVisiteur() {
       // Connexion automatique en tant que visiteur (rôle invite)
@@ -783,6 +797,81 @@ export default {
   box-shadow: none;
   border: none;
 }
+
+/* ==================== HEADER CHALEUREUX ==================== */
+.welcome-icon {
+  font-size: 2.4rem;
+  margin-bottom: 0.6rem;
+  display: inline-block;
+  animation: wave 1.4s ease-in-out;
+  transform-origin: 70% 70%;
+}
+@keyframes wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(14deg); }
+  20%, 40% { transform: rotate(-8deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.login-form-section,
+.acces-secondaires {
+  animation: fade-in-up 0.45s ease-out both;
+}
+.acces-secondaires { animation-delay: 0.1s; }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== MODALE D'INFORMATION ==================== */
+.info-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fade-in 0.2s ease-out;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.info-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 2.25rem;
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: pop 0.25s ease-out;
+}
+@keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.info-modal-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.info-modal h3 {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+.info-modal p {
+  margin: 0 0 1.5rem 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+.btn-info-close {
+  padding: 0.7rem 2rem;
+  background: linear-gradient(135deg, var(--dgppe-primary) 0%, var(--dgppe-primary-light) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.btn-info-close:hover { transform: translateY(-2px); }
 
 /* ==================== SECTION CONTACT ==================== */
 .contact-section {
