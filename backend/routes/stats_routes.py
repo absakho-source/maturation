@@ -13,12 +13,8 @@ def get_stats_overview():
     username = request.args.get('username', '')
 
     # Tous les projets selon les permissions du rôle
-    if role == 'admin':
-        projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
-        projects = Project.query.all()  # Ces rôles voient tous les projets
-    elif role == 'invite':
-        # Rôle invité: accès en lecture seule à tous les projets
+    if role in ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite',
+                'membrecomite', 'ministre_economie', 'invite'):
         projects = Project.query.all()
     else:
         # Autres rôles (évaluateurs, soumissionnaires) - limités
@@ -85,12 +81,8 @@ def get_stats_secteurs():
     role = request.args.get('role', '')
 
     # Filtrer selon les permissions
-    if role == 'admin':
-        projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
-        projects = Project.query.all()
-    elif role == 'invite':
-        # Rôle invité: accès autorisé en lecture seule
+    if role in ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite',
+                'membrecomite', 'ministre_economie', 'invite'):
         projects = Project.query.all()
     else:
         projects = Project.query.filter_by().all()
@@ -171,12 +163,8 @@ def get_stats_poles():
     role = request.args.get('role', '')
 
     # Filtrer selon les permissions
-    if role == 'admin':
-        projects = Project.query.all()
-    elif role in ['secretariatsct', 'presidencesct', 'presidencecomite', 'membrecomite']:
-        projects = Project.query.all()
-    elif role == 'invite':
-        # Rôle invité: accès autorisé en lecture seule
+    if role in ('admin', 'secretariatsct', 'presidencesct', 'presidencecomite',
+                'membrecomite', 'ministre_economie', 'invite'):
         projects = Project.query.all()
     else:
         projects = Project.query.filter_by().all()
@@ -238,7 +226,7 @@ def get_stats_workflow():
     role = request.args.get('role', '')
 
     # Rôle invité: accès INTERDIT aux statistiques workflow
-    if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
+    if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin', 'ministre_economie']:
         return jsonify({'error': 'Accès non autorisé'}), 403
     
     projects = Project.query.all()
@@ -281,7 +269,7 @@ def get_stats_financial():
     role = request.args.get('role', '')
 
     # Rôle invité: accès INTERDIT aux statistiques financières
-    if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin']:
+    if role not in ['secretariatsct', 'presidencesct', 'presidencecomite', 'admin', 'ministre_economie']:
         return jsonify({'error': 'Accès non autorisé'}), 403
     
     projects = Project.query.all()
