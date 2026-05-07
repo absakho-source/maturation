@@ -23,9 +23,8 @@
       <div class="login-container">
         <!-- Titre connexion -->
         <div class="login-header">
-          <div class="welcome-icon">👋</div>
-          <h1 class="login-title">Bienvenue sur PLASMAP</h1>
-          <p class="login-subtitle">Connectez-vous pour suivre la maturation des projets publics</p>
+          <h1 class="login-title">Connexion</h1>
+          <p class="login-subtitle">Saisissez vos identifiants pour accéder à la plateforme</p>
         </div>
 
         <!-- Formulaire de connexion -->
@@ -460,7 +459,7 @@ export default {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 2rem 1rem;
+  padding: 1rem;
 }
 
 .login-container {
@@ -472,9 +471,9 @@ export default {
 /* ==================== HEADER ==================== */
 .login-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   background: white;
-  padding: 2rem;
+  padding: 1.1rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -491,14 +490,14 @@ export default {
 }
 
 .login-title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.25rem 0;
 }
 
 .login-subtitle {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #718096;
   margin: 0;
 }
@@ -508,7 +507,7 @@ export default {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 2.5rem;
+  padding: 1.5rem 2rem;
   border: 1px solid #e2e8f0;
 }
 
@@ -518,7 +517,7 @@ export default {
 }
 
 .form-group {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
 }
 
 .form-label {
@@ -711,9 +710,9 @@ export default {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 1.5rem;
-  margin-top: 2rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
   background: white;
   border-radius: 10px;
   border: 2px solid #e2e8f0;
@@ -722,9 +721,9 @@ export default {
   text-align: center;
 }
 .acces-option p {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
   color: #4a5568;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 .acces-separator {
   width: 1px;
@@ -798,29 +797,14 @@ export default {
   border: none;
 }
 
-/* ==================== HEADER CHALEUREUX ==================== */
-.welcome-icon {
-  font-size: 2.4rem;
-  margin-bottom: 0.6rem;
-  display: inline-block;
-  animation: wave 1.4s ease-in-out;
-  transform-origin: 70% 70%;
-}
-@keyframes wave {
-  0%, 60%, 100% { transform: rotate(0deg); }
-  10%, 30% { transform: rotate(14deg); }
-  20%, 40% { transform: rotate(-8deg); }
-  50% { transform: rotate(10deg); }
-}
-
 .login-form-section,
 .acces-secondaires {
-  animation: fade-in-up 0.45s ease-out both;
+  animation: fade-in-up 0.4s ease-out both;
 }
-.acces-secondaires { animation-delay: 0.1s; }
+.acces-secondaires { animation-delay: 0.08s; }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -876,7 +860,7 @@ export default {
 /* ==================== SECTION CONTACT ==================== */
 .contact-section {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 0.6rem;
 }
 
 .contact-link {
