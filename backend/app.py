@@ -7219,12 +7219,18 @@ def import_projet_historique():
             except ValueError:
                 pass
 
-        # Générer numéro de projet (basé sur année/mois d'évaluation pour les imports historiques)
-        date_prefix = date_eval.strftime("%Y%m")
-        existing = Project.query.filter(
-            Project.numero_projet.like(f"{date_prefix}%")
-        ).count()
-        numero = f"{date_prefix}{existing + 1:02d}"
+        # Numéro custom (numero_override) ou auto (AAAAMMNN basé sur date_eval)
+        numero_custom = (request.form.get('numero_override') or '').strip()
+        if numero_custom:
+            if Project.query.filter(Project.numero_projet == numero_custom).first():
+                return jsonify({"error": f"Numéro {numero_custom} déjà utilisé."}), 409
+            numero = numero_custom
+        else:
+            date_prefix = date_eval.strftime("%Y%m")
+            existing = Project.query.filter(
+                Project.numero_projet.like(f"{date_prefix}%")
+            ).count()
+            numero = f"{date_prefix}{existing + 1:02d}"
 
         p = Project(
             numero_projet=numero,
