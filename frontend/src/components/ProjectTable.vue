@@ -240,48 +240,13 @@ export default {
 .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .pagination button:hover:not(:disabled) { background: #f1f5f9; }
 
-/* ==================== RESPONSIVE — table → cartes ==================== */
+/* ==================== RESPONSIVE — table compactée ==================== */
 @media (max-width: 700px) {
-  .table-wrap { border: none; background: transparent; overflow-x: visible; }
-  .projects-table { display: block; }
-  .projects-table thead { display: none; }
-  .projects-table tbody { display: flex; flex-direction: column; gap: 0.65rem; }
-  .projects-table tr {
-    display: block;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 0.75rem 0.85rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  }
-  .projects-table tr.row-click { cursor: pointer; }
-  .projects-table td {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.35rem 0;
-    border-bottom: 1px dashed #f1f5f9;
-    text-align: right;
-    font-size: 0.88rem;
-  }
-  .projects-table td:last-child { border-bottom: none; }
-  .projects-table td::before {
-    content: attr(data-label);
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .projects-table .td-titre { max-width: none; }
-  .projects-table .td-titre .titre-cell {
-    align-items: flex-end;
-    text-align: right;
-  }
-  .projects-table .td-titre .titre-cell span { font-weight: 600; }
-  .projects-table .td-num { text-align: right; }
+  .projects-table { font-size: 0.78rem; }
+  .projects-table th, .projects-table td { padding: 0.4rem 0.5rem; }
+  .projects-table th { font-size: 0.68rem; letter-spacing: 0.3px; }
+  .projects-table .td-titre { max-width: 200px; }
+  .titre-cell small { font-size: 0.7rem; }
+  .statut-pill { font-size: 0.66rem; padding: 0.1rem 0.4rem; }
 }
 </style>
