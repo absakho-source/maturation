@@ -64,7 +64,16 @@ const router = createRouter({
   routes
 });
 
+// Mode vitrine : seules les pages publiques sont autorisées (Home, Login, Visiteur).
+const VITRINE_MODE = import.meta.env.VITE_VITRINE_MODE === 'true';
+const VITRINE_ALLOWED = ['/', '/login', '/invite', '/register', '/forgot-password', '/reset-password'];
+
 router.beforeEach((to, from, next) => {
+  if (VITRINE_MODE) {
+    const ok = VITRINE_ALLOWED.includes(to.path) || to.path.startsWith('/invite');
+    if (!ok) return next('/');
+    return next();
+  }
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const normalizeRole = (r) => {
     if (!r) return r;

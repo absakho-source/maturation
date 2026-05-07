@@ -104,13 +104,16 @@ print(f"[CONFIG] Using UPLOAD_FOLDER: {app.config['UPLOAD_FOLDER']}")
 print(f"[CONFIG] MAX_CONTENT_LENGTH: {app.config['MAX_CONTENT_LENGTH'] / (1024*1024)}MB")
 
 # Configuration CORS pour permettre les requêtes depuis le frontend
+_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",  # Dev local
+    "http://localhost:5173",
+    "https://maturation-frontend.onrender.com",  # Production Render
+    "https://maturation.economie.gouv.sn",       # Vitrine officielle
+]
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": [
-            "http://127.0.0.1:5173",  # Dev local
-            "http://localhost:5173",
-            "https://maturation-frontend.onrender.com"  # Production
-        ],
+        "origins": _ALLOWED_ORIGINS,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "Cache-Control", "Pragma", "X-Role", "X-Username"],
         "supports_credentials": True,
@@ -123,16 +126,12 @@ CORS(app, resources={
 @app.after_request
 def after_request(response):
     origin = request.headers.get('Origin')
-    allowed_origins = [
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
-        "https://maturation-frontend.onrender.com"
-    ]
-    if origin in allowed_origins:
+    if origin in _ALLOWED_ORIGINS:
         response.headers['Access-Control-Allow-Origin'] = origin
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cache-Control, Pragma, X-Role, X-Username'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Vary'] = 'Origin'
     return response
 
 db.init_app(app)

@@ -267,6 +267,13 @@ export default {
       this.errorMessage = '';
       this.isLoading = true;
 
+      // Mode vitrine : pas de vraie authentification, juste un message
+      if (import.meta.env.VITE_VITRINE_MODE === 'true') {
+        this.errorMessage = "Plateforme en cours de stabilisation. L'accès complet sera disponible prochainement.";
+        this.isLoading = false;
+        return;
+      }
+
       try {
         const uname = this.selectedUsername;
         if (!uname) {

@@ -88,3 +88,4 @@ rapport_*.py
 *_old.vue
 *.json.debug
 poles_debug.json
+frontend/dist-vitrine/
