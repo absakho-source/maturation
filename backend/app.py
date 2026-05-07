@@ -7049,6 +7049,23 @@ def migrer_numeros_historiques():
     return jsonify({"migrated": len(updated), "details": updated})
 
 
+@app.route('/api/admin/vider-descriptions-historiques', methods=['POST'])
+def vider_descriptions_historiques():
+    """Les 25 projets historiques avaient été importés avec la recommandation
+    dans le champ description (erreur du parser PDF). On vide pour ne pas
+    afficher une fausse description."""
+    role = request.headers.get('X-User-Role') or request.args.get('role')
+    if role != 'admin':
+        return jsonify({"error": "admin uniquement"}), 403
+    cleared = []
+    for p in Project.query.filter(Project.import_historique == True).all():
+        if p.description:
+            cleared.append({"numero": p.numero_projet, "old": p.description[:80]})
+            p.description = None
+    db.session.commit()
+    return jsonify({"cleared": len(cleared), "details": cleared})
+
+
 @app.route('/api/admin/aligner-tutelles-officielles', methods=['POST'])
 def aligner_tutelles_officielles():
     """Aligne organisme_tutelle des 25 projets historiques sur les nom_complet
