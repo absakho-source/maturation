@@ -5,11 +5,15 @@
       <div class="hero">
         <div class="hero-stat">
           <div class="hero-stat-value">{{ statsOverview.total_projets || 0 }}</div>
-          <div class="hero-stat-label">Projets soumis</div>
+          <div class="hero-stat-label">Projets évalués</div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-value">{{ formatBig(coutTotal) }}</div>
-          <div class="hero-stat-label">Investissement total</div>
+          <div class="hero-stat-label">Coût total estimé</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">{{ formatBig(coutMoyenParAnnee) }}</div>
+          <div class="hero-stat-label">Moyenne par année</div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-value">{{ favorablesCount }}</div>
@@ -17,7 +21,7 @@
         </div>
         <div class="hero-stat">
           <div class="hero-stat-value">{{ Object.keys(polesStatsSorted).length }}</div>
-          <div class="hero-stat-label">Pôles concernés</div>
+          <div class="hero-stat-label">Pôles territoriaux</div>
         </div>
       </div>
 
@@ -133,6 +137,10 @@ export default {
     favorablesCount() {
       const s = this.statsOverview.statuts || {};
       return (s['favorable'] || 0) + (s['favorable sous conditions'] || 0);
+    },
+    coutMoyenParAnnee() {
+      const nbAnnees = this.years.length || 1;
+      return Math.round((this.coutTotal || 0) / nbAnnees);
     },
     years() {
       const set = new Set();
@@ -350,7 +358,7 @@ export default {
   padding: 1.75rem 1.5rem;
   margin-bottom: 1.5rem;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
   box-shadow: 0 8px 24px rgba(46, 107, 107, 0.2);
 }
