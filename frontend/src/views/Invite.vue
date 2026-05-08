@@ -137,8 +137,13 @@ export default {
     years() {
       const set = new Set();
       this.projects.forEach(p => {
-        const yr = (p.numero_projet || '').toString().substring(0, 4);
-        if (/^\d{4}$/.test(yr)) set.add(yr);
+        const num = (p.numero_projet || '').toString();
+        // Format AAAAxxxxx → AAAA
+        const m4 = num.match(/^(\d{4})/);
+        if (m4) { set.add(m4[1]); return; }
+        // Format AA-xxx-... → 20AA
+        const m2 = num.match(/^(\d{2})-/);
+        if (m2) set.add('20' + m2[1]);
       });
       return [...set].sort().reverse();
     },
@@ -169,7 +174,12 @@ export default {
     filteredProjects() {
       return this.projects.filter(p => {
         if (this.filters.annee) {
-          const yr = (p.numero_projet || '').toString().substring(0, 4);
+          const num = (p.numero_projet || '').toString();
+          let yr = '';
+          const m4 = num.match(/^(\d{4})/);
+          const m2 = num.match(/^(\d{2})-/);
+          if (m4) yr = m4[1];
+          else if (m2) yr = '20' + m2[1];
           if (yr !== this.filters.annee) return false;
         }
         if (this.filters.secteur && p.secteur !== this.filters.secteur) return false;
