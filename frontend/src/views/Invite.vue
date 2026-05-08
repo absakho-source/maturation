@@ -86,7 +86,7 @@
         </div>
         <ProjectTable :projects="filteredProjects"
                       :columns="{ evaluateur: false, actions: false }"
-                      :row-clickable="false"
+                      :row-clickable="true"
                       empty-message="Aucun projet ne correspond aux filtres" />
       </div>
 

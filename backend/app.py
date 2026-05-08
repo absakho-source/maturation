@@ -853,11 +853,38 @@ def get_project(project_id):
         role = request.args.get("role", "")
         username = request.args.get("username", "")
 
-        # Les invités ne peuvent pas accéder aux détails des projets
-        if role == "invite":
-            return jsonify({"error": "Accès refusé: Les invités ne peuvent pas voir les détails des projets"}), 403
-
         p = Project.query.get_or_404(project_id)
+
+        # Les invités peuvent voir UNIQUEMENT les projets historiques (déjà publiés
+        # officiellement) et avec un payload réduit aux champs publics.
+        if role == "invite":
+            if not getattr(p, 'import_historique', False):
+                return jsonify({"error": "Accès refusé: ce projet n'est pas accessible publiquement"}), 403
+            fiche = _fiche_eval_resume(p.id)
+            # Retirer les champs internes de la fiche
+            if fiche:
+                for k in ('commentaires', 'commentaires_finaux', 'fichiers_annexes',
+                          'evaluateur_id', 'commentaires_internes'):
+                    fiche.pop(k, None)
+            return jsonify({
+                "id": p.id,
+                "numero_projet": p.numero_projet,
+                "titre": p.titre,
+                "secteur": p.secteur,
+                "poles": p.poles,
+                "cout_estimatif": float(p.cout_estimatif) if p.cout_estimatif else 0,
+                "structure_soumissionnaire": p.structure_soumissionnaire or "",
+                "organisme_tutelle": p.organisme_tutelle or "",
+                "auteur_nom": p.auteur_nom or "",
+                "duree_annees": p.duree_annees if hasattr(p, 'duree_annees') else None,
+                "date_soumission": p.date_soumission.isoformat() if p.date_soumission else None,
+                "avis": p.avis,
+                "decision_finale": p.decision_finale,
+                "commentaires": p.commentaires,  # = recommandation publique de la fiche
+                "evaluateur_nom": p.evaluateur_nom or "",
+                "fiche_evaluation": fiche,
+                "import_historique": True,
+            })
 
         # Récupérer le display_name de l'évaluateur si applicable
         evaluateur_display_name = ""

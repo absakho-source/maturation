@@ -291,8 +291,8 @@
 
         </div>
 
-        <!-- Documenthèque du projet - Accessible à tous les membres -->
-        <DocumenthequeProjet v-if="project" :projectId="project.id" />
+        <!-- Documenthèque du projet - Masquée pour les visiteurs publics -->
+        <DocumenthequeProjet v-if="project && currentUser?.role !== 'invite'" :projectId="project.id" />
 
         <!-- Section Historique - masquée pour soumissionnaires et invités -->
         <div class="info-card" v-if="!isSoumissionnaire() && currentUser?.role !== 'invite'">
@@ -314,8 +314,8 @@
           </div>
         </div>
 
-        <!-- Discussion du projet - Espace d'échange entre soumissionnaire et comité -->
-        <DiscussionProjet v-if="project" :projectId="project.id" />
+        <!-- Discussion du projet - Masquée pour les visiteurs publics -->
+        <DiscussionProjet v-if="project && currentUser?.role !== 'invite'" :projectId="project.id" />
       </div>
     </div>
     <div v-else class="loading">Chargement...</div>
@@ -648,6 +648,11 @@ export default {
 
       // Ministre de l'Économie voit l'évaluation
       if (role === 'ministre_economie') {
+        return true;
+      }
+
+      // Visiteur voit l'évaluation pour les projets historiques (déjà publiés)
+      if (role === 'invite' && this.project.import_historique) {
         return true;
       }
 

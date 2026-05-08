@@ -75,7 +75,8 @@ router.beforeEach((to, from, next) => {
   if (VITRINE_MODE) {
     // /invite (legacy) → /visiteur
     if (to.path === '/invite') return next('/visiteur');
-    if (VITRINE_ALLOWED.includes(to.path)) {
+    // /project/:id autorisé en mode vitrine (consultation publique des fiches historiques)
+    if (VITRINE_ALLOWED.includes(to.path) || to.path.startsWith('/project/')) {
       // Pour /visiteur, auto-login en invité si pas encore de user
       if (to.path === '/visiteur' && !localStorage.getItem('user')) {
         localStorage.setItem('user', JSON.stringify({
@@ -106,7 +107,7 @@ router.beforeEach((to, from, next) => {
     'presidencecomite': ['presidencecomite', 'mon-profil', 'project', 'evaluation'],
     'membrecomite': ['membrecomite', 'mon-profil', 'project'],
     'ministre_economie': ['ministre_economie', 'mon-profil', 'project'],
-    'invite': ['visiteur', 'mon-profil']
+    'invite': ['visiteur', 'mon-profil', 'project']
   };
 
   // Mapping rôle → home path (pour redirection après login)
