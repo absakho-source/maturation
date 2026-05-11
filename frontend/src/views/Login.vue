@@ -788,10 +788,11 @@ export default {
 }
 .visiteur-banner-content { flex: 1; min-width: 0; }
 .visiteur-banner-content h2 {
-  margin: 0 0 0.2rem 0; font-size: 1.1rem; font-weight: 700; color: #fff;
+  margin: 0 0 0.25rem 0; font-size: 1.1rem; font-weight: 700; color: #fff !important;
 }
 .visiteur-banner-content p {
-  margin: 0; font-size: 0.88rem; opacity: 0.92; line-height: 1.4;
+  margin: 0; font-size: 0.9rem; line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92) !important;
 }
 .btn-visiteur-large {
   white-space: nowrap;
