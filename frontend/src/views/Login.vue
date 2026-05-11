@@ -21,12 +21,6 @@
 
     <main class="login-main">
       <div class="login-container">
-        <!-- Titre connexion -->
-        <div class="login-header">
-          <h1 class="login-title">Connexion</h1>
-          <p class="login-subtitle">Saisissez vos identifiants pour accéder à la plateforme</p>
-        </div>
-
         <!-- Bandeau Visiteur en haut (visible avant le formulaire en mode vitrine) -->
         <div v-if="isVitrineMode" class="visiteur-banner">
           <div class="visiteur-banner-content">
@@ -38,8 +32,15 @@
           </button>
         </div>
 
+        <!-- Séparateur visuel en mode vitrine -->
+        <div v-if="isVitrineMode" class="or-divider"><span>ou</span></div>
+
         <!-- Formulaire de connexion -->
         <div class="login-form-section">
+          <div class="login-form-header">
+            <h2 class="login-form-title">Connexion à la plateforme</h2>
+            <p class="login-form-hint">Réservée aux comptes autorisés.</p>
+          </div>
           <form @submit.prevent="handleLoginSubmit" class="login-form">
             <div class="form-group">
               <label for="username" class="form-label">
@@ -111,8 +112,8 @@
           </form>
         </div>
 
-        <!-- Bloc d'accès secondaires (inscription + visiteur) -->
-        <div class="acces-secondaires">
+        <!-- Bloc d'accès secondaires (inscription seul en mode vitrine, inscription + visiteur en mode dev) -->
+        <div class="acces-secondaires" :class="{ 'single-col': isVitrineMode }">
           <div class="acces-option">
             <p>Vous n'avez pas encore de compte ?</p>
             <router-link v-if="!isVitrineMode" to="/register" class="btn-inscription">
@@ -122,13 +123,15 @@
               Créer un compte soumissionnaire
             </button>
           </div>
-          <div class="acces-separator"></div>
-          <div class="acces-option">
-            <p>Vous êtes un visiteur ?</p>
-            <button @click="loginAsVisiteur" class="btn-visiteur">
-              Accéder en mode consultation
-            </button>
-          </div>
+          <template v-if="!isVitrineMode">
+            <div class="acces-separator"></div>
+            <div class="acces-option">
+              <p>Vous êtes un visiteur ?</p>
+              <button @click="loginAsVisiteur" class="btn-visiteur">
+                Accéder en mode consultation
+              </button>
+            </div>
+          </template>
         </div>
 
         <!-- Modale d'information (stabilisation) -->
@@ -739,6 +742,35 @@ export default {
 .footer-link:hover {
   opacity: 0.8;
 }
+
+/* ==================== SÉPARATEUR « ou » ==================== */
+.or-divider {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin: 0.85rem 0 0.6rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.or-divider::before,
+.or-divider::after {
+  content: ''; flex: 1; height: 1px; background: #e2e8f0;
+}
+
+/* ==================== HEADER DU FORMULAIRE ==================== */
+.login-form-header {
+  text-align: center;
+  margin-bottom: 1.1rem;
+}
+.login-form-title {
+  margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;
+}
+.login-form-hint {
+  margin: 0.25rem 0 0 0; font-size: 0.82rem; color: #94a3b8;
+}
+
+/* En mode vitrine : 1 seule colonne (inscription) au lieu de 2 */
+.acces-secondaires.single-col { grid-template-columns: 1fr; }
 
 /* ==================== BANDEAU VISITEUR (haut de page, mode vitrine) ==================== */
 .visiteur-banner {
