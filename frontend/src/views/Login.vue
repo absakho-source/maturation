@@ -27,6 +27,17 @@
           <p class="login-subtitle">Saisissez vos identifiants pour accéder à la plateforme</p>
         </div>
 
+        <!-- Bandeau Visiteur en haut (visible avant le formulaire en mode vitrine) -->
+        <div v-if="isVitrineMode" class="visiteur-banner">
+          <div class="visiteur-banner-content">
+            <h2>Consultez les projets publics</h2>
+            <p>Accédez librement aux fiches d'évaluation des projets et programmes maturés.</p>
+          </div>
+          <button @click="loginAsVisiteur" class="btn-visiteur-large">
+            Accéder en mode consultation →
+          </button>
+        </div>
+
         <!-- Formulaire de connexion -->
         <div class="login-form-section">
           <form @submit.prevent="handleLoginSubmit" class="login-form">
@@ -727,6 +738,49 @@ export default {
 
 .footer-link:hover {
   opacity: 0.8;
+}
+
+/* ==================== BANDEAU VISITEUR (haut de page, mode vitrine) ==================== */
+.visiteur-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #2E6B6B 0%, #1e4b4b 100%);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(46, 107, 107, 0.25);
+  animation: fade-in-up 0.45s ease-out both;
+}
+.visiteur-banner-content { flex: 1; min-width: 0; }
+.visiteur-banner-content h2 {
+  margin: 0 0 0.2rem 0; font-size: 1.1rem; font-weight: 700; color: #fff;
+}
+.visiteur-banner-content p {
+  margin: 0; font-size: 0.88rem; opacity: 0.92; line-height: 1.4;
+}
+.btn-visiteur-large {
+  white-space: nowrap;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  color: #2E6B6B;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.btn-visiteur-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+@media (max-width: 600px) {
+  .visiteur-banner { flex-direction: column; gap: 0.85rem; text-align: center; padding: 1rem; }
+  .btn-visiteur-large { width: 100%; }
 }
 
 /* ==================== SECTION INSCRIPTION ==================== */
