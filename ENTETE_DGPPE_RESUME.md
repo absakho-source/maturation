@@ -5,7 +5,7 @@ L'en-tête officiel de la DGPPE a été intégré avec succès dans le système 
 
 **En-tête complet :**
 - République du Sénégal
-- Ministère de l'Économie, du Plan et de la Coopération
+- Ministère de l'Économie, des Finances et du Plan
 - Direction Générale de la Planification des Politiques Économiques
 - Plateforme de Maturation des Projets Publics
 - Logo DGPPE

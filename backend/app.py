@@ -2005,7 +2005,7 @@ def request_password_reset():
             <p>Ce lien est valable pendant 1 heure.</p>
             <p>Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>
             <hr>
-            <p><small>DGPPE - Ministère de l'Économie, du Plan et de la Coopération</small></p>
+            <p><small>DGPPE - Ministère de l'Économie, des Finances et du Plan</small></p>
             """
             email_service.send_email(
                 to_email=user.email,
@@ -5900,7 +5900,7 @@ def generer_rapport_statistiques():
             # Tableau pour l'en-tête
             header_data = [[
                 logo,
-                Paragraph("Ministère de l'Économie, du Plan et de la Coopération<br/>" +
+                Paragraph("Ministère de l'Économie, des Finances et du Plan<br/>" +
                          "<font size=9 color='#5a6c7d'>Direction Générale de la Planification des Politiques Économiques</font><br/>" +
                          "<font size=11 color='#1e40af'><b>Plateforme de Maturation des Projets Publics</b></font>",
                          ministry_style)
@@ -5920,7 +5920,7 @@ def generer_rapport_statistiques():
             elements.append(header_table)
         else:
             # Fallback si le logo n'existe pas
-            elements.append(Paragraph("Ministère de l'Économie, du Plan et de la Coopération", title_style))
+            elements.append(Paragraph("Ministère de l'Économie, des Finances et du Plan", title_style))
             elements.append(Paragraph("Direction Générale de la Planification des Politiques Économiques", styles['Normal']))
             elements.append(Paragraph("Plateforme de Maturation des Projets Publics", styles['Normal']))
 

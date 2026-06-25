@@ -4,7 +4,7 @@
       <div class="logo-section" @click="$router.push('/')" style="cursor: pointer;">
         <img src="/src/assets/logo-dgppe.png" alt="Logo DGPPE" class="logo-dgppe" />
         <div class="header-title">
-          <span class="ministry-name">Ministère de l'Économie, du Plan et de la Coopération</span>
+          <span class="ministry-name">Ministère de l'Économie, des Finances et du Plan</span>
           <span class="direction-name">Direction Générale de la Planification des Politiques Économiques</span>
           <span class="platform-name">Plateforme de Suivi de la Maturation des Projets (PLASMAP)</span>
         </div>

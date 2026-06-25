@@ -15,7 +15,7 @@ MINISTERES_2025 = [
     "Ministère de l'Intégration Africaine, des Affaires étrangères et des Sénégalais de l'Extérieur",
     "Ministère des Forces Armées",
     "Ministère de l'Intérieur et de la Sécurité publique",
-    "Ministère de l'Économie, du Plan et de la Coopération",
+    "Ministère de l'Économie, des Finances et du Plan",
     "Ministère des Finances et du Budget",
     "Ministère de l'Enseignement supérieur, de la Recherche et de l'Innovation",
     "Ministère des Transports Terrestres et Aériens",

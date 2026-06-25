@@ -7,7 +7,7 @@
         <div class="header-center">
           <img :src="logo" alt="Logo DGPPE" class="header-logo" @click="$router.push('/')" style="cursor: pointer;" />
           <div class="header-info">
-            <h2 class="header-title">Ministère de l'Économie, du Plan et de la Coopération</h2>
+            <h2 class="header-title">Ministère de l'Économie, des Finances et du Plan</h2>
             <p class="header-subtitle">Direction Générale de la Planification des Politiques Économiques</p>
           </div>
         </div>

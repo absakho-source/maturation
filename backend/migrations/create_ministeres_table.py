@@ -23,7 +23,7 @@ def init_ministeres():
         {"nom": "Ministère de l'Intégration Africaine, des Affaires étrangères et des Sénégalais de l'Extérieur", "abr": "MIAESE"},
         {"nom": "Ministère des Forces Armées", "abr": "MFA"},
         {"nom": "Ministère de l'Intérieur et de la Sécurité publique", "abr": "MISP"},
-        {"nom": "Ministère de l'Économie, du Plan et de la Coopération", "abr": "MEPC"},
+        {"nom": "Ministère de l'Économie, des Finances et du Plan", "abr": "MEFP"},
         {"nom": "Ministère des Finances et du Budget", "abr": "MFB"},
         {"nom": "Ministère de l'Enseignement supérieur, de la Recherche et de l'Innovation", "abr": "MESRI"},
         {"nom": "Ministère des Transports Terrestres et Aériens", "abr": "MTTA"},

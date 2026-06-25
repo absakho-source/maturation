@@ -846,7 +846,7 @@ def seed():
             "presidencecomite", "precomite123", "presidencecomite",
             "Ministre de l'Économie et de la Planification",
             "cabinet@economie.gouv.sn",
-            "Ministère de l'Économie, du Plan et de la Coopération"
+            "Ministère de l'Économie, des Finances et du Plan"
         )
 
         # Membres du Comité (compte partagé)
@@ -862,7 +862,7 @@ def seed():
             "ministre_economie", "ministre123", "ministre_economie",
             "Cabinet du Ministre",
             "cabinet@economie.gouv.sn",
-            "Ministère de l'Économie, du Plan et de la Coopération"
+            "Ministère de l'Économie, des Finances et du Plan"
         )
 
         # Point Focal (exemple : Ministère de l'Agriculture)

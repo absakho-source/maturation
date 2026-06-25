@@ -41,7 +41,7 @@ DEPARTEMENTS = {
 
 # Liste des principaux ministères du Sénégal
 MINISTERES = [
-    "Ministère de l'Économie, du Plan et de la Coopération",
+    "Ministère de l'Économie, des Finances et du Plan",
     "Ministère des Finances et du Budget",
     "Ministère de la Santé et de l'Action Sociale",
     "Ministère de l'Éducation Nationale",
