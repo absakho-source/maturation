@@ -4450,6 +4450,48 @@ def diagnostic_projets():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/admin/export-uploads-zip", methods=["GET"])
+def export_uploads_zip():
+    """Export en zip du dossier uploads complet (pour migration vers ANSD).
+    Restreint admin, avec token de sécurité en query pour éviter les accidents."""
+    role = request.args.get("role", "")
+    token = request.args.get("token", "")
+    if role != "admin":
+        return jsonify({"error": "admin uniquement"}), 403
+    if token != "migr8_ansd_2026":
+        return jsonify({"error": "token invalide"}), 403
+
+    import io, zipfile
+    upload_folder = app.config["UPLOAD_FOLDER"]
+    if not os.path.isdir(upload_folder):
+        return jsonify({"error": f"dossier introuvable: {upload_folder}"}), 404
+
+    buf = io.BytesIO()
+    total_files = 0
+    total_bytes = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
+        for root, _, files in os.walk(upload_folder):
+            for f in files:
+                fp = os.path.join(root, f)
+                arc = os.path.relpath(fp, upload_folder)
+                try:
+                    zf.write(fp, arc)
+                    total_files += 1
+                    total_bytes += os.path.getsize(fp)
+                except Exception:
+                    pass
+    buf.seek(0)
+    print(f"[EXPORT-UPLOADS] {total_files} fichiers, {total_bytes} octets zippés")
+    from flask import send_file
+    return send_file(
+        buf,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name="plasmap_uploads_render.zip",
+    )
+
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
