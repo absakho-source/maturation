@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Routes Sénégal</title>
+    <style>
+        body { margin: 20px; font-family: Arial; }
+        #status { padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
+        svg { border: 1px solid #000; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Test d'affichage des routes</h1>
+    <div id="status">Chargement...</div>
+    <svg id="map" width="800" height="600" viewBox="0 0 800 600"></svg>
+
+    <script>
+        const status = document.getElementById('status');
+        const svg = document.getElementById('map');
+
+        // Bounds du Sénégal (approximatifs)
+        const bounds = {
+            minLon: -17.5,
+            maxLon: -11.3,
+            minLat: 12.3,
+            maxLat: 16.7
+        };
+
+        function lonToX(lon) {
+            return ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * 800;
+        }
+
+        function latToY(lat) {
+            return 600 - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 600;
+        }
+
+        async function loadRoads() {
+            try {
+                status.textContent = 'Chargement du fichier JSON...';
+                const response = await fetch('/senegal_roads_sample.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const roads = await response.json();
+                status.textContent = `✅ ${roads.length} routes chargées. Rendu en cours...`;
+
+                let rendered = 0;
+                roads.forEach(road => {
+                    if (!road.coordinates || road.coordinates.length === 0) return;
+
+                    const points = road.coordinates.map(([lon, lat]) =>
+                        `${lonToX(lon)},${latToY(lat)}`
+                    ).join(' ');
+
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    polyline.setAttribute('points', points);
+                    polyline.setAttribute('stroke', road.type === 'nationale' ? '#666' : '#999');
+                    polyline.setAttribute('stroke-width', road.type === 'nationale' ? '2' : '1');
+                    polyline.setAttribute('fill', 'none');
+                    svg.appendChild(polyline);
+                    rendered++;
+                });
+
+                status.textContent = `✅ ${rendered} routes affichées sur ${roads.length}`;
+
+            } catch (error) {
+                status.textContent = `❌ Erreur: ${error.message}`;
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        loadRoads();
+    </script>
+</body>
+</html>

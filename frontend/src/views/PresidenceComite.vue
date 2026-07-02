@@ -103,15 +103,20 @@
 
               <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
                 <textarea v-model="commentairesODJ[p.id]" rows="2"
-                          placeholder="Commentaires / motif de rejet…"
+                          placeholder="Note libre, conditions à lever, ou motif d'ajournement…"
                           style="width:100%;padding:0.5rem;border:1px solid #ddd;border-radius:6px;"></textarea>
                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                   <button @click="decisionComiteDepuisODJ(p.id, 'enterine')" class="btn-success">
                     ✅ Entériner
                   </button>
-                  <button @click="decisionComiteDepuisODJ(p.id, 'conteste')" class="btn-warning"
+                  <button @click="decisionComiteDepuisODJ(p.id, 'enterine_conditions')" class="btn-warning"
+                          :disabled="!commentairesODJ[p.id]?.trim()"
+                          title="Le projet est entériné mais devra revenir après levée des conditions">
+                    ⚠️ Entériner sous conditions
+                  </button>
+                  <button @click="decisionComiteDepuisODJ(p.id, 'ajourne')" class="btn-reject"
                           :disabled="!commentairesODJ[p.id]?.trim()">
-                    ❌ Contester
+                    ⏸️ Ajourner
                   </button>
                   <button @click="rejeterOrdreDuJour(p.id)" class="btn-danger"
                           :disabled="!commentairesODJ[p.id]?.trim()">
@@ -465,13 +470,19 @@ export default {
     },
     async decisionComiteDepuisODJ(id, decision) {
       const commentaires = (this.commentairesODJ[id] || '').trim();
-      if (decision === 'conteste' && !commentaires) {
-        this.$toast.warning('Les commentaires sont obligatoires pour contester');
+      const besoinTexte = { enterine_conditions: 'Les conditions à lever sont obligatoires',
+                            ajourne: 'Le motif d’ajournement est obligatoire',
+                            conteste: 'Le motif est obligatoire' };
+      if (besoinTexte[decision] && !commentaires) {
+        this.$toast.warning(besoinTexte[decision]);
         return;
       }
-      const confirmMsg = decision === 'enterine'
-        ? "Entériner ce projet ? Le soumissionnaire sera notifié."
-        : "Contester ce projet ? Il retournera au Secrétariat SCT.";
+      const confirmMsg = {
+        enterine: 'Entériner ce projet ? Le soumissionnaire sera notifié.',
+        enterine_conditions: 'Entériner SOUS CONDITIONS ? Le projet sera renvoyé pour levée des conditions puis repassera au Comité.',
+        ajourne: 'Ajourner ce projet ? Il retournera au Secrétariat SCT.',
+        conteste: 'Ajourner ce projet ? Il retournera au Secrétariat SCT.',
+      }[decision] || 'Confirmer la décision ?';
       if (!confirm(confirmMsg)) return;
       const user = JSON.parse(localStorage.getItem("user") || "null") || {};
       try {
@@ -480,7 +491,10 @@ export default {
           body: JSON.stringify({ decision, commentaires, auteur: user.username, role: user.role })
         });
         if (!resp.ok) { const err = await resp.json().catch(() => ({})); throw new Error(err.error || "Erreur"); }
-        const label = decision === 'enterine' ? 'Entériné' : 'Contesté';
+        const label = { enterine: 'Entériné',
+                        enterine_conditions: 'Entériné sous conditions',
+                        ajourne: 'Ajourné',
+                        conteste: 'Ajourné' }[decision] || 'Décision enregistrée';
         this.$toast.success(`Décision : ${label}`);
         this.commentairesODJ[id] = '';
         this.loadProjects();
@@ -999,6 +1013,12 @@ export default {
 .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
 .btn-danger { padding: 0.85rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
 .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+.btn-warning { padding: 0.85rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
+.btn-warning:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); }
+.btn-warning:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-reject { padding: 0.85rem; background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
+.btn-reject:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4); }
+.btn-reject:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* Styles pour onglet Décisions du Comité */
 .info-text {

@@ -2572,37 +2572,55 @@ def enregistrer_decision_comite(project_id):
             # Pour les anciens projets, initialiser le statut_comite
             set_statut_comite(p, 'recommande_comite')
 
-        # Vérifier la décision
-        if decision not in ['enterine', 'conteste']:
-            return jsonify({"error": "Décision invalide. Valeurs acceptées: 'enterine' ou 'conteste'"}), 400
+        # Vérifier la décision : enterine | enterine_conditions | ajourne (ex-conteste)
+        if decision not in ['enterine', 'enterine_conditions', 'conteste', 'ajourne']:
+            return jsonify({"error": "Décision invalide. Valeurs acceptées: 'enterine', 'enterine_conditions', 'ajourne'"}), 400
 
-        # IMPORTANT: Commentaires OBLIGATOIRES si le Comité conteste
-        if decision == 'conteste' and not commentaires:
-            return jsonify({"error": "Les commentaires sont obligatoires lorsque le Comité conteste la recommandation"}), 400
+        # Normaliser : 'conteste' (legacy) = 'ajourne'
+        if decision == 'conteste':
+            decision = 'ajourne'
+
+        # Commentaires/conditions OBLIGATOIRES si ajourne ou entérine sous conditions
+        if decision in ('ajourne', 'enterine_conditions') and not commentaires:
+            label = "conditions à lever" if decision == 'enterine_conditions' else "motivation d'ajournement"
+            return jsonify({"error": f"Le champ '{label}' est obligatoire"}), 400
 
         # Mettre à jour le statut_comite
         if decision == 'enterine':
             set_statut_comite(p, 'approuve_definitif')
-            # Rendre la fiche d'évaluation visible pour le soumissionnaire
             p.fiche_evaluation_visible = True
-            # Garder l'avis de l'évaluateur comme statut final
-            # L'avis peut être: favorable, favorable sous conditions, ou défavorable
+            p.conditions_a_lever = None
+            p.conditions_levees = False
             if p.avis:
                 p.statut = p.avis
             else:
-                # Fallback si pas d'avis (ne devrait pas arriver)
                 p.statut = "validé par presidencecomite"
-            action = f"Décision du Comité: projet entériné - Avis final confirmé: {p.avis}"
+            action = f"Décision du Comité : projet entériné — Avis final : {p.avis}"
             if commentaires:
-                action += f" - {commentaires}"
-        else:  # conteste
+                action += f" — Note : {commentaires}"
+
+        elif decision == 'enterine_conditions':
+            # Le Comité entérine mais le projet devra revenir après levée des conditions
+            set_statut_comite(p, 'recommande_comite')  # reste à l'ODJ (session ultérieure)
+            p.avis = 'favorable sous conditions'
+            p.statut = 'favorable sous conditions'
+            p.conditions_a_lever = commentaires
+            p.conditions_levees = False
+            p.fiche_evaluation_visible = True
+            # Retirer de l'ODJ de la session en cours ; le SCT le remettra quand les conditions seront levées
+            p.ordre_du_jour = False
+            p.ordre_du_jour_date = None
+            action = f"Décision du Comité : entériné SOUS CONDITIONS — À lever avant re-présentation : {commentaires}"
+
+        else:  # ajourne
             set_statut_comite(p, 'en_reevaluation')
             p.statut = "en réexamen par le Secrétariat SCT"
-            # Réinitialiser les validations pour permettre un nouveau cycle
             p.avis_presidencesct = None
-            p.decision_finale = None  # Réinitialiser aussi la décision de PresidenceComite
+            p.decision_finale = None
             p.evaluateur_nom = None
-            action = f"Décision du Comité: projet contesté, retour au Secrétariat SCT - Motivation: {commentaires}"
+            p.ordre_du_jour = False
+            p.ordre_du_jour_date = None
+            action = f"Décision du Comité : projet ajourné, retour au Secrétariat SCT — Motivation : {commentaires}"
 
         # Sauvegarder les commentaires si fournis
         if commentaires:

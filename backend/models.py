@@ -63,6 +63,9 @@ class Project(db.Model):
     fiche_evaluation_visible = db.Column(db.Boolean, default=False, nullable=True)  # Visibilité fiche pour soumissionnaire
     commentaires = db.Column(db.Text, nullable=True)
     commentaires_finaux = db.Column(db.Text, nullable=True)
+    # Décision Comité "Entériner sous conditions" : conditions à lever avant re-passage
+    conditions_a_lever = db.Column(db.Text, nullable=True)  # texte des conditions posées par le Comité
+    conditions_levees = db.Column(db.Boolean, default=False, nullable=True)  # true quand SCT confirme la levée
     validation_secretariat = db.Column(db.String(100), nullable=True)
     complements_demande_message = db.Column(db.Text, nullable=True)
     complements_reponse_message = db.Column(db.Text, nullable=True)
