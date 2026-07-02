@@ -7335,6 +7335,18 @@ def import_projet_historique():
             p.decision_finale = request.form.get('decision_comite', 'confirme')
             p.statut_comite = request.form.get('decision_comite', 'confirme')
 
+        # Inscription à l'ordre du jour du Comité (pour les imports pré-Comité)
+        if request.form.get('ordre_du_jour') in ('true', 'True', '1'):
+            p.ordre_du_jour = True
+            odj_date_str = (request.form.get('ordre_du_jour_date') or '').strip()
+            if odj_date_str:
+                try:
+                    p.ordre_du_jour_date = datetime.strptime(odj_date_str, '%Y-%m-%d')
+                except ValueError:
+                    p.ordre_du_jour_date = now
+            else:
+                p.ordre_du_jour_date = now
+
         db.session.add(p)
         db.session.flush()  # Pour avoir p.id
 
